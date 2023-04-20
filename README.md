@@ -2,6 +2,7 @@
 A modern Fortran library providing an object-oriented approach to solving ordinary differential equations.
 
 ## Build Status
+[![CMake](https://github.com/jchristopherson/diffeq/actions/workflows/cmake.yml/badge.svg)](https://github.com/jchristopherson/diffeq/actions/workflows/cmake.yml)
 
 ## Documentation
 The documentation can be found [here](https://jchristopherson.github.io/diffeq/).
