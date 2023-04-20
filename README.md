@@ -1,6 +1,10 @@
 # diffeq
 A modern Fortran library providing an object-oriented approach to solving ordinary differential equations.
 
+## Build Status
+
+## Documentation
+The documentation can be found [here](https://jchristopherson.github.io/diffeq/).
 
 ## References
 1. Butcher, J. C., & Netlibrary, I. (2003). Numerical methods for ordinary differential equations. J. Wiley.
