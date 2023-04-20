@@ -1,0 +1,10 @@
+prefix = @CMAKE_INSTALL_PREFIX@
+libdir = ${prefix}/@CMAKE_INSTALL_FULL_LIBDIR@
+includedir = ${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: @PROJECT_NAME@
+Description: DIFFEQ is a modern Fortran library providing an object-oriented approach to solving ordinary differential equations.
+Version: @PROJECT_VERSION@
+URL: https://github.com/jchristopherson/diffeq
+Libs: -L${libdir} -l@PROJECT_NAME@
+Cflags: -I${includedir}
