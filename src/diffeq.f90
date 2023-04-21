@@ -13,8 +13,8 @@ module diffeq
     !! systems of ODE's.
     type, abstract :: ode_integrator
     contains
-        procedure(ode_solver), public, pass :: solve
-        procedure(ode_integer_inquiry), public, pass :: get_order
+        procedure(ode_solver), public, pass, deferred :: solve
+        procedure(ode_integer_inquiry), public, pass, deferred :: get_order
     end type
 
     interface
