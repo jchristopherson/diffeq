@@ -4,5 +4,7 @@ set(dir ${CMAKE_CURRENT_SOURCE_DIR})
 # Define the source files
 set(DIFFEQ_SOURCES
     ${dir}/diffeq.f90
+    ${dir}/dffeq_ode_integrator.f90
+    ${dir}/diffeq_vs_integrator.f90
 )
 set(DIFFEQ_SOURCES ${DIFFEQ_SOURCES} PARENT_SCOPE)
