@@ -17,6 +17,9 @@ program test
     rst = test_fd_jacobian_2()
     if (.not.rst) flag = 2
 
+    rst = test_fd_jacobian_3()
+    if (.not.rst) flag = 3
+
     ! Output
     stop flag
 end program

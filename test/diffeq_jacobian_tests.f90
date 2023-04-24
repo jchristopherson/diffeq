@@ -119,7 +119,7 @@ function test_fd_jacobian_3() result(rst)
 
     ! Initialization
     rst = .true.
-    obj%fcn => duffing
+    obj%fcn => mathieu
 
     ! Define the conditions at which to evaluate the Jacobian
     x = 0.0d0
