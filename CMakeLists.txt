@@ -27,6 +27,14 @@ add_fortran_library(
 )
 link_library(${PROJECT_NAME} ${ferror_LIBRARY} ${ferror_INCLUDE_DIR})
 
+# Use OpenMP
+#
+# TO DO:
+# Detect Fortran compiler. 
+# - gfortran uses -fopenmp
+# - ifort uses -qopenmp
+target_compile_definitions(${PROJECT_NAME} PUBLIC "-fopenmp")
+
 # Installation
 add_subdirectory(install)
 
