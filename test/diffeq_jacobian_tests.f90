@@ -156,4 +156,45 @@ function test_fd_jacobian_3() result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
+subroutine dummy_jacobian_routine(x, y, dydx, jac)
+    ! Arguments
+    real(real64), intent(in) :: x, y(:), dydx(:)
+    real(real64), intent(out) :: jac(:,:)
+
+    ! Process
+    jac = reshape([1.0d0, 2.0d0, 3.0d0, 4.0d0], [2, 2])
+end subroutine
+
+! This test is intended to ensure the user-defined Jacobian routine works as 
+! intended, and does not require the definition of an ODE function.
+function test_fd_jacobian_4() result(rst)
+    ! Arguments
+    logical :: rst
+
+    ! Local Variables
+    real(real64) :: ans(2, 2), jac(2, 2), x, y(2), dydx(2)
+    type(ode_container) :: obj
+
+    ! Initialization
+    rst = .true.
+    x = 0.0d0
+    y = 0.0d0
+    dydx = 0.0d0
+    obj%jacobian => dummy_jacobian_routine
+
+    ! Compute the answer
+    call dummy_jacobian_routine(x, y, dydx, ans)
+
+    ! Test
+    call obj%compute_jacobian(x, y, dydx, jac)
+    if (.not.assert(ans, jac)) then
+        rst = .false.
+        print 100, "TEST FAILED: test_fd_jacobian_4 1-1"
+    end if
+
+    ! Format
+100 format(A)
+end function
+
+! ------------------------------------------------------------------------------
 end module

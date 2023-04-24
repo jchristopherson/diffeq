@@ -28,6 +28,7 @@ module subroutine oc_jacobian(this, x, y, dydx, jac, err)
     real(real64) :: h
     class(errors), pointer :: errmgr
     type(errors), target :: deferr
+    character(len = :), allocatable :: errmsg
     
     ! Initialization
     if (present(err)) then
@@ -39,7 +40,6 @@ module subroutine oc_jacobian(this, x, y, dydx, jac, err)
     h = this%get_finite_difference_step()
 
     ! Input Checking
-    if (.not.associated(this%fcn)) go to 10
     if (size(jac, 1) /= ndof .or. size(jac, 2) /= ndof) go to 20
 
     ! Use a user-defined routine, and then be done
@@ -47,6 +47,15 @@ module subroutine oc_jacobian(this, x, y, dydx, jac, err)
         call this%jacobian(x, y, dydx, jac)
         return
     end if
+
+    ! More input checking - only necessary if the user is not supplying the
+    ! Jacobian.
+    if (.not.associated(this%fcn)) go to 10
+
+    ! Allocate workspace.  No action is taken if the proper workspace is
+    ! already allocated.
+    call this%allocate_workspace(n, errmgr)
+    if (errmgr%has_error_occurred()) return
 
     ! Finite Difference Approximation
     ! J(i,j) = df(i) / dy(j)
@@ -58,13 +67,26 @@ module subroutine oc_jacobian(this, x, y, dydx, jac, err)
         this%m_jwork(i) = y(i)
     end do
 
+    ! End
+    return
+
     ! Null Function Error
 10  continue
+    call errmgr%report_error("oc_jacobian", "The ODE routine cannot be null.", &
+        DIFFEQ_NULL_POINTER_ERROR)
     return
 
     ! Jacobian Size Error
 20  continue
+    allocate(character(len = 256) :: errmsg)
+    write(errmsg, 100) "The output matrix must be (", n, "-by-", n, &
+        "), but was found to be (", size(jac, 1), "-by-", size(jac, 2), ")."
+    call errmgr%report_error("oc_jacobian", trim(errmsg), &
+        DIFFEQ_MATRIX_SIZE_ERROR)
     return
+
+    ! Formatting
+100 format(A, I0, A, I0, A, I0, A, I0, A)
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -89,6 +111,9 @@ module subroutine oc_alloc_workspace(this, ndof, err)
         allocate(this%m_jwork(ndof), stat = flag, source = 0.0d0)
         if (flag /= 0) go to 10
     end if
+
+    ! End
+    return
 
     ! Memory Error Handling
 10  continue

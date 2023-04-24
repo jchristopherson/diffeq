@@ -5,15 +5,23 @@ module diffeq
     private
     public :: ode
     public :: ode_jacobian
+    public :: ode_mass_matrix
     public :: ode_solver
     public :: ode_integer_inquiry
     public :: ode_container
     public :: ode_integrator
     public :: fixed_step_integrator
     public :: variable_step_integrator
+    public :: DIFFEQ_MEMORY_ALLOCATION_ERROR
+    public :: DIFFEQ_NULL_POINTER_ERROR
+    public :: DIFFEQ_MATRIX_SIZE_ERROR
+    public :: DIFFEQ_ARRAY_SIZE_ERROR
 
 ! ------------------------------------------------------------------------------
     integer(int32), parameter :: DIFFEQ_MEMORY_ALLOCATION_ERROR = 10000
+    integer(int32), parameter :: DIFFEQ_NULL_POINTER_ERROR = 10001
+    integer(int32), parameter :: DIFFEQ_MATRIX_SIZE_ERROR = 10002
+    integer(int32), parameter :: DIFFEQ_ARRAY_SIZE_ERROR = 10003
 
 ! ------------------------------------------------------------------------------
     !> @brief A container for the routine containing the ODEs to integrate.
@@ -29,9 +37,38 @@ module diffeq
         !! If supplied, this routine is utilized; however, if null, a finite
         !! difference approximation is utilized.
         procedure(ode_jacobian), pointer, public, nopass :: jacobian => null()
+        !> @brief A pointer to the routine containing the mass matrix for the
+        !! system.  If set to null (the default), an identity mass matrix will
+        !! be assumed.
+        procedure(ode_mass_matrix), pointer, public, nopass :: mass_matrix => null()
     contains
+        ! Use to allocate internal workspaces.  This routine only takes action
+        ! if the workspace array(s) are not sized properly for the application.
         procedure, private :: allocate_workspace => oc_alloc_workspace
+        !> @brief Gets the size of the step to use for the finite difference
+        !! calculations used to estimate the Jacobian.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_finite_difference_step( &
+        !!  class(ode_container) this &
+        !! )
+        !!
+        !! @param[in] this The @ref ode_container object.
+        !! @return The step size.
         procedure, public :: get_finite_difference_step => oc_get_fd_step
+        !> @brief Sets the size of the step to use for the finite difference
+        !! calculations used to estimate the Jacobian.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_finite_difference_step( &
+        !!  class(ode_container) this, &
+        !!  real(real64) x &
+        !! )
+        !!
+        !! @param[in] this The @ref ode_container object.
+        !! @param[in] x The step size.
         procedure, public :: set_finite_difference_step => oc_set_fd_step
         !> @brief Computes the Jacobian matrix for the system of ODEs.  If
         !! a routine is provided with an analytical Jacobian, the supplied
@@ -40,15 +77,34 @@ module diffeq
         !!
         !! @par Syntax
         !! @code{.f90}
-        !!
+        !! subroutine compute_jacobian( &
+        !!  class(ode_container) this, &
+        !!  real(real64) x, &
+        !!  real(real64) y(:), &
+        !!  real(real64) dydx(:), &
+        !!  real(real64) jac(:,:), &
+        !!  optional class(errors) err &
+        !! )
         !! @endcode
         !!
-        !! @param[in,out] this
-        !! @param[in] x
-        !! @param[in] y
-        !! @param[in] dydx
-        !! @param[out] jac
-        !! @param[in,out] err
+        !! @param[in,out] this The @ref ode_container object.
+        !! @param[in] x The current independent variable value.
+        !! @param[in] y An N-element array containing the current dependent
+        !!  variable values.
+        !! @param[in] dydx An N-element array containing the current derivative
+        !!  values.
+        !! @param[out] jac An N-by-N matrix where the Jacobian will be written.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling. Possible errors and warning messages that may be 
+        !!  encountered are as follows.
+        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
+        !!      allocation issue.
+        !!  - DIFFEQ_NULL_POINTER_ERROR: Occurs if no ODE function is defined,
+        !!      and the calculation is being performed by finite differences.
+        !!  - DIFFEQ_MATRIX_SIZE_ERROR: Occurs if @p jac is not N-by-N.
         procedure, public :: compute_jacobian => oc_jacobian
     end type
 
@@ -66,6 +122,13 @@ module diffeq
             real(real64), intent(in) :: x
             real(real64), intent(in), dimension(:) :: y, dydx
             real(real64), intent(out), dimension(:,:) :: jac
+        end subroutine
+
+        subroutine ode_mass_matrix(x, y, dydx, m)
+            use iso_fortran_env
+            real(real64), intent(in) :: x
+            real(real64), intent(in), dimension(:) :: y, dydx
+            real(real64), intent(out), dimension(:,:) :: m
         end subroutine
 
         pure module function oc_get_fd_step(this) result(rst)
