@@ -26,6 +26,7 @@ add_fortran_library(
     ${DIFFEQ_SOURCES}
 )
 link_library(${PROJECT_NAME} ${ferror_LIBRARY} ${ferror_INCLUDE_DIR})
+link_library(${PROJECT_NAME} ${linalg_LIBRARY} ${linalg_INCLUDE_DIR})
 
 # Use OpenMP
 #

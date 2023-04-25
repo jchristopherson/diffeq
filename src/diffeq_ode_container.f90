@@ -15,6 +15,20 @@ module subroutine oc_set_fd_step(this, x)
 end subroutine
 
 ! ------------------------------------------------------------------------------
+pure module function oc_get_is_mass_dependent(this) result(rst)
+    class(ode_container), intent(in) :: this
+    logical :: rst
+    rst = this%m_massDependent
+end function
+
+! --------------------
+module subroutine oc_set_is_mass_dependent(this, x)
+    class(ode_container), intent(inout) :: this
+    logical :: x
+    this%m_massDependent = x
+end subroutine
+
+! ------------------------------------------------------------------------------
 module subroutine oc_jacobian(this, x, y, dydx, jac, err)
     ! Arguments
     class(ode_container), intent(inout) :: this

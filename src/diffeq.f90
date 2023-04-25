@@ -28,6 +28,9 @@ module diffeq
     !> @brief A container for the routine containing the ODEs to integrate.
     type ode_container
     private
+        ! A value determining if the mass matrix is state dependent such that it
+        ! must be recomputed at each step.
+        logical :: m_massDependent = .true.
         ! Jacobian calculation workspace array.
         real(real64), allocatable, dimension(:) :: m_jwork
         ! Finite difference step size.
@@ -68,9 +71,42 @@ module diffeq
         !!  real(real64) x &
         !! )
         !!
-        !! @param[in] this The @ref ode_container object.
+        !! @param[in,out] this The @ref ode_container object.
         !! @param[in] x The step size.
         procedure, public :: set_finite_difference_step => oc_set_fd_step
+        !> @brief Gets a value determining if the mass matrix is state-dependent
+        !! such that it requires updating at every integration step.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! logical pure function get_is_mass_matrix_dependent( &
+        !!  class(ode_container) this &
+        !! )
+        !!
+        !! @param[in] this The @ref ode_container object.
+        !! @return True if the mass matrix is state-dependent such that it 
+        !!  requires updating at each integration step; else, false if the
+        !!  mass matrix is not state-dependent and can be treated as constant
+        !!  for all integration steps.
+        procedure, public :: get_is_mass_matrix_dependent => &
+            oc_get_is_mass_dependent
+        !> @brief Sets a value determining if the mass matrix is state-dependent
+        !! such that it requires updating at every integration step.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_is_mass_matrix_dependent( &
+        !!  class(ode_container) this, &
+        !!  logical x &
+        !! )
+        !!
+        !! @param[in,out] this The @ref ode_container object.
+        !! @param[in] x True if the mass matrix is state-dependent such that it 
+        !!  requires updating at each integration step; else, false if the
+        !!  mass matrix is not state-dependent and can be treated as constant
+        !!  for all integration steps.
+        procedure, public :: set_is_mass_matrix_dependent => &
+            oc_set_is_mass_dependent
         !> @brief Computes the Jacobian matrix for the system of ODEs.  If
         !! a routine is provided with an analytical Jacobian, the supplied
         !! routine is utilized; else, the Jacobian is estimated via a forward
@@ -142,6 +178,16 @@ module diffeq
             real(real64), intent(in) :: x
         end subroutine
 
+        pure module function oc_get_is_mass_dependent(this) result(rst)
+            class(ode_container), intent(in) :: this
+            logical :: rst
+        end function
+
+        module subroutine oc_set_is_mass_dependent(this, x)
+            class(ode_container), intent(inout) :: this
+            logical :: x
+        end subroutine
+
         module subroutine oc_alloc_workspace(this, ndof, err)
             class(ode_container), intent(inout) :: this
             integer(int32), intent(in) :: ndof
@@ -161,6 +207,7 @@ module diffeq
     !> @brief The most basic ODE integrator object capable of integrating
     !! systems of ODE's.
     type, abstract :: ode_integrator
+    private
     contains
         procedure(ode_solver), public, pass, deferred :: solve
         procedure(ode_integer_inquiry), public, pass, deferred :: get_order
