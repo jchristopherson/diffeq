@@ -12,17 +12,21 @@ module diffeq
     public :: ode_container
     public :: ode_integrator
     public :: fixed_step_integrator
+    public :: rk_fixed_integrator
+    public :: rk4_fixed_integrator
     public :: variable_step_integrator
     public :: DIFFEQ_MEMORY_ALLOCATION_ERROR
     public :: DIFFEQ_NULL_POINTER_ERROR
     public :: DIFFEQ_MATRIX_SIZE_ERROR
     public :: DIFFEQ_ARRAY_SIZE_ERROR
+    public :: DIFFEQ_INVALID_INPUT_ERROR
 
 ! ------------------------------------------------------------------------------
     integer(int32), parameter :: DIFFEQ_MEMORY_ALLOCATION_ERROR = 10000
     integer(int32), parameter :: DIFFEQ_NULL_POINTER_ERROR = 10001
     integer(int32), parameter :: DIFFEQ_MATRIX_SIZE_ERROR = 10002
     integer(int32), parameter :: DIFFEQ_ARRAY_SIZE_ERROR = 10003
+    integer(int32), parameter :: DIFFEQ_INVALID_INPUT_ERROR = 10004
 
 ! ------------------------------------------------------------------------------
     !> @brief A container for the routine containing the ODEs to integrate.
@@ -219,7 +223,7 @@ module diffeq
             use ferror
             import ode_integrator
             import ode_container
-            class(ode_integrator), intent(in) :: this
+            class(ode_integrator), intent(inout) :: this
             class(ode_container), intent(in) :: sys
             real(real64), intent(in), dimension(:) :: x, iv
             class(errors), intent(inout), optional, target :: err
@@ -244,23 +248,111 @@ module diffeq
 
     ! diffeq_fs_integrator.f90
     interface
-        subroutine ode_fixed_step(this, sys, h, x, y, yn)
-            use iso_fortran_env    
+        subroutine ode_fixed_step(this, sys, h, x, y, yn, err)
+            use iso_fortran_env 
+            use ferror   
             import fixed_step_integrator
             import ode_container
-            class(fixed_step_integrator), intent(in) :: this
+            class(fixed_step_integrator), intent(inout) :: this
             class(ode_container), intent(in) :: sys
             real(real64), intent(in) :: h, x
             real(real64), intent(in), dimension(:) :: y
             real(real64), intent(out), dimension(:) :: yn
+            class(errors), intent(inout), optional, target :: err
         end subroutine
 
         module function fsi_solver(this, sys, x, iv, err) result(rst)
-            class(fixed_step_integrator), intent(in) :: this
+            class(fixed_step_integrator), intent(inout) :: this
             class(ode_container), intent(in) :: sys
             real(real64), intent(in), dimension(:) :: x, iv
             class(errors), intent(inout), optional, target :: err
             real(real64), allocatable, dimension(:,:) :: rst
+        end function
+    end interface
+
+! ------------------------------------------------------------------------------
+    !> @brief Defines an explicit, Runge-Kutta fixed-step integrator.
+    type, abstract, extends(fixed_step_integrator) :: rk_fixed_integrator
+    private
+        ! Workspace matrix
+        real(real64), allocatable, dimension(:,:) :: m_work
+    contains
+        ! Use to allocate internal workspaces.  This routine only takes action
+        ! if the workspace array(s) are not sized properly for the application.
+        procedure, private :: allocate_workspace => rkf_alloc_workspace
+        procedure, public :: step => rkf_step
+        procedure(rkf_get_matrix_parameter), deferred, public :: get_a_parameter
+        procedure(rkf_get_array_parameter), deferred, public :: get_b_parameter
+        procedure(rkf_get_array_parameter), deferred, public :: get_c_parameter
+    end type
+
+    interface
+        pure function rkf_get_matrix_parameter(this, i, j) result(rst)
+            use iso_fortran_env
+            import rk_fixed_integrator
+            class(rk_fixed_integrator), intent(in) :: this
+            integer(int32), intent(in) :: i, j
+            real(real64) :: rst
+        end function
+
+        pure function rkf_get_array_parameter(this, i) result(rst)
+            use iso_fortran_env
+            import rk_fixed_integrator
+            class(rk_fixed_integrator), intent(in) :: this
+            integer(int32), intent(in) :: i
+            real(real64) :: rst
+        end function
+
+        module subroutine rkf_alloc_workspace(this, n, neqn, err)
+            class(rk_fixed_integrator), intent(inout) :: this
+            integer(int32), intent(in) :: n, neqn
+            class(errors), intent(inout) :: err
+        end subroutine
+
+        module subroutine rkf_step(this, sys, h, x, y, yn, err)
+            class(rk_fixed_integrator), intent(inout) :: this
+            class(ode_container), intent(in) :: sys
+            real(real64), intent(in) :: h, x
+            real(real64), intent(in), dimension(:) :: y
+            real(real64), intent(out), dimension(:) :: yn
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+    end interface
+
+! ------------------------------------------------------------------------------
+    !> @brief Defines the explicit, 4th order, Runge-Kutta fixed-step 
+    !! integrator.
+    type, extends(rk_fixed_integrator) :: rk4_fixed_integrator
+    contains
+        procedure, public :: get_order => rk4_get_order
+        procedure, public :: get_a_parameter => rk4_get_a_param
+        procedure, public :: get_b_parameter => rk4_get_b_param
+        procedure, public :: get_c_parameter => rk4_get_c_param
+    end type
+
+    ! diffeq_rk4.f90
+    interface
+        pure module function rk4_get_order(this) result(rst)
+            class(rk4_fixed_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+
+        pure module function rk4_get_a_param(this, i, j) result(rst)
+            class(rk4_fixed_integrator), intent(in) :: this
+            integer(int32), intent(in) :: i, j
+            real(real64) :: rst
+        end function
+
+        pure module function rk4_get_b_param(this, i) result(rst)
+            class(rk4_fixed_integrator), intent(in) :: this
+            integer(int32), intent(in) :: i
+            real(real64) :: rst
+        end function
+
+        pure module function rk4_get_c_param(this, i) result(rst)
+            class(rk4_fixed_integrator), intent(in) :: this
+            integer(int32), intent(in) :: i
+            real(real64) :: rst
         end function
     end interface
 

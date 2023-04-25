@@ -1,6 +1,7 @@
 program test
     use iso_fortran_env
     use diffeq_jacobian_tests
+    use diffeq_rkfixed_tests
     implicit none
 
     ! Local Variables

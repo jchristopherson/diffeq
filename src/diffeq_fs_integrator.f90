@@ -5,7 +5,7 @@ contains
 ! ------------------------------------------------------------------------------
 module function fsi_solver(this, sys, x, iv, err) result(rst)
     ! Arguments
-    class(fixed_step_integrator), intent(in) :: this
+    class(fixed_step_integrator), intent(inout) :: this
     class(ode_container), intent(in) :: sys
     real(real64), intent(in), dimension(:) :: x, iv
     class(errors), intent(inout), optional, target :: err
@@ -40,12 +40,10 @@ module function fsi_solver(this, sys, x, iv, err) result(rst)
     rst(1,1) = x(1)
     rst(1,2:) = iv
     do i = 2, npts
-        ! Take the step to compute the right hand side of M * y' = f(x, y)
+        ! Compute the solution
         j = i - 1
         h = x(i) - x(j)
         call this%step(sys, h, rst(j,1), rst(j,2:), rst(i,2:))
-
-        ! Solve M * y' = f(x, y) for y' - do this in the base object
     end do
 
     ! End
