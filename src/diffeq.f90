@@ -8,6 +8,7 @@ module diffeq
     public :: ode_mass_matrix
     public :: ode_solver
     public :: ode_integer_inquiry
+    public :: ode_fixed_step
     public :: ode_container
     public :: ode_integrator
     public :: fixed_step_integrator
@@ -160,19 +161,19 @@ module diffeq
     !> @brief The most basic ODE integrator object capable of integrating
     !! systems of ODE's.
     type, abstract :: ode_integrator
-        !> @brief A pointer to the routine containing the ODEs to integrate.
-        procedure(ode), pointer, public, nopass :: fcn => null()
     contains
         procedure(ode_solver), public, pass, deferred :: solve
         procedure(ode_integer_inquiry), public, pass, deferred :: get_order
     end type
 
     interface
-        function ode_solver(this, x, iv, err) result(rst)
+        function ode_solver(this, sys, x, iv, err) result(rst)
             use iso_fortran_env
             use ferror
             import ode_integrator
+            import ode_container
             class(ode_integrator), intent(in) :: this
+            class(ode_container), intent(in) :: sys
             real(real64), intent(in), dimension(:) :: x, iv
             class(errors), intent(inout), optional, target :: err
             real(real64), allocatable, dimension(:,:) :: rst
@@ -186,27 +187,37 @@ module diffeq
         end function
     end interface
 
-
-
-
+! ------------------------------------------------------------------------------
     !> @brief Defines a fixed-step integrator.
     type, abstract, extends(ode_integrator) :: fixed_step_integrator
     contains
         procedure, public :: solve => fsi_solver
+        procedure(ode_fixed_step), public, pass, deferred :: step
     end type
 
     ! diffeq_fs_integrator.f90
     interface
-        module function fsi_solver(this, x, iv, err) result(rst)
+        subroutine ode_fixed_step(this, sys, h, x, y, yn)
+            use iso_fortran_env    
+            import fixed_step_integrator
+            import ode_container
             class(fixed_step_integrator), intent(in) :: this
+            class(ode_container), intent(in) :: sys
+            real(real64), intent(in) :: h, x
+            real(real64), intent(in), dimension(:) :: y
+            real(real64), intent(out), dimension(:) :: yn
+        end subroutine
+
+        module function fsi_solver(this, sys, x, iv, err) result(rst)
+            class(fixed_step_integrator), intent(in) :: this
+            class(ode_container), intent(in) :: sys
             real(real64), intent(in), dimension(:) :: x, iv
             class(errors), intent(inout), optional, target :: err
             real(real64), allocatable, dimension(:,:) :: rst
         end function
     end interface
 
-
-
+! ------------------------------------------------------------------------------
     !> @brief Defines a variable-step integrator.
     type, abstract, extends(ode_integrator) :: variable_step_integrator
     private
