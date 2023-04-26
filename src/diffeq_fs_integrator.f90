@@ -1,8 +1,6 @@
 submodule (diffeq) diffeq_fs_integrator
 contains
 ! ------------------------------------------------------------------------------
-
-! ------------------------------------------------------------------------------
 module function fsi_solver(this, sys, x, iv, err) result(rst)
     ! Arguments
     class(fixed_step_integrator), intent(inout) :: this
@@ -16,6 +14,7 @@ module function fsi_solver(this, sys, x, iv, err) result(rst)
     real(real64) :: h
     class(errors), pointer :: errmgr
     type(errors), target :: deferr
+    character(len = :), allocatable :: errmsg
     
     ! Initialization
     if (present(err)) then
@@ -34,8 +33,6 @@ module function fsi_solver(this, sys, x, iv, err) result(rst)
     allocate(rst(npts, neqn + 1), stat = flag)
     if (flag /= 0) go to 10
 
-    ! TO DO: Initialize class-based workspaces
-
     ! Process
     rst(1,1) = x(1)
     rst(1,2:) = iv
@@ -52,15 +49,30 @@ module function fsi_solver(this, sys, x, iv, err) result(rst)
 
     ! Memory Error Handling
 10  continue
+    allocate(character(len = 256) :: errmsg)
+    write(errmsg, 100) "Memory allocation error flag ", flag, "."
+    call errmgr%report_error("fsi_solver", trim(errmsg), &
+        DIFFEQ_MEMORY_ALLOCATION_ERROR)
     return
 
     ! No Function Defined Error
 20  continue
+    call errmgr%report_error("fsi_solver", "The ODE routine is not defined.", &
+        DIFFEQ_NULL_POINTER_ERROR)
     return
 
     ! Independent Variable Array Size Error
 30  continue
+    allocate(character(len = 256) :: errmsg)
+    write(errmsg, 100) &
+        "There must be at least 2 solution points defined, but ", npts, &
+        " were found."
+    call errmgr%report_error("fsi_solver", trim(errmsg), &
+        DIFFEQ_INVALID_INPUT_ERROR)
     return
+
+    ! Formatting
+100 format(A, I0, A)
 end function
 
 ! ------------------------------------------------------------------------------

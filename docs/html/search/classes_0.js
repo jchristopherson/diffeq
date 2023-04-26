@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['blackman_5fharris_5fwindow_0',['blackman_harris_window',['../structspectrum_1_1blackman__harris__window.html',1,'spectrum']]]
+  ['fixed_5fstep_5fintegrator_0',['fixed_step_integrator',['../structdiffeq_1_1fixed__step__integrator.html',1,'diffeq']]]
 ];

@@ -61,6 +61,7 @@ module diffeq
         !! real(real64) pure function get_finite_difference_step( &
         !!  class(ode_container) this &
         !! )
+        !! @endcode
         !!
         !! @param[in] this The @ref ode_container object.
         !! @return The step size.
@@ -74,6 +75,7 @@ module diffeq
         !!  class(ode_container) this, &
         !!  real(real64) x &
         !! )
+        !! @endcode
         !!
         !! @param[in,out] this The @ref ode_container object.
         !! @param[in] x The step size.
@@ -86,6 +88,7 @@ module diffeq
         !! logical pure function get_is_mass_matrix_dependent( &
         !!  class(ode_container) this &
         !! )
+        !! @endcode
         !!
         !! @param[in] this The @ref ode_container object.
         !! @return True if the mass matrix is state-dependent such that it 
@@ -103,6 +106,7 @@ module diffeq
         !!  class(ode_container) this, &
         !!  logical x &
         !! )
+        !! @endcode
         !!
         !! @param[in,out] this The @ref ode_container object.
         !! @param[in] x True if the mass matrix is state-dependent such that it 
@@ -213,7 +217,54 @@ module diffeq
     type, abstract :: ode_integrator
     private
     contains
+        !> @brief Solves the supplied system of ODEs.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! allocatable real(real64)(:,:) function solve( &
+        !!  class(ode_integrator) this, &
+        !!  class(ode_container) sys, &
+        !!  real(real64) x(:), &
+        !!  real(real64) iv(:), &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref ode_integrator object.
+        !! @param[in] sys The @ref ode_container object containing the ODEs
+        !!  to integrate.
+        !! @param[in] x An array, of at least 2 values, defining at a minimum
+        !!  the starting and ending values of the independent variable 
+        !!  integration range.  If more than two values are specified, the
+        !!  integration results will be returned at the supplied values.
+        !! @param[in] An array containing the initial values for each ODE.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.  Possible errors and warning messages that may be 
+        !!  encountered are as follows.
+        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
+        !!      allocation issue.
+        !!  - DIFFEQ_NULL_POINTER_ERROR: Occurs if no ODE function is defined.
+        !!  - DIFFEQ_INVALID_INPUT_ERROR: Occurs if there are less than 2 values
+        !!      given in the independent variable array @p x.
+        !!
+        !! @return An M-by-N matrix where M is the number of solution points, 
+        !!  and N is the number of ODEs plus 1.  The first column contains
+        !!  the values of the independent variable at which the results were
+        !!  computed.  The remaining columns contain the integration results
+        !!  for each ODE.
         procedure(ode_solver), public, pass, deferred :: solve
+        !> @brief Returns the order of the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! pure integer(int32) function get_order(class(ode_integrator) this)
+        !! @endcode
+        !!
+        !! @param[in] this The @ref ode_integrator object.
+        !! @return The order of the integrator.
         procedure(ode_integer_inquiry), public, pass, deferred :: get_order
     end type
 
@@ -242,6 +293,38 @@ module diffeq
     !> @brief Defines a fixed-step integrator.
     type, abstract, extends(ode_integrator) :: fixed_step_integrator
     contains
+        !> @brief Solves the supplied system of ODEs.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! allocatable real(real64)(:,:) function solve( &
+        !!  class(fixed_step_integrator) this, &
+        !!  class(ode_container) sys, &
+        !!  real(real64) x(:), &
+        !!  real(real64) iv(:), &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref fixed_step_integrator object.
+        !! @param[in] sys The @ref ode_container object containing the ODEs
+        !!  to integrate.
+        !! @param[in] x An array, of at least 2 values, defining at a minimum
+        !!  the starting and ending values of the independent variable 
+        !!  integration range.  If more than two values are specified, the
+        !!  integration results will be returned at the supplied values.
+        !! @param[in] An array containing the initial values for each ODE.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.
+        !!
+        !! @return An M-by-N matrix where M is the number of solution points, 
+        !!  and N is the number of ODEs plus 1.  The first column contains
+        !!  the values of the independent variable at which the results were
+        !!  computed.  The remaining columns contain the integration results
+        !!  for each ODE.
         procedure, public :: solve => fsi_solver
         procedure(ode_fixed_step), public, pass, deferred :: step
     end type
@@ -326,7 +409,7 @@ module diffeq
     !! @par Example
     !! The following example solves the first-order differential equation
     !! \f$ \frac{dy}{dx} + y \sin^{2}x = 0 \f$ where the solution is 
-    !! \f$ y = C \exp \left( \frac{1}{4} \sin(2 x) \frac{x}{2} \right) \f$.
+    !! \f$ y = C \exp \left( \frac{1}{4} \sin(2 x) - \frac{x}{2} \right) \f$.
     !!
     !! @code{.f90}
     !! program example
@@ -387,6 +470,15 @@ module diffeq
     !!
     !!     call plt%draw()
     !! end program
+    !! @endcode
+    !! The ODE routine was stored in a seperate module; however, here is the
+    !! code for the ODE routine.
+    !! @code{.f90}
+    !! subroutine test_1dof_1(x, y, dydx)
+    !!     real(real64), intent(in) :: x, y(:)
+    !!     real(real64), intent(out) :: dydx(:)
+    !!     dydx(1) = -y(1) * sin(x)**2
+    !! end subroutine
     !! @endcode
     !! The above program produces the following plot using the 
     !! [FPLOT](https://github.com/jchristopherson/fplot) library.
