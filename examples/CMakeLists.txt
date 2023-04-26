@@ -11,3 +11,12 @@ add_executable(
 )
 link_library(rk4_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
 link_library(rk4_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
+
+# Fixed-Step Exponential Example
+add_executable(
+    expf_example
+    expf_example.f90
+    ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
+)
+link_library(expf_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
+link_library(expf_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})

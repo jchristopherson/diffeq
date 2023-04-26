@@ -8,6 +8,7 @@ set(DIFFEQ_SOURCES
     ${dir}/diffeq_fs_integrator.f90
     ${dir}/diffeq_rkfixed.f90
     ${dir}/diffeq_rk4.f90
+    ${dir}/diffeq_expfixed.f90
     ${dir}/diffeq_vs_integrator.f90
 )
 set(DIFFEQ_SOURCES ${DIFFEQ_SOURCES} PARENT_SCOPE)

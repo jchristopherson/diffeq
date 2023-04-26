@@ -14,6 +14,7 @@ module diffeq
     public :: fixed_step_integrator
     public :: rk_fixed_integrator
     public :: rk4_fixed_integrator
+    public :: exponential_fixed_integrator
     public :: variable_step_integrator
     public :: DIFFEQ_MEMORY_ALLOCATION_ERROR
     public :: DIFFEQ_NULL_POINTER_ERROR
@@ -31,24 +32,25 @@ module diffeq
 ! ------------------------------------------------------------------------------
     !> @brief A container for the routine containing the ODEs to integrate.
     type ode_container
-    private
         ! A value determining if the mass matrix is state dependent such that it
         ! must be recomputed at each step.
-        logical :: m_massDependent = .true.
+        logical, private :: m_massDependent = .true.
         ! Jacobian calculation workspace array.
-        real(real64), allocatable, dimension(:) :: m_jwork
+        real(real64), private, allocatable, dimension(:) :: m_jwork
         ! Finite difference step size.
-        real(real64) :: m_fdStep = sqrt(epsilon(1.0d0))
+        real(real64), private :: m_fdStep = sqrt(epsilon(1.0d0))
         !> @brief A pointer to the routine containing the ODEs to integrate.
-        procedure(ode), pointer, public, nopass :: fcn => null()
+        procedure(ode), private, pointer, public, nopass :: fcn => null()
         !> @brief A pointer to the routine containing the analytical Jacobian.
         !! If supplied, this routine is utilized; however, if null, a finite
         !! difference approximation is utilized.
-        procedure(ode_jacobian), pointer, public, nopass :: jacobian => null()
+        procedure(ode_jacobian), private, pointer, public, nopass :: &
+            jacobian => null()
         !> @brief A pointer to the routine containing the mass matrix for the
         !! system.  If set to null (the default), an identity mass matrix will
         !! be assumed.
-        procedure(ode_mass_matrix), pointer, public, nopass :: mass_matrix => null()
+        procedure(ode_mass_matrix), pointer, public, nopass :: &
+            mass_matrix => null()
     contains
         ! Use to allocate internal workspaces.  This routine only takes action
         ! if the workspace array(s) are not sized properly for the application.
@@ -274,7 +276,7 @@ module diffeq
             import ode_integrator
             import ode_container
             class(ode_integrator), intent(inout) :: this
-            class(ode_container), intent(in) :: sys
+            class(ode_container), intent(inout) :: sys
             real(real64), intent(in), dimension(:) :: x, iv
             class(errors), intent(inout), optional, target :: err
             real(real64), allocatable, dimension(:,:) :: rst
@@ -306,7 +308,7 @@ module diffeq
         !! @endcode
         !!
         !! @param[in,out] this The @ref fixed_step_integrator object.
-        !! @param[in] sys The @ref ode_container object containing the ODEs
+        !! @param[in,out] sys The @ref ode_container object containing the ODEs
         !!  to integrate.
         !! @param[in] x An array, of at least 2 values, defining at a minimum
         !!  the starting and ending values of the independent variable 
@@ -364,7 +366,7 @@ module diffeq
             import fixed_step_integrator
             import ode_container
             class(fixed_step_integrator), intent(inout) :: this
-            class(ode_container), intent(in) :: sys
+            class(ode_container), intent(inout) :: sys
             real(real64), intent(in) :: h, x
             real(real64), intent(in), dimension(:) :: y
             real(real64), intent(out), dimension(:) :: yn
@@ -373,7 +375,7 @@ module diffeq
 
         module function fsi_solver(this, sys, x, iv, err) result(rst)
             class(fixed_step_integrator), intent(inout) :: this
-            class(ode_container), intent(in) :: sys
+            class(ode_container), intent(inout) :: sys
             real(real64), intent(in), dimension(:) :: x, iv
             class(errors), intent(inout), optional, target :: err
             real(real64), allocatable, dimension(:,:) :: rst
@@ -383,9 +385,8 @@ module diffeq
 ! ------------------------------------------------------------------------------
     !> @brief Defines an explicit, Runge-Kutta fixed-step integrator.
     type, abstract, extends(fixed_step_integrator) :: rk_fixed_integrator
-    private
         ! Workspace matrix
-        real(real64), allocatable, dimension(:,:) :: m_work
+        real(real64), private, allocatable, dimension(:,:) :: m_work
     contains
         ! Use to allocate internal workspaces.  This routine only takes action
         ! if the workspace array(s) are not sized properly for the application.
@@ -405,7 +406,7 @@ module diffeq
         !! @endcode
         !!
         !! @param[in,out] this The @ref rk_fixed_integrator object.
-        !! @param[in] sys The @ref ode_container object containing the ODEs
+        !! @param[in,out] sys The @ref ode_container object containing the ODEs
         !!  to integrate.
         !! @param[in] h The current step size.
         !! @param[in] x The current value of the independent variable.
@@ -494,7 +495,7 @@ module diffeq
 
         module subroutine rkf_step(this, sys, h, x, y, yn, err)
             class(rk_fixed_integrator), intent(inout) :: this
-            class(ode_container), intent(in) :: sys
+            class(ode_container), intent(inout) :: sys
             real(real64), intent(in) :: h, x
             real(real64), intent(in), dimension(:) :: y
             real(real64), intent(out), dimension(:) :: yn
@@ -669,13 +670,146 @@ module diffeq
     end interface
 
 ! ------------------------------------------------------------------------------
+    !> @brief Defines a third-order exponential integrator as defined by 
+    !! Jibunoh.
+    !!
+    !! @par Remarks
+    !! Jibunoh presents several orders of exponential integrators in his paper.
+    !! This integrator uses his third-order formula, which is defined as
+    !! @par
+    !! \f$ y_{n+1} = y_n + \left( h I + \frac{h^2}{2} J_n + \frac{h^3}{6} J_n^2
+    !! \right) f_n \f$
+    !! @par
+    !! where \f$ J_n \f$ is the Jacobian matrix at \f$ x_n \f$.
+    !!
+    !! @par Reference
+    !! - Jibunoh, C.C.. (2014). An exponential method for accurate and automatic
+    !!  integration of nonlinear (stiff and nonstiff) ODE systems. Journal of 
+    !!  the Nigerian Mathematical Society. 29. 10.1016/j.jnnms.2014.10.005. 
+    !!
+    !! @par Example
+    !! This exponential integrator is suitable for integrating stiff systems.
+    !! As such, this example solves the Van der Pol equation \f$ 
+    !! \frac{d^2y}{dx^2} - \mu \left( 1 - y^2 \right) \frac{dy}{dx} + y = 0 \f$.
+    !! @code{.f90}
+    !! program example
+    !!     use iso_fortran_env
+    !!     use diffeq
+    !!     use diffeq_models
+    !!     use fplot_core
+    !!     implicit none
+    !!
+    !!     ! Parameters
+    !!     integer(int32), parameter :: npts = 2500
+    !!     real(real64), parameter :: h = 1.0d-2
+    !!
+    !!     ! Local Variables
+    !!     type(exponential_fixed_integrator) :: integrator
+    !!     type(ode_container) :: mdl
+    !!     integer(int32) :: i
+    !!     real(real64) :: x(npts), sol(npts, 3)
+    !!
+    !!     ! Plot Variables
+    !!     type(plot_2d) :: plt
+    !!     type(plot_data_2d) :: pd
+    !!     class(plot_axis), pointer :: xAxis, yAxis
+    !!
+    !!     ! Define the values of x at which the solution is to be computed
+    !!     x = (/ (i * h, i = 0, npts - 1) /)
+    !!
+    !!     ! Define the model
+    !!     mdl%fcn => vanderpol
+    !!
+    !!     ! Compute the solution
+    !!     sol = integrator%solve(mdl, x, [2.0d0, 0.0d0])
+    !!
+    !!     ! Plot the results
+    !!     call plt%initialize()
+    !!     xAxis => plt%get_x_axis()
+    !!     yAxis => plt%get_y_axis()
+    !!     call xAxis%set_title("x")
+    !!     call yAxis%set_title("y(x)")
+    !!
+    !!     call pd%define_data(sol(:,1), sol(:,2))
+    !!     call pd%set_line_width(2.0)
+    !!     call plt%push(pd)
+    !!
+    !!     call plt%draw()
+    !! end program
+    !! @endcode
+    !! The ODE routine was stored in a seperate module; however, here is the
+    !! code for the ODE routine.
+    !! @code{.f90}
+    !! subroutine vanderpol(x, y, dydx)
+    !!     ! Arguments
+    !!     real(real64), intent(in) :: x, y(:)
+    !!     real(real64), intent(out) :: dydx(:)
+    !!
+    !!     ! Model Constants
+    !!     real(real64), parameter :: mu = 5.0d0
+    !!
+    !!     ! Equations
+    !!     dydx(1) = y(2)
+    !!     dydx(2) = mu * (1.0d0 - y(1)**2) * y(2) - y(1)
+    !! end subroutine
+    !! @endcode
+    !! The above program produces the following plot using the 
+    !! [FPLOT](https://github.com/jchristopherson/fplot) library.
+    !! @image html vanderpol_fixed_exponential_example_1.png
+    type, extends(fixed_step_integrator) :: exponential_fixed_integrator
+        ! Workspace for the system Jacobian matrix (NEQN-by-NEQN)
+        real(real64), private, allocatable, dimension(:,:) :: m_jac
+        ! Workspace for the square of the Jacobian (NEQN-by-NEQN)
+        real(real64), private, allocatable, dimension(:,:) :: m_jac2
+        ! Workspace array (NEQN)
+        real(real64), private, allocatable, dimension(:) :: m_work
+    contains
+        ! Use to allocate internal workspaces.  This routine only takes action
+        ! if the workspace array(s) are not sized properly for the application.
+        procedure, private :: allocate_workspace => ef_alloc_workspace
+        !> @brief Returns the order of the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! pure integer(int32) function get_order(class(exponential_fixed_integrator) this)
+        !! @endcode
+        !!
+        !! @param[in] this The @ref exponential_fixed_integrator object.
+        !! @return The order of the integrator.
+        procedure, public :: get_order => ef_get_order
+        procedure, public :: step => ef_step
+    end type
+
+    ! diffeq_expfixed.f90
+    interface
+        module subroutine ef_alloc_workspace(this, neqn, err)
+            class(exponential_fixed_integrator), intent(inout) :: this
+            integer(int32), intent(in) :: neqn
+            class(errors), intent(inout) :: err
+        end subroutine
+
+        pure module function ef_get_order(this) result(rst)
+            class(exponential_fixed_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+
+        module subroutine ef_step(this, sys, h, x, y, yn, err)
+            class(exponential_fixed_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(in) :: h, x
+            real(real64), intent(in), dimension(:) :: y
+            real(real64), intent(out), dimension(:) :: yn
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+    end interface
+
+! ------------------------------------------------------------------------------
     !> @brief Defines a variable-step integrator.
     type, abstract, extends(ode_integrator) :: variable_step_integrator
-    private
-        real(real64) :: m_safetyfactor = 0.9d0
-        real(real64) :: m_alpha = 0.7d0
-        real(real64) :: m_beta = 0.4d0
-        real(real64) :: m_maxstep = huge(1.0d0)
+        real(real64), private :: m_safetyfactor = 0.9d0
+        real(real64), private :: m_alpha = 0.7d0
+        real(real64), private :: m_beta = 0.4d0
+        real(real64), private :: m_maxstep = huge(1.0d0)
     contains
         procedure, public :: get_safety_factor => vsi_get_safety_factor
         procedure, public :: set_safety_factor => vsi_set_safety_factor

@@ -4,7 +4,7 @@ contains
 module function fsi_solver(this, sys, x, iv, err) result(rst)
     ! Arguments
     class(fixed_step_integrator), intent(inout) :: this
-    class(ode_container), intent(in) :: sys
+    class(ode_container), intent(inout) :: sys
     real(real64), intent(in), dimension(:) :: x, iv
     class(errors), intent(inout), optional, target :: err
     real(real64), allocatable, dimension(:,:) :: rst

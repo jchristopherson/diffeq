@@ -9,7 +9,7 @@ subroutine vanderpol(x, y, dydx)
     real(real64), intent(out) :: dydx(:)
 
     ! Model Constants
-    real(real64), parameter :: mu = 2.0d0
+    real(real64), parameter :: mu = 5.0d0
 
     ! Equations
     dydx(1) = y(2)
@@ -22,7 +22,7 @@ function vanderpol_jacobian(x, y) result(rst)
     real(real64) :: rst(2, 2)
 
     ! Model Constants
-    real(real64), parameter :: mu = 2.0d0
+    real(real64), parameter :: mu = 5.0d0
 
     ! Jacobian
     rst(1,1) = 0.0d0

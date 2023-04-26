@@ -46,7 +46,7 @@ end subroutine
 module subroutine rkf_step(this, sys, h, x, y, yn, err)
     ! Arguments
     class(rk_fixed_integrator), intent(inout) :: this
-    class(ode_container), intent(in) :: sys
+    class(ode_container), intent(inout) :: sys
     real(real64), intent(in) :: h, x
     real(real64), intent(in), dimension(:) :: y
     real(real64), intent(out), dimension(:) :: yn
