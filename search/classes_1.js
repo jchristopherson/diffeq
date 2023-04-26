@@ -1,8 +1,11 @@
 var searchData=
 [
-  ['compute_5foverlap_5fsegment_5fcount_0',['compute_overlap_segment_count',['../interfacespectrum_1_1compute__overlap__segment__count.html',1,'spectrum']]],
-  ['compute_5ftransform_5flength_1',['compute_transform_length',['../interfacespectrum_1_1compute__transform__length.html',1,'spectrum']]],
-  ['convolve_2',['convolve',['../interfacespectrum_1_1convolve.html',1,'spectrum']]],
-  ['cross_5fperiodogram_3',['cross_periodogram',['../interfacespectrum_1_1cross__periodogram.html',1,'spectrum']]],
-  ['csd_4',['csd',['../interfacespectrum_1_1csd.html',1,'spectrum']]]
+  ['ode_0',['ode',['../interfacediffeq_1_1ode.html',1,'diffeq']]],
+  ['ode_5fcontainer_1',['ode_container',['../structdiffeq_1_1ode__container.html',1,'diffeq']]],
+  ['ode_5ffixed_5fstep_2',['ode_fixed_step',['../interfacediffeq_1_1ode__fixed__step.html',1,'diffeq']]],
+  ['ode_5finteger_5finquiry_3',['ode_integer_inquiry',['../interfacediffeq_1_1ode__integer__inquiry.html',1,'diffeq']]],
+  ['ode_5fintegrator_4',['ode_integrator',['../structdiffeq_1_1ode__integrator.html',1,'diffeq']]],
+  ['ode_5fjacobian_5',['ode_jacobian',['../interfacediffeq_1_1ode__jacobian.html',1,'diffeq']]],
+  ['ode_5fmass_5fmatrix_6',['ode_mass_matrix',['../interfacediffeq_1_1ode__mass__matrix.html',1,'diffeq']]],
+  ['ode_5fsolver_7',['ode_solver',['../interfacediffeq_1_1ode__solver.html',1,'diffeq']]]
 ];

@@ -102,8 +102,349 @@ $(document).ready(function(){initNavTree('diffeq_8f90_source.html',''); initResi
 <div class="contents">
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="keyword">module</span> diffeq</div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span>    <span class="keywordtype">use </span>iso_fortran_env</div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span>    <span class="keywordtype">implicit none</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="keyword">end module</span></div>
+<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span>    <span class="keywordtype">use </span>ferror</div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span>    <span class="keywordtype">private</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span>    <span class="keywordtype">public</span> :: <a class="code hl_interface" href="interfacediffeq_1_1ode.html">ode</a></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span>    <span class="keywordtype">public</span> :: <a class="code hl_interface" href="interfacediffeq_1_1ode__jacobian.html">ode_jacobian</a></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span>    <span class="keywordtype">public</span> :: <a class="code hl_interface" href="interfacediffeq_1_1ode__mass__matrix.html">ode_mass_matrix</a></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span>    <span class="keywordtype">public</span> :: <a class="code hl_interface" href="interfacediffeq_1_1ode__solver.html">ode_solver</a></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span>    <span class="keywordtype">public</span> :: <a class="code hl_interface" href="interfacediffeq_1_1ode__integer__inquiry.html">ode_integer_inquiry</a></div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>    <span class="keywordtype">public</span> :: <a class="code hl_interface" href="interfacediffeq_1_1ode__fixed__step.html">ode_fixed_step</a></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>    <span class="keywordtype">public</span> :: <a class="code hl_struct" href="structdiffeq_1_1ode__container.html">ode_container</a></div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    <span class="keywordtype">public</span> :: <a class="code hl_struct" href="structdiffeq_1_1ode__integrator.html">ode_integrator</a></div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>    <span class="keywordtype">public</span> :: <a class="code hl_struct" href="structdiffeq_1_1fixed__step__integrator.html">fixed_step_integrator</a></div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    <span class="keywordtype">public</span> :: <a class="code hl_struct" href="structdiffeq_1_1rk__fixed__integrator.html">rk_fixed_integrator</a></div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    <span class="keywordtype">public</span> :: <a class="code hl_struct" href="structdiffeq_1_1rk4__fixed__integrator.html">rk4_fixed_integrator</a></div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    <span class="keywordtype">public</span> :: <a class="code hl_struct" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    <span class="keywordtype">public</span> :: diffeq_memory_allocation_error</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    <span class="keywordtype">public</span> :: diffeq_null_pointer_error</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    <span class="keywordtype">public</span> :: diffeq_matrix_size_error</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    <span class="keywordtype">public</span> :: diffeq_array_size_error</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    <span class="keywordtype">public</span> :: diffeq_invalid_input_error</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="comment">! ------------------------------------------------------------------------------</span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    <span class="keywordtype">integer(int32)</span>, <span class="keywordtype">parameter</span> :: DIFFEQ_MEMORY_ALLOCATION_ERROR = 10000</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <span class="keywordtype">integer(int32)</span>, <span class="keywordtype">parameter</span> :: DIFFEQ_NULL_POINTER_ERROR = 10001</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    <span class="keywordtype">integer(int32)</span>, <span class="keywordtype">parameter</span> :: DIFFEQ_MATRIX_SIZE_ERROR = 10002</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    <span class="keywordtype">integer(int32)</span>, <span class="keywordtype">parameter</span> :: DIFFEQ_ARRAY_SIZE_ERROR = 10003</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <span class="keywordtype">integer(int32)</span>, <span class="keywordtype">parameter</span> :: DIFFEQ_INVALID_INPUT_ERROR = 10004</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="comment">! ------------------------------------------------------------------------------</span></div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno"><a class="line" href="structdiffeq_1_1ode__container.html">   33</a></span>    <span class="keyword">type</span> <a class="code hl_struct" href="structdiffeq_1_1ode__container.html">ode_container</a></div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    <span class="keywordtype">private</span></div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>        <span class="comment">! A value determining if the mass matrix is state dependent such that it</span></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>        <span class="comment">! must be recomputed at each step.</span></div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>        <span class="keywordtype">logical</span> :: m_massDependent = .true.</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>        <span class="comment">! Jacobian calculation workspace array.</span></div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="keywordtype">        real</span>(real64), <span class="keywordtype">allocatable</span>, <span class="keywordtype">dimension(:)</span> :: m_jwork</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>        <span class="comment">! Finite difference step size.</span></div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="keywordtype">        real</span>(real64) :: m_fdStep = sqrt(epsilon(1.0d0))</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno"><a class="line" href="structdiffeq_1_1ode__container.html#a0bdb2c184d723a7456879f7f00ad764a">   43</a></span>        <span class="keywordtype">procedure</span>(<a class="code hl_interface" href="interfacediffeq_1_1ode.html">ode</a>), <span class="keywordtype">pointer</span>, <span class="keywordtype">public</span>, <span class="keywordtype">nopass</span> :: fcn =&gt; null()</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno"><a class="line" href="structdiffeq_1_1ode__container.html#a018c08da82a2caf397678418e2b02e29">   47</a></span>        <span class="keywordtype">procedure</span>(<a class="code hl_interface" href="interfacediffeq_1_1ode__jacobian.html">ode_jacobian</a>), <span class="keywordtype">pointer</span>, <span class="keywordtype">public</span>, <span class="keywordtype">nopass</span> :: jacobian =&gt; null()</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno"><a class="line" href="structdiffeq_1_1ode__container.html#ad40a41c2b5f575a7459bd63ee8fe7092">   51</a></span>        <span class="keywordtype">procedure</span>(<a class="code hl_interface" href="interfacediffeq_1_1ode__mass__matrix.html">ode_mass_matrix</a>), <span class="keywordtype">pointer</span>, <span class="keywordtype">public</span>, <span class="keywordtype">nopass</span> :: mass_matrix =&gt; null()</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="keyword">contains</span></div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>        <span class="comment">! Use to allocate internal workspaces.  This routine only takes action</span></div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>        <span class="comment">! if the workspace array(s) are not sized properly for the application.</span></div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">private</span> :: allocate_workspace =&gt; oc_alloc_workspace</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno"><a class="line" href="structdiffeq_1_1ode__container.html#a5277355983c11520f271084197d7d4c5">   68</a></span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: get_finite_difference_step =&gt; oc_get_fd_step</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno"><a class="line" href="structdiffeq_1_1ode__container.html#a81d257785b4f49901b9576b4e353441a">   82</a></span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: set_finite_difference_step =&gt; oc_set_fd_step</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno"><a class="line" href="structdiffeq_1_1ode__container.html#a2e67cebd6b92dfc15e571e33b214af24">   98</a></span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: get_is_mass_matrix_dependent =&gt; &amp;</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>            oc_get_is_mass_dependent</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno"><a class="line" href="structdiffeq_1_1ode__container.html#ab1a81b48af6169ebe21c5b4cc7b17a7c">  116</a></span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: set_is_mass_matrix_dependent =&gt; &amp;</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>            oc_set_is_mass_dependent</div>
+<div class="line"><a id="l00153" name="l00153"></a><span class="lineno"><a class="line" href="structdiffeq_1_1ode__container.html#af39f03ed45cda59adc231a2a7bf45111">  153</a></span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: compute_jacobian =&gt; oc_jacobian</div>
+<div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span>    <span class="keyword">end type</span></div>
+<div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span> </div>
+<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>    <span class="comment">! diffeq_ode_container.f90</span></div>
+<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>    <span class="keyword">interface</span></div>
+<div class="line"><a id="l00158" name="l00158"></a><span class="lineno"><a class="line" href="interfacediffeq_1_1ode.html">  158</a></span>        <span class="keyword">subroutine </span><a class="code hl_interface" href="interfacediffeq_1_1ode.html">ode</a>(x, y, dydx)</div>
+<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>            <span class="keywordtype">use </span>iso_fortran_env</div>
+<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span> :: x</div>
+<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span>, <span class="keywordtype">dimension(:)</span> :: y</div>
+<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(out)</span>, <span class="keywordtype">dimension(:)</span> :: dydx</div>
+<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>        <span class="keyword">end subroutine</span></div>
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span> </div>
+<div class="line"><a id="l00165" name="l00165"></a><span class="lineno"><a class="line" href="interfacediffeq_1_1ode__jacobian.html">  165</a></span>        <span class="keyword">subroutine </span><a class="code hl_interface" href="interfacediffeq_1_1ode__jacobian.html">ode_jacobian</a>(x, y, dydx, jac)</div>
+<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>            <span class="keywordtype">use </span>iso_fortran_env</div>
+<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span> :: x</div>
+<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span>, <span class="keywordtype">dimension(:)</span> :: y, dydx</div>
+<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(out)</span>, <span class="keywordtype">dimension(:,:)</span> :: jac</div>
+<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>        <span class="keyword">end subroutine</span></div>
+<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span> </div>
+<div class="line"><a id="l00172" name="l00172"></a><span class="lineno"><a class="line" href="interfacediffeq_1_1ode__mass__matrix.html">  172</a></span>        <span class="keyword">subroutine </span><a class="code hl_interface" href="interfacediffeq_1_1ode__mass__matrix.html">ode_mass_matrix</a>(x, y, dydx, m)</div>
+<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>            <span class="keywordtype">use </span>iso_fortran_env</div>
+<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span> :: x</div>
+<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span>, <span class="keywordtype">dimension(:)</span> :: y, dydx</div>
+<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(out)</span>, <span class="keywordtype">dimension(:,:)</span> :: m</div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>        <span class="keyword">end subroutine</span></div>
+<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span> </div>
+<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>        <span class="keywordtype">pure</span> <span class="keyword">module</span> function oc_get_fd_step(this) result(rst)</div>
+<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>            <span class="keywordtype">class</span>(ode_container), <span class="keywordtype">intent(in)</span> :: this</div>
+<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span><span class="keywordtype">            real</span>(real64) :: rst</div>
+<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span>        <span class="keyword">end function</span></div>
+<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span> </div>
+<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>        <span class="keyword">module</span> subroutine oc_set_fd_step(this, x)</div>
+<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span>            <span class="keywordtype">class</span>(ode_container), <span class="keywordtype">intent(inout)</span> :: this</div>
+<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span> :: x</div>
+<div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span>        <span class="keyword">end subroutine</span></div>
+<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span> </div>
+<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span>        <span class="keywordtype">pure</span> <span class="keyword">module</span> function oc_get_is_mass_dependent(this) result(rst)</div>
+<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span>            <span class="keywordtype">class</span>(ode_container), <span class="keywordtype">intent(in)</span> :: this</div>
+<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span>            <span class="keywordtype">logical</span> :: rst</div>
+<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span>        <span class="keyword">end function</span></div>
+<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span> </div>
+<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span>        <span class="keyword">module</span> subroutine oc_set_is_mass_dependent(this, x)</div>
+<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span>            <span class="keywordtype">class</span>(ode_container), <span class="keywordtype">intent(inout)</span> :: this</div>
+<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span>            <span class="keywordtype">logical</span> :: x</div>
+<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span>        <span class="keyword">end subroutine</span></div>
+<div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span> </div>
+<div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span>        <span class="keyword">module</span> subroutine oc_alloc_workspace(this, ndof, err)</div>
+<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>            <span class="keywordtype">class</span>(ode_container), <span class="keywordtype">intent(inout)</span> :: this</div>
+<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>            <span class="keywordtype">integer(int32)</span>, <span class="keywordtype">intent(in)</span> :: ndof</div>
+<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>            <span class="keywordtype">class</span>(errors), <span class="keywordtype">intent(inout)</span> :: err</div>
+<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>        <span class="keyword">end subroutine</span></div>
+<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span> </div>
+<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>        <span class="keyword">module</span> subroutine oc_jacobian(this, x, y, dydx, jac, err)</div>
+<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>            <span class="keywordtype">class</span>(ode_container), <span class="keywordtype">intent(inout)</span> :: this</div>
+<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span> :: x</div>
+<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span>, <span class="keywordtype">dimension(:)</span> :: y, dydx</div>
+<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(out)</span>, <span class="keywordtype">dimension(:,:)</span> :: jac</div>
+<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span>            <span class="keywordtype">class</span>(errors), <span class="keywordtype">intent(inout)</span>, <span class="keywordtype">optional</span>, <span class="keywordtype">target</span> :: err</div>
+<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span>        <span class="keyword">end subroutine</span></div>
+<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span>    <span class="keyword">end interface</span></div>
+<div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span> </div>
+<div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span><span class="comment">! ------------------------------------------------------------------------------</span></div>
+<div class="line"><a id="l00217" name="l00217"></a><span class="lineno"><a class="line" href="structdiffeq_1_1ode__integrator.html">  217</a></span>    <span class="keyword">type</span>, <span class="keyword">abstract</span> :: ode_integrator</div>
+<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span>    <span class="keywordtype">private</span></div>
+<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span>    <span class="keyword">contains</span></div>
+<div class="line"><a id="l00258" name="l00258"></a><span class="lineno"><a class="line" href="structdiffeq_1_1ode__integrator.html#a2ea5d323ed37c65e199d82dec572f869">  258</a></span>        <span class="keywordtype">procedure</span>(ode_solver), <span class="keywordtype">public</span>, pass, <span class="keywordtype">deferred</span> :: solve</div>
+<div class="line"><a id="l00268" name="l00268"></a><span class="lineno"><a class="line" href="structdiffeq_1_1ode__integrator.html#af7ca88612930f2772289df389554f215">  268</a></span>        <span class="keywordtype">procedure</span>(ode_integer_inquiry), <span class="keywordtype">public</span>, pass, <span class="keywordtype">deferred</span> :: get_order</div>
+<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span>    <span class="keyword">end type</span></div>
+<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span> </div>
+<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>    <span class="keyword">interface</span></div>
+<div class="line"><a id="l00272" name="l00272"></a><span class="lineno"><a class="line" href="interfacediffeq_1_1ode__solver.html">  272</a></span>        <span class="keyword">function </span>ode_solver(this, sys, x, iv, err) <span class="keyword">result</span>(rst)</div>
+<div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span>            <span class="keywordtype">use </span>iso_fortran_env</div>
+<div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span>            <span class="keywordtype">use </span>ferror</div>
+<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>            <span class="keywordtype">import </span>ode_integrator</div>
+<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>            <span class="keywordtype">import </span>ode_container</div>
+<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span>            <span class="keywordtype">class</span>(ode_integrator), <span class="keywordtype">intent(inout)</span> :: this</div>
+<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span>            <span class="keywordtype">class</span>(ode_container), <span class="keywordtype">intent(in)</span> :: sys</div>
+<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span>, <span class="keywordtype">dimension(:)</span> :: x, iv</div>
+<div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>            <span class="keywordtype">class</span>(errors), <span class="keywordtype">intent(inout)</span>, <span class="keywordtype">optional</span>, <span class="keywordtype">target</span> :: err</div>
+<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">allocatable</span>, <span class="keywordtype">dimension(:,:)</span> :: rst</div>
+<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span>        <span class="keyword">end function</span></div>
+<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span> </div>
+<div class="line"><a id="l00284" name="l00284"></a><span class="lineno"><a class="line" href="interfacediffeq_1_1ode__integer__inquiry.html">  284</a></span>        <span class="keywordtype">pure</span> <span class="keyword">function </span>ode_integer_inquiry(this) <span class="keyword">result</span>(rst)</div>
+<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span>            <span class="keywordtype">use </span>iso_fortran_env</div>
+<div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span>            <span class="keywordtype">import </span>ode_integrator</div>
+<div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span>            <span class="keywordtype">class</span>(ode_integrator), <span class="keywordtype">intent(in)</span> :: this</div>
+<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span>            <span class="keywordtype">integer(int32)</span> :: rst</div>
+<div class="line"><a id="l00289" name="l00289"></a><span class="lineno">  289</span>        <span class="keyword">end function</span></div>
+<div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span>    <span class="keyword">end interface</span></div>
+<div class="line"><a id="l00291" name="l00291"></a><span class="lineno">  291</span> </div>
+<div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span><span class="comment">! ------------------------------------------------------------------------------</span></div>
+<div class="line"><a id="l00294" name="l00294"></a><span class="lineno"><a class="line" href="structdiffeq_1_1fixed__step__integrator.html">  294</a></span>    <span class="keyword">type</span>, <span class="keyword">abstract</span>, <span class="keyword">extends</span>(ode_integrator) :: fixed_step_integrator</div>
+<div class="line"><a id="l00295" name="l00295"></a><span class="lineno">  295</span>    <span class="keyword">contains</span></div>
+<div class="line"><a id="l00328" name="l00328"></a><span class="lineno"><a class="line" href="structdiffeq_1_1fixed__step__integrator.html#ad8a9489a1efae5feaa884aacd37c93c6">  328</a></span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: solve =&gt; fsi_solver</div>
+<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span>        <span class="keywordtype">procedure</span>(ode_fixed_step), <span class="keywordtype">public</span>, pass, <span class="keywordtype">deferred</span> :: step</div>
+<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span>    <span class="keyword">end type</span></div>
+<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span> </div>
+<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span>    <span class="comment">! diffeq_fs_integrator.f90</span></div>
+<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>    <span class="keyword">interface</span></div>
+<div class="line"><a id="l00334" name="l00334"></a><span class="lineno"><a class="line" href="interfacediffeq_1_1ode__fixed__step.html">  334</a></span>        <span class="keyword">subroutine </span>ode_fixed_step(this, sys, h, x, y, yn, err)</div>
+<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>            <span class="keywordtype">use </span>iso_fortran_env </div>
+<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>            <span class="keywordtype">use </span>ferror   </div>
+<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>            <span class="keywordtype">import </span>fixed_step_integrator</div>
+<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span>            <span class="keywordtype">import </span>ode_container</div>
+<div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span>            <span class="keywordtype">class</span>(fixed_step_integrator), <span class="keywordtype">intent(inout)</span> :: this</div>
+<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span>            <span class="keywordtype">class</span>(ode_container), <span class="keywordtype">intent(in)</span> :: sys</div>
+<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span> :: h, x</div>
+<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span>, <span class="keywordtype">dimension(:)</span> :: y</div>
+<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(out)</span>, <span class="keywordtype">dimension(:)</span> :: yn</div>
+<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>            <span class="keywordtype">class</span>(errors), <span class="keywordtype">intent(inout)</span>, <span class="keywordtype">optional</span>, <span class="keywordtype">target</span> :: err</div>
+<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>        <span class="keyword">end subroutine</span></div>
+<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span> </div>
+<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>        <span class="keyword">module</span> function fsi_solver(this, sys, x, iv, err) result(rst)</div>
+<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span>            <span class="keywordtype">class</span>(fixed_step_integrator), <span class="keywordtype">intent(inout)</span> :: this</div>
+<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>            <span class="keywordtype">class</span>(ode_container), <span class="keywordtype">intent(in)</span> :: sys</div>
+<div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span>, <span class="keywordtype">dimension(:)</span> :: x, iv</div>
+<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span>            <span class="keywordtype">class</span>(errors), <span class="keywordtype">intent(inout)</span>, <span class="keywordtype">optional</span>, <span class="keywordtype">target</span> :: err</div>
+<div class="line"><a id="l00352" name="l00352"></a><span class="lineno">  352</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">allocatable</span>, <span class="keywordtype">dimension(:,:)</span> :: rst</div>
+<div class="line"><a id="l00353" name="l00353"></a><span class="lineno">  353</span>        <span class="keyword">end function</span></div>
+<div class="line"><a id="l00354" name="l00354"></a><span class="lineno">  354</span>    <span class="keyword">end interface</span></div>
+<div class="line"><a id="l00355" name="l00355"></a><span class="lineno">  355</span> </div>
+<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span><span class="comment">! ------------------------------------------------------------------------------</span></div>
+<div class="line"><a id="l00358" name="l00358"></a><span class="lineno"><a class="line" href="structdiffeq_1_1rk__fixed__integrator.html">  358</a></span>    <span class="keyword">type</span>, <span class="keyword">abstract</span>, <span class="keyword">extends</span>(fixed_step_integrator) :: rk_fixed_integrator</div>
+<div class="line"><a id="l00359" name="l00359"></a><span class="lineno">  359</span>    <span class="keywordtype">private</span></div>
+<div class="line"><a id="l00360" name="l00360"></a><span class="lineno">  360</span>        <span class="comment">! Workspace matrix</span></div>
+<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span><span class="keywordtype">        real</span>(real64), <span class="keywordtype">allocatable</span>, <span class="keywordtype">dimension(:,:)</span> :: m_work</div>
+<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span>    <span class="keyword">contains</span></div>
+<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span>        <span class="comment">! Use to allocate internal workspaces.  This routine only takes action</span></div>
+<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span>        <span class="comment">! if the workspace array(s) are not sized properly for the application.</span></div>
+<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">private</span> :: allocate_workspace =&gt; rkf_alloc_workspace</div>
+<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: step =&gt; rkf_step</div>
+<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span>        <span class="keywordtype">procedure</span>(rkf_get_matrix_parameter), <span class="keywordtype">deferred</span>, <span class="keywordtype">public</span> :: get_a_parameter</div>
+<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span>        <span class="keywordtype">procedure</span>(rkf_get_array_parameter), <span class="keywordtype">deferred</span>, <span class="keywordtype">public</span> :: get_b_parameter</div>
+<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span>        <span class="keywordtype">procedure</span>(rkf_get_array_parameter), <span class="keywordtype">deferred</span>, <span class="keywordtype">public</span> :: get_c_parameter</div>
+<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>    <span class="keyword">end type</span></div>
+<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span> </div>
+<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span>    <span class="keyword">interface</span></div>
+<div class="line"><a id="l00373" name="l00373"></a><span class="lineno"><a class="line" href="interfacediffeq_1_1rkf__get__matrix__parameter.html">  373</a></span>        <span class="keywordtype">pure</span> <span class="keyword">function </span>rkf_get_matrix_parameter(this, i, j) <span class="keyword">result</span>(rst)</div>
+<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span>            <span class="keywordtype">use </span>iso_fortran_env</div>
+<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>            <span class="keywordtype">import </span>rk_fixed_integrator</div>
+<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>            <span class="keywordtype">class</span>(rk_fixed_integrator), <span class="keywordtype">intent(in)</span> :: this</div>
+<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>            <span class="keywordtype">integer(int32)</span>, <span class="keywordtype">intent(in)</span> :: i, j</div>
+<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span><span class="keywordtype">            real</span>(real64) :: rst</div>
+<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span>        <span class="keyword">end function</span></div>
+<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span> </div>
+<div class="line"><a id="l00381" name="l00381"></a><span class="lineno"><a class="line" href="interfacediffeq_1_1rkf__get__array__parameter.html">  381</a></span>        <span class="keywordtype">pure</span> <span class="keyword">function </span>rkf_get_array_parameter(this, i) <span class="keyword">result</span>(rst)</div>
+<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span>            <span class="keywordtype">use </span>iso_fortran_env</div>
+<div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span>            <span class="keywordtype">import </span>rk_fixed_integrator</div>
+<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span>            <span class="keywordtype">class</span>(rk_fixed_integrator), <span class="keywordtype">intent(in)</span> :: this</div>
+<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span>            <span class="keywordtype">integer(int32)</span>, <span class="keywordtype">intent(in)</span> :: i</div>
+<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span><span class="keywordtype">            real</span>(real64) :: rst</div>
+<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>        <span class="keyword">end function</span></div>
+<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span> </div>
+<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span>        <span class="keyword">module</span> subroutine rkf_alloc_workspace(this, n, neqn, err)</div>
+<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span>            <span class="keywordtype">class</span>(rk_fixed_integrator), <span class="keywordtype">intent(inout)</span> :: this</div>
+<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span>            <span class="keywordtype">integer(int32)</span>, <span class="keywordtype">intent(in)</span> :: n, neqn</div>
+<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>            <span class="keywordtype">class</span>(errors), <span class="keywordtype">intent(inout)</span> :: err</div>
+<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span>        <span class="keyword">end subroutine</span></div>
+<div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span> </div>
+<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span>        <span class="keyword">module</span> subroutine rkf_step(this, sys, h, x, y, yn, err)</div>
+<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>            <span class="keywordtype">class</span>(rk_fixed_integrator), <span class="keywordtype">intent(inout)</span> :: this</div>
+<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span>            <span class="keywordtype">class</span>(ode_container), <span class="keywordtype">intent(in)</span> :: sys</div>
+<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span> :: h, x</div>
+<div class="line"><a id="l00399" name="l00399"></a><span class="lineno">  399</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span>, <span class="keywordtype">dimension(:)</span> :: y</div>
+<div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(out)</span>, <span class="keywordtype">dimension(:)</span> :: yn</div>
+<div class="line"><a id="l00401" name="l00401"></a><span class="lineno">  401</span>            <span class="keywordtype">class</span>(errors), <span class="keywordtype">intent(inout)</span>, <span class="keywordtype">optional</span>, <span class="keywordtype">target</span> :: err</div>
+<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span>        <span class="keyword">end subroutine</span></div>
+<div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span>    <span class="keyword">end interface</span></div>
+<div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span> </div>
+<div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span><span class="comment">! ------------------------------------------------------------------------------</span></div>
+<div class="line"><a id="l00486" name="l00486"></a><span class="lineno"><a class="line" href="structdiffeq_1_1rk4__fixed__integrator.html">  486</a></span>    <span class="keyword">type</span>, <span class="keyword">extends</span>(rk_fixed_integrator) :: rk4_fixed_integrator</div>
+<div class="line"><a id="l00487" name="l00487"></a><span class="lineno">  487</span>    <span class="keyword">contains</span></div>
+<div class="line"><a id="l00488" name="l00488"></a><span class="lineno">  488</span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: get_order =&gt; rk4_get_order</div>
+<div class="line"><a id="l00489" name="l00489"></a><span class="lineno">  489</span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: get_a_parameter =&gt; rk4_get_a_param</div>
+<div class="line"><a id="l00490" name="l00490"></a><span class="lineno">  490</span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: get_b_parameter =&gt; rk4_get_b_param</div>
+<div class="line"><a id="l00491" name="l00491"></a><span class="lineno">  491</span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: get_c_parameter =&gt; rk4_get_c_param</div>
+<div class="line"><a id="l00492" name="l00492"></a><span class="lineno">  492</span>    <span class="keyword">end type</span></div>
+<div class="line"><a id="l00493" name="l00493"></a><span class="lineno">  493</span> </div>
+<div class="line"><a id="l00494" name="l00494"></a><span class="lineno">  494</span>    <span class="comment">! diffeq_rk4.f90</span></div>
+<div class="line"><a id="l00495" name="l00495"></a><span class="lineno">  495</span>    <span class="keyword">interface</span></div>
+<div class="line"><a id="l00496" name="l00496"></a><span class="lineno">  496</span>        <span class="keywordtype">pure</span> <span class="keyword">module</span> function rk4_get_order(this) result(rst)</div>
+<div class="line"><a id="l00497" name="l00497"></a><span class="lineno">  497</span>            <span class="keywordtype">class</span>(rk4_fixed_integrator), <span class="keywordtype">intent(in)</span> :: this</div>
+<div class="line"><a id="l00498" name="l00498"></a><span class="lineno">  498</span>            <span class="keywordtype">integer(int32)</span> :: rst</div>
+<div class="line"><a id="l00499" name="l00499"></a><span class="lineno">  499</span>        <span class="keyword">end function</span></div>
+<div class="line"><a id="l00500" name="l00500"></a><span class="lineno">  500</span> </div>
+<div class="line"><a id="l00501" name="l00501"></a><span class="lineno">  501</span>        <span class="keywordtype">pure</span> <span class="keyword">module</span> function rk4_get_a_param(this, i, j) result(rst)</div>
+<div class="line"><a id="l00502" name="l00502"></a><span class="lineno">  502</span>            <span class="keywordtype">class</span>(rk4_fixed_integrator), <span class="keywordtype">intent(in)</span> :: this</div>
+<div class="line"><a id="l00503" name="l00503"></a><span class="lineno">  503</span>            <span class="keywordtype">integer(int32)</span>, <span class="keywordtype">intent(in)</span> :: i, j</div>
+<div class="line"><a id="l00504" name="l00504"></a><span class="lineno">  504</span><span class="keywordtype">            real</span>(real64) :: rst</div>
+<div class="line"><a id="l00505" name="l00505"></a><span class="lineno">  505</span>        <span class="keyword">end function</span></div>
+<div class="line"><a id="l00506" name="l00506"></a><span class="lineno">  506</span> </div>
+<div class="line"><a id="l00507" name="l00507"></a><span class="lineno">  507</span>        <span class="keywordtype">pure</span> <span class="keyword">module</span> function rk4_get_b_param(this, i) result(rst)</div>
+<div class="line"><a id="l00508" name="l00508"></a><span class="lineno">  508</span>            <span class="keywordtype">class</span>(rk4_fixed_integrator), <span class="keywordtype">intent(in)</span> :: this</div>
+<div class="line"><a id="l00509" name="l00509"></a><span class="lineno">  509</span>            <span class="keywordtype">integer(int32)</span>, <span class="keywordtype">intent(in)</span> :: i</div>
+<div class="line"><a id="l00510" name="l00510"></a><span class="lineno">  510</span><span class="keywordtype">            real</span>(real64) :: rst</div>
+<div class="line"><a id="l00511" name="l00511"></a><span class="lineno">  511</span>        <span class="keyword">end function</span></div>
+<div class="line"><a id="l00512" name="l00512"></a><span class="lineno">  512</span> </div>
+<div class="line"><a id="l00513" name="l00513"></a><span class="lineno">  513</span>        <span class="keywordtype">pure</span> <span class="keyword">module</span> function rk4_get_c_param(this, i) result(rst)</div>
+<div class="line"><a id="l00514" name="l00514"></a><span class="lineno">  514</span>            <span class="keywordtype">class</span>(rk4_fixed_integrator), <span class="keywordtype">intent(in)</span> :: this</div>
+<div class="line"><a id="l00515" name="l00515"></a><span class="lineno">  515</span>            <span class="keywordtype">integer(int32)</span>, <span class="keywordtype">intent(in)</span> :: i</div>
+<div class="line"><a id="l00516" name="l00516"></a><span class="lineno">  516</span><span class="keywordtype">            real</span>(real64) :: rst</div>
+<div class="line"><a id="l00517" name="l00517"></a><span class="lineno">  517</span>        <span class="keyword">end function</span></div>
+<div class="line"><a id="l00518" name="l00518"></a><span class="lineno">  518</span>    <span class="keyword">end interface</span></div>
+<div class="line"><a id="l00519" name="l00519"></a><span class="lineno">  519</span> </div>
+<div class="line"><a id="l00520" name="l00520"></a><span class="lineno">  520</span><span class="comment">! ------------------------------------------------------------------------------</span></div>
+<div class="line"><a id="l00522" name="l00522"></a><span class="lineno"><a class="line" href="structdiffeq_1_1variable__step__integrator.html">  522</a></span>    <span class="keyword">type</span>, <span class="keyword">abstract</span>, <span class="keyword">extends</span>(ode_integrator) :: variable_step_integrator</div>
+<div class="line"><a id="l00523" name="l00523"></a><span class="lineno">  523</span>    <span class="keywordtype">private</span></div>
+<div class="line"><a id="l00524" name="l00524"></a><span class="lineno">  524</span><span class="keywordtype">        real</span>(real64) :: m_safetyfactor = 0.9d0</div>
+<div class="line"><a id="l00525" name="l00525"></a><span class="lineno">  525</span><span class="keywordtype">        real</span>(real64) :: m_alpha = 0.7d0</div>
+<div class="line"><a id="l00526" name="l00526"></a><span class="lineno">  526</span><span class="keywordtype">        real</span>(real64) :: m_beta = 0.4d0</div>
+<div class="line"><a id="l00527" name="l00527"></a><span class="lineno">  527</span><span class="keywordtype">        real</span>(real64) :: m_maxstep = huge(1.0d0)</div>
+<div class="line"><a id="l00528" name="l00528"></a><span class="lineno">  528</span>    <span class="keyword">contains</span></div>
+<div class="line"><a id="l00529" name="l00529"></a><span class="lineno">  529</span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: get_safety_factor =&gt; vsi_get_safety_factor</div>
+<div class="line"><a id="l00530" name="l00530"></a><span class="lineno">  530</span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: set_safety_factor =&gt; vsi_set_safety_factor</div>
+<div class="line"><a id="l00531" name="l00531"></a><span class="lineno">  531</span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: get_alpha =&gt; vsi_get_alpha</div>
+<div class="line"><a id="l00532" name="l00532"></a><span class="lineno">  532</span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: set_alpha =&gt; vsi_set_alpha</div>
+<div class="line"><a id="l00533" name="l00533"></a><span class="lineno">  533</span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: get_beta =&gt; vsi_get_beta</div>
+<div class="line"><a id="l00534" name="l00534"></a><span class="lineno">  534</span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: set_beta =&gt; vsi_set_beta</div>
+<div class="line"><a id="l00535" name="l00535"></a><span class="lineno">  535</span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: get_max_step_size =&gt; vsi_get_max_step</div>
+<div class="line"><a id="l00536" name="l00536"></a><span class="lineno">  536</span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: set_max_step_size =&gt; vsi_set_max_step</div>
+<div class="line"><a id="l00558" name="l00558"></a><span class="lineno"><a class="line" href="structdiffeq_1_1variable__step__integrator.html#a8923d4a61011424206bc60b3a30bb8cd">  558</a></span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: estimate_error =&gt; vsi_estimate_error</div>
+<div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span>        <span class="keywordtype">procedure</span>, <span class="keywordtype">public</span> :: compute_next_step_size =&gt; vsi_next_step</div>
+<div class="line"><a id="l00560" name="l00560"></a><span class="lineno">  560</span>    <span class="keyword">end type</span></div>
+<div class="line"><a id="l00561" name="l00561"></a><span class="lineno">  561</span> </div>
+<div class="line"><a id="l00562" name="l00562"></a><span class="lineno">  562</span>    <span class="comment">! diffeq_vs_integrator.f90</span></div>
+<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span>    <span class="keyword">interface</span></div>
+<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span>        <span class="keywordtype">pure</span> <span class="keyword">module</span> function vsi_get_safety_factor(this) result(rst)</div>
+<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span>            <span class="keywordtype">class</span>(variable_step_integrator), <span class="keywordtype">intent(in)</span> :: this</div>
+<div class="line"><a id="l00566" name="l00566"></a><span class="lineno">  566</span><span class="keywordtype">            real</span>(real64) :: rst</div>
+<div class="line"><a id="l00567" name="l00567"></a><span class="lineno">  567</span>        <span class="keyword">end function</span></div>
+<div class="line"><a id="l00568" name="l00568"></a><span class="lineno">  568</span> </div>
+<div class="line"><a id="l00569" name="l00569"></a><span class="lineno">  569</span>        <span class="keyword">module</span> subroutine vsi_set_safety_factor(this, x)</div>
+<div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span>            <span class="keywordtype">class</span>(variable_step_integrator), <span class="keywordtype">intent(inout)</span> :: this</div>
+<div class="line"><a id="l00571" name="l00571"></a><span class="lineno">  571</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span> :: x</div>
+<div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span>        <span class="keyword">end subroutine</span></div>
+<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span> </div>
+<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span>        <span class="keywordtype">pure</span> <span class="keyword">module</span> function vsi_get_alpha(this) result(rst)</div>
+<div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span>            <span class="keywordtype">class</span>(variable_step_integrator), <span class="keywordtype">intent(in)</span> :: this</div>
+<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span><span class="keywordtype">            real</span>(real64) :: rst</div>
+<div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span>        <span class="keyword">end function</span></div>
+<div class="line"><a id="l00578" name="l00578"></a><span class="lineno">  578</span> </div>
+<div class="line"><a id="l00579" name="l00579"></a><span class="lineno">  579</span>        <span class="keyword">module</span> subroutine vsi_set_alpha(this, x)</div>
+<div class="line"><a id="l00580" name="l00580"></a><span class="lineno">  580</span>            <span class="keywordtype">class</span>(variable_step_integrator), <span class="keywordtype">intent(inout)</span> :: this</div>
+<div class="line"><a id="l00581" name="l00581"></a><span class="lineno">  581</span><span class="keywordtype">            real</span>(real64) :: x</div>
+<div class="line"><a id="l00582" name="l00582"></a><span class="lineno">  582</span>        <span class="keyword">end subroutine</span></div>
+<div class="line"><a id="l00583" name="l00583"></a><span class="lineno">  583</span> </div>
+<div class="line"><a id="l00584" name="l00584"></a><span class="lineno">  584</span>        <span class="keywordtype">pure</span> <span class="keyword">module</span> function vsi_get_beta(this) result(rst)</div>
+<div class="line"><a id="l00585" name="l00585"></a><span class="lineno">  585</span>            <span class="keywordtype">class</span>(variable_step_integrator), <span class="keywordtype">intent(in)</span> :: this</div>
+<div class="line"><a id="l00586" name="l00586"></a><span class="lineno">  586</span><span class="keywordtype">            real</span>(real64) :: rst</div>
+<div class="line"><a id="l00587" name="l00587"></a><span class="lineno">  587</span>        <span class="keyword">end function</span></div>
+<div class="line"><a id="l00588" name="l00588"></a><span class="lineno">  588</span> </div>
+<div class="line"><a id="l00589" name="l00589"></a><span class="lineno">  589</span>        <span class="keyword">module</span> subroutine vsi_set_beta(this, x)</div>
+<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span>            <span class="keywordtype">class</span>(variable_step_integrator), <span class="keywordtype">intent(inout)</span> :: this</div>
+<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span> :: x</div>
+<div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span>        <span class="keyword">end subroutine</span></div>
+<div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span> </div>
+<div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span>        <span class="keywordtype">pure</span> <span class="keyword">module</span> function vsi_get_max_step(this) result(rst)</div>
+<div class="line"><a id="l00595" name="l00595"></a><span class="lineno">  595</span>            <span class="keywordtype">class</span>(variable_step_integrator), <span class="keywordtype">intent(in)</span> :: this</div>
+<div class="line"><a id="l00596" name="l00596"></a><span class="lineno">  596</span><span class="keywordtype">            real</span>(real64) :: rst</div>
+<div class="line"><a id="l00597" name="l00597"></a><span class="lineno">  597</span>        <span class="keyword">end function</span></div>
+<div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span> </div>
+<div class="line"><a id="l00599" name="l00599"></a><span class="lineno">  599</span>        <span class="keyword">module</span> subroutine vsi_set_max_step(this, x)</div>
+<div class="line"><a id="l00600" name="l00600"></a><span class="lineno">  600</span>            <span class="keywordtype">class</span>(variable_step_integrator), <span class="keywordtype">intent(inout)</span> :: this</div>
+<div class="line"><a id="l00601" name="l00601"></a><span class="lineno">  601</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span> :: x</div>
+<div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span>        <span class="keyword">end subroutine</span></div>
+<div class="line"><a id="l00603" name="l00603"></a><span class="lineno">  603</span> </div>
+<div class="line"><a id="l00604" name="l00604"></a><span class="lineno">  604</span>        <span class="keywordtype">pure</span> <span class="keyword">module</span> function vsi_estimate_error(this, y, ys, atol, rtol) &amp;</div>
+<div class="line"><a id="l00605" name="l00605"></a><span class="lineno">  605</span>            result(rst)</div>
+<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span>            <span class="keywordtype">class</span>(variable_step_integrator), <span class="keywordtype">intent(in)</span> :: this</div>
+<div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span>, <span class="keywordtype">dimension(:)</span> :: y, ys, atol, rtol</div>
+<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span><span class="keywordtype">            real</span>(real64) :: rst</div>
+<div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span>        <span class="keyword">end function</span></div>
+<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span> </div>
+<div class="line"><a id="l00611" name="l00611"></a><span class="lineno">  611</span>        <span class="keywordtype">pure</span> <span class="keyword">module</span> function vsi_next_step(this, hn, en, enm1) result(rst)</div>
+<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span>            <span class="keywordtype">class</span>(variable_step_integrator), <span class="keywordtype">intent(in)</span> :: this</div>
+<div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span><span class="keywordtype">            real</span>(real64), <span class="keywordtype">intent(in)</span> :: hn, en, enm1</div>
+<div class="line"><a id="l00614" name="l00614"></a><span class="lineno">  614</span><span class="keywordtype">            real</span>(real64) :: rst</div>
+<div class="line"><a id="l00615" name="l00615"></a><span class="lineno">  615</span>        <span class="keyword">end function</span></div>
+<div class="line"><a id="l00616" name="l00616"></a><span class="lineno">  616</span>    <span class="keyword">end interface</span></div>
+<div class="line"><a id="l00617" name="l00617"></a><span class="lineno">  617</span><span class="keyword">end module</span></div>
+<div class="ttc" id="ainterfacediffeq_1_1ode__fixed__step_html"><div class="ttname"><a href="interfacediffeq_1_1ode__fixed__step.html">diffeq::ode_fixed_step</a></div><div class="ttdef"><b>Definition:</b> <a href="diffeq_8f90_source.html#l00334">diffeq.f90:334</a></div></div>
+<div class="ttc" id="ainterfacediffeq_1_1ode__integer__inquiry_html"><div class="ttname"><a href="interfacediffeq_1_1ode__integer__inquiry.html">diffeq::ode_integer_inquiry</a></div><div class="ttdef"><b>Definition:</b> <a href="diffeq_8f90_source.html#l00284">diffeq.f90:284</a></div></div>
+<div class="ttc" id="ainterfacediffeq_1_1ode__jacobian_html"><div class="ttname"><a href="interfacediffeq_1_1ode__jacobian.html">diffeq::ode_jacobian</a></div><div class="ttdef"><b>Definition:</b> <a href="diffeq_8f90_source.html#l00165">diffeq.f90:165</a></div></div>
+<div class="ttc" id="ainterfacediffeq_1_1ode__mass__matrix_html"><div class="ttname"><a href="interfacediffeq_1_1ode__mass__matrix.html">diffeq::ode_mass_matrix</a></div><div class="ttdef"><b>Definition:</b> <a href="diffeq_8f90_source.html#l00172">diffeq.f90:172</a></div></div>
+<div class="ttc" id="ainterfacediffeq_1_1ode__solver_html"><div class="ttname"><a href="interfacediffeq_1_1ode__solver.html">diffeq::ode_solver</a></div><div class="ttdef"><b>Definition:</b> <a href="diffeq_8f90_source.html#l00272">diffeq.f90:272</a></div></div>
+<div class="ttc" id="ainterfacediffeq_1_1ode_html"><div class="ttname"><a href="interfacediffeq_1_1ode.html">diffeq::ode</a></div><div class="ttdef"><b>Definition:</b> <a href="diffeq_8f90_source.html#l00158">diffeq.f90:158</a></div></div>
+<div class="ttc" id="astructdiffeq_1_1fixed__step__integrator_html"><div class="ttname"><a href="structdiffeq_1_1fixed__step__integrator.html">diffeq::fixed_step_integrator</a></div><div class="ttdoc">Defines a fixed-step integrator.</div><div class="ttdef"><b>Definition:</b> <a href="diffeq_8f90_source.html#l00294">diffeq.f90:294</a></div></div>
+<div class="ttc" id="astructdiffeq_1_1ode__container_html"><div class="ttname"><a href="structdiffeq_1_1ode__container.html">diffeq::ode_container</a></div><div class="ttdoc">A container for the routine containing the ODEs to integrate.</div><div class="ttdef"><b>Definition:</b> <a href="diffeq_8f90_source.html#l00033">diffeq.f90:33</a></div></div>
+<div class="ttc" id="astructdiffeq_1_1ode__integrator_html"><div class="ttname"><a href="structdiffeq_1_1ode__integrator.html">diffeq::ode_integrator</a></div><div class="ttdoc">The most basic ODE integrator object capable of integrating systems of ODE's.</div><div class="ttdef"><b>Definition:</b> <a href="diffeq_8f90_source.html#l00217">diffeq.f90:217</a></div></div>
+<div class="ttc" id="astructdiffeq_1_1rk4__fixed__integrator_html"><div class="ttname"><a href="structdiffeq_1_1rk4__fixed__integrator.html">diffeq::rk4_fixed_integrator</a></div><div class="ttdoc">Defines the explicit, 4th order, Runge-Kutta fixed-step integrator.</div><div class="ttdef"><b>Definition:</b> <a href="diffeq_8f90_source.html#l00486">diffeq.f90:486</a></div></div>
+<div class="ttc" id="astructdiffeq_1_1rk__fixed__integrator_html"><div class="ttname"><a href="structdiffeq_1_1rk__fixed__integrator.html">diffeq::rk_fixed_integrator</a></div><div class="ttdoc">Defines an explicit, Runge-Kutta fixed-step integrator.</div><div class="ttdef"><b>Definition:</b> <a href="diffeq_8f90_source.html#l00358">diffeq.f90:358</a></div></div>
+<div class="ttc" id="astructdiffeq_1_1variable__step__integrator_html"><div class="ttname"><a href="structdiffeq_1_1variable__step__integrator.html">diffeq::variable_step_integrator</a></div><div class="ttdoc">Defines a variable-step integrator.</div><div class="ttdef"><b>Definition:</b> <a href="diffeq_8f90_source.html#l00522">diffeq.f90:522</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
