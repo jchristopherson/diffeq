@@ -24,6 +24,12 @@ program test
     rst = test_fd_jacobian_4()
     if (.not.rst) flag = 4
 
+    rst = test_rk4_1()
+    if (.not.rst) flag = 5
+
+    rst = test_rk4_2()
+    if (.not.rst) flag = 6
+
     ! Output
     stop flag
 end program

@@ -44,6 +44,7 @@ module function fsi_solver(this, sys, x, iv, err) result(rst)
         j = i - 1
         h = x(i) - x(j)
         call this%step(sys, h, rst(j,1), rst(j,2:), rst(i,2:))
+        rst(i,1) = x(i)
     end do
 
     ! End

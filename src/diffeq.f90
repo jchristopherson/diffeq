@@ -322,6 +322,75 @@ module diffeq
 ! ------------------------------------------------------------------------------
     !> @brief Defines the explicit, 4th order, Runge-Kutta fixed-step 
     !! integrator.
+    !!
+    !! @par Example
+    !! The following example solves the first-order differential equation
+    !! \f$ \frac{dy}{dx} + y \sin^{2}x = 0 \f$ where the solution is 
+    !! \f$ y = C \exp \left( \frac{1}{4} \sin(2 x) \frac{x}{2} \right) \f$.
+    !!
+    !! @code{.f90}
+    !! program example
+    !!     use iso_fortran_env
+    !!     use diffeq
+    !!     use diffeq_models
+    !!     use fplot_core
+    !!     implicit none
+    !!
+    !!     ! Parameters
+    !!     integer(int32), parameter :: npts = 10000
+    !!     real(real64), parameter :: h = 1.0d-4
+    !!
+    !!     ! Local Variables
+    !!     type(rk4_fixed_integrator) :: integrator
+    !!     type(ode_container) :: mdl
+    !!     integer(int32) :: i
+    !!     real(real64) :: x(npts), analytical(npts), numerical(npts, 2)
+    !!
+    !!     ! Plot Variables
+    !!     type(plot_2d) :: plt
+    !!     type(plot_data_2d) :: pd1, pd2
+    !!     class(plot_axis), pointer :: xAxis, yAxis
+    !!     class(legend), pointer :: lgnd
+    !!
+    !!     ! Define the values of x at which the solution is to be computed
+    !!     x = (/ (i * h, i = 0, npts - 1) /)
+    !!
+    !!     ! Define the model
+    !!     mdl%fcn => test_1dof_1
+    !!
+    !!     ! Compute the solution, both numerical and analytical
+    !!     numerical = integrator%solve(mdl, x, [2.0d0])
+    !!     analytical = test_1dof_solution_1(x)
+    !!
+    !!     ! Plot the results
+    !!     call plt%initialize()
+    !!     xAxis => plt%get_x_axis()
+    !!     yAxis => plt%get_y_axis()
+    !!     lgnd => plt%get_legend()
+    !!     call xAxis%set_title("x")
+    !!     call yAxis%set_title("y(x)")
+    !!     call lgnd%set_is_visible(.true.)
+    !!     call lgnd%set_horizontal_position(LEGEND_LEFT)
+    !!     call lgnd%set_vertical_position(LEGEND_BOTTOM)
+    !!     call plt%set_title("y' + y sin^2 x = 0 ")
+    !!
+    !!     call pd1%define_data(x, analytical)
+    !!     call pd1%set_name("Analytical")
+    !!     call pd1%set_line_width(2.0)
+    !!     call plt%push(pd1)
+    !!
+    !!     call pd2%define_data(numerical(:,1), numerical(:,2))
+    !!     call pd2%set_name("Numerical")
+    !!     call pd2%set_line_width(4.0)
+    !!     call pd2%set_line_style(LINE_DASHED)
+    !!     call plt%push(pd2)
+    !!
+    !!     call plt%draw()
+    !! end program
+    !! @endcode
+    !! The above program produces the following plot using the 
+    !! [FPLOT](https://github.com/jchristopherson/fplot) library.
+    !! @image html rk4_example_1.png
     type, extends(rk_fixed_integrator) :: rk4_fixed_integrator
     contains
         procedure, public :: get_order => rk4_get_order

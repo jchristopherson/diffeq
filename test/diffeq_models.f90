@@ -142,7 +142,7 @@ subroutine test_1dof_1(x, y, dydx)
     real(real64), intent(out) :: dydx(:)
 
     ! Equation
-    dydx(1) = -y(1) * sin(2.0d0 * x)
+    dydx(1) = -y(1) * sin(x)**2
 end subroutine
 
 pure elemental function test_1dof_solution_1(x) result(rst)

@@ -47,3 +47,10 @@ if (BUILD_TESTING)
     enable_testing()
     add_subdirectory(test)
 endif()
+
+# Examples
+option(BUILD_DIFFEQ_EXAMPLES "Build DIFFEQ examples")
+message(STATUS "Build DIFFEQ examples: ${BUILD_DIFFEQ_EXAMPLES}")
+if (BUILD_DIFFEQ_EXAMPLES)
+    add_subdirectory(examples)
+endif()
