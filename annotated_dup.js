@@ -10,8 +10,8 @@ var annotated_dup =
       [ "ode_jacobian", "interfacediffeq_1_1ode__jacobian.html", null ],
       [ "ode_mass_matrix", "interfacediffeq_1_1ode__mass__matrix.html", null ],
       [ "ode_solver", "interfacediffeq_1_1ode__solver.html", null ],
-      [ "rk4_fixed_integrator", "structdiffeq_1_1rk4__fixed__integrator.html", null ],
-      [ "rk_fixed_integrator", "structdiffeq_1_1rk__fixed__integrator.html", null ],
+      [ "rk4_fixed_integrator", "structdiffeq_1_1rk4__fixed__integrator.html", "structdiffeq_1_1rk4__fixed__integrator" ],
+      [ "rk_fixed_integrator", "structdiffeq_1_1rk__fixed__integrator.html", "structdiffeq_1_1rk__fixed__integrator" ],
       [ "rkf_get_array_parameter", "interfacediffeq_1_1rkf__get__array__parameter.html", null ],
       [ "rkf_get_matrix_parameter", "interfacediffeq_1_1rkf__get__matrix__parameter.html", null ],
       [ "variable_step_integrator", "structdiffeq_1_1variable__step__integrator.html", "structdiffeq_1_1variable__step__integrator" ]
