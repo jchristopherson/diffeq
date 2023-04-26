@@ -40,11 +40,11 @@ module diffeq
         ! Finite difference step size.
         real(real64), private :: m_fdStep = sqrt(epsilon(1.0d0))
         !> @brief A pointer to the routine containing the ODEs to integrate.
-        procedure(ode), private, pointer, public, nopass :: fcn => null()
+        procedure(ode), pointer, public, nopass :: fcn => null()
         !> @brief A pointer to the routine containing the analytical Jacobian.
         !! If supplied, this routine is utilized; however, if null, a finite
         !! difference approximation is utilized.
-        procedure(ode_jacobian), private, pointer, public, nopass :: &
+        procedure(ode_jacobian), pointer, public, nopass :: &
             jacobian => null()
         !> @brief A pointer to the routine containing the mass matrix for the
         !! system.  If set to null (the default), an identity mass matrix will
@@ -777,6 +777,34 @@ module diffeq
         !! @param[in] this The @ref exponential_fixed_integrator object.
         !! @return The order of the integrator.
         procedure, public :: get_order => ef_get_order
+        !> @brief Takes one integration step of a predetermined size.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine step( &
+        !!  class(exponential_fixed_integrator) this, &
+        !!  class(ode_container) sys, &
+        !!  real(real64) h, &
+        !!  real(real64) x, &
+        !!  real(real64) yn, &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref exponential_fixed_integrator object.
+        !! @param[in,out] sys The @ref ode_container object containing the ODEs
+        !!  to integrate.
+        !! @param[in] h The current step size.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] y An N-element array containing the current values of
+        !!  the dependent variables.
+        !! @param[out] yn An N-element array where the values of the dependent
+        !!  variables at @p x + @p h will be written.
+        !! @param[in,out] An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.
         procedure, public :: step => ef_step
     end type
 

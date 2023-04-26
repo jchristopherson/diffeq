@@ -2,6 +2,7 @@ program test
     use iso_fortran_env
     use diffeq_jacobian_tests
     use diffeq_rkfixed_tests
+    use diffeq_expfixed_tests
     implicit none
 
     ! Local Variables
@@ -29,6 +30,12 @@ program test
 
     rst = test_rk4_2()
     if (.not.rst) flag = 6
+
+    rst = test_expf_1()
+    if (.not.rst) flag = 7
+
+    rst = test_expf_2()
+    if (.not.rst) flag = 8
 
     ! Output
     stop flag

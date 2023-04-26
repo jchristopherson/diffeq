@@ -56,6 +56,7 @@ module subroutine rkf_step(this, sys, h, x, y, yn, err)
     integer(int32) :: i, j, n, neqn, m, n1
     class(errors), pointer :: errmgr
     type(errors), target :: deferr
+    character(len = :), allocatable :: errmsg
     
     ! Initialization
     if (present(err)) then
@@ -103,6 +104,11 @@ module subroutine rkf_step(this, sys, h, x, y, yn, err)
 
     ! YN array size error
 10  continue
+    allocate(character(len = 256) :: errmsg)
+    write(errmsg, 100) "The output array was expected to have ", neqn, &
+        " elements, but was found to have ", size(yn), " elements."
+    call errmgr%report_error("ef_step", trim(errmsg), &
+        DIFFEQ_ARRAY_SIZE_ERROR)
     return
 
     ! Formatting

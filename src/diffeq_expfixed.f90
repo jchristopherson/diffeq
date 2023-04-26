@@ -83,6 +83,7 @@ module subroutine ef_step(this, sys, h, x, y, yn, err)
     real(real64) :: h2_2, h3_6
     class(errors), pointer :: errmgr
     type(errors), target :: deferr
+    character(len = :), allocatable :: errmsg
     
     ! Initialization
     if (present(err)) then
@@ -95,6 +96,7 @@ module subroutine ef_step(this, sys, h, x, y, yn, err)
     neqn = size(y)
 
     ! Input Checking
+    if (size(yn) /= neqn) go to 10
 
     ! Allocate the workspace
     call this%allocate_workspace(neqn, errmgr)
@@ -127,6 +129,18 @@ module subroutine ef_step(this, sys, h, x, y, yn, err)
 
     ! End
     return
+
+    ! YN array size error
+10  continue
+    allocate(character(len = 256) :: errmsg)
+    write(errmsg, 100) "The output array was expected to have ", neqn, &
+        " elements, but was found to have ", size(yn), " elements."
+    call errmgr%report_error("ef_step", trim(errmsg), &
+        DIFFEQ_ARRAY_SIZE_ERROR)
+    return
+
+    ! Formatting
+100 format(A, I0, A, I0, A)
 end subroutine
 
 ! ------------------------------------------------------------------------------

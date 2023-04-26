@@ -37,8 +37,8 @@ function test_fd_jacobian_1() result(rst)
     end if
 
     ! Try a new set of coordinates
-    call random_number(x)
-    call random_number(y)
+    x = 1.5d0
+    y = 1.5d0
     call vanderpol(x, y, dydx)
 
     ! Compute the solution matrix and the Jacobian estimate
@@ -87,8 +87,8 @@ function test_fd_jacobian_2() result(rst)
     end if
 
     ! Try a new set of coordinates
-    call random_number(x)
-    call random_number(y)
+    x = 1.5d0
+    y = 1.5d0
     call duffing(x, y, dydx)
 
     ! Compute the solution matrix and the Jacobian estimate
@@ -122,8 +122,8 @@ function test_fd_jacobian_3() result(rst)
     obj%fcn => mathieu
 
     ! Define the conditions at which to evaluate the Jacobian
-    x = 0.0d0
-    y = 0.0d0
+    x = 1.5d0
+    y = 1.5d0
     call mathieu(x, y, dydx)
 
     ! Compute the solution matrix and the Jacobian estimate

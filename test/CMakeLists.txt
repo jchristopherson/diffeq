@@ -7,6 +7,7 @@ set(diffeq_test_sources
     diffeq_models.f90
     diffeq_jacobian_tests.f90
     diffeq_rkfixed_tests.f90
+    diffeq_expfixed_tests.f90
 )
 
 add_executable(diffeq_tests ${diffeq_test_sources})
