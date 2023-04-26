@@ -80,11 +80,11 @@ module subroutine rkf_step(this, sys, h, x, y, yn, err)
         this%m_work(:,n1) = 0.0d0
         do j = 1, i - 1 ! only reference the sub-diagonal components
             this%m_work(:,n1) = this%m_work(:,n1) + &
-                this%get_a_parameter(i,j) * this%m_work(:,j)
+                this%get_method_factor(i,j) * this%m_work(:,j)
         end do
 
         call sys%fcn( &
-            x + h * this%get_c_parameter(i), &
+            x + h * this%get_position_factor(i), &
             y + h * this%m_work(:,n1), &
             this%m_work(:,i) &   ! output
         )
@@ -94,7 +94,7 @@ module subroutine rkf_step(this, sys, h, x, y, yn, err)
     this%m_work(:,n1) = 0.0d0
     do i = 1, n
         this%m_work(:,n1) = this%m_work(:,n1) + &
-            this%get_b_parameter(i) * this%m_work(:,i)
+            this%get_quadrature_weight(i) * this%m_work(:,i)
     end do
     yn = y + h * this%m_work(:,n1)
 

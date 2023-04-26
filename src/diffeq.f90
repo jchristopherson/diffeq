@@ -215,7 +215,6 @@ module diffeq
     !> @brief The most basic ODE integrator object capable of integrating
     !! systems of ODE's.
     type, abstract :: ode_integrator
-    private
     contains
         !> @brief Solves the supplied system of ODEs.
         !!
@@ -326,6 +325,34 @@ module diffeq
         !!  computed.  The remaining columns contain the integration results
         !!  for each ODE.
         procedure, public :: solve => fsi_solver
+        !> @brief Takes one integration step of a predetermined size.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine step( &
+        !!  class(fixed_step_integrator) this, &
+        !!  class(ode_container) sys, &
+        !!  real(real64) h, &
+        !!  real(real64) x, &
+        !!  real(real64) yn, &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref fixed_step_integrator object.
+        !! @param[in] sys The @ref ode_container object containing the ODEs
+        !!  to integrate.
+        !! @param[in] h The current step size.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] y An N-element array containing the current values of
+        !!  the dependent variables.
+        !! @param[out] yn An N-element array where the values of the dependent
+        !!  variables at @p x + @p h will be written.
+        !! @param[in,out] An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.
         procedure(ode_fixed_step), public, pass, deferred :: step
     end type
 
@@ -363,10 +390,83 @@ module diffeq
         ! Use to allocate internal workspaces.  This routine only takes action
         ! if the workspace array(s) are not sized properly for the application.
         procedure, private :: allocate_workspace => rkf_alloc_workspace
+        !> @brief Takes one integration step of a predetermined size.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine step( &
+        !!  class(rk_fixed_integrator) this, &
+        !!  class(ode_container) sys, &
+        !!  real(real64) h, &
+        !!  real(real64) x, &
+        !!  real(real64) yn, &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref rk_fixed_integrator object.
+        !! @param[in] sys The @ref ode_container object containing the ODEs
+        !!  to integrate.
+        !! @param[in] h The current step size.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] y An N-element array containing the current values of
+        !!  the dependent variables.
+        !! @param[out] yn An N-element array where the values of the dependent
+        !!  variables at @p x + @p h will be written.
+        !! @param[in,out] An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.
         procedure, public :: step => rkf_step
-        procedure(rkf_get_matrix_parameter), deferred, public :: get_a_parameter
-        procedure(rkf_get_array_parameter), deferred, public :: get_b_parameter
-        procedure(rkf_get_array_parameter), deferred, public :: get_c_parameter
+        !> @brief Gets the requested method factor from the Butcher tableau.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_method_factor( &
+        !!  class(rk_fixed_integrator) this, &
+        !!  integer(int32), intent(in) i, &
+        !!  integer(int32), intent(in) j &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref rk_fixed_integrator object.
+        !! @param[in] i The row index of the parameter from the Butcher tableau.
+        !! @param[in] j The column index of the parameter from the Butcher 
+        !!  tableau.
+        !! @return The requested parameter.
+        procedure(rkf_get_matrix_parameter), deferred, public :: &
+            get_method_factor
+        !> @brief Gets the requested quadrature weight from the Butcher tableau.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_quadrature_weight( &
+        !!  class(rk_fixed_integrator) this, &
+        !!  integer(int32), intent(in) i &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref rk_fixed_integrator object.
+        !! @param[in] i The index of the parameter from the Butcher tableau.
+        !! @return The requested parameter.
+        procedure(rkf_get_array_parameter), deferred, public :: &
+            get_quadrature_weight
+        !> @brief Gets the requested position factor from the Butcher tableau.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_position_factor( &
+        !!  class(rk_fixed_integrator) this, &
+        !!  integer(int32), intent(in) i &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref rk_fixed_integrator object.
+        !! @param[in] i The index of the parameter from the Butcher tableau.
+        !! @return The requested parameter.
+        procedure(rkf_get_array_parameter), deferred, public :: &
+            get_position_factor
     end type
 
     interface
@@ -485,10 +585,61 @@ module diffeq
     !! @image html rk4_example_1.png
     type, extends(rk_fixed_integrator) :: rk4_fixed_integrator
     contains
+        !> @brief Returns the order of the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! pure integer(int32) function get_order(class(rk4_fixed_integrator) this)
+        !! @endcode
+        !!
+        !! @param[in] this The @ref rk4_fixed_integrator object.
+        !! @return The order of the integrator.
         procedure, public :: get_order => rk4_get_order
-        procedure, public :: get_a_parameter => rk4_get_a_param
-        procedure, public :: get_b_parameter => rk4_get_b_param
-        procedure, public :: get_c_parameter => rk4_get_c_param
+        !> @brief Gets the requested method factor from the Butcher tableau.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_method_factor( &
+        !!  class(rk4_fixed_integrator) this, &
+        !!  integer(int32), intent(in) i, &
+        !!  integer(int32), intent(in) j &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref rk4_fixed_integrator object.
+        !! @param[in] i The row index of the parameter from the Butcher tableau.
+        !! @param[in] j The column index of the parameter from the Butcher 
+        !!  tableau.
+        !! @return The requested parameter.
+        procedure, public :: get_method_factor => rk4_get_a_param
+        !> @brief Gets the requested quadrature weight from the Butcher tableau.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_quadrature_weight( &
+        !!  class(rk4_fixed_integrator) this, &
+        !!  integer(int32), intent(in) i &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref rk4_fixed_integrator object.
+        !! @param[in] i The index of the parameter from the Butcher tableau.
+        !! @return The requested parameter.
+        procedure, public :: get_quadrature_weight => rk4_get_b_param
+        !> @brief Gets the requested position factor from the Butcher tableau.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_position_factor( &
+        !!  class(rk4_fixed_integrator) this, &
+        !!  integer(int32), intent(in) i &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref rk4_fixed_integrator object.
+        !! @param[in] i The index of the parameter from the Butcher tableau.
+        !! @return The requested parameter.
+        procedure, public :: get_position_factor => rk4_get_c_param
     end type
 
     ! diffeq_rk4.f90

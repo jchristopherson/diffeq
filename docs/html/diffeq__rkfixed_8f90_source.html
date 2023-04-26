@@ -182,11 +182,11 @@ $(document).ready(function(){initNavTree('diffeq__rkfixed_8f90_source.html','');
 <div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>        this%m_work(:,n1) = 0.0d0</div>
 <div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>        <span class="keywordflow">do</span> j = 1, i - 1 <span class="comment">! only reference the sub-diagonal components</span></div>
 <div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>            this%m_work(:,n1) = this%m_work(:,n1) + &amp;</div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>                this%get_a_parameter(i,j) * this%m_work(:,j)</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>                this%get_method_factor(i,j) * this%m_work(:,j)</div>
 <div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span><span class="keywordflow">        end do</span></div>
 <div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span> </div>
 <div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>        <span class="keyword">call </span>sys%fcn( &amp;</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>            x + h * this%get_c_parameter(i), &amp;</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>            x + h * this%get_position_factor(i), &amp;</div>
 <div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>            y + h * this%m_work(:,n1), &amp;</div>
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>            this%m_work(:,i) &amp;   <span class="comment">! output</span></div>
 <div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>        )</div>
@@ -196,7 +196,7 @@ $(document).ready(function(){initNavTree('diffeq__rkfixed_8f90_source.html','');
 <div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    this%m_work(:,n1) = 0.0d0</div>
 <div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    <span class="keywordflow">do</span> i = 1, n</div>
 <div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>        this%m_work(:,n1) = this%m_work(:,n1) + &amp;</div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>            this%get_b_parameter(i) * this%m_work(:,i)</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>            this%get_quadrature_weight(i) * this%m_work(:,i)</div>
 <div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span><span class="keywordflow">    end do</span></div>
 <div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>    yn = y + h * this%m_work(:,n1)</div>
 <div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span> </div>

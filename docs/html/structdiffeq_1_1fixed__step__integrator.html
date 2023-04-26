@@ -124,6 +124,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:ad8a9489a1efae5feaa884aacd37c93c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves the supplied system of ODEs.  <a href="structdiffeq_1_1fixed__step__integrator.html#ad8a9489a1efae5feaa884aacd37c93c6">More...</a><br /></td></tr>
 <tr class="separator:ad8a9489a1efae5feaa884aacd37c93c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0b22f801d7d73927445fa135bb896228"><td class="memItemLeft" align="right" valign="top">procedure(<a class="el" href="interfacediffeq_1_1ode__fixed__step.html">ode_fixed_step</a>), deferred, pass, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1fixed__step__integrator.html#a0b22f801d7d73927445fa135bb896228">step</a></td></tr>
+<tr class="memdesc:a0b22f801d7d73927445fa135bb896228"><td class="mdescLeft">&#160;</td><td class="mdescRight">Takes one integration step of a predetermined size.  <a href="structdiffeq_1_1fixed__step__integrator.html#a0b22f801d7d73927445fa135bb896228">More...</a><br /></td></tr>
 <tr class="separator:a0b22f801d7d73927445fa135bb896228"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_structdiffeq_1_1ode__integrator"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_structdiffeq_1_1ode__integrator')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="structdiffeq_1_1ode__integrator.html">diffeq::ode_integrator</a></td></tr>
 <tr class="memitem:a2ea5d323ed37c65e199d82dec572f869 inherit pub_methods_structdiffeq_1_1ode__integrator"><td class="memItemLeft" align="right" valign="top">procedure(<a class="el" href="interfacediffeq_1_1ode__solver.html">ode_solver</a>), deferred, pass, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1ode__integrator.html#a2ea5d323ed37c65e199d82dec572f869">solve</a></td></tr>
@@ -136,7 +137,7 @@ Public Member Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Defines a fixed-step integrator. </p>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00294">294</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00293">293</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 </div><h2 class="groupheader">Member Function/Subroutine Documentation</h2>
 <a id="ad8a9489a1efae5feaa884aacd37c93c6" name="ad8a9489a1efae5feaa884aacd37c93c6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad8a9489a1efae5feaa884aacd37c93c6">&#9670;&#160;</a></span>solve()</h2>
@@ -171,7 +172,7 @@ Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>An M-by-N matrix where M is the number of solution points, and N is the number of ODEs plus 1. The first column contains the values of the independent variable at which the results were computed. The remaining columns contain the integration results for each ODE. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00328">328</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00327">327</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -187,7 +188,30 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00329">329</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p>Takes one integration step of a predetermined size. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keyword">subroutine </span>step( &amp;</div>
+<div class="line"> class(fixed_step_integrator) this, &amp;</div>
+<div class="line"> <span class="keywordtype">class</span>(ode_container) sys, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> h, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> x, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> yn, &amp;</div>
+<div class="line"> <span class="keywordtype">optional</span> <span class="keywordtype">class</span>(errors) err &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1fixed__step__integrator.html">fixed_step_integrator</a> object. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sys</td><td>The <a class="el" href="structdiffeq_1_1ode__container.html">ode_container</a> object containing the ODEs to integrate. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">h</td><td>The current step size. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">x</td><td>The current value of the independent variable. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">y</td><td>An N-element array containing the current values of the dependent variables. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">yn</td><td>An N-element array where the values of the dependent variables at <code>x</code> + <code>h</code> will be written. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">An</td><td>optional errors-based object that if provided can be used to retrieve information relating to any errors encountered during execution. If not provided, a default implementation of the errors class is used internally to provide error handling. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00356">356</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
