@@ -112,10 +112,11 @@ Inheritance diagram for diffeq::ode_integrator:</div>
  <div class="center">
   <img src="structdiffeq_1_1ode__integrator.png" usemap="#diffeq::ode_5Fintegrator_map" alt=""/>
   <map id="diffeq::ode_5Fintegrator_map" name="diffeq::ode_5Fintegrator_map">
-<area href="structdiffeq_1_1fixed__step__integrator.html" title="Defines a fixed-step integrator." alt="diffeq::fixed_step_integrator" shape="rect" coords="0,56,186,80"/>
-<area href="structdiffeq_1_1variable__step__integrator.html" title="Defines a variable-step integrator." alt="diffeq::variable_step_integrator" shape="rect" coords="196,56,382,80"/>
-<area href="structdiffeq_1_1rk__fixed__integrator.html" title="Defines an explicit, Runge-Kutta fixed-step integrator." alt="diffeq::rk_fixed_integrator" shape="rect" coords="0,112,186,136"/>
-<area href="structdiffeq_1_1rk4__fixed__integrator.html" title="Defines the explicit, 4th order, Runge-Kutta fixed-step integrator." alt="diffeq::rk4_fixed_integrator" shape="rect" coords="0,168,186,192"/>
+<area href="structdiffeq_1_1fixed__step__integrator.html" title="Defines a fixed-step integrator." alt="diffeq::fixed_step_integrator" shape="rect" coords="109,56,317,80"/>
+<area href="structdiffeq_1_1variable__step__integrator.html" title="Defines a variable-step integrator." alt="diffeq::variable_step_integrator" shape="rect" coords="327,56,535,80"/>
+<area href="structdiffeq_1_1exponential__fixed__integrator.html" title="Defines a third-order exponential integrator as defined by Jibunoh." alt="diffeq::exponential_fixed_integrator" shape="rect" coords="0,112,208,136"/>
+<area href="structdiffeq_1_1rk__fixed__integrator.html" title="Defines an explicit, Runge-Kutta fixed-step integrator." alt="diffeq::rk_fixed_integrator" shape="rect" coords="218,112,426,136"/>
+<area href="structdiffeq_1_1rk4__fixed__integrator.html" title="Defines the explicit, 4th order, Runge-Kutta fixed-step integrator." alt="diffeq::rk4_fixed_integrator" shape="rect" coords="218,168,426,192"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -131,7 +132,7 @@ Public Member Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >The most basic ODE integrator object capable of integrating systems of ODE's. </p>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00217">217</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00219">219</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 </div><h2 class="groupheader">Member Function/Subroutine Documentation</h2>
 <a id="af7ca88612930f2772289df389554f215" name="af7ca88612930f2772289df389554f215"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af7ca88612930f2772289df389554f215">&#9670;&#160;</a></span>get_order()</h2>
@@ -156,7 +157,7 @@ Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The order of the integrator. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00267">267</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00269">269</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -198,7 +199,7 @@ Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>An M-by-N matrix where M is the number of solution points, and N is the number of ODEs plus 1. The first column contains the values of the independent variable at which the results were computed. The remaining columns contain the integration results for each ODE. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00257">257</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00259">259</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>

@@ -6,6 +6,7 @@ var hierarchy =
     [ "diffeq::ode_integer_inquiry", "interfacediffeq_1_1ode__integer__inquiry.html", null ],
     [ "diffeq::ode_integrator", "structdiffeq_1_1ode__integrator.html", [
       [ "diffeq::fixed_step_integrator", "structdiffeq_1_1fixed__step__integrator.html", [
+        [ "diffeq::exponential_fixed_integrator", "structdiffeq_1_1exponential__fixed__integrator.html", null ],
         [ "diffeq::rk_fixed_integrator", "structdiffeq_1_1rk__fixed__integrator.html", [
           [ "diffeq::rk4_fixed_integrator", "structdiffeq_1_1rk4__fixed__integrator.html", null ]
         ] ]

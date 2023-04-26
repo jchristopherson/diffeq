@@ -112,9 +112,10 @@ Inheritance diagram for diffeq::fixed_step_integrator:</div>
  <div class="center">
   <img src="structdiffeq_1_1fixed__step__integrator.png" usemap="#diffeq::fixed_5Fstep_5Fintegrator_map" alt=""/>
   <map id="diffeq::fixed_5Fstep_5Fintegrator_map" name="diffeq::fixed_5Fstep_5Fintegrator_map">
-<area href="structdiffeq_1_1ode__integrator.html" title="The most basic ODE integrator object capable of integrating systems of ODE&#39;s." alt="diffeq::ode_integrator" shape="rect" coords="0,0,167,24"/>
-<area href="structdiffeq_1_1rk__fixed__integrator.html" title="Defines an explicit, Runge-Kutta fixed-step integrator." alt="diffeq::rk_fixed_integrator" shape="rect" coords="0,112,167,136"/>
-<area href="structdiffeq_1_1rk4__fixed__integrator.html" title="Defines the explicit, 4th order, Runge-Kutta fixed-step integrator." alt="diffeq::rk4_fixed_integrator" shape="rect" coords="0,168,167,192"/>
+<area href="structdiffeq_1_1ode__integrator.html" title="The most basic ODE integrator object capable of integrating systems of ODE&#39;s." alt="diffeq::ode_integrator" shape="rect" coords="109,0,317,24"/>
+<area href="structdiffeq_1_1exponential__fixed__integrator.html" title="Defines a third-order exponential integrator as defined by Jibunoh." alt="diffeq::exponential_fixed_integrator" shape="rect" coords="0,112,208,136"/>
+<area href="structdiffeq_1_1rk__fixed__integrator.html" title="Defines an explicit, Runge-Kutta fixed-step integrator." alt="diffeq::rk_fixed_integrator" shape="rect" coords="218,112,426,136"/>
+<area href="structdiffeq_1_1rk4__fixed__integrator.html" title="Defines the explicit, 4th order, Runge-Kutta fixed-step integrator." alt="diffeq::rk4_fixed_integrator" shape="rect" coords="218,168,426,192"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -137,7 +138,7 @@ Public Member Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Defines a fixed-step integrator. </p>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00293">293</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00295">295</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 </div><h2 class="groupheader">Member Function/Subroutine Documentation</h2>
 <a id="ad8a9489a1efae5feaa884aacd37c93c6" name="ad8a9489a1efae5feaa884aacd37c93c6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad8a9489a1efae5feaa884aacd37c93c6">&#9670;&#160;</a></span>solve()</h2>
@@ -163,7 +164,7 @@ Public Member Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1fixed__step__integrator.html">fixed_step_integrator</a> object. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">sys</td><td>The <a class="el" href="structdiffeq_1_1ode__container.html">ode_container</a> object containing the ODEs to integrate. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">sys</td><td>The <a class="el" href="structdiffeq_1_1ode__container.html">ode_container</a> object containing the ODEs to integrate. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">x</td><td>An array, of at least 2 values, defining at a minimum the starting and ending values of the independent variable integration range. If more than two values are specified, the integration results will be returned at the supplied values. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">An</td><td>array containing the initial values for each ODE. </td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">err</td><td>An optional errors-based object that if provided can be used to retrieve information relating to any errors encountered during execution. If not provided, a default implementation of the errors class is used internally to provide error handling.</td></tr>
@@ -172,7 +173,7 @@ Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>An M-by-N matrix where M is the number of solution points, and N is the number of ODEs plus 1. The first column contains the values of the independent variable at which the results were computed. The remaining columns contain the integration results for each ODE. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00327">327</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00329">329</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -211,7 +212,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00356">356</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00358">358</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
