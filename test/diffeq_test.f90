@@ -3,6 +3,7 @@ program test
     use diffeq_jacobian_tests
     use diffeq_rkfixed_tests
     use diffeq_expfixed_tests
+    use diffeq_adamsfixed_tests
     implicit none
 
     ! Local Variables
@@ -36,6 +37,12 @@ program test
 
     rst = test_expf_2()
     if (.not.rst) flag = 8
+
+    rst = test_adams_1()
+    if (.not.rst) flag = 9
+
+    rst = test_adams_2()
+    if (.not.rst) flag = 10
 
     ! Output
     stop flag

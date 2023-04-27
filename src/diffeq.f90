@@ -15,6 +15,8 @@ module diffeq
     public :: rk_fixed_integrator
     public :: rk4_fixed_integrator
     public :: exponential_fixed_integrator
+    public :: fixed_multistep_integrator
+    public :: adams_fixed_integerator
     public :: variable_step_integrator
     public :: DIFFEQ_MEMORY_ALLOCATION_ERROR
     public :: DIFFEQ_NULL_POINTER_ERROR
@@ -337,6 +339,8 @@ module diffeq
         !!  real(real64) h, &
         !!  real(real64) x, &
         !!  real(real64) yn, &
+        !!  optional real(real64) xprev(:), &
+        !!  optional real(real64) yprev(:,:), &
         !!  optional class(errors) err &
         !! )
         !! @endcode
@@ -350,6 +354,14 @@ module diffeq
         !!  the dependent variables.
         !! @param[out] yn An N-element array where the values of the dependent
         !!  variables at @p x + @p h will be written.
+        !! @param[in] xprev An M-element array containing the previous M values
+        !!  of the independent variable where M is the order of the method.
+        !!  This is typically useful for multi-step methods.  In single-step
+        !!  methods this parameter is not used.
+        !! @param[in] yprve An M-by-NEQN array containing the previous M arrays
+        !!  of dependent variable values where M is the order of the method.
+        !!  This is typically useful for multi-step methods.  In single-step
+        !!  methods this parameter is not used.
         !! @param[in,out] An optional errors-based object that if provided 
         !!  can be used to retrieve information relating to any errors 
         !!  encountered during execution. If not provided, a default 
@@ -360,7 +372,7 @@ module diffeq
 
     ! diffeq_fs_integrator.f90
     interface
-        subroutine ode_fixed_step(this, sys, h, x, y, yn, err)
+        subroutine ode_fixed_step(this, sys, h, x, y, yn, xprev, yprev, err)
             use iso_fortran_env 
             use ferror   
             import fixed_step_integrator
@@ -370,6 +382,8 @@ module diffeq
             real(real64), intent(in) :: h, x
             real(real64), intent(in), dimension(:) :: y
             real(real64), intent(out), dimension(:) :: yn
+            real(real64), intent(in), optional, dimension(:) :: xprev
+            real(real64), intent(in), optional, dimension(:,:) :: yprev
             class(errors), intent(inout), optional, target :: err
         end subroutine
 
@@ -493,12 +507,14 @@ module diffeq
             class(errors), intent(inout) :: err
         end subroutine
 
-        module subroutine rkf_step(this, sys, h, x, y, yn, err)
+        module subroutine rkf_step(this, sys, h, x, y, yn, xprev, yprev, err)
             class(rk_fixed_integrator), intent(inout) :: this
             class(ode_container), intent(inout) :: sys
             real(real64), intent(in) :: h, x
             real(real64), intent(in), dimension(:) :: y
             real(real64), intent(out), dimension(:) :: yn
+            real(real64), intent(in), optional, dimension(:) :: xprev
+            real(real64), intent(in), optional, dimension(:,:) :: yprev
             class(errors), intent(inout), optional, target :: err
         end subroutine
     end interface
@@ -700,8 +716,8 @@ module diffeq
     !!     implicit none
     !!
     !!     ! Parameters
-    !!     integer(int32), parameter :: npts = 2500
-    !!     real(real64), parameter :: h = 1.0d-2
+    !!     integer(int32), parameter :: npts = 25000
+    !!     real(real64), parameter :: h = 1.0d-3
     !!
     !!     ! Local Variables
     !!     type(exponential_fixed_integrator) :: integrator
@@ -821,15 +837,258 @@ module diffeq
             integer(int32) :: rst
         end function
 
-        module subroutine ef_step(this, sys, h, x, y, yn, err)
+        module subroutine ef_step(this, sys, h, x, y, yn, xprev, yprev, err)
             class(exponential_fixed_integrator), intent(inout) :: this
             class(ode_container), intent(inout) :: sys
             real(real64), intent(in) :: h, x
             real(real64), intent(in), dimension(:) :: y
             real(real64), intent(out), dimension(:) :: yn
+            real(real64), intent(in), optional, dimension(:) :: xprev
+            real(real64), intent(in), optional, dimension(:,:) :: yprev
             class(errors), intent(inout), optional, target :: err
         end subroutine
     end interface
+
+! ------------------------------------------------------------------------------
+    !> @brief Defines a fixed step-size, multi-step integrator.
+    type, abstract, extends(fixed_step_integrator) :: fixed_multistep_integrator
+    contains
+        !> @brief Solves the supplied system of ODEs.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! allocatable real(real64)(:,:) function solve( &
+        !!  class(fixed_multistep_integrator) this, &
+        !!  class(ode_container) sys, &
+        !!  real(real64) x(:), &
+        !!  real(real64) iv(:), &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref fixed_multistep_integrator object.
+        !! @param[in] sys The @ref ode_container object containing the ODEs
+        !!  to integrate.
+        !! @param[in] x An array, of at least 2 values, defining at a minimum
+        !!  the starting and ending values of the independent variable 
+        !!  integration range.  If more than two values are specified, the
+        !!  integration results will be returned at the supplied values.
+        !! @param[in] An array containing the initial values for each ODE.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.  Possible errors and warning messages that may be 
+        !!  encountered are as follows.
+        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
+        !!      allocation issue.
+        !!  - DIFFEQ_NULL_POINTER_ERROR: Occurs if no ODE function is defined.
+        !!  - DIFFEQ_INVALID_INPUT_ERROR: Occurs if there are less than 2 values
+        !!      given in the independent variable array @p x.
+        !!
+        !! @return An M-by-N matrix where M is the number of solution points, 
+        !!  and N is the number of ODEs plus 1.  The first column contains
+        !!  the values of the independent variable at which the results were
+        !!  computed.  The remaining columns contain the integration results
+        !!  for each ODE.
+        procedure, public :: solve => fms_solver
+    end type
+
+    ! diffeq_multistep_fixed.f90
+    interface
+        module function fms_solver(this, sys, x, iv, err) result(rst)
+            class(fixed_multistep_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(in), dimension(:) :: x, iv
+            class(errors), intent(inout), optional, target :: err
+            real(real64), allocatable, dimension(:,:) :: rst
+        end function
+    end interface
+
+! ------------------------------------------------------------------------------
+    !> @brief Defines a 4th-order, Adams-Bashforth-Moulton PECE integrator.
+    !!
+    !! @par Example
+    !! The following example solves the Van der Pol equation \f$ 
+    !! \frac{d^2y}{dx^2} - \mu \left( 1 - y^2 \right) \frac{dy}{dx} + y = 0 \f$
+    !! using both this Adams method integrator, and the exponential integrator
+    !! @ref exponential_fixed_integrator.
+    !! @code{.f90}
+    !! program example
+    !!     use iso_fortran_env
+    !!     use diffeq
+    !!     use diffeq_models
+    !!     use fplot_core
+    !!     implicit none
+    !!
+    !!     ! Parameters
+    !!     integer(int32), parameter :: npts = 25000
+    !!     real(real64), parameter :: h = 1.0d-3
+    !!
+    !!     ! Local Variables
+    !!     type(adams_fixed_integerator) :: integrator
+    !!     type(exponential_fixed_integrator) :: comparison
+    !!     type(ode_container) :: mdl
+    !!     integer(int32) :: i
+    !!     real(real64) :: x(npts), sol(npts, 3), csol(npts, 3)
+    !!
+    !!     ! Plot Variables
+    !!     type(plot_2d) :: plt
+    !!     type(plot_data_2d) :: pd1, pd2
+    !!     class(plot_axis), pointer :: xAxis, yAxis
+    !!     class(legend), pointer :: lgnd
+    !!
+    !!     ! Define the values of x at which the solution is to be computed
+    !!     x = (/ (i * h, i = 0, npts - 1) /)
+    !!
+    !!     ! Define the model
+    !!     mdl%fcn => vanderpol
+    !!
+    !!     ! Compute the solution with both integrators
+    !!     sol = integrator%solve(mdl, x, [2.0d0, 0.0d0])
+    !!     csol = comparison%solve(mdl, x, [2.0d0, 0.0d0])
+    !!
+    !!     ! Plot the results
+    !!     call plt%initialize()
+    !!     xAxis => plt%get_x_axis()
+    !!     yAxis => plt%get_y_axis()
+    !!     lgnd => plt%get_legend()
+    !!     call xAxis%set_title("x")
+    !!     call yAxis%set_title("y(x)")
+    !!     call lgnd%set_is_visible(.true.)
+    !!     call lgnd%set_horizontal_position(LEGEND_CENTER)
+    !!     call lgnd%set_vertical_position(LEGEND_BOTTOM)
+    !!
+    !!     call pd1%define_data(sol(:,1), sol(:,2))
+    !!     call pd1%set_name("Adams")
+    !!     call pd1%set_line_width(2.0)
+    !!     call plt%push(pd1)
+    !!
+    !!     call pd2%define_data(csol(:,1), csol(:,2))
+    !!     call pd2%set_name("Exponential")
+    !!     call pd2%set_line_width(4.0)
+    !!     call pd2%set_line_style(LINE_DASHED)
+    !!     call plt%push(pd2)
+    !!
+    !!     call plt%draw()
+    !! end program
+    !! @endcode
+    !! The ODE routine was stored in a seperate module; however, here is the
+    !! code for the ODE routine.
+    !! @code{.f90}
+    !! subroutine vanderpol(x, y, dydx)
+    !!     ! Arguments
+    !!     real(real64), intent(in) :: x, y(:)
+    !!     real(real64), intent(out) :: dydx(:)
+    !!
+    !!     ! Model Constants
+    !!     real(real64), parameter :: mu = 5.0d0
+    !!
+    !!     ! Equations
+    !!     dydx(1) = y(2)
+    !!     dydx(2) = mu * (1.0d0 - y(1)**2) * y(2) - y(1)
+    !! end subroutine
+    !! @endcode
+    !! The above program produces the following plot using the 
+    !! [FPLOT](https://github.com/jchristopherson/fplot) library.
+    !! @image html vanderpol_fixed_adams_vs_exponential_example_1.png
+    type, extends(fixed_multistep_integrator) :: adams_fixed_integerator
+        ! Private workspace - used to store previous iteration function results
+        real(real64), private, allocatable, dimension(:,:) :: m_work
+        ! True if this is the first multi-step iteration; else, false
+        logical, private :: m_first = .true.
+    contains
+        ! Use to allocate internal workspaces.  This routine only takes action
+        ! if the workspace array(s) are not sized properly for the application.
+        procedure, private :: allocate_workspace => afi_alloc_workspace
+        ! Shifts each column in the workspace matrix by 1 allowing the last
+        ! column to fall off the back.
+        procedure, private :: shift => afi_shift_workspace
+        !> @brief Returns the order of the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! pure integer(int32) function get_order(class(adams_fixed_integerator) this)
+        !! @endcode
+        !!
+        !! @param[in] this The @ref adams_fixed_integerator object.
+        !! @return The order of the integrator.
+        procedure, public :: get_order => afi_get_order
+        !> @brief Takes one integration step of a predetermined size.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine step( &
+        !!  class(adams_fixed_integerator) this, &
+        !!  class(ode_container) sys, &
+        !!  real(real64) h, &
+        !!  real(real64) x, &
+        !!  real(real64) yn, &
+        !!  optional real(real64) xprev(:), &
+        !!  optional real(real64) yprev(:,:), &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref adams_fixed_integerator object.
+        !! @param[in] sys The @ref ode_container object containing the ODEs
+        !!  to integrate.
+        !! @param[in] h The current step size.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] y An N-element array containing the current values of
+        !!  the dependent variables.
+        !! @param[out] yn An N-element array where the values of the dependent
+        !!  variables at @p x + @p h will be written.
+        !! @param[in] xprev An M-element array containing the previous M values
+        !!  of the independent variable where M is the order of the method.
+        !! @param[in] yprve An M-by-NEQN array containing the previous M arrays
+        !!  of dependent variable values where M is the order of the method.
+        !! @param[in,out] An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.
+        procedure, public :: step => afi_step
+    end type
+
+    ! diffeq_abmf.f90
+    interface
+        pure module function afi_get_order(this) result(rst)
+            class(adams_fixed_integerator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+
+        module subroutine afi_alloc_workspace(this, neqn, err)
+            class(adams_fixed_integerator), intent(inout) :: this
+            integer(int32), intent(in) :: neqn
+            class(errors), intent(inout) :: err
+        end subroutine
+
+        module subroutine afi_shift_workspace(this)
+            class(adams_fixed_integerator), intent(inout) :: this
+        end subroutine
+
+        module subroutine afi_step(this, sys, h, x, y, yn, xprev, yprev, err)
+            class(adams_fixed_integerator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(in) :: h, x
+            real(real64), intent(in), dimension(:) :: y
+            real(real64), intent(out), dimension(:) :: yn
+            real(real64), intent(in), optional, dimension(:) :: xprev
+            real(real64), intent(in), optional, dimension(:,:) :: yprev
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+    end interface
+
+
+
+
+
+
+
+
+
+
 
 ! ------------------------------------------------------------------------------
     !> @brief Defines a variable-step integrator.

@@ -1,17 +1,18 @@
-submodule (diffeq) diffeq_fs_integrator
+submodule (diffeq) diffeq_multistep_fixed
 contains
 ! ------------------------------------------------------------------------------
-module function fsi_solver(this, sys, x, iv, err) result(rst)
+module function fms_solver(this, sys, x, iv, err) result(rst)
     ! Arguments
-    class(fixed_step_integrator), intent(inout) :: this
+    class(fixed_multistep_integrator), intent(inout) :: this
     class(ode_container), intent(inout) :: sys
     real(real64), intent(in), dimension(:) :: x, iv
     class(errors), intent(inout), optional, target :: err
     real(real64), allocatable, dimension(:,:) :: rst
 
     ! Local Variables
-    integer(int32) :: i, npts, neqn, flag
+    integer(int32) ::i, j1, j2, npts, neqn, order, mn, flag
     real(real64) :: h
+    type(rk4_fixed_integrator) :: starter
     class(errors), pointer :: errmgr
     type(errors), target :: deferr
     character(len = :), allocatable :: errmsg
@@ -24,6 +25,8 @@ module function fsi_solver(this, sys, x, iv, err) result(rst)
     end if
     npts = size(x)
     neqn = size(iv)
+    order = this%get_order()
+    mn = min(order, npts)
 
     ! Input Checking
     if (.not.associated(sys%fcn)) go to 20
@@ -33,16 +36,20 @@ module function fsi_solver(this, sys, x, iv, err) result(rst)
     allocate(rst(npts, neqn + 1), stat = flag)
     if (flag /= 0) go to 10
 
-    ! Process
-    rst(1,1) = x(1)
-    rst(1,2:) = iv
-    do i = 2, npts
-        ! Compute the solution
-        j = i - 1
-        h = x(i) - x(j)
+    ! Use a 4th order Runge-Kutta integrator to step into the problem
+    rst(1:mn,:) = starter%solve(sys, x(1:mn), iv, errmgr)
+
+    ! Finish the problem with the multi-step method
+    j1 = 1
+    j2 = order
+    do i = order + 1, npts
+        h = x(i) - x(j2)
         rst(i,1) = x(i)
-        call this%step(sys, h, rst(j,1), rst(j,2:), rst(i,2:), err = errmgr)
+        call this%step(sys, h, rst(j2,1), rst(j2,2:), rst(i,2:), &
+            rst(j1:j2,1), rst(j1:j2,2:), errmgr)
         if (errmgr%has_error_occurred()) return
+        j1 = j1 + 1
+        j2 = j2 + 1
     end do
 
     ! End
@@ -52,13 +59,13 @@ module function fsi_solver(this, sys, x, iv, err) result(rst)
 10  continue
     allocate(character(len = 256) :: errmsg)
     write(errmsg, 100) "Memory allocation error flag ", flag, "."
-    call errmgr%report_error("fsi_solver", trim(errmsg), &
+    call errmgr%report_error("fms_solver", trim(errmsg), &
         DIFFEQ_MEMORY_ALLOCATION_ERROR)
     return
 
     ! No Function Defined Error
 20  continue
-    call errmgr%report_error("fsi_solver", "The ODE routine is not defined.", &
+    call errmgr%report_error("fms_solver", "The ODE routine is not defined.", &
         DIFFEQ_NULL_POINTER_ERROR)
     return
 
@@ -68,7 +75,7 @@ module function fsi_solver(this, sys, x, iv, err) result(rst)
     write(errmsg, 100) &
         "There must be at least 2 solution points defined, but ", npts, &
         " were found."
-    call errmgr%report_error("fsi_solver", trim(errmsg), &
+    call errmgr%report_error("fms_solver", trim(errmsg), &
         DIFFEQ_INVALID_INPUT_ERROR)
     return
 
