@@ -43,7 +43,7 @@ module subroutine rkf_alloc_workspace(this, n, neqn, err)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-module subroutine rkf_step(this, sys, h, x, y, yn, xprev, yprev, err)
+module subroutine rkf_step(this, sys, h, x, y, yn, xprev, yprev, fprev, err)
     ! Arguments
     class(rk_fixed_integrator), intent(inout) :: this
     class(ode_container), intent(inout) :: sys
@@ -52,6 +52,7 @@ module subroutine rkf_step(this, sys, h, x, y, yn, xprev, yprev, err)
     real(real64), intent(out), dimension(:) :: yn
     real(real64), intent(in), optional, dimension(:) :: xprev
     real(real64), intent(in), optional, dimension(:,:) :: yprev
+    real(real64), intent(inout), optional, dimension(:,:) :: fprev
     class(errors), intent(inout), optional, target :: err
 
     ! Local Variables

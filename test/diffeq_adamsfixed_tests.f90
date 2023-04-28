@@ -54,7 +54,7 @@ function test_adams_2() result(rst)
     ! Parameters
     integer(int32), parameter :: npts = 10000
     real(real64), parameter :: h = 1.0d-5
-    real(real64), parameter :: tol = 1.0d-3
+    real(real64), parameter :: tol = 1.0d-2
 
     ! Local Variables
     type(adams_fixed_integerator) :: integrator

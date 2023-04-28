@@ -69,7 +69,7 @@ module subroutine ef_alloc_workspace(this, neqn, err)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-module subroutine ef_step(this, sys, h, x, y, yn, xprev, yprev, err)
+module subroutine ef_step(this, sys, h, x, y, yn, xprev, yprev, fprev, err)
     ! Arguments
     class(exponential_fixed_integrator), intent(inout) :: this
     class(ode_container), intent(inout) :: sys
@@ -78,6 +78,7 @@ module subroutine ef_step(this, sys, h, x, y, yn, xprev, yprev, err)
     real(real64), intent(out), dimension(:) :: yn
     real(real64), intent(in), optional, dimension(:) :: xprev
     real(real64), intent(in), optional, dimension(:,:) :: yprev
+    real(real64), intent(inout), optional, dimension(:,:) :: fprev
     class(errors), intent(inout), optional, target :: err
 
     ! Local Variables

@@ -30,6 +30,7 @@ module diffeq
     integer(int32), parameter :: DIFFEQ_MATRIX_SIZE_ERROR = 10002
     integer(int32), parameter :: DIFFEQ_ARRAY_SIZE_ERROR = 10003
     integer(int32), parameter :: DIFFEQ_INVALID_INPUT_ERROR = 10004
+    integer(int32), parameter :: DIFFEQ_MISSING_ARGUMENT_ERROR = 10005
 
 ! ------------------------------------------------------------------------------
     !> @brief A container for the routine containing the ODEs to integrate.
@@ -341,6 +342,7 @@ module diffeq
         !!  real(real64) yn, &
         !!  optional real(real64) xprev(:), &
         !!  optional real(real64) yprev(:,:), &
+        !!  optional real(real64) fprev(:,:), &
         !!  optional class(errors) err &
         !! )
         !! @endcode
@@ -372,7 +374,8 @@ module diffeq
 
     ! diffeq_fs_integrator.f90
     interface
-        subroutine ode_fixed_step(this, sys, h, x, y, yn, xprev, yprev, err)
+        subroutine ode_fixed_step(this, sys, h, x, y, yn, xprev, yprev, fprev, &
+            err)
             use iso_fortran_env 
             use ferror   
             import fixed_step_integrator
@@ -384,6 +387,7 @@ module diffeq
             real(real64), intent(out), dimension(:) :: yn
             real(real64), intent(in), optional, dimension(:) :: xprev
             real(real64), intent(in), optional, dimension(:,:) :: yprev
+            real(real64), intent(inout), optional, dimension(:,:) :: fprev
             class(errors), intent(inout), optional, target :: err
         end subroutine
 
@@ -507,7 +511,8 @@ module diffeq
             class(errors), intent(inout) :: err
         end subroutine
 
-        module subroutine rkf_step(this, sys, h, x, y, yn, xprev, yprev, err)
+        module subroutine rkf_step(this, sys, h, x, y, yn, xprev, yprev, &
+            fprev, err)
             class(rk_fixed_integrator), intent(inout) :: this
             class(ode_container), intent(inout) :: sys
             real(real64), intent(in) :: h, x
@@ -515,6 +520,7 @@ module diffeq
             real(real64), intent(out), dimension(:) :: yn
             real(real64), intent(in), optional, dimension(:) :: xprev
             real(real64), intent(in), optional, dimension(:,:) :: yprev
+            real(real64), intent(inout), optional, dimension(:,:) :: fprev
             class(errors), intent(inout), optional, target :: err
         end subroutine
     end interface
@@ -837,7 +843,8 @@ module diffeq
             integer(int32) :: rst
         end function
 
-        module subroutine ef_step(this, sys, h, x, y, yn, xprev, yprev, err)
+        module subroutine ef_step(this, sys, h, x, y, yn, xprev, yprev, fprev, &
+            err)
             class(exponential_fixed_integrator), intent(inout) :: this
             class(ode_container), intent(inout) :: sys
             real(real64), intent(in) :: h, x
@@ -845,6 +852,7 @@ module diffeq
             real(real64), intent(out), dimension(:) :: yn
             real(real64), intent(in), optional, dimension(:) :: xprev
             real(real64), intent(in), optional, dimension(:,:) :: yprev
+            real(real64), intent(inout), optional, dimension(:,:) :: fprev
             class(errors), intent(inout), optional, target :: err
         end subroutine
     end interface
@@ -852,7 +860,12 @@ module diffeq
 ! ------------------------------------------------------------------------------
     !> @brief Defines a fixed step-size, multi-step integrator.
     type, abstract, extends(fixed_step_integrator) :: fixed_multistep_integrator
+        ! An NEQN-by-ORDER storage matrix for ODE outputs.
+        real(real64), allocatable, dimension(:,:) :: m_buffer
     contains
+        ! Use to allocate internal workspaces.  This routine only takes action
+        ! if the workspace array(s) are not sized properly for the application.
+        procedure, private :: allocate_workspace => fms_alloc_workspace
         !> @brief Solves the supplied system of ODEs.
         !!
         !! @par Syntax
@@ -896,6 +909,12 @@ module diffeq
 
     ! diffeq_multistep_fixed.f90
     interface
+        module subroutine fms_alloc_workspace(this, neqn, err)
+            class(fixed_multistep_integrator), intent(inout) :: this
+            integer(int32), intent(in) :: neqn
+            class(errors), intent(inout) :: err
+        end subroutine
+        
         module function fms_solver(this, sys, x, iv, err) result(rst)
             class(fixed_multistep_integrator), intent(inout) :: this
             class(ode_container), intent(inout) :: sys
@@ -906,7 +925,8 @@ module diffeq
     end interface
 
 ! ------------------------------------------------------------------------------
-    !> @brief Defines a 4th-order, Adams-Bashforth-Moulton PECE integrator.
+    !> @brief Defines a fixed-step, 4th-order, Adams-Bashforth-Moulton PECE 
+    !! integrator.
     !!
     !! @par Example
     !! The following example solves the Van der Pol equation \f$ 
@@ -993,17 +1013,7 @@ module diffeq
     !! [FPLOT](https://github.com/jchristopherson/fplot) library.
     !! @image html vanderpol_fixed_adams_vs_exponential_example_1.png
     type, extends(fixed_multistep_integrator) :: adams_fixed_integerator
-        ! Private workspace - used to store previous iteration function results
-        real(real64), private, allocatable, dimension(:,:) :: m_work
-        ! True if this is the first multi-step iteration; else, false
-        logical, private :: m_first = .true.
     contains
-        ! Use to allocate internal workspaces.  This routine only takes action
-        ! if the workspace array(s) are not sized properly for the application.
-        procedure, private :: allocate_workspace => afi_alloc_workspace
-        ! Shifts each column in the workspace matrix by 1 allowing the last
-        ! column to fall off the back.
-        procedure, private :: shift => afi_shift_workspace
         !> @brief Returns the order of the integrator.
         !!
         !! @par Syntax
@@ -1058,17 +1068,8 @@ module diffeq
             integer(int32) :: rst
         end function
 
-        module subroutine afi_alloc_workspace(this, neqn, err)
-            class(adams_fixed_integerator), intent(inout) :: this
-            integer(int32), intent(in) :: neqn
-            class(errors), intent(inout) :: err
-        end subroutine
-
-        module subroutine afi_shift_workspace(this)
-            class(adams_fixed_integerator), intent(inout) :: this
-        end subroutine
-
-        module subroutine afi_step(this, sys, h, x, y, yn, xprev, yprev, err)
+        module subroutine afi_step(this, sys, h, x, y, yn, xprev, yprev, &
+            fprev, err)
             class(adams_fixed_integerator), intent(inout) :: this
             class(ode_container), intent(inout) :: sys
             real(real64), intent(in) :: h, x
@@ -1076,6 +1077,7 @@ module diffeq
             real(real64), intent(out), dimension(:) :: yn
             real(real64), intent(in), optional, dimension(:) :: xprev
             real(real64), intent(in), optional, dimension(:,:) :: yprev
+            real(real64), intent(inout), optional, dimension(:,:) :: fprev
             class(errors), intent(inout), optional, target :: err
         end subroutine
     end interface

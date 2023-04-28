@@ -8,61 +8,22 @@ pure module function afi_get_order(this) result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
-module subroutine afi_alloc_workspace(this, neqn, err)
+module subroutine shift(x)
     ! Arguments
-    class(adams_fixed_integerator), intent(inout) :: this
-    integer(int32), intent(in) :: neqn
-    class(errors), intent(inout) :: err
-
-    ! Local Variables
-    integer(int32) :: n, flag
-    character(len = :), allocatable :: errmsg
-
-    ! Process
-    n = this%get_order()
-    this%m_first = .true.
-    if (allocated(this%m_work)) then
-        if (size(this%m_work, 1) /= neqn .or. size(this%m_work, 2) /= n) then
-            allocate(this%m_work(neqn, n), stat = flag, source = 0.0d0)
-            if (flag /= 0) go to 10
-        end if
-    else
-        allocate(this%m_work(neqn, n), stat = flag, source = 0.0d0)
-        if (flag /= 0) go to 10
-    end if
-
-    ! End
-    return
-
-    ! Memory Error Handling
-10  continue
-    allocate(character(len = 256) :: errmsg)
-    write(errmsg, 100) "Memory allocation error flag ", flag, "."
-    call err%report_error("afi_alloc_workspace", trim(errmsg), &
-        DIFFEQ_MEMORY_ALLOCATION_ERROR)
-    return
-
-    ! Formatting
-100 format(A, I0, A)
-end subroutine
-
-! ------------------------------------------------------------------------------
-module subroutine afi_shift_workspace(this)
-    ! Arguments
-    class(adams_fixed_integerator), intent(inout) :: this
+    real(real64), intent(inout), dimension(:,:) :: x
 
     ! Local Variables
     integer(int32) :: j, n
 
     ! Shift each column over by 1 allowing the last column to fall off
-    n = size(this%m_work, 2)
+    n = size(x, 2)
     do j = n, 2, -1
-        this%m_work(:,j) = this%m_work(:,j-1)
+        x(:,j) = x(:,j-1)
     end do
 end subroutine
 
 ! ------------------------------------------------------------------------------
-module subroutine afi_step(this, sys, h, x, y, yn, xprev, yprev, err)
+module subroutine afi_step(this, sys, h, x, y, yn, xprev, yprev, fprev, err)
     ! Arguments
     class(adams_fixed_integerator), intent(inout) :: this
     class(ode_container), intent(inout) :: sys
@@ -71,6 +32,7 @@ module subroutine afi_step(this, sys, h, x, y, yn, xprev, yprev, err)
     real(real64), intent(out), dimension(:) :: yn
     real(real64), intent(in), optional, dimension(:) :: xprev
     real(real64), intent(in), optional, dimension(:,:) :: yprev
+    real(real64), intent(inout), optional, dimension(:,:) :: fprev
     class(errors), intent(inout), optional, target :: err
 
     ! Model Constants
@@ -108,35 +70,24 @@ module subroutine afi_step(this, sys, h, x, y, yn, xprev, yprev, err)
     call this%allocate_workspace(neqn, errmgr)
     if (errmgr%has_error_occurred()) return
 
-    ! Process
-    if (this%m_first) then
-        ! First time through - evaluate functions and store in the workspace
-        j = n
-        do i = 2, n
-            call sys%fcn(xprev(j), yprev(j,:), this%m_work(:,i))
-            j = j - 1
-        end do
-        this%m_first = .false.
-    end if
-
     ! Compute the Adams-Bashforth predictor
     yn = y + h * ( &
-        a1 * this%m_work(:,1) + &
-        a2 * this%m_work(:,2) + &
-        a3 * this%m_work(:,3) + &
-        a4 * this%m_work(:,4) &
+        a1 * fprev(:,1) + &
+        a2 * fprev(:,2) + &
+        a3 * fprev(:,3) + &
+        a4 * fprev(:,4) &
     )
-    call this%shift()
-    call sys%fcn(x + h, yn, this%m_work(:,1))
+    call shift(fprev)
+    call sys%fcn(x + h, yn, fprev(:,1))
 
     ! Compute the Adams-Moulton corrector
     yn = y + h * ( &
-        b1 * this%m_work(:,1) + &
-        b2 * this%m_work(:,2) + &
-        b3 * this%m_work(:,3) + &
-        b4 * this%m_work(:,4) &
+        b1 * fprev(:,1) + &
+        b2 * fprev(:,2) + &
+        b3 * fprev(:,3) + &
+        b4 * fprev(:,4) &
     )
-    call sys%fcn(x + h, yn, this%m_work(:,1))
+    call sys%fcn(x + h, yn, fprev(:,1))
 
     ! End
     return
@@ -150,20 +101,45 @@ module subroutine afi_step(this, sys, h, x, y, yn, xprev, yprev, err)
         DIFFEQ_ARRAY_SIZE_ERROR)
     return
 
-    ! XPREV or YPREV not input
+    ! XPREV, YPREV, or FPREV not input
 20  continue
+    call errmgr%report_error("afi_step", &
+        "All optional array arguments must be supplied.", &
+        DIFFEQ_MISSING_ARGUMENT_ERROR)
     return
 
     ! XPREV wrong size
 30  continue
+    allocate(character(len = 256) :: errmsg)
+    write(errmsg, 100) "The independent variable history array was " // &
+        "expected to have ", n, " elements, but was found to have ", &
+        size(xprev), "."
+    call errmgr%report_error("afi_step", trim(errmsg), &
+        DIFFEQ_ARRAY_SIZE_ERROR)
     return
 
     ! YPREV wrong size
 40  continue
+    allocate(character(len = 256) :: errmsg)
+    write(errmsg, 101) "The dependent variable history matrix was " // &
+        "expected to be (", neqn, "-by-", n, "), but was found to be (", &
+        size(yprev, 1), "-by-", size(yprev, 2), ")."
+    call errmgr%report_error("afi_step", trim(errmsg), &
+        DIFFEQ_MATRIX_SIZE_ERROR)
+    return
+
+    ! FPREV wrong size
+50  continue
+    write(errmsg, 101) "The ODE result history matrix was " // &
+        "expected to be (", neqn, "-by-", n, "), but was found to be (", &
+        size(yprev, 1), "-by-", size(yprev, 2), ")."
+    call errmgr%report_error("afi_step", trim(errmsg), &
+        DIFFEQ_MATRIX_SIZE_ERROR)
     return
 
     ! Formatting
 100 format(A, I0, A, I0, A)
+101 format(A, I0, A, I0, A, I0, A, I0, A)
 end subroutine
 
 ! ------------------------------------------------------------------------------
