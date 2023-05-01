@@ -1,7 +1,9 @@
 var annotated_dup =
 [
     [ "diffeq", null, [
+      [ "adams_fixed_integerator", "structdiffeq_1_1adams__fixed__integerator.html", "structdiffeq_1_1adams__fixed__integerator" ],
       [ "exponential_fixed_integrator", "structdiffeq_1_1exponential__fixed__integrator.html", "structdiffeq_1_1exponential__fixed__integrator" ],
+      [ "fixed_multistep_integrator", "structdiffeq_1_1fixed__multistep__integrator.html", "structdiffeq_1_1fixed__multistep__integrator" ],
       [ "fixed_step_integrator", "structdiffeq_1_1fixed__step__integrator.html", "structdiffeq_1_1fixed__step__integrator" ],
       [ "ode", "interfacediffeq_1_1ode.html", null ],
       [ "ode_container", "structdiffeq_1_1ode__container.html", "structdiffeq_1_1ode__container" ],
