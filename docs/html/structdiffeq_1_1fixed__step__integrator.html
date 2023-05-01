@@ -112,10 +112,12 @@ Inheritance diagram for diffeq::fixed_step_integrator:</div>
  <div class="center">
   <img src="structdiffeq_1_1fixed__step__integrator.png" usemap="#diffeq::fixed_5Fstep_5Fintegrator_map" alt=""/>
   <map id="diffeq::fixed_5Fstep_5Fintegrator_map" name="diffeq::fixed_5Fstep_5Fintegrator_map">
-<area href="structdiffeq_1_1ode__integrator.html" title="The most basic ODE integrator object capable of integrating systems of ODE&#39;s." alt="diffeq::ode_integrator" shape="rect" coords="109,0,317,24"/>
+<area href="structdiffeq_1_1ode__integrator.html" title="The most basic ODE integrator object capable of integrating systems of ODE&#39;s." alt="diffeq::ode_integrator" shape="rect" coords="218,0,426,24"/>
 <area href="structdiffeq_1_1exponential__fixed__integrator.html" title="Defines a third-order exponential integrator as defined by Jibunoh." alt="diffeq::exponential_fixed_integrator" shape="rect" coords="0,112,208,136"/>
-<area href="structdiffeq_1_1rk__fixed__integrator.html" title="Defines an explicit, Runge-Kutta fixed-step integrator." alt="diffeq::rk_fixed_integrator" shape="rect" coords="218,112,426,136"/>
-<area href="structdiffeq_1_1rk4__fixed__integrator.html" title="Defines the explicit, 4th order, Runge-Kutta fixed-step integrator." alt="diffeq::rk4_fixed_integrator" shape="rect" coords="218,168,426,192"/>
+<area href="structdiffeq_1_1fixed__multistep__integrator.html" title="Defines a fixed step-size, multi-step integrator." alt="diffeq::fixed_multistep_integrator" shape="rect" coords="218,112,426,136"/>
+<area href="structdiffeq_1_1rk__fixed__integrator.html" title="Defines an explicit, Runge-Kutta fixed-step integrator." alt="diffeq::rk_fixed_integrator" shape="rect" coords="436,112,644,136"/>
+<area href="structdiffeq_1_1adams__fixed__integerator.html" title="Defines a fixed-step, 4th-order, Adams-Bashforth-Moulton PECE integrator." alt="diffeq::adams_fixed_integerator" shape="rect" coords="218,168,426,192"/>
+<area href="structdiffeq_1_1rk4__fixed__integrator.html" title="Defines the explicit, 4th order, Runge-Kutta fixed-step integrator." alt="diffeq::rk4_fixed_integrator" shape="rect" coords="436,168,644,192"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -138,7 +140,7 @@ Public Member Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Defines a fixed-step integrator. </p>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00295">295</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00298">298</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 </div><h2 class="groupheader">Member Function/Subroutine Documentation</h2>
 <a id="ad8a9489a1efae5feaa884aacd37c93c6" name="ad8a9489a1efae5feaa884aacd37c93c6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad8a9489a1efae5feaa884aacd37c93c6">&#9670;&#160;</a></span>solve()</h2>
@@ -173,7 +175,7 @@ Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>An M-by-N matrix where M is the number of solution points, and N is the number of ODEs plus 1. The first column contains the values of the independent variable at which the results were computed. The remaining columns contain the integration results for each ODE. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00329">329</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00332">332</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -196,6 +198,9 @@ Public Member Functions</h2></td></tr>
 <div class="line"> <span class="keywordtype">real(real64)</span> h, &amp;</div>
 <div class="line"> <span class="keywordtype">real(real64)</span> x, &amp;</div>
 <div class="line"> <span class="keywordtype">real(real64)</span> yn, &amp;</div>
+<div class="line"> <span class="keywordtype">optional</span> <span class="keywordtype">real(real64)</span> xprev(:), &amp;</div>
+<div class="line"> <span class="keywordtype">optional</span> <span class="keywordtype">real(real64)</span> yprev(:,:), &amp;</div>
+<div class="line"> <span class="keywordtype">optional</span> <span class="keywordtype">real(real64)</span> fprev(:,:), &amp;</div>
 <div class="line"> <span class="keywordtype">optional</span> <span class="keywordtype">class</span>(errors) err &amp;</div>
 <div class="line">)</div>
 </div><!-- fragment --></dd></dl>
@@ -207,12 +212,14 @@ Public Member Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">x</td><td>The current value of the independent variable. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">y</td><td>An N-element array containing the current values of the dependent variables. </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">yn</td><td>An N-element array where the values of the dependent variables at <code>x</code> + <code>h</code> will be written. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xprev</td><td>An M-element array containing the previous M values of the independent variable where M is the order of the method. This is typically useful for multi-step methods. In single-step methods this parameter is not used. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">yprve</td><td>An M-by-NEQN array containing the previous M arrays of dependent variable values where M is the order of the method. This is typically useful for multi-step methods. In single-step methods this parameter is not used. </td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">An</td><td>optional errors-based object that if provided can be used to retrieve information relating to any errors encountered during execution. If not provided, a default implementation of the errors class is used internally to provide error handling. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00358">358</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00372">372</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
