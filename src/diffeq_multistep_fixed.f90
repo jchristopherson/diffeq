@@ -100,7 +100,7 @@ module function fms_solver(this, sys, x, iv, err) result(rst)
         h = x(i) - x(j2)
         rst(i,1) = x(i)
         call this%step(sys, h, rst(j2,1), rst(j2,2:), rst(i,2:), &
-            rst(j1:j2,1), rst(j1:j2,2:), this%m_buffer, errmgr)
+            rst(j1:j2,1), rst(j1:j2,2:), this%m_buffer, err = errmgr)
         if (errmgr%has_error_occurred()) return
         j1 = j1 + 1
         j2 = j2 + 1

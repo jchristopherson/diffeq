@@ -18,11 +18,14 @@ module diffeq
     public :: fixed_multistep_integrator
     public :: adams_fixed_integerator
     public :: variable_step_integrator
+    public :: rk_variable_integrator
     public :: DIFFEQ_MEMORY_ALLOCATION_ERROR
     public :: DIFFEQ_NULL_POINTER_ERROR
     public :: DIFFEQ_MATRIX_SIZE_ERROR
     public :: DIFFEQ_ARRAY_SIZE_ERROR
     public :: DIFFEQ_INVALID_INPUT_ERROR
+    public :: DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR
+    public :: DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR
 
 ! ------------------------------------------------------------------------------
     integer(int32), parameter :: DIFFEQ_MEMORY_ALLOCATION_ERROR = 10000
@@ -31,6 +34,8 @@ module diffeq
     integer(int32), parameter :: DIFFEQ_ARRAY_SIZE_ERROR = 10003
     integer(int32), parameter :: DIFFEQ_INVALID_INPUT_ERROR = 10004
     integer(int32), parameter :: DIFFEQ_MISSING_ARGUMENT_ERROR = 10005
+    integer(int32), parameter :: DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR = 10006
+    integer(int32), parameter :: DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR = 10007
 
 ! ------------------------------------------------------------------------------
     !> @brief A container for the routine containing the ODEs to integrate.
@@ -339,7 +344,8 @@ module diffeq
         !!  class(ode_container) sys, &
         !!  real(real64) h, &
         !!  real(real64) x, &
-        !!  real(real64) yn, &
+        !!  real(real64) y(:), &
+        !!  real(real64) yn(:), &
         !!  optional real(real64) xprev(:), &
         !!  optional real(real64) yprev(:,:), &
         !!  optional real(real64) fprev(:,:), &
@@ -360,10 +366,13 @@ module diffeq
         !!  of the independent variable where M is the order of the method.
         !!  This is typically useful for multi-step methods.  In single-step
         !!  methods this parameter is not used.
-        !! @param[in] yprve An M-by-NEQN array containing the previous M arrays
+        !! @param[in] yprev An M-by-NEQN array containing the previous M arrays
         !!  of dependent variable values where M is the order of the method.
         !!  This is typically useful for multi-step methods.  In single-step
         !!  methods this parameter is not used.
+        !! @param[out] fprev An M-by-NEQN array where the previous M function
+        !!  values are written.  This is typically useful for multi-step 
+        !!  methods.  In single-step methods this parameter is not used.
         !! @param[in,out] An optional errors-based object that if provided 
         !!  can be used to retrieve information relating to any errors 
         !!  encountered during execution. If not provided, a default 
@@ -418,7 +427,8 @@ module diffeq
         !!  class(ode_container) sys, &
         !!  real(real64) h, &
         !!  real(real64) x, &
-        !!  real(real64) yn, &
+        !!  real(real64) y(:), &
+        !!  real(real64) yn(:), &
         !!  optional class(errors) err &
         !! )
         !! @endcode
@@ -808,7 +818,8 @@ module diffeq
         !!  class(ode_container) sys, &
         !!  real(real64) h, &
         !!  real(real64) x, &
-        !!  real(real64) yn, &
+        !!  real(real64) y(:), &
+        !!  real(real64) yn(:), &
         !!  optional class(errors) err &
         !! )
         !! @endcode
@@ -1033,7 +1044,8 @@ module diffeq
         !!  class(ode_container) sys, &
         !!  real(real64) h, &
         !!  real(real64) x, &
-        !!  real(real64) yn, &
+        !!  real(real64) y(:), &
+        !!  real(real64) yn(:), &
         !!  optional real(real64) xprev(:), &
         !!  optional real(real64) yprev(:,:), &
         !!  optional class(errors) err &
@@ -1051,8 +1063,11 @@ module diffeq
         !!  variables at @p x + @p h will be written.
         !! @param[in] xprev An M-element array containing the previous M values
         !!  of the independent variable where M is the order of the method.
-        !! @param[in] yprve An M-by-NEQN array containing the previous M arrays
+        !! @param[in] yprev An M-by-NEQN array containing the previous M arrays
         !!  of dependent variable values where M is the order of the method.
+        !! @param[out] fprev An M-by-NEQN array where the previous M function
+        !!  values are written.  This is typically useful for multi-step 
+        !!  methods.  In single-step methods this parameter is not used.
         !! @param[in,out] An optional errors-based object that if provided 
         !!  can be used to retrieve information relating to any errors 
         !!  encountered during execution. If not provided, a default 
@@ -1086,55 +1101,459 @@ module diffeq
 
 
 
+! ******************************************************************************
+! ******************************************************************************
+! VARIABLE STEP INTEGRATORS
+! ******************************************************************************
+! ******************************************************************************
 
 
 
 
 
-
-! ------------------------------------------------------------------------------
     !> @brief Defines a variable-step integrator.
     type, abstract, extends(ode_integrator) :: variable_step_integrator
         real(real64), private :: m_safetyfactor = 0.9d0
         real(real64), private :: m_alpha = 0.7d0
-        real(real64), private :: m_beta = 0.4d0
+        real(real64), private :: m_beta = 0.4d-1
         real(real64), private :: m_maxstep = huge(1.0d0)
+        real(real64), private :: m_minstep = 1.0d2 * epsilon(1.0d0)
+        integer(int32), private :: m_maxstepcount = 1000
+        real(real64), private :: m_stepSize = 1.0d0
+        real(real64), private :: m_enormPrev = 0.0d0
+        logical, private :: m_respectXMax = .true.
+        ! Solution buffer
+        real(real64), private, allocatable, dimension(:,:) :: m_buffer
+        integer(int32) :: m_bufferCount = 0
+        ! Workspaces
+        real(real64), allocatable, dimension(:) :: m_ework      ! NEQN element
+        ! Tolerances
+        real(real64), allocatable, dimension(:) :: m_rtol       ! NEQN element
+        real(real64), allocatable, dimension(:) :: m_atol       ! NEQN element
     contains
-        procedure, public :: get_safety_factor => vsi_get_safety_factor
-        procedure, public :: set_safety_factor => vsi_set_safety_factor
-        procedure, public :: get_alpha => vsi_get_alpha
-        procedure, public :: set_alpha => vsi_set_alpha
-        procedure, public :: get_beta => vsi_get_beta
-        procedure, public :: set_beta => vsi_set_beta
-        procedure, public :: get_max_step_size => vsi_get_max_step
-        procedure, public :: set_max_step_size => vsi_set_max_step
-        !> @brief Computes a normalized estimates the error for the given step.
+        ! Use to allocate internal workspaces.  This routine only takes action
+        ! if the workspace array(s) are not sized properly for the application.
+        procedure, private :: allocate_workspace => vsi_alloc_workspace
+        !> @brief Attempts a single integration step.
         !!
         !! @par Syntax
         !! @code{.f90}
-        !! real(real64) pure function estimate_error( &
+        !! subroutine attempt_step( &
         !!  class(variable_step_integrator) this, &
+        !!  class(ode_container) sys, &
+        !!  real(real64) h, &
+        !!  real(real64) x, &
         !!  real(real64) y(:), &
-        !!  real(real64) ys(:), &
-        !!  real(real64) atol(:), &
-        !!  real(real64) rtol(:) &
+        !!  real(real64) yn(:), &
+        !!  real(real64) en(:), &
+        !!  optional real(real64) xprev(:), &
+        !!  optional real(real64) yprev(:,:), &
+        !!  optional real(real64) fprev(:,:), &
+        !!  optional class(errors) err &
         !! )
         !! @endcode
         !!
-        !! @param[in] this The variable_step_integrator object.
-        !! @param[in] y The current solution estimate.
-        !! @param[in] ys A suplemental solution estimate typically the result
-        !!  of an embedded estimate.
-        !! @param[in] atol The absolute tolerance value.
-        !! @param[in] rtol The relative tolerance value.
+        !! @param[in,out] this The @ref fixed_step_integrator object.
+        !! @param[in] sys The @ref ode_container object containing the ODEs
+        !!  to integrate.
+        !! @param[in] h The current step size.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] y An N-element array containing the current values of
+        !!  the dependent variables.
+        !! @param[out] yn An N-element array where the values of the dependent
+        !!  variables at @p x + @p h will be written.
+        !! @param[out] ys AN N-element array where the supplemental solution
+        !!  values at @p x + @p h will be written.
+        !! @param[in] xprev An M-element array containing the previous M values
+        !!  of the independent variable where M is the order of the method.
+        !!  This is typically useful for multi-step methods.  In single-step
+        !!  methods this parameter is not used.
+        !! @param[in] yprev An M-by-NEQN array containing the previous M arrays
+        !!  of dependent variable values where M is the order of the method.
+        !!  This is typically useful for multi-step methods.  In single-step
+        !!  methods this parameter is not used.
+        !! @param[in,out] An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.
+        procedure(variable_step_attempt), deferred, public :: attempt_step
+        !> @brief Perform necessary actions on completion of a successful step.
         !!
-        !! @return The normalized error estimate.
-        procedure, public :: estimate_error => vsi_estimate_error
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine on_successful_step(class(variable_step_integrator) this)
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref variable_step_integrator object.
+        procedure(variable_step_action), deferred, public :: on_successful_step
+        !> @brief Gets a safety factor used to limit the predicted step size.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_safety_factor( &
+        !!  class(variable_step_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref variable_step_integrator object.
+        !! @return The parameter value.
+        procedure, public :: get_safety_factor => vsi_get_safety_factor
+        !> @brief Sets a safety factor used to limit the predicted step size.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_safety_factor( &
+        !!  class(variable_step_integrator) this, &
+        !!  real(real64) x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref variable_step_integrator object.
+        !! @param[in] The parameter value.
+        procedure, public :: set_safety_factor => vsi_set_safety_factor
+        !> @brief Gets the \f$ alpha \f$ control parameter in the PI controller
+        !! \f$ h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} e_n^{\alpha} 
+        !! e_{n-1}^{\beta}\f$, where \f$ f \f$ is a safety factor, and \f$ k \f$
+        !! is the order of the integration method.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_alpha( &
+        !!  class(variable_step_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref variable_step_integrator object.
+        !! @return The parameter value.
+        procedure, public :: get_alpha => vsi_get_alpha
+        !> @brief Sets the \f$ alpha \f$ control parameter in the PI controller
+        !! \f$ h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} e_n^{\alpha} 
+        !! e_{n-1}^{\beta}\f$, where \f$ f \f$ is a safety factor, and \f$ k \f$
+        !! is the order of the integration method.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_alpha( &
+        !!  class(variable_step_integrator) this, &
+        !!  real(real64) x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref variable_step_integrator object.
+        !! @param[in] The parameter value.
+        procedure, public :: set_alpha => vsi_set_alpha
+        !> @brief Gets the \f$ beta \f$ control parameter in the PI controller
+        !! \f$ h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} e_n^{\alpha} 
+        !! e_{n-1}^{\beta}\f$, where \f$ f \f$ is a safety factor, and \f$ k \f$
+        !! is the order of the integration method.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_beta( &
+        !!  class(variable_step_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref variable_step_integrator object.
+        !! @return The parameter value.
+        procedure, public :: get_beta => vsi_get_beta
+        !> @brief Sets the \f$ beta \f$ control parameter in the PI controller
+        !! \f$ h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} e_n^{\alpha} 
+        !! e_{n-1}^{\beta}\f$, where \f$ f \f$ is a safety factor, and \f$ k \f$
+        !! is the order of the integration method.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_beta( &
+        !!  class(variable_step_integrator) this, &
+        !!  real(real64) x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref variable_step_integrator object.
+        !! @param[in] The parameter value.
+        procedure, public :: set_beta => vsi_set_beta
+        !> @brief Gets the maximum allowed step size.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_max_step_size( &
+        !!  class(variable_step_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref variable_step_integrator object.
+        !! @return The parameter value.
+        procedure, public :: get_max_step_size => vsi_get_max_step
+        !> @brief Sets the maximum allowed step size.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_max_step_size( &
+        !!  class(variable_step_integrator) this, &
+        !!  real(real64) x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref variable_step_integrator object.
+        !! @param[in] The parameter value.
+        procedure, public :: set_max_step_size => vsi_set_max_step
+        !> @brief Gets the minimum allowed step size.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_min_step_size( &
+        !!  class(variable_step_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref variable_step_integrator object.
+        !! @return The parameter value.
+        procedure, public :: get_min_step_size => vsi_get_min_step
+        !> @brief Sets the minimum allowed step size.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_min_step_size( &
+        !!  class(variable_step_integrator) this, &
+        !!  real(real64) x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref variable_step_integrator object.
+        !! @param[in] The parameter value.
+        procedure, public :: set_min_step_size => vsi_set_min_step
+        !> @brief Gets the maximum number of attempts per step allowed.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! integer(int32) pure function get_max_step_attempts( &
+        !!  class(variable_step_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref variable_step_integrator object.
+        !! @return The parameter value.
+        procedure, public :: get_max_step_attempts => vsi_get_max_step_count
+        !> @brief Sets the maximum number of attempts per step allowed.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_max_step_attempts( &
+        !!  class(variable_step_integrator) this, &
+        !!  integer(int32) x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref variable_step_integrator object.
+        !! @param[in] The parameter value.
+        procedure, public :: set_max_step_attempts => vsi_set_max_step_count
+        !> @brief Computes the next step size.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function compute_next_step_size( &
+        !!  class(variable_step_integrator) this, &
+        !!  real(real64) hn, &
+        !!  real(real64) en, &
+        !!  real(real64) enm1 &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref variable_step_integrator object.
+        !! @param[in] hn The current step size.
+        !! @param[in] en The norm of the error for the current step size.
+        !! @param[in] enm1 The norm of the error from the previous step size.
+        !!
+        !! @return The new step size.
+        !!
+        !! @par Remarks
+        !! The step size estimate makes use of a PI type controller such that
+        !! \f$ h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} e_n^{\alpha} 
+        !! e_{n-1}^{\beta}\f$, where \f$ f \f$ is a safety factor, and \f$ k \f$
+        !! is the order of the integration method.
         procedure, public :: compute_next_step_size => vsi_next_step
+        !> @brief Buffers a results set.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine buffer_results( &
+        !!  class(variable_step_integrator) this, &
+        !!  real(real64) x, &
+        !!  real(real64) y(:), &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref variable_step_integrator object.
+        !! @param[in] x The independent variable value.
+        !! @param[in] y An N-element array containing the solution values.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.  Possible errors and warning messages that may be 
+        !!  encountered are as follows.
+        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
+        !!      allocation issue.
+        !!  - DIFFEQ_ARRAY_SIZE_ERROR: Occurs if @p y is not compatible with
+        !!      the buffer size.
+        procedure, public :: buffer_results => vsi_append_to_buffer
+        !> @brief Gets the number of entries into the solution buffer.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! integer(int32) pure function get_buffer_size( &
+        !!  class(variable_step_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref variable_step_integrator object.
+        !! @return The number of buffer entries.
+        procedure, public :: get_buffer_size => vsi_get_buffer_count
+        !> @brief Clears the results buffer.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine clear_buffer(class(variable_step_integrator) this)
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref variable_step_integrator object.
+        procedure, public :: clear_buffer => vsi_clear_buffer
+        !> @brief Gets the current step size.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_step_size( &
+        !!  class(variable_step_integrator) this &
+        !! )
+        !!
+        !! @param[in] this The @ref variable_step_integrator object.
+        !! @return The step size.
+        procedure, public :: get_step_size => vsi_get_step_size
+        !> @brief Sets the current step size.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_step_size( &
+        !!  class(variable_step_integrator) this, &
+        !!  real(real64) x &
+        !! )
+        !!
+        !! @param[in,out] this The @ref variable_step_integrator object.
+        !! @param[in] x The step size.
+        procedure, public :: set_step_size => vsi_set_step_size
+        !> @brief Gets a value determining if the integrator should respect a
+        !! hard limit in the independent variable range.  If false, the 
+        !! integrator may step pass the limit.
+        !! 
+        !! @par Syntax
+        !! @code{.f90}
+        !! logical pure function get_respect_x_max( &
+        !!  class(variable_step_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref variable_step_integrator object.
+        !! @return True if the integrator should respect the limiting value of
+        !!  the independent variable; else, false.
+        procedure, public :: get_respect_x_max => vsi_get_respect_xmax
+        !> @brief Sets a value determining if the integrator should respect a
+        !! hard limit in the independent variable range.  If false, the 
+        !! integrator may step pass the limit.
+        !! 
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_respect_x_max( &
+        !!  class(variable_step_integrator) this, &
+        !!  logical x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref variable_step_integrator object.
+        !! @param[in] x True if the integrator should respect the limiting 
+        !!  value of the independent variable; else, false.
+        procedure, public :: set_respect_x_max => vsi_set_respect_xmax
+        !> @brief Takes one integration step.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine step( &
+        !!  class(fixed_step_integrator) this, &
+        !!  class(ode_container) sys, &
+        !!  real(real64) x, &
+        !!  real(real64) xmax, &
+        !!  real(real64) y(:), &
+        !!  real(real64) yn(:), &
+        !!  optional real(real64) xprev(:), &
+        !!  optional real(real64) yprev(:,:), &
+        !!  optional real(real64) fprev(:,:), &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref fixed_step_integrator object.
+        !! @param[in] sys The @ref ode_container object containing the ODEs
+        !!  to integrate.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] xmax The upper integration limit.
+        !! @param[in] y An N-element array containing the current values of
+        !!  the dependent variables.
+        !! @param[out] yn An N-element array where the values of the dependent
+        !!  variables at @p x + @p h will be written.
+        !! @param[in] xprev An M-element array containing the previous M values
+        !!  of the independent variable where M is the order of the method.
+        !!  This is typically useful for multi-step methods.  In single-step
+        !!  methods this parameter is not used.
+        !! @param[in] yprev An M-by-NEQN array containing the previous M arrays
+        !!  of dependent variable values where M is the order of the method.
+        !!  This is typically useful for multi-step methods.  In single-step
+        !!  methods this parameter is not used.
+        !! @param[out] fprev An M-by-NEQN array where the previous M function
+        !!  values are written.  This is typically useful for multi-step 
+        !!  methods.  In single-step methods this parameter is not used.
+        !! @param[in,out] An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.  Possible errors and warning messages that may be 
+        !!  encountered are as follows.
+        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
+        !!      allocation issue.
+        !!  - DIFFEQ_ARRAY_SIZE_ERROR: Occurs if @p yn is not the same size
+        !!      as @p y.
+        !!  - DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR: Occurs if the step size becomes
+        !!      too small.
+        !!  - DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR: Occurs if the iteration
+        !!      count is exceeded for a single step.
+        procedure, public :: step => vsi_step
     end type
 
     ! diffeq_vs_integrator.f90
     interface
+        subroutine variable_step_attempt(this, sys, h, x, y, yn, en, xprev, &
+            yprev, fprev, err)
+            use iso_fortran_env
+            use ferror
+            import variable_step_integrator
+            import ode_container
+            class(variable_step_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(in) :: h, x
+            real(real64), intent(in), dimension(:) :: y
+            real(real64), intent(out), dimension(:) :: yn, en
+            real(real64), intent(in), optional, dimension(:) :: xprev
+            real(real64), intent(in), optional, dimension(:,:) :: yprev
+            real(real64), intent(inout), optional, dimension(:,:) :: fprev
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+
+        subroutine variable_step_action(this)
+            import variable_step_integrator
+            class(variable_step_integrator), intent(inout) :: this
+        end subroutine
+
         pure module function vsi_get_safety_factor(this) result(rst)
             class(variable_step_integrator), intent(in) :: this
             real(real64) :: rst
@@ -1175,17 +1594,252 @@ module diffeq
             real(real64), intent(in) :: x
         end subroutine
 
-        pure module function vsi_estimate_error(this, y, ys, atol, rtol) &
-            result(rst)
+        pure module function vsi_get_min_step(this) result(rst)
             class(variable_step_integrator), intent(in) :: this
-            real(real64), intent(in), dimension(:) :: y, ys, atol, rtol
             real(real64) :: rst
         end function
+
+        module subroutine vsi_set_min_step(this, x)
+            class(variable_step_integrator), intent(inout) :: this
+            real(real64), intent(in) :: x
+        end subroutine
+
+        pure module function vsi_get_max_step_count(this) result(rst)
+            class(variable_step_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+
+        module subroutine vsi_set_max_step_count(this, x)
+            class(variable_step_integrator), intent(inout) :: this
+            integer(int32), intent(in) :: x
+        end subroutine
 
         pure module function vsi_next_step(this, hn, en, enm1) result(rst)
             class(variable_step_integrator), intent(in) :: this
             real(real64), intent(in) :: hn, en, enm1
             real(real64) :: rst
         end function
+
+        pure module function estimate_error_1(y, ys, atol, rtol) result(rst)
+            real(real64), intent(in), dimension(:) :: y, ys, atol, rtol
+            real(real64) :: rst
+        end function
+
+        pure module function estimate_error_2(y, ys, atol, rtol) result(rst)
+            real(real64), intent(in), dimension(:) :: y, ys
+            real(real64), intent(in) :: atol, rtol
+            real(real64) :: rst
+        end function
+
+        module subroutine vsi_append_to_buffer(this, x, y, err)
+            class(variable_step_integrator), intent(inout) :: this
+            real(real64), intent(in) :: x
+            real(real64), intent(in) :: y(:)
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+
+        pure module function vsi_get_buffer_count(this) result(rst)
+            class(variable_step_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+
+        module subroutine vsi_clear_buffer(this)
+            class(variable_step_integrator), intent(inout) :: this
+        end subroutine
+
+        pure module function vsi_get_step_size(this) result(rst)
+            class(variable_step_integrator), intent(in) :: this
+            real(real64) :: rst
+        end function
+
+        module subroutine vsi_set_step_size(this, x)
+            class(variable_step_integrator), intent(inout) :: this
+            real(real64), intent(in) :: x
+        end subroutine
+
+        module subroutine vsi_alloc_workspace(this, neqn, err)
+            class(variable_step_integrator), intent(inout) :: this
+            integer(int32), intent(in) :: neqn
+            class(errors), intent(inout) :: err
+        end subroutine
+
+        pure module function vsi_get_respect_xmax(this) result(rst)
+            class(variable_step_integrator), intent(in) :: this
+            logical :: rst
+        end function
+
+        module subroutine vsi_set_respect_xmax(this, x)
+            class(variable_step_integrator), intent(inout) :: this
+            logical, intent(in) :: x
+        end subroutine
+
+        module subroutine vsi_step(this, sys, x, xmax, y, yn, xprev, yprev, &
+            fprev, err)
+            class(variable_step_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(in) :: x, xmax
+            real(real64), intent(in), dimension(:) :: y
+            real(real64), intent(out), dimension(:) :: yn
+            real(real64), intent(in), optional, dimension(:) :: xprev
+            real(real64), intent(in), optional, dimension(:,:) :: yprev
+            real(real64), intent(inout), optional, dimension(:,:) :: fprev
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
     end interface
+
+! ------------------------------------------------------------------------------
+    !> @brief Defines a variable-step, Runge-Kutta integrator.
+    type, abstract, extends(variable_step_integrator) :: rk_variable_integrator
+        ! Workspace matrix (NEQN -by- STAGE COUNT)
+        real(real64), private, allocatable, dimension(:,:) :: m_work
+        ! Workspace array (NEQN)
+        real(real64), private, allocatable, dimension(:) :: m_ywork
+        ! A flag determining if this is the first accepted step (use for FSAL)
+        logical :: m_firstStep = .true.
+    contains
+        ! Use to allocate internal workspaces.  This routine only takes action
+        ! if the workspace array(s) are not sized properly for the application.
+        procedure, private :: allocate_workspace => rkv_alloc_workspace
+        !> @brief Gets the requested method factor from the Butcher tableau.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_method_factor( &
+        !!  class(rk_variable_integrator) this, &
+        !!  integer(int32), intent(in) i, &
+        !!  integer(int32), intent(in) j &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref rk_variable_integrator object.
+        !! @param[in] i The row index of the parameter from the Butcher tableau.
+        !! @param[in] j The column index of the parameter from the Butcher 
+        !!  tableau.
+        !! @return The requested parameter.
+        procedure(rkv_get_matrix_parameter), deferred, public :: &
+            get_method_factor
+        !> @brief Gets the requested quadrature weight from the Butcher tableau.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_quadrature_weight( &
+        !!  class(rk_variable_integrator) this, &
+        !!  integer(int32), intent(in) i &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref rk_variable_integrator object.
+        !! @param[in] i The index of the parameter from the Butcher tableau.
+        !! @return The requested parameter.
+        procedure(rkv_get_array_parameter), deferred, public :: &
+            get_quadrature_weight
+        !> @brief Gets the requested quadrature weight for the embedded solution
+        !! from the Butcher tableau.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_embedded_quadrature_weight( &
+        !!  class(rk_variable_integrator) this, &
+        !!  integer(int32), intent(in) i &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref rk_variable_integrator object.
+        !! @param[in] i The index of the parameter from the Butcher tableau.
+        !! @return The requested parameter.
+        procedure(rkv_get_array_parameter), deferred, public :: &
+            get_embedded_quadrature_weight
+        !> @brief Gets the requested position factor from the Butcher tableau.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_position_factor( &
+        !!  class(rk_variable_integrator) this, &
+        !!  integer(int32), intent(in) i &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref rk_variable_integrator object.
+        !! @param[in] i The index of the parameter from the Butcher tableau.
+        !! @return The requested parameter.
+        procedure(rkv_get_array_parameter), deferred, public :: &
+            get_position_factor
+        !> @brief Determines if the integrator is an FSAL (first same as last)
+        !! integrator (e.g. the 4th/5th order Dormand-Prince integrator).
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! logical pure function is_fsal(class(rk_variable_integrator) this)
+        !! @endcode
+        !! 
+        !! @param[in] this The @ref rk_variable_integrator object.
+        !! @return Returns true if the integrator is an FSAL type; else,
+        !!  returns false.
+        procedure(rkv_get_boolean_parameter), deferred, public :: is_fsal
+        !> @brief Gets the number of stages used by the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! integer(int32) pure function get_stage_count( &
+        !!  class(rk_variable_integrator) this &
+        !! )
+        !! @endcode
+        !! 
+        !! @param[in] this The @ref rk_variable_integrator object.
+        !! @return The number of stages.
+        procedure(rkv_get_integer_parameter), deferred, public :: &
+            get_stage_count
+        !> @brief Resets the integrator to its initial state.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine reset(class(rk_variable_integrator) this)
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref rk_variable_integrator object.
+        procedure, public :: reset => rkv_reset
+    end type
+
+    interface
+        pure function rkv_get_matrix_parameter(this, i, j) result(rst)
+            use iso_fortran_env
+            import rk_variable_integrator
+            class(rk_variable_integrator), intent(in) :: this
+            integer(int32), intent(in) :: i, j
+            real(real64) :: rst
+        end function
+
+        pure function rkv_get_array_parameter(this, i) result(rst)
+            use iso_fortran_env
+            import rk_variable_integrator
+            class(rk_variable_integrator), intent(in) :: this
+            integer(int32), intent(in) :: i
+            real(real64) :: rst
+        end function
+
+        pure function rkv_get_boolean_parameter(this) result(rst)
+            import rk_variable_integrator
+            class(rk_variable_integrator), intent(in) :: this
+            logical :: rst
+        end function
+
+        pure function rkv_get_integer_parameter(this) result(rst)
+            use iso_fortran_env
+            import rk_variable_integrator
+            class(rk_variable_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+
+        module subroutine rkv_alloc_workspace(this, neqn, err)
+            class(rk_variable_integrator), intent(inout) :: this
+            integer(int32), intent(in) :: neqn
+            class(errors), intent(inout) :: err
+        end subroutine
+
+        module subroutine rkv_reset(this)
+            class(rk_variable_integrator), intent(inout) :: this
+        end subroutine
+    end interface
+
+! ------------------------------------------------------------------------------
 end module

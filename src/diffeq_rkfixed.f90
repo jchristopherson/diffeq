@@ -15,7 +15,7 @@ module subroutine rkf_alloc_workspace(this, n, neqn, err)
 
     ! Process
     mw = neqn
-    nw = n + 1  ! +1 for 1 additional N-element workspace array
+    nw = n + 1  ! +1 for 1 additional NEQN-element workspace array
     if (allocated(this%m_work)) then
         if (size(this%m_work, 1) /= mw .or. size(this%m_work, 2) /= nw) then
             deallocate(this%m_work)
