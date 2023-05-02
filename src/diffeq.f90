@@ -1153,7 +1153,7 @@ module diffeq
         !! )
         !! @endcode
         !!
-        !! @param[in,out] this The @ref fixed_step_integrator object.
+        !! @param[in,out] this The @ref variable_step_integrator object.
         !! @param[in] sys The @ref ode_container object containing the ODEs
         !!  to integrate.
         !! @param[in] h The current step size.
@@ -1480,7 +1480,7 @@ module diffeq
         !! @par Syntax
         !! @code{.f90}
         !! subroutine step( &
-        !!  class(fixed_step_integrator) this, &
+        !!  class(variable_step_integrator) this, &
         !!  class(ode_container) sys, &
         !!  real(real64) x, &
         !!  real(real64) xmax, &
@@ -1493,7 +1493,7 @@ module diffeq
         !! )
         !! @endcode
         !!
-        !! @param[in,out] this The @ref fixed_step_integrator object.
+        !! @param[in,out] this The @ref variable_step_integrator object.
         !! @param[in] sys The @ref ode_container object containing the ODEs
         !!  to integrate.
         !! @param[in] x The current value of the independent variable.
@@ -1798,6 +1798,50 @@ module diffeq
         !!
         !! @param[in,out] this The @ref rk_variable_integrator object.
         procedure, public :: reset => rkv_reset
+        !> @brief Attempts a single integration step.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine attempt_step( &
+        !!  class(rk_variable_integrator) this, &
+        !!  class(ode_container) sys, &
+        !!  real(real64) h, &
+        !!  real(real64) x, &
+        !!  real(real64) y(:), &
+        !!  real(real64) yn(:), &
+        !!  real(real64) en(:), &
+        !!  optional real(real64) xprev(:), &
+        !!  optional real(real64) yprev(:,:), &
+        !!  optional real(real64) fprev(:,:), &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref rk_variable_integrator object.
+        !! @param[in] sys The @ref ode_container object containing the ODEs
+        !!  to integrate.
+        !! @param[in] h The current step size.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] y An N-element array containing the current values of
+        !!  the dependent variables.
+        !! @param[out] yn An N-element array where the values of the dependent
+        !!  variables at @p x + @p h will be written.
+        !! @param[out] ys AN N-element array where the supplemental solution
+        !!  values at @p x + @p h will be written.
+        !! @param[in] xprev An M-element array containing the previous M values
+        !!  of the independent variable where M is the order of the method.
+        !!  This is typically useful for multi-step methods.  In single-step
+        !!  methods this parameter is not used.
+        !! @param[in] yprev An M-by-NEQN array containing the previous M arrays
+        !!  of dependent variable values where M is the order of the method.
+        !!  This is typically useful for multi-step methods.  In single-step
+        !!  methods this parameter is not used.
+        !! @param[in,out] An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.
+        procedure, public :: attempt_step => rkv_attempt_step
     end type
 
     interface
@@ -1838,6 +1882,19 @@ module diffeq
 
         module subroutine rkv_reset(this)
             class(rk_variable_integrator), intent(inout) :: this
+        end subroutine
+
+        module subroutine rkv_attempt_step(this, sys, h, x, y, yn, en, xprev, &
+            yprev, fprev, err)
+            class(rk_variable_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(in) :: h, x
+            real(real64), intent(in), dimension(:) :: y
+            real(real64), intent(out), dimension(:) :: yn, en
+            real(real64), intent(in), optional, dimension(:) :: xprev
+            real(real64), intent(in), optional, dimension(:,:) :: yprev
+            real(real64), intent(inout), optional, dimension(:,:) :: fprev
+            class(errors), intent(inout), optional, target :: err
         end subroutine
     end interface
 

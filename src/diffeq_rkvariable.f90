@@ -58,13 +58,18 @@ module subroutine rkv_reset(this)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-module subroutine rkv_attempt_step(this, sys, h, x, y, yn, en)
+module subroutine rkv_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
+    fprev, err)
     ! Arguments
     class(rk_variable_integrator), intent(inout) :: this
     class(ode_container), intent(inout) :: sys
     real(real64), intent(in) :: h, x
     real(real64), intent(in), dimension(:) :: y
     real(real64), intent(out), dimension(:) :: yn, en
+    real(real64), intent(in), optional, dimension(:) :: xprev
+    real(real64), intent(in), optional, dimension(:,:) :: yprev
+    real(real64), intent(inout), optional, dimension(:,:) :: fprev
+    class(errors), intent(inout), optional, target :: err
 
     ! Local Variables
     integer(int32) :: i, j, n
