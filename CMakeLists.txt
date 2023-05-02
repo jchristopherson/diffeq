@@ -34,7 +34,7 @@ link_library(${PROJECT_NAME} ${linalg_LIBRARY} ${linalg_INCLUDE_DIR})
 # Detect Fortran compiler. 
 # - gfortran uses -fopenmp
 # - ifort uses -qopenmp
-target_compile_definitions(${PROJECT_NAME} PUBLIC "-fopenmp")
+# target_compile_definitions(${PROJECT_NAME} PUBLIC "-fopenmp")
 
 # Installation
 add_subdirectory(install)

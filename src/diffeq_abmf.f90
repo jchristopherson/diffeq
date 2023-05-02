@@ -8,7 +8,7 @@ pure module function afi_get_order(this) result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
-module subroutine shift(x)
+subroutine shift(x)
     ! Arguments
     real(real64), intent(inout), dimension(:,:) :: x
 
