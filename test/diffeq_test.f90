@@ -45,8 +45,14 @@ program test
     rst = test_adams_2()
     if (.not.rst) flag = 10
 
-    rst = test_dprk45_1()
+    rst = test_dprk45_attempt_step()
     if (.not.rst) flag = 11
+
+    rst = test_dprk45_step()
+    if (.not.rst) flag = 12
+
+    rst = test_dprk45_1()
+    if (.not.rst) flag = 13
 
     ! Output
     stop flag

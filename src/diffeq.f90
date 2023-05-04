@@ -1122,6 +1122,7 @@ module diffeq
         real(real64), private :: m_minstep = 1.0d2 * epsilon(1.0d0)
         integer(int32), private :: m_maxstepcount = 1000
         real(real64), private :: m_stepSize = 1.0d0
+        real(real64), private :: m_nextStep = 1.0d0
         real(real64), private :: m_enormPrev = 1.0d0
         logical, private :: m_respectXMax = .true.
         ! Solution buffer
@@ -1446,6 +1447,29 @@ module diffeq
         !! @param[in,out] this The @ref variable_step_integrator object.
         !! @param[in] x The step size.
         procedure, public :: set_step_size => vsi_set_step_size
+        !> @brief Gets the next step size.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_step_size( &
+        !!  class(variable_step_integrator) this &
+        !! )
+        !!
+        !! @param[in] this The @ref variable_step_integrator object.
+        !! @return The step size.
+        procedure, public :: get_next_step_size => vsi_get_next_step_size
+        !> @brief Sets the next step size.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_step_size( &
+        !!  class(variable_step_integrator) this, &
+        !!  real(real64) x &
+        !! )
+        !!
+        !! @param[in,out] this The @ref variable_step_integrator object.
+        !! @param[in] x The step size.
+        procedure, public :: set_next_step_size => vsi_set_next_step_size
         !> @brief Gets a value determining if the integrator should respect a
         !! hard limit in the independent variable range.  If false, the 
         !! integrator may step pass the limit.
@@ -1655,6 +1679,16 @@ module diffeq
         end function
 
         module subroutine vsi_set_step_size(this, x)
+            class(variable_step_integrator), intent(inout) :: this
+            real(real64), intent(in) :: x
+        end subroutine
+
+        pure module function vsi_get_next_step_size(this) result(rst)
+            class(variable_step_integrator), intent(in) :: this
+            real(real64) :: rst
+        end function
+
+        module subroutine vsi_set_next_step_size(this, x)
             class(variable_step_integrator), intent(inout) :: this
             real(real64), intent(in) :: x
         end subroutine

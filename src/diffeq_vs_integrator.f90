@@ -213,6 +213,20 @@ module subroutine vsi_set_step_size(this, x)
 end subroutine
 
 ! ------------------------------------------------------------------------------
+pure module function vsi_get_next_step_size(this) result(rst)
+    class(variable_step_integrator), intent(in) :: this
+    real(real64) :: rst
+    rst = this%m_nextStep
+end function
+
+! --------------------
+module subroutine vsi_set_next_step_size(this, x)
+    class(variable_step_integrator), intent(inout) :: this
+    real(real64), intent(in) :: x
+    this%m_nextStep = x
+end subroutine
+
+! ------------------------------------------------------------------------------
 pure module function vsi_get_respect_xmax(this) result(rst)
     class(variable_step_integrator), intent(in) :: this
     logical :: rst
@@ -306,7 +320,7 @@ module subroutine vsi_step(this, sys, x, xmax, y, yn, xprev, yprev, fprev, err)
 
     ! Local Variables
     integer(int32) :: i, neqn
-    real(real64) :: h, enorm
+    real(real64) :: h, enorm, et
     class(errors), pointer :: errmgr
     type(errors), target :: deferr
     character(len = :), allocatable :: errmsg
@@ -318,7 +332,7 @@ module subroutine vsi_step(this, sys, x, xmax, y, yn, xprev, yprev, fprev, err)
         errmgr => deferr
     end if
     neqn = size(y)
-    h = this%get_step_size()
+    h = this%get_next_step_size()
 
     ! Input Checking
     if (size(yn) /= neqn) go to 10
@@ -337,8 +351,10 @@ module subroutine vsi_step(this, sys, x, xmax, y, yn, xprev, yprev, fprev, err)
         
         ! Compute the normalized error
         enorm = norm2( &
-            this%m_ework / (this%m_atol + maxval(abs(y)) * this%m_rtol) &
+            this%m_ework / (neqn * (this%m_atol + &
+                max(maxval(abs(y)), maxval(abs(yn))) * this%m_rtol)) &
         )
+        if (enorm <= 1.0d0) call this%set_step_size(h)
             
         ! Compute a new step size
         h = this%compute_next_step_size(h, enorm, this%m_enormPrev)
@@ -366,7 +382,7 @@ module subroutine vsi_step(this, sys, x, xmax, y, yn, xprev, yprev, fprev, err)
     this%m_enormPrev = enorm
 
     ! Store the updated step size
-    call this%set_step_size(h)
+    call this%set_next_step_size(h)
 
     ! Perform any actions needed on a successful step
     call this%on_successful_step()

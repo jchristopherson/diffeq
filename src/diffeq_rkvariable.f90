@@ -113,19 +113,16 @@ module subroutine rkv_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
     end do
 
     ! Compute the two solution estimates, and the resulting error estimate
-    if (this%is_fsal()) then
-        yn = y + h * this%m_work(:,n)
-    else
-        do i = 1, n
-            if (i == 1) then
-                this%m_ywork = this%get_quadrature_weight(i) * this%m_work(:,i)
-            else
-                this%m_ywork = this%m_ywork + this%get_quadrature_weight(i) * &
-                    this%m_work(:,i)
-            end if
-        end do
-        yn = y + h * this%m_ywork
-    end if
+    do i = 1, n
+        if (i == 1) then
+            this%m_ywork = this%get_quadrature_weight(i) * this%m_work(:,i)
+        else
+            this%m_ywork = this%m_ywork + this%get_quadrature_weight(i) * &
+                this%m_work(:,i)
+        end if
+    end do
+    yn = y + h * this%m_ywork
+
     do i = 1, n
         if (i == 1) then
             this%m_ywork = this%get_error_factor(i) * this%m_work(:,i)
@@ -135,7 +132,6 @@ module subroutine rkv_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
         end if
     end do
     en = h * this%m_ywork
-    
 end subroutine
 
 ! ------------------------------------------------------------------------------
