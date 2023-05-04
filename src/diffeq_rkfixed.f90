@@ -95,10 +95,13 @@ module subroutine rkf_step(this, sys, h, x, y, yn, xprev, yprev, fprev, err)
     end do
 
     ! Compute the next solution estimate
-    this%m_work(:,n1) = 0.0d0
     do i = 1, n
-        this%m_work(:,n1) = this%m_work(:,n1) + &
-            this%get_quadrature_weight(i) * this%m_work(:,i)
+        if (i == 1) then
+            this%m_work(:,n1) = this%get_quadrature_weight(i) * this%m_work(:,i)
+        else
+            this%m_work(:,n1) = this%m_work(:,n1) + &
+                this%get_quadrature_weight(i) * this%m_work(:,i)
+        end if
     end do
     yn = y + h * this%m_work(:,n1)
 

@@ -72,10 +72,23 @@ module subroutine rkv_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
     class(errors), intent(inout), optional, target :: err
 
     ! Local Variables
-    integer(int32) :: i, j, n
-
+    integer(int32) :: i, j, n, neqn
+    class(errors), pointer :: errmgr
+    type(errors), target :: deferr
+    
     ! Initialization
+    if (present(err)) then
+        errmgr => err
+    else
+        errmgr => deferr
+    end if
     n = this%get_stage_count()
+    neqn = size(y)
+    call this%define_model()
+
+    ! Ensure the workspace arrays are allocated
+    call this%allocate_rkv_workspace(neqn, errmgr)
+    if (errmgr%has_error_occurred()) return
 
     ! The Butcher tableau is lower triangular as this is an explicit integrator
     if (.not.this%is_fsal() .or. this%m_firstStep) then
@@ -98,6 +111,47 @@ module subroutine rkv_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
             this%m_work(:,i) &  ! output
         )
     end do
+
+    ! Compute the two solution estimates, and the resulting error estimate
+    if (this%is_fsal()) then
+        yn = y + h * this%m_work(:,n)
+    else
+        do i = 1, n
+            if (i == 1) then
+                this%m_ywork = this%get_quadrature_weight(i) * this%m_work(:,i)
+            else
+                this%m_ywork = this%m_ywork + this%get_quadrature_weight(i) * &
+                    this%m_work(:,i)
+            end if
+        end do
+        yn = y + h * this%m_ywork
+    end if
+    do i = 1, n
+        if (i == 1) then
+            this%m_ywork = this%get_error_factor(i) * this%m_work(:,i)
+        else
+            this%m_ywork = this%m_ywork + this%get_error_factor(i) * &
+                this%m_work(:,i)
+        end if
+    end do
+    en = h * this%m_ywork
+    
+end subroutine
+
+! ------------------------------------------------------------------------------
+module subroutine rkv_on_successful_step(this)
+    ! Arguments
+    class(rk_variable_integrator), intent(inout) :: this
+
+    ! Local Variables
+    integer(int32) :: n
+
+    ! Store the last result as the first, if this is FSAL
+    if (this%is_fsal()) then
+        this%m_firstStep = .false.
+        n = this%get_stage_count()
+        this%m_work(:,1) = this%m_work(:,n)
+    end if
 end subroutine
 
 ! ------------------------------------------------------------------------------

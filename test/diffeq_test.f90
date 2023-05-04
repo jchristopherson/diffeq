@@ -4,6 +4,7 @@ program test
     use diffeq_rkfixed_tests
     use diffeq_expfixed_tests
     use diffeq_adamsfixed_tests
+    use diffeq_dprk45_tests
     implicit none
 
     ! Local Variables
@@ -43,6 +44,9 @@ program test
 
     rst = test_adams_2()
     if (.not.rst) flag = 10
+
+    rst = test_dprk45_1()
+    if (.not.rst) flag = 11
 
     ! Output
     stop flag

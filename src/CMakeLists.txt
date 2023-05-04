@@ -12,6 +12,8 @@ set(DIFFEQ_SOURCES
     ${dir}/diffeq_multistep_fixed.f90
     ${dir}/diffeq_abmf.f90
     ${dir}/diffeq_vs_integrator.f90
+    ${dir}/diffeq_vssi.f90
     ${dir}/diffeq_rkvariable.f90
+    ${dir}/diffeq_dprk45.f90
 )
 set(DIFFEQ_SOURCES ${DIFFEQ_SOURCES} PARENT_SCOPE)

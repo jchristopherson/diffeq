@@ -18,7 +18,9 @@ module diffeq
     public :: fixed_multistep_integrator
     public :: adams_fixed_integerator
     public :: variable_step_integrator
+    public :: variable_singlestep_integrator
     public :: rk_variable_integrator
+    public :: dprk45_integrator
     public :: DIFFEQ_MEMORY_ALLOCATION_ERROR
     public :: DIFFEQ_NULL_POINTER_ERROR
     public :: DIFFEQ_MATRIX_SIZE_ERROR
@@ -1120,7 +1122,7 @@ module diffeq
         real(real64), private :: m_minstep = 1.0d2 * epsilon(1.0d0)
         integer(int32), private :: m_maxstepcount = 1000
         real(real64), private :: m_stepSize = 1.0d0
-        real(real64), private :: m_enormPrev = 0.0d0
+        real(real64), private :: m_enormPrev = 1.0d0
         logical, private :: m_respectXMax = .true.
         ! Solution buffer
         real(real64), private, allocatable, dimension(:,:) :: m_buffer
@@ -1133,7 +1135,7 @@ module diffeq
     contains
         ! Use to allocate internal workspaces.  This routine only takes action
         ! if the workspace array(s) are not sized properly for the application.
-        procedure, private :: allocate_workspace => vsi_alloc_workspace
+        procedure, private :: allocate_vsi_workspace => vsi_alloc_workspace
         !> @brief Attempts a single integration step.
         !!
         !! @par Syntax
@@ -1688,8 +1690,69 @@ module diffeq
     end interface
 
 ! ------------------------------------------------------------------------------
+    !> @brief Defines a variable-step, single-stage integrator.
+    type, abstract, extends(variable_step_integrator) :: &
+        variable_singlestep_integrator
+    contains
+        !> @brief Solves the supplied system of ODEs.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! allocatable real(real64)(:,:) function solve( &
+        !!  class(variable_singlestep_integrator) this, &
+        !!  class(ode_container) sys, &
+        !!  real(real64) x(:), &
+        !!  real(real64) iv(:), &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref variable_singlestep_integrator object.
+        !! @param[in,out] sys The @ref ode_container object containing the ODEs
+        !!  to integrate.
+        !! @param[in] x An array, of at least 2 values, defining at a minimum
+        !!  the starting and ending values of the independent variable 
+        !!  integration range.  If more than two values are specified, the
+        !!  integration results will be returned at the supplied values.
+        !! @param[in] An array containing the initial values for each ODE.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.
+        !!
+        !! @return An M-by-N matrix where M is the number of solution points, 
+        !!  and N is the number of ODEs plus 1.  The first column contains
+        !!  the values of the independent variable at which the results were
+        !!  computed.  The remaining columns contain the integration results
+        !!  for each ODE.
+        procedure, public :: solve => vssi_solve
+        procedure, private :: solve_driver => vssi_solve_driver
+    end type
+
+    ! diffeq_vssi.f90
+    interface
+        module function vssi_solve(this, sys, x, iv, err) result(rst)
+            class(variable_singlestep_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(in), dimension(:) :: x, iv
+            class(errors), intent(inout), optional, target :: err
+            real(real64), allocatable, dimension(:,:) :: rst
+        end function
+
+        module function vssi_solve_driver(this, sys, x, iv, err) result(rst)
+            class(variable_singlestep_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(in), dimension(:) :: x, iv
+            class(errors), intent(inout) :: err
+            real(real64), allocatable, dimension(:,:) :: rst
+        end function
+    end interface
+
+! ------------------------------------------------------------------------------
     !> @brief Defines a variable-step, Runge-Kutta integrator.
-    type, abstract, extends(variable_step_integrator) :: rk_variable_integrator
+    type, abstract, extends(variable_singlestep_integrator) :: &
+        rk_variable_integrator
         ! Workspace matrix (NEQN -by- STAGE COUNT)
         real(real64), private, allocatable, dimension(:,:) :: m_work
         ! Workspace array (NEQN)
@@ -1699,7 +1762,7 @@ module diffeq
     contains
         ! Use to allocate internal workspaces.  This routine only takes action
         ! if the workspace array(s) are not sized properly for the application.
-        procedure, private :: allocate_workspace => rkv_alloc_workspace
+        procedure, private :: allocate_rkv_workspace => rkv_alloc_workspace
         !> @brief Gets the requested method factor from the Butcher tableau.
         !!
         !! @par Syntax
@@ -1733,12 +1796,11 @@ module diffeq
         !! @return The requested parameter.
         procedure(rkv_get_array_parameter), deferred, public :: &
             get_quadrature_weight
-        !> @brief Gets the requested quadrature weight for the embedded solution
-        !! from the Butcher tableau.
+        !> @brief Gets the requested error coefficient from the Butcher tableau.
         !!
         !! @par Syntax
         !! @code{.f90}
-        !! real(real64) pure function get_embedded_quadrature_weight( &
+        !! real(real64) pure function get_error_factor( &
         !!  class(rk_variable_integrator) this, &
         !!  integer(int32), intent(in) i &
         !! )
@@ -1748,7 +1810,7 @@ module diffeq
         !! @param[in] i The index of the parameter from the Butcher tableau.
         !! @return The requested parameter.
         procedure(rkv_get_array_parameter), deferred, public :: &
-            get_embedded_quadrature_weight
+            get_error_factor
         !> @brief Gets the requested position factor from the Butcher tableau.
         !!
         !! @par Syntax
@@ -1789,6 +1851,15 @@ module diffeq
         !! @return The number of stages.
         procedure(rkv_get_integer_parameter), deferred, public :: &
             get_stage_count
+        !> @brief Defines (initializes) the model parameters.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine define_model(class(rkv_integrator) this)
+        !! @endcode
+        !!
+        !! @param[in] this The @ref rkv_integrator object.
+        procedure(rkv_action), deferred, public :: define_model
         !> @brief Resets the integrator to its initial state.
         !!
         !! @par Syntax
@@ -1842,6 +1913,15 @@ module diffeq
         !!  implementation of the errors class is used internally to provide 
         !!  error handling.
         procedure, public :: attempt_step => rkv_attempt_step
+        !> @brief Perform necessary actions on completion of a successful step.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine on_successful_step(class(rk_variable_integrator) this)
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref rk_variable_integrator object.
+        procedure, public :: on_successful_step => rkv_on_successful_step
     end type
 
     interface
@@ -1874,6 +1954,11 @@ module diffeq
             integer(int32) :: rst
         end function
 
+        subroutine rkv_action(this)
+            import rk_variable_integrator
+            class(rk_variable_integrator), intent(inout) :: this
+        end subroutine
+
         module subroutine rkv_alloc_workspace(this, neqn, err)
             class(rk_variable_integrator), intent(inout) :: this
             integer(int32), intent(in) :: neqn
@@ -1896,6 +1981,174 @@ module diffeq
             real(real64), intent(inout), optional, dimension(:,:) :: fprev
             class(errors), intent(inout), optional, target :: err
         end subroutine
+
+        module subroutine rkv_on_successful_step(this)
+            class(rk_variable_integrator), intent(inout) :: this
+        end subroutine
+    end interface
+
+! ------------------------------------------------------------------------------
+    !> @brief Defines the classical Dormand-Prince 4th/5th order integrator.
+    type, extends(rk_variable_integrator) :: dprk45_integrator
+        logical, private :: m_modelDefined = .false.
+        real(real64), private, dimension(7,7) :: m_a
+        real(real64), private, dimension(7) :: m_b
+        real(real64), private, dimension(7) :: m_c
+        real(real64), private, dimension(7) :: m_e
+    contains
+        !> @brief Defines (initializes) the model parameters.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine define_model(class(dprk45_integrator) this)
+        !! @endcode
+        !!
+        !! @param[in] this The @ref dprk45_integrator object.
+        procedure, public :: define_model => dprk45_define_model
+        !> @brief Gets the requested method factor from the Butcher tableau.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_method_factor( &
+        !!  class(dprk45_integrator) this, &
+        !!  integer(int32), intent(in) i, &
+        !!  integer(int32), intent(in) j &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref dprk45_integrator object.
+        !! @param[in] i The row index of the parameter from the Butcher tableau.
+        !! @param[in] j The column index of the parameter from the Butcher 
+        !!  tableau.
+        !! @return The requested parameter.
+        procedure, public :: get_method_factor => dprk45_get_method_factor
+        !> @brief Gets the requested quadrature weight from the Butcher tableau.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_quadrature_weight( &
+        !!  class(dprk45_integrator) this, &
+        !!  integer(int32), intent(in) i &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref dprk45_integrator object.
+        !! @param[in] i The index of the parameter from the Butcher tableau.
+        !! @return The requested parameter.
+        procedure, public :: get_quadrature_weight => dprk45_get_quad_weights
+        !> @brief Gets the requested error coefficient from the Butcher tableau.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_error_factor( &
+        !!  class(dprk45_integrator) this, &
+        !!  integer(int32), intent(in) i &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref dprk45_integrator object.
+        !! @param[in] i The index of the parameter from the Butcher tableau.
+        !! @return The requested parameter.
+        procedure, public :: get_error_factor => dprk45_get_error_factor
+        !> @brief Gets the requested position factor from the Butcher tableau.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_position_factor( &
+        !!  class(dprk45_integrator) this, &
+        !!  integer(int32), intent(in) i &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref dprk45_integrator object.
+        !! @param[in] i The index of the parameter from the Butcher tableau.
+        !! @return The requested parameter.
+        procedure, public :: get_position_factor => dprk45_get_position_factor
+        !> @brief Determines if the integrator is an FSAL (first same as last)
+        !! integrator (e.g. the 4th/5th order Dormand-Prince integrator).
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! logical pure function is_fsal(class(dprk45_integrator) this)
+        !! @endcode
+        !! 
+        !! @param[in] this The @ref dprk45_integrator object.
+        !! @return Returns true if the integrator is an FSAL type; else,
+        !!  returns false.
+        procedure, public :: is_fsal => dprk45_is_fsal
+        !> @brief Gets the number of stages used by the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! integer(int32) pure function get_stage_count( &
+        !!  class(dprk45_integrator) this &
+        !! )
+        !! @endcode
+        !! 
+        !! @param[in] this The @ref dprk45_integrator object.
+        !! @return The number of stages.
+        procedure, public :: get_stage_count => dprk45_get_stage_count
+        !> @brief Returns the order of the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! pure integer(int32) function get_order(class(dprk45_integrator) this)
+        !! @endcode
+        !!
+        !! @param[in] this The @ref dprk45_integrator object.
+        !! @return The order of the integrator.
+        procedure, public :: get_order => dprk45_get_order
+    end type
+
+    ! diffeq_dprk45.f90
+    interface
+        module subroutine dprk45_define_model(this)
+            class(dprk45_integrator), intent(inout) :: this
+        end subroutine
+
+        pure module function dprk45_get_method_factor(this, i, j) result(rst)
+            class(dprk45_integrator), intent(in) :: this
+            integer(int32), intent(in) :: i, j
+            real(real64) :: rst
+        end function
+
+        pure module function dprk45_get_quad_weights(this, i) result(rst)
+            class(dprk45_integrator), intent(in) :: this
+            integer(int32), intent(in) :: i
+            real(real64) :: rst
+        end function
+
+        pure module function dprk45_get_error_factor(this, i) result(rst)
+            class(dprk45_integrator), intent(in) :: this
+            integer(int32), intent(in) :: i
+            real(real64) :: rst
+        end function
+
+        pure module function dprk45_get_position_factor(this, i) result(rst)
+            class(dprk45_integrator), intent(in) :: this
+            integer(int32), intent(in) :: i
+            real(real64) :: rst
+        end function
+
+        pure module function dprk45_is_fsal(this) result(rst)
+            class(dprk45_integrator), intent(in) :: this
+            logical :: rst
+        end function
+
+        pure module function dprk45_get_stage_count(this) result(rst)
+            class(dprk45_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+
+        pure module function dprk45_get_order(this) result(rst)
+            class(dprk45_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+
+        pure module function dprk45_is_single_step(this) result(rst)
+            class(dprk45_integrator), intent(in) :: this
+            logical :: rst
+        end function
     end interface
 
 ! ------------------------------------------------------------------------------

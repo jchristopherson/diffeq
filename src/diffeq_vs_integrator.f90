@@ -324,7 +324,7 @@ module subroutine vsi_step(this, sys, x, xmax, y, yn, xprev, yprev, fprev, err)
     if (size(yn) /= neqn) go to 10
 
     ! Allocate the workspaces
-    call this%allocate_workspace(neqn, errmgr)
+    call this%allocate_vsi_workspace(neqn, errmgr)
     if (errmgr%has_error_occurred()) return
 
     ! Process
