@@ -26,6 +26,7 @@ module function vssi_solve(this, sys, x, iv, err) result(rst)
     ! Input Checking
     if (nx < 2) go to 10
     if (.not.associated(sys%fcn)) go to 20
+    if (abs(maxval(x) - minval(x)) < epsilon(1.0d0)) go to 30
 
     ! Process
     if (nx == 2) then
@@ -47,10 +48,14 @@ module function vssi_solve(this, sys, x, iv, err) result(rst)
 
     ! No ODE is defined
 20  continue
+    call errmgr%report_error("vssi_solve", "No ODE routine defined.", &
+        DIFFEQ_NULL_POINTER_ERROR)
     return
 
     ! XMAX - XMIN == 0 error
 30  continue
+    call errmgr%report_error("vssi_solve", "MAX(X) - MIN(X) is zero.", &
+        DIFFEQ_INVALID_INPUT_ERROR)
     return
 
     ! Formatting
@@ -70,9 +75,10 @@ module function vssi_solve_driver(this, sys, x, iv, err) result(rst)
     real(real64), parameter :: sml = 1.0d2 * epsilon(1.0d0)
 
     ! Local Variables
-    integer(int32) :: neqn, flag, order, ns
+    integer(int32) :: i, neqn, flag, order, ns
     real(real64) :: xn, xmax
     real(real64), allocatable, dimension(:) :: yn, yn1
+    character(len = :), allocatable :: errmsg
 
     ! Initialization
     xmax = x(2)
@@ -93,6 +99,7 @@ module function vssi_solve_driver(this, sys, x, iv, err) result(rst)
     call this%set_next_step_size(0.5d0 * (x(2) - x(1)))
 
     ! Cycle until complete
+    i = 0
     do
         ! Take the step
         call this%step(sys, xn, xmax, yn, yn1, err = err)
@@ -110,6 +117,8 @@ module function vssi_solve_driver(this, sys, x, iv, err) result(rst)
         if (abs(xn) >= abs(xmax) .or. abs(this%get_step_size()) < sml) exit
 
         ! Iteration Counter
+        i = i + 1
+        if (i > this%get_max_integration_step_count()) go to 20
     end do
 
     ! Output the results
@@ -121,7 +130,24 @@ module function vssi_solve_driver(this, sys, x, iv, err) result(rst)
 
     ! Memory Error
 10  continue
+    allocate(character(len = 256) :: errmsg)
+    write(errmsg, 100) "Memory allocation error flag ", flag, "."
+    call err%report_error("vssi_solve_driver", trim(errmsg), &
+        DIFFEQ_MEMORY_ALLOCATION_ERROR)
     return
+
+    ! Too many steps
+20  continue
+    allocate(character(len = 256) :: errmsg)
+    write(errmsg, 101) "The allowable number of integration steps " // &
+        "was exceeded at x = ", xn, "."
+    call err%report_error("vssi_solve_driver", trim(errmsg), &
+        DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR)
+    return
+
+    ! Formatting
+100 format(A, I0, A)
+101 format(A, E10.3, A)
 end function
 
 ! ------------------------------------------------------------------------------

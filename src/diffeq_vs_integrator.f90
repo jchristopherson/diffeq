@@ -71,6 +71,20 @@ module subroutine vsi_set_min_step(this, x)
 end subroutine
 
 ! ------------------------------------------------------------------------------
+pure module function vsi_get_max_iter_count(this) result(rst)
+    class(variable_step_integrator), intent(in) :: this
+    integer(int32) :: rst
+    rst = this%m_maxitercount
+end function
+
+! --------------------
+module subroutine vsi_set_max_iter_count(this, x)
+    class(variable_step_integrator), intent(inout) :: this
+    integer(int32), intent(in) :: x
+    this%m_maxitercount = x
+end subroutine
+
+! ------------------------------------------------------------------------------
 pure module function vsi_get_max_step_count(this) result(rst)
     class(variable_step_integrator), intent(in) :: this
     integer(int32) :: rst
@@ -336,6 +350,7 @@ module subroutine vsi_step(this, sys, x, xmax, y, yn, xprev, yprev, fprev, err)
 
     ! Input Checking
     if (size(yn) /= neqn) go to 10
+    if (.not.associated(sys%fcn)) go to 40
 
     ! Allocate the workspaces
     call this%allocate_vsi_workspace(neqn, errmgr)
@@ -375,7 +390,7 @@ module subroutine vsi_step(this, sys, x, xmax, y, yn, xprev, yprev, fprev, err)
 
         ! Update the iteration counter
         i = i + 1
-        if (i > this%get_max_step_attempts()) go to 30
+        if (i > this%get_max_per_step_iteration_count()) go to 30
     end do
 
     ! Store error values from this step
@@ -415,6 +430,12 @@ module subroutine vsi_step(this, sys, x, xmax, y, yn, xprev, yprev, fprev, err)
         x, "."
     call errmgr%report_error("vsi_step", trim(errmsg), &
         DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR)
+    return
+
+    ! No ODE is defined
+40  continue
+    call errmgr%report_error("vsi_step", "No ODE routine defined.", &
+        DIFFEQ_NULL_POINTER_ERROR)
     return
 
     ! Formatting

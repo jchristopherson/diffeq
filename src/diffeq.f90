@@ -1120,7 +1120,8 @@ module diffeq
         real(real64), private :: m_beta = 0.4d-1
         real(real64), private :: m_maxstep = huge(1.0d0)
         real(real64), private :: m_minstep = 1.0d2 * epsilon(1.0d0)
-        integer(int32), private :: m_maxstepcount = 1000
+        integer(int32), private :: m_maxitercount = 1000
+        integer(int32), private :: m_maxstepcount = 1000000
         real(real64), private :: m_stepSize = 1.0d0
         real(real64), private :: m_nextStep = 1.0d0
         real(real64), private :: m_enormPrev = 1.0d0
@@ -1327,23 +1328,24 @@ module diffeq
         !! @param[in,out] this The @ref variable_step_integrator object.
         !! @param[in] The parameter value.
         procedure, public :: set_min_step_size => vsi_set_min_step
-        !> @brief Gets the maximum number of attempts per step allowed.
+        !> @brief Gets the maximum number of iterations per step allowed.
         !!
         !! @par Syntax
         !! @code{.f90}
-        !! integer(int32) pure function get_max_step_attempts( &
+        !! integer(int32) pure function get_max_per_step_iteration_count( &
         !!  class(variable_step_integrator) this &
         !! )
         !! @endcode
         !!
         !! @param[in] this The @ref variable_step_integrator object.
         !! @return The parameter value.
-        procedure, public :: get_max_step_attempts => vsi_get_max_step_count
-        !> @brief Sets the maximum number of attempts per step allowed.
+        procedure, public :: get_max_per_step_iteration_count => &
+            vsi_get_max_iter_count
+        !> @brief Sets the maximum number of iterations per step allowed.
         !!
         !! @par Syntax
         !! @code{.f90}
-        !! subroutine set_max_step_attempts( &
+        !! subroutine set_max_per_step_iteration_count( &
         !!  class(variable_step_integrator) this, &
         !!  integer(int32) x &
         !! )
@@ -1351,7 +1353,35 @@ module diffeq
         !!
         !! @param[in,out] this The @ref variable_step_integrator object.
         !! @param[in] The parameter value.
-        procedure, public :: set_max_step_attempts => vsi_set_max_step_count
+        procedure, public :: set_max_per_step_iteration_count => &
+            vsi_set_max_iter_count
+        !> @brief Gets the maximum number of integration steps allowed.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! integer(int32) pure function get_max_integration_step_count( &
+        !!  class(variable_step_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref variable_step_integrator object.
+        !! @return The parameter value.
+        procedure, public :: get_max_integration_step_count => & 
+            vsi_get_max_step_count
+        !> @brief Sets the maximum number of integration steps allowed.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_max_integration_step_count( &
+        !!  class(variable_step_integrator) this, &
+        !!  integer(int32) x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref variable_step_integrator object.
+        !! @param[in] x The parameter value.
+        procedure, public :: set_max_integration_step_count => &
+            vsi_set_max_step_count
         !> @brief Computes the next step size.
         !!
         !! @par Syntax
@@ -1553,6 +1583,7 @@ module diffeq
         !!      too small.
         !!  - DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR: Occurs if the iteration
         !!      count is exceeded for a single step.
+        !!  - DIFFEQ_NULL_POINTER_ERROR: Occurs if no ODE routine is defined.
         procedure, public :: step => vsi_step
     end type
 
@@ -1628,6 +1659,16 @@ module diffeq
         module subroutine vsi_set_min_step(this, x)
             class(variable_step_integrator), intent(inout) :: this
             real(real64), intent(in) :: x
+        end subroutine
+
+        pure module function vsi_get_max_iter_count(this) result(rst)
+            class(variable_step_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+
+        module subroutine vsi_set_max_iter_count(this, x)
+            class(variable_step_integrator), intent(inout) :: this
+            integer(int32), intent(in) :: x
         end subroutine
 
         pure module function vsi_get_max_step_count(this) result(rst)
@@ -1759,7 +1800,17 @@ module diffeq
         !!  and N is the number of ODEs plus 1.  The first column contains
         !!  the values of the independent variable at which the results were
         !!  computed.  The remaining columns contain the integration results
-        !!  for each ODE.
+        !!  for each ODE.  Possible errors and warning messages that may be 
+        !!  encountered are as follows.
+        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
+        !!      allocation issue.
+        !!  - DIFFEQ_ARRAY_SIZE_ERROR: Occurs if @p x has less than 2 elements.
+        !!  - DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR: Occurs if the step size becomes
+        !!      too small.
+        !!  - DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR: Occurs if the iteration
+        !!      count is exceeded for a single step.
+        !!  - DIFFEQ_NULL_POINTER_ERROR: Occurs if no ODE routine is defined.
+        !!  - DIFFEQ_INVALID_INPUT_ERROR: Occurs if max(@p x) - min(@p x) = 0.
         procedure, public :: solve => vssi_solve
         procedure, private :: solve_driver => vssi_solve_driver
     end type

@@ -183,4 +183,39 @@ function test_dprk45_1() result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
+function test_dprk45_2() result(rst)
+    ! Arguments
+    logical :: rst
+
+    ! Parameters
+    real(real64), parameter :: tol = 1.0d-4
+
+    ! Local Variables
+    type(dprk45_integrator) :: integrator
+    type(ode_container) :: mdl
+    real(real64), allocatable :: sol(:,:), ans(:)
+
+    ! Initialization
+    rst = .true.
+
+    ! Define the model
+    mdl%fcn => test_2dof_1
+
+    ! Perform the integration
+    sol = integrator%solve(mdl, [0.0d0, 1.0d0], [1.0d0, 0.5d0])
+
+    ! Compute the actual solution
+    ans = test_2dof_solution_1(sol(:,1))
+
+    ! Test
+    if (.not.assert(ans, sol(:,2), tol)) then
+        rst = .false.
+        print 100, "TEST FAILED: test_dprk45_2 1-1"
+    end if
+
+    ! Formatting
+100 format(A)
+end function
+
+! ------------------------------------------------------------------------------
 end module
