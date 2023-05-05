@@ -14,7 +14,6 @@ module diffeq
     public :: fixed_step_integrator
     public :: rk_fixed_integrator
     public :: rk4_fixed_integrator
-    public :: exponential_fixed_integrator
     public :: fixed_multistep_integrator
     public :: adams_fixed_integerator
     public :: variable_step_integrator
@@ -704,173 +703,6 @@ module diffeq
     end interface
 
 ! ------------------------------------------------------------------------------
-    !> @brief Defines a third-order exponential integrator as defined by 
-    !! Jibunoh.
-    !!
-    !! @par Remarks
-    !! Jibunoh presents several orders of exponential integrators in his paper.
-    !! This integrator uses his third-order formula, which is defined as
-    !! @par
-    !! \f$ y_{n+1} = y_n + \left( h I + \frac{h^2}{2} J_n + \frac{h^3}{6} J_n^2
-    !! \right) f_n \f$
-    !! @par
-    !! where \f$ J_n \f$ is the Jacobian matrix at \f$ x_n \f$.
-    !!
-    !! @par Reference
-    !! - Jibunoh, C.C.. (2014). An exponential method for accurate and automatic
-    !!  integration of nonlinear (stiff and nonstiff) ODE systems. Journal of 
-    !!  the Nigerian Mathematical Society. 29. 10.1016/j.jnnms.2014.10.005. 
-    !!
-    !! @par Example
-    !! This exponential integrator is suitable for integrating stiff systems.
-    !! As such, this example solves the Van der Pol equation \f$ 
-    !! \frac{d^2y}{dx^2} - \mu \left( 1 - y^2 \right) \frac{dy}{dx} + y = 0 \f$.
-    !! @code{.f90}
-    !! program example
-    !!     use iso_fortran_env
-    !!     use diffeq
-    !!     use diffeq_models
-    !!     use fplot_core
-    !!     implicit none
-    !!
-    !!     ! Parameters
-    !!     integer(int32), parameter :: npts = 25000
-    !!     real(real64), parameter :: h = 1.0d-3
-    !!
-    !!     ! Local Variables
-    !!     type(exponential_fixed_integrator) :: integrator
-    !!     type(ode_container) :: mdl
-    !!     integer(int32) :: i
-    !!     real(real64) :: x(npts), sol(npts, 3)
-    !!
-    !!     ! Plot Variables
-    !!     type(plot_2d) :: plt
-    !!     type(plot_data_2d) :: pd
-    !!     class(plot_axis), pointer :: xAxis, yAxis
-    !!
-    !!     ! Define the values of x at which the solution is to be computed
-    !!     x = (/ (i * h, i = 0, npts - 1) /)
-    !!
-    !!     ! Define the model
-    !!     mdl%fcn => vanderpol
-    !!
-    !!     ! Compute the solution
-    !!     sol = integrator%solve(mdl, x, [2.0d0, 0.0d0])
-    !!
-    !!     ! Plot the results
-    !!     call plt%initialize()
-    !!     xAxis => plt%get_x_axis()
-    !!     yAxis => plt%get_y_axis()
-    !!     call xAxis%set_title("x")
-    !!     call yAxis%set_title("y(x)")
-    !!
-    !!     call pd%define_data(sol(:,1), sol(:,2))
-    !!     call pd%set_line_width(2.0)
-    !!     call plt%push(pd)
-    !!
-    !!     call plt%draw()
-    !! end program
-    !! @endcode
-    !! The ODE routine was stored in a seperate module; however, here is the
-    !! code for the ODE routine.
-    !! @code{.f90}
-    !! subroutine vanderpol(x, y, dydx)
-    !!     ! Arguments
-    !!     real(real64), intent(in) :: x, y(:)
-    !!     real(real64), intent(out) :: dydx(:)
-    !!
-    !!     ! Model Constants
-    !!     real(real64), parameter :: mu = 5.0d0
-    !!
-    !!     ! Equations
-    !!     dydx(1) = y(2)
-    !!     dydx(2) = mu * (1.0d0 - y(1)**2) * y(2) - y(1)
-    !! end subroutine
-    !! @endcode
-    !! The above program produces the following plot using the 
-    !! [FPLOT](https://github.com/jchristopherson/fplot) library.
-    !! @image html vanderpol_fixed_exponential_example_1.png
-    type, extends(fixed_step_integrator) :: exponential_fixed_integrator
-        ! Workspace for the system Jacobian matrix (NEQN-by-NEQN)
-        real(real64), private, allocatable, dimension(:,:) :: m_jac
-        ! Workspace for the square of the Jacobian (NEQN-by-NEQN)
-        real(real64), private, allocatable, dimension(:,:) :: m_jac2
-        ! Workspace array (NEQN)
-        real(real64), private, allocatable, dimension(:) :: m_work
-    contains
-        ! Use to allocate internal workspaces.  This routine only takes action
-        ! if the workspace array(s) are not sized properly for the application.
-        procedure, private :: allocate_workspace => ef_alloc_workspace
-        !> @brief Returns the order of the integrator.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! pure integer(int32) function get_order(class(exponential_fixed_integrator) this)
-        !! @endcode
-        !!
-        !! @param[in] this The @ref exponential_fixed_integrator object.
-        !! @return The order of the integrator.
-        procedure, public :: get_order => ef_get_order
-        !> @brief Takes one integration step of a predetermined size.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! subroutine step( &
-        !!  class(exponential_fixed_integrator) this, &
-        !!  class(ode_container) sys, &
-        !!  real(real64) h, &
-        !!  real(real64) x, &
-        !!  real(real64) y(:), &
-        !!  real(real64) yn(:), &
-        !!  optional class(errors) err &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in,out] this The @ref exponential_fixed_integrator object.
-        !! @param[in,out] sys The @ref ode_container object containing the ODEs
-        !!  to integrate.
-        !! @param[in] h The current step size.
-        !! @param[in] x The current value of the independent variable.
-        !! @param[in] y An N-element array containing the current values of
-        !!  the dependent variables.
-        !! @param[out] yn An N-element array where the values of the dependent
-        !!  variables at @p x + @p h will be written.
-        !! @param[in,out] An optional errors-based object that if provided 
-        !!  can be used to retrieve information relating to any errors 
-        !!  encountered during execution. If not provided, a default 
-        !!  implementation of the errors class is used internally to provide 
-        !!  error handling.
-        procedure, public :: step => ef_step
-    end type
-
-    ! diffeq_expfixed.f90
-    interface
-        module subroutine ef_alloc_workspace(this, neqn, err)
-            class(exponential_fixed_integrator), intent(inout) :: this
-            integer(int32), intent(in) :: neqn
-            class(errors), intent(inout) :: err
-        end subroutine
-
-        pure module function ef_get_order(this) result(rst)
-            class(exponential_fixed_integrator), intent(in) :: this
-            integer(int32) :: rst
-        end function
-
-        module subroutine ef_step(this, sys, h, x, y, yn, xprev, yprev, fprev, &
-            err)
-            class(exponential_fixed_integrator), intent(inout) :: this
-            class(ode_container), intent(inout) :: sys
-            real(real64), intent(in) :: h, x
-            real(real64), intent(in), dimension(:) :: y
-            real(real64), intent(out), dimension(:) :: yn
-            real(real64), intent(in), optional, dimension(:) :: xprev
-            real(real64), intent(in), optional, dimension(:,:) :: yprev
-            real(real64), intent(inout), optional, dimension(:,:) :: fprev
-            class(errors), intent(inout), optional, target :: err
-        end subroutine
-    end interface
-
-! ------------------------------------------------------------------------------
     !> @brief Defines a fixed step-size, multi-step integrator.
     type, abstract, extends(fixed_step_integrator) :: fixed_multistep_integrator
         ! An NEQN-by-ORDER storage matrix for ODE outputs.
@@ -944,8 +776,8 @@ module diffeq
     !! @par Example
     !! The following example solves the Van der Pol equation \f$ 
     !! \frac{d^2y}{dx^2} - \mu \left( 1 - y^2 \right) \frac{dy}{dx} + y = 0 \f$
-    !! using both this Adams method integrator, and the exponential integrator
-    !! @ref exponential_fixed_integrator.
+    !! using both this Adams method integrator, and the 4th order Runge-Kutta
+    !! integrator @ref rk4_fixed_integrator.
     !! @code{.f90}
     !! program example
     !!     use iso_fortran_env
@@ -960,7 +792,7 @@ module diffeq
     !!
     !!     ! Local Variables
     !!     type(adams_fixed_integerator) :: integrator
-    !!     type(exponential_fixed_integrator) :: comparison
+    !!     type(rk4_fixed_integrator) :: comparison
     !!     type(ode_container) :: mdl
     !!     integer(int32) :: i
     !!     real(real64) :: x(npts), sol(npts, 3), csol(npts, 3)
@@ -998,7 +830,7 @@ module diffeq
     !!     call plt%push(pd1)
     !!
     !!     call pd2%define_data(csol(:,1), csol(:,2))
-    !!     call pd2%set_name("Exponential")
+    !!     call pd2%set_name("Runge Kutta")
     !!     call pd2%set_line_width(4.0)
     !!     call pd2%set_line_style(LINE_DASHED)
     !!     call plt%push(pd2)
@@ -1024,7 +856,7 @@ module diffeq
     !! @endcode
     !! The above program produces the following plot using the 
     !! [FPLOT](https://github.com/jchristopherson/fplot) library.
-    !! @image html vanderpol_fixed_adams_vs_exponential_example_1.png
+    !! @image html vanderpol_fixed_adams_vs_runge_kutta_example_1.png
     type, extends(fixed_multistep_integrator) :: adams_fixed_integerator
     contains
         !> @brief Returns the order of the integrator.
@@ -2074,6 +1906,87 @@ module diffeq
 
 ! ------------------------------------------------------------------------------
     !> @brief Defines the classical Dormand-Prince 4th/5th order integrator.
+    !!
+    !! @par Example
+    !! The following example illustrates how to use this integrator to solve
+    !! the forced Duffing model.
+    !! @code{.f90}
+    !! program example
+    !!     use iso_fortran_env
+    !!     use diffeq
+    !!     use diffeq_models
+    !!     use fplot_core
+    !!     implicit none
+    !!
+    !!     ! Parameters
+    !!     real(real64), parameter :: xmax = 6.0d1
+    !!
+    !!     ! Local Variables
+    !!     type(dprk45_integrator) :: integrator
+    !!     type(ode_container) :: mdl
+    !!     real(real64), allocatable :: sol(:,:)
+    !!
+    !!     ! Plot Variables
+    !!     type(plot_2d) :: plt
+    !!     type(plot_data_2d) :: pd1, pd2
+    !!     class(plot_axis), pointer :: xAxis, yAxis, y2Axis
+    !!     class(legend), pointer :: lgnd
+    !!
+    !!     ! Define the model
+    !!     mdl%fcn => duffing
+    !!
+    !!     ! Compute the solution
+    !!     sol = integrator%solve(mdl, [0.0d0, xmax], [0.0d0, 0.0d0])
+    !!
+    !!     ! Plot the results
+    !!     call plt%initialize()
+    !!     xAxis => plt%get_x_axis()
+    !!     yAxis => plt%get_y_axis()
+    !!     y2Axis => plt%get_y2_axis()
+    !!     lgnd => plt%get_legend()
+    !!     call xAxis%set_title("x")
+    !!     call yAxis%set_title("y(x)")
+    !!     call y2Axis%set_title("y'(x)")
+    !!     call plt%set_use_y2_axis(.true.)
+    !!     call lgnd%set_is_visible(.true.)
+    !!     call xAxis%set_autoscale(.false.)
+    !!     call xAxis%set_limits(0.0d0, xmax)
+    !!
+    !!     call pd1%define_data(sol(:,1), sol(:,2))
+    !!     call pd1%set_name("y(x)")
+    !!     call plt%push(pd1)
+    !!
+    !!     call pd2%define_data(sol(:,1), sol(:,3))
+    !!     call pd2%set_draw_against_y2(.true.)
+    !!     call pd2%set_name("y'(x)")
+    !!     call plt%push(pd2)
+    !!
+    !!     call plt%draw()
+    !! end program
+    !! @endcode
+    !! The ODE routine was stored in a seperate module; however, here is the
+    !! code for the ODE routine.
+    !! @code{.f90}
+    !! subroutine duffing(x, y, dydx)
+    !!     ! Arguments
+    !!     real(real64), intent(in) :: x, y(:)
+    !!     real(real64), intent(out) :: dydx(:)
+    !!
+    !!     ! Model Constants
+    !!     real(real64), parameter :: alpha = 1.0d0
+    !!     real(real64), parameter :: beta = 5.0d0
+    !!     real(real64), parameter :: delta = 2.0d-2
+    !!     real(real64), parameter :: gamma = 8.0d0
+    !!     real(real64), parameter :: w = 0.5d0
+    !!
+    !!     ! Equations
+    !!     dydx(1) = y(2)
+    !!     dydx(2) = gamma * cos(w * x) - delta * y(2) - alpha * y(1) - beta * y(1)**3
+    !! end subroutine
+    !! @endcode
+    !! The above program produces the following plot using the 
+    !! [FPLOT](https://github.com/jchristopherson/fplot) library.
+    !! @image html dprk45_diffing_example_1.png
     type, extends(rk_variable_integrator) :: dprk45_integrator
         logical, private :: m_modelDefined = .false.
         real(real64), private, dimension(7,7) :: m_a

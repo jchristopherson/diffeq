@@ -49,7 +49,7 @@ program example
     call plt%push(pd1)
 
     call pd2%define_data(csol(:,1), csol(:,2))
-    call pd2%set_name("Exponential")
+    call pd2%set_name("Runge-Kutta")
     call pd2%set_line_width(4.0)
     call pd2%set_line_style(LINE_DASHED)
     call plt%push(pd2)

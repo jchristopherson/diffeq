@@ -8,7 +8,6 @@ set(DIFFEQ_SOURCES
     ${dir}/diffeq_fs_integrator.f90
     ${dir}/diffeq_rkfixed.f90
     ${dir}/diffeq_rk4.f90
-    ${dir}/diffeq_expfixed.f90
     ${dir}/diffeq_multistep_fixed.f90
     ${dir}/diffeq_abmf.f90
     ${dir}/diffeq_vs_integrator.f90
