@@ -120,6 +120,7 @@ pure module function vsi_next_step(this, hn, en, enm1) result(rst)
 
     maxstep = abs(this%get_max_step_size())
     if (abs(rst) > maxstep) rst = sign(maxstep, rst)
+    if (rst / hn > 2.0d0) rst = 2.0d0 * hn
 end function
 
 ! ------------------------------------------------------------------------------
@@ -400,7 +401,7 @@ module subroutine vsi_step(this, sys, x, xmax, y, yn, xprev, yprev, fprev, err)
     call this%set_next_step_size(h)
 
     ! Perform any actions needed on a successful step
-    call this%on_successful_step()
+    call this%on_successful_step(x, x + this%get_step_size(), y, yn)
 
     ! End
     return

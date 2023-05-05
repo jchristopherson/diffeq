@@ -1018,10 +1018,22 @@ module diffeq
         !!
         !! @par Syntax
         !! @code{.f90}
-        !! subroutine on_successful_step(class(variable_step_integrator) this)
+        !! subroutine on_successful_step( &
+        !!  class(variable_step_integrator) this, &
+        !!  real(real64) x, &
+        !!  real(real64) xn, &
+        !!  real(real64) y(:), &
+        !!  real(real64) yn(:) &
+        !! )
         !! @endcode
         !!
         !! @param[in,out] this The @ref variable_step_integrator object.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] xn The new value of the independent variable.
+        !! @param[in] y An N-element array containing the values of the 
+        !!  dependent variables at @p x.
+        !! @param[in] yn An N-element array containing the values of the
+        !!  dependent variables at @p xn.
         procedure(variable_step_action), deferred, public :: on_successful_step
         !> @brief Gets a safety factor used to limit the predicted step size.
         !!
@@ -1417,6 +1429,33 @@ module diffeq
         !!      count is exceeded for a single step.
         !!  - DIFFEQ_NULL_POINTER_ERROR: Occurs if no ODE routine is defined.
         procedure, public :: step => vsi_step
+        !> @brief Provides interpolation between integration points allowing
+        !! for dense output.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine interpolate( &
+        !!  class(variable_step_integrator) this, &
+        !!  real(real64) xprev, &
+        !!  real(real64) xnew, &
+        !!  real(real64) x, &
+        !!  real(real64) y(:),
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The variable_step_integrator object.
+        !! @param[in] xprev The previous value of the independent variable.
+        !! @param[in] xnew The updated value of the independent variable.
+        !! @param[in] x The value at which to perform the interpolation.
+        !! @param[out] y An N-element array containing the interpolated 
+        !!  values for each equation.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.
+        procedure(variable_step_interpolation), public, deferred :: interpolate
     end type
 
     ! diffeq_vs_integrator.f90
@@ -1438,9 +1477,22 @@ module diffeq
             class(errors), intent(inout), optional, target :: err
         end subroutine
 
-        subroutine variable_step_action(this)
+        subroutine variable_step_action(this, x, xn, y, yn)
+            use iso_fortran_env
             import variable_step_integrator
             class(variable_step_integrator), intent(inout) :: this
+            real(real64), intent(in) :: x, xn
+            real(real64), intent(in), dimension(:) :: y, yn
+        end subroutine
+
+        subroutine variable_step_interpolation(this, xprev, xnew, x, y, err)
+            use iso_fortran_env
+            use ferror
+            import variable_step_integrator
+            class(variable_step_integrator), intent(in) :: this
+            real(real64), intent(in) :: xprev, xnew, x
+            real(real64), intent(out), dimension(:) :: y
+            class(errors), intent(inout), optional, target :: err
         end subroutine
 
         pure module function vsi_get_safety_factor(this) result(rst)
@@ -1645,6 +1697,7 @@ module diffeq
         !!  - DIFFEQ_INVALID_INPUT_ERROR: Occurs if max(@p x) - min(@p x) = 0.
         procedure, public :: solve => vssi_solve
         procedure, private :: solve_driver => vssi_solve_driver
+        procedure, private :: dense_solve_driver => vssi_dense_solve_driver
     end type
 
     ! diffeq_vssi.f90
@@ -1658,6 +1711,15 @@ module diffeq
         end function
 
         module function vssi_solve_driver(this, sys, x, iv, err) result(rst)
+            class(variable_singlestep_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(in), dimension(:) :: x, iv
+            class(errors), intent(inout) :: err
+            real(real64), allocatable, dimension(:,:) :: rst
+        end function
+
+        module function vssi_dense_solve_driver(this, sys, x, iv, err) &
+            result(rst)
             class(variable_singlestep_integrator), intent(inout) :: this
             class(ode_container), intent(inout) :: sys
             real(real64), intent(in), dimension(:) :: x, iv
@@ -1839,6 +1901,26 @@ module diffeq
         !!
         !! @param[in,out] this The @ref rk_variable_integrator object.
         procedure, public :: on_successful_step => rkv_on_successful_step
+        !> @brief Sets up the interpolation polynomial.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_up_interpolation( &
+        !!  class(rk_variable_integrator) this, &
+        !!  real(real64) y(:), &
+        !!  real(real64) yn(:), &
+        !!  real(real64) k(:,:) &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The rk_variable_integrator object.
+        !! @param[in] y An N-element array containing the current solution
+        !!  values.
+        !! @param[in] yn An N-element array containing the solution values at
+        !!  the next step.
+        !! @param[in] k An N-by-M matrix containing the intermediate step
+        !!  function outputs where M is the number of stages of the integrator.
+        procedure(rkv_set_up_interp), public, deferred :: set_up_interpolation
     end type
 
     interface
@@ -1876,6 +1958,14 @@ module diffeq
             class(rk_variable_integrator), intent(inout) :: this
         end subroutine
 
+        subroutine rkv_set_up_interp(this, y, yn, k)
+            use iso_fortran_env
+            import rk_variable_integrator
+            class(rk_variable_integrator), intent(inout) :: this
+            real(real64), intent(in), dimension(:) :: y, yn
+            real(real64), intent(in), dimension(:,:) :: k
+        end subroutine
+
         module subroutine rkv_alloc_workspace(this, neqn, err)
             class(rk_variable_integrator), intent(inout) :: this
             integer(int32), intent(in) :: neqn
@@ -1899,8 +1989,10 @@ module diffeq
             class(errors), intent(inout), optional, target :: err
         end subroutine
 
-        module subroutine rkv_on_successful_step(this)
+        module subroutine rkv_on_successful_step(this, x, xn, y, yn)
             class(rk_variable_integrator), intent(inout) :: this
+            real(real64), intent(in) :: x, xn
+            real(real64), intent(in), dimension(:) :: y, yn
         end subroutine
     end interface
 
@@ -1993,6 +2085,7 @@ module diffeq
         real(real64), private, dimension(7) :: m_b
         real(real64), private, dimension(7) :: m_c
         real(real64), private, dimension(7) :: m_e
+        real(real64), private, allocatable, dimension(:,:) :: m_dprk45work
     contains
         !> @brief Defines (initializes) the model parameters.
         !!
@@ -2096,6 +2189,53 @@ module diffeq
         !! @param[in] this The @ref dprk45_integrator object.
         !! @return The order of the integrator.
         procedure, public :: get_order => dprk45_get_order
+        !> @brief Provides interpolation between integration points allowing
+        !! for dense output.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine interpolate( &
+        !!  class(dprk45_integrator) this, &
+        !!  real(real64) xprev, &
+        !!  real(real64) xnew, &
+        !!  real(real64) x, &
+        !!  real(real64) y(:),
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The dprk45_integrator object.
+        !! @param[in] xprev The previous value of the independent variable.
+        !! @param[in] xnew The updated value of the independent variable.
+        !! @param[in] x The value at which to perform the interpolation.
+        !! @param[out] y An N-element array containing the interpolated 
+        !!  values for each equation.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.
+        procedure, public :: interpolate => dprk45_interp
+        !> @brief Sets up the interpolation polynomial.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_up_interpolation( &
+        !!  class(dprk45_integrator) this, &
+        !!  real(real64) y(:), &
+        !!  real(real64) yn(:), &
+        !!  real(real64) k(:,:) &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The dprk45_integrator object.
+        !! @param[in] y An N-element array containing the current solution
+        !!  values.
+        !! @param[in] yn An N-element array containing the solution values at
+        !!  the next step.
+        !! @param[in] k An N-by-M matrix containing the intermediate step
+        !!  function outputs where M is the number of stages of the integrator.
+        procedure, public :: set_up_interpolation => dprk45_set_up_interp
     end type
 
     ! diffeq_dprk45.f90
@@ -2147,6 +2287,19 @@ module diffeq
             class(dprk45_integrator), intent(in) :: this
             logical :: rst
         end function
+
+        module subroutine dprk45_interp(this, xprev, xnew, x, y, err)
+            class(dprk45_integrator), intent(in) :: this
+            real(real64), intent(in) :: xprev, xnew, x
+            real(real64), intent(out), dimension(:) :: y
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+
+        module subroutine dprk45_set_up_interp(this, y, yn, k)
+            class(dprk45_integrator), intent(inout) :: this
+            real(real64), intent(in), dimension(:) :: y, yn
+            real(real64), intent(in), dimension(:,:) :: k
+        end subroutine
     end interface
 
 ! ------------------------------------------------------------------------------

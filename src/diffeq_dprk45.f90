@@ -36,6 +36,14 @@ submodule (diffeq) diffeq_dprk45
     real(real64), parameter :: c5 = 8.0d0 / 9.0d0
     real(real64), parameter :: c6 = 1.0d0
     real(real64), parameter :: c7 = 1.0d0
+
+    ! Interpolation Parameters
+    real(real64), parameter :: d1 = -1.2715105075d10 / 1.1282082432d10
+    real(real64), parameter :: d3 = 8.74874797d10 / 3.2700410799d10
+    real(real64), parameter :: d4 = -1.0690763975d10 / 1.880347072d9
+    real(real64), parameter :: d5 = 7.01980252875d11 / 1.99316789632d11
+    real(real64), parameter :: d6 = -1.453857185d9 / 8.22651844d8
+    real(real64), parameter :: d7 = 6.9997945d7 / 2.9380423d7
 contains
 ! ------------------------------------------------------------------------------
 module subroutine dprk45_define_model(this)
@@ -158,6 +166,102 @@ pure module function dprk45_get_order(this) result(rst)
     integer(int32) :: rst
     rst = 5
 end function
+
+! ------------------------------------------------------------------------------
+module subroutine dprk45_set_up_interp(this, y, yn, k)
+    ! Arguments
+    class(dprk45_integrator), intent(inout) :: this
+    real(real64), intent(in), dimension(:) :: y, yn
+    real(real64), intent(in), dimension(:,:) :: k
+
+    ! Parameters
+    integer(int32), parameter :: n = 5
+
+    ! Local Variables
+    integer(int32) :: i, neqn
+    real(real64) :: h, ydiff, bspl
+
+    ! Intialization
+    neqn = size(y)
+    h = this%get_step_size()
+
+    ! Memory Allocation
+    if (allocated(this%m_dprk45work)) then
+        if (size(this%m_dprk45work, 1) /= neqn .or. &
+            size(this%m_dprk45work, 2) /= n) &
+        then
+            deallocate(this%m_dprk45work)
+            allocate(this%m_dprk45work(neqn, n))
+        end if
+    else
+        allocate(this%m_dprk45work(neqn, n))
+    end if
+
+    ! Construct the coefficient arrays
+    do i = 1, neqn
+        ydiff = yn(i) - y(i)
+        bspl = h * k(i,1) - ydiff
+
+        this%m_dprk45work(i,1) = y(i)
+        this%m_dprk45work(i,2) = ydiff
+        this%m_dprk45work(i,3) = bspl
+        this%m_dprk45work(i,4) = ydiff - h * k(i,1) - bspl
+        this%m_dprk45work(i,5) = h * (d1 * k(i,1) + d3 * k(i,3) + &
+            d4 * k(i,4) + d5 * k(i,5) + d6 * k(i,6) + d7 * k(i,7))
+    end do
+end subroutine
+
+! ------------------------------------------------------------------------------
+module subroutine dprk45_interp(this, xprev, xnew, x, y, err)
+    ! Arguments
+    class(dprk45_integrator), intent(in) :: this
+    real(real64), intent(in) :: xprev, xnew, x
+    real(real64), intent(out), dimension(:) :: y
+    class(errors), intent(inout), optional, target :: err
+
+    ! Local Variables
+    integer(int32) :: i, neqn
+    real(real64) :: h, s, s1
+    class(errors), pointer :: errmgr
+    type(errors), target :: deferr
+    character(len = :), allocatable :: errmsg
+    
+    ! Initialization
+    if (present(err)) then
+        errmgr => err
+    else
+        errmgr => deferr
+    end if
+    neqn = size(this%m_dprk45work, 1)
+    h = xnew - xprev
+    s = (x - xprev) / h
+    s1 = 1.0d0 - s
+
+    ! Input Check
+    if (size(y) /= neqn) go to 10
+
+    ! Process
+    y = this%m_dprk45work(:,1) + s * ( &
+        this%m_dprk45work(:,2) + s1 * ( &
+        this%m_dprk45work(:,3) + s * ( &
+        this%m_dprk45work(:,4) + s1 * this%m_dprk45work(:,5) &
+    )))
+
+    ! End
+    return
+
+    ! Y is not sized correctly
+10  continue
+    allocate(character(len = 256) :: errmsg)
+    write(errmsg, 100) "The output array was expected to be of length ", &
+        neqn, ", but was found to be of length ", size(y), "."
+    call errmgr%report_error("dprk45_interp", trim(errmsg), &
+        DIFFEQ_ARRAY_SIZE_ERROR)
+    return
+
+    ! Formatting
+100 format(A, I0, A, I0, A)
+end subroutine
 
 ! ------------------------------------------------------------------------------
 end submodule

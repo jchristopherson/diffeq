@@ -135,12 +135,17 @@ module subroutine rkv_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
 end subroutine
 
 ! ------------------------------------------------------------------------------
-module subroutine rkv_on_successful_step(this)
+module subroutine rkv_on_successful_step(this, x, xn, y, yn)
     ! Arguments
     class(rk_variable_integrator), intent(inout) :: this
+    real(real64), intent(in) :: x, xn
+    real(real64), intent(in), dimension(:) :: y, yn
 
     ! Local Variables
     integer(int32) :: n
+
+    ! Set up the interpolation polynomial - TO DO check for dense output first
+    call this%set_up_interpolation(y, yn, this%m_work)
 
     ! Store the last result as the first, if this is FSAL
     if (this%is_fsal()) then
