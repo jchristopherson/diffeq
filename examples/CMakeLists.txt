@@ -29,3 +29,12 @@ add_executable(
 )
 link_library(dprk45_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
 link_library(dprk45_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
+
+# DPRK45 Dense Output Example
+add_executable(
+    dprk45_dense_example
+    dprk45_dense_example.f90
+    ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
+)
+link_library(dprk45_dense_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
+link_library(dprk45_dense_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})

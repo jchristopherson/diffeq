@@ -167,11 +167,15 @@ module function vssi_dense_solve_driver(this, sys, x, iv, err) result(rst)
 
     ! Local Variables
     integer(int32) :: i, j, npts, neqn, flag
-    real(real64) :: xn, xmax
+    real(real64) :: xn, xmax, xn1, xi
     real(real64), allocatable, dimension(:) :: yn, yn1
     character(len = :), allocatable :: errmsg
     
     ! Initialization
+    neqn = size(iv)
+    npts = size(x)
+    xn = x(1)
+    xmax = x(npts)
 
     ! Memory Allocation
     allocate(rst(npts, neqn + 1), stat = flag)
@@ -185,14 +189,27 @@ module function vssi_dense_solve_driver(this, sys, x, iv, err) result(rst)
 
     ! Cycle until complete
     i = 0
-    do
+    j = 1
+    xi = x(2)
+    outer: do
         ! Take a step
         call this%step(sys, xn, xmax, yn, yn1, err = err)
         if (err%has_error_occurred()) return
+        xn1 = xn + this%get_step_size()
 
         ! Interpolate as needed to achieve any intermediary solution points
+        do while (abs(xi) <= abs(xn1))
+            j = j + 1
+            call this%interpolate(xn, xn1, xi, rst(j,2:), err)
+            if (err%has_error_occurred()) return
+            rst(j,1) = xi
+            if (j >= npts) exit outer
+            xi = x(j + 1)
+        end do
 
         ! Update xn and yn
+        xn = xn1
+        yn = yn1
 
         ! Break if |XN| > |XMAX|
         if (abs(xn) >= abs(xmax) .or. abs(this%get_step_size()) < sml) exit
@@ -200,7 +217,7 @@ module function vssi_dense_solve_driver(this, sys, x, iv, err) result(rst)
         ! Iteration Counter
         i = i + 1
         if (i > max(this%get_max_integration_step_count(), npts)) go to 20
-    end do
+    end do outer
 
     ! End
     return

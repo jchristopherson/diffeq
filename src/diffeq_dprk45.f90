@@ -205,7 +205,7 @@ module subroutine dprk45_set_up_interp(this, y, yn, k)
         this%m_dprk45work(i,1) = y(i)
         this%m_dprk45work(i,2) = ydiff
         this%m_dprk45work(i,3) = bspl
-        this%m_dprk45work(i,4) = ydiff - h * k(i,1) - bspl
+        this%m_dprk45work(i,4) = ydiff - h * k(i,7) - bspl
         this%m_dprk45work(i,5) = h * (d1 * k(i,1) + d3 * k(i,3) + &
             d4 * k(i,4) + d5 * k(i,5) + d6 * k(i,6) + d7 * k(i,7))
     end do

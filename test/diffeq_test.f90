@@ -50,6 +50,9 @@ program test
     rst = test_dprk45_2()
     if (.not.rst) flag = 12
 
+    rst = test_dprk45_3()
+    if (.not.rst) flag = 13
+
     ! Output
     stop flag
 end program
