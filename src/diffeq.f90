@@ -20,6 +20,7 @@ module diffeq
     public :: variable_singlestep_integrator
     public :: rk_variable_integrator
     public :: dprk45_integrator
+    public :: bsrk32_integrator
     public :: DIFFEQ_MEMORY_ALLOCATION_ERROR
     public :: DIFFEQ_NULL_POINTER_ERROR
     public :: DIFFEQ_MATRIX_SIZE_ERROR
@@ -2283,10 +2284,10 @@ module diffeq
             integer(int32) :: rst
         end function
 
-        pure module function dprk45_is_single_step(this) result(rst)
-            class(dprk45_integrator), intent(in) :: this
-            logical :: rst
-        end function
+        ! pure module function dprk45_is_single_step(this) result(rst)
+        !     class(dprk45_integrator), intent(in) :: this
+        !     logical :: rst
+        ! end function
 
         module subroutine dprk45_interp(this, xprev, xnew, x, y, err)
             class(dprk45_integrator), intent(in) :: this
@@ -2299,6 +2300,225 @@ module diffeq
             class(dprk45_integrator), intent(inout) :: this
             real(real64), intent(in), dimension(:) :: y, yn
             real(real64), intent(in), dimension(:,:) :: k
+        end subroutine
+    end interface
+
+! ------------------------------------------------------------------------------
+    !> @brief Defines the Bogacki-Shampine 3rd/2nd order integrator.
+    type, extends(rk_variable_integrator) :: bsrk32_integrator
+        logical, private :: m_modelDefined = .false.
+        real(real64), private, dimension(4,4) :: m_a
+        real(real64), private, dimension(4) :: m_b
+        real(real64), private, dimension(4) :: m_c
+        real(real64), private, dimension(4) :: m_e
+    contains
+        !> @brief Defines (initializes) the model parameters.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine define_model(class(bsrk32_integrator) this)
+        !! @endcode
+        !!
+        !! @param[in] this The @ref bsrk32_integrator object.
+        procedure, public :: define_model => bsrk32_define_model
+        !> @brief Gets the requested method factor from the Butcher tableau.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_method_factor( &
+        !!  class(bsrk32_integrator) this, &
+        !!  integer(int32), intent(in) i, &
+        !!  integer(int32), intent(in) j &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref bsrk32_integrator object.
+        !! @param[in] i The row index of the parameter from the Butcher tableau.
+        !! @param[in] j The column index of the parameter from the Butcher 
+        !!  tableau.
+        !! @return The requested parameter.
+        procedure, public :: get_method_factor => bsrk32_get_method_factor
+        !> @brief Gets the requested quadrature weight from the Butcher tableau.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_quadrature_weight( &
+        !!  class(bsrk32_integrator) this, &
+        !!  integer(int32), intent(in) i &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref bsrk32_integrator object.
+        !! @param[in] i The index of the parameter from the Butcher tableau.
+        !! @return The requested parameter.
+        procedure, public :: get_quadrature_weight => bsrk32_get_quad_weights
+        !> @brief Gets the requested error coefficient from the Butcher tableau.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_error_factor( &
+        !!  class(bsrk32_integrator) this, &
+        !!  integer(int32), intent(in) i &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref bsrk32_integrator object.
+        !! @param[in] i The index of the parameter from the Butcher tableau.
+        !! @return The requested parameter.
+        procedure, public :: get_error_factor => bsrk32_get_error_factor
+        !> @brief Gets the requested position factor from the Butcher tableau.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_position_factor( &
+        !!  class(bsrk32_integrator) this, &
+        !!  integer(int32), intent(in) i &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref bsrk32_integrator object.
+        !! @param[in] i The index of the parameter from the Butcher tableau.
+        !! @return The requested parameter.
+        procedure, public :: get_position_factor => bsrk32_get_position_factor
+        !> @brief Determines if the integrator is an FSAL (first same as last)
+        !! integrator (e.g. the 4th/5th order Dormand-Prince integrator).
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! logical pure function is_fsal(class(bsrk32_integrator) this)
+        !! @endcode
+        !! 
+        !! @param[in] this The @ref bsrk32_integrator object.
+        !! @return Returns true if the integrator is an FSAL type; else,
+        !!  returns false.
+        procedure, public :: is_fsal => bsrk32_is_fsal
+        !> @brief Gets the number of stages used by the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! integer(int32) pure function get_stage_count( &
+        !!  class(bsrk32_integrator) this &
+        !! )
+        !! @endcode
+        !! 
+        !! @param[in] this The @ref bsrk32_integrator object.
+        !! @return The number of stages.
+        procedure, public :: get_stage_count => bsrk32_get_stage_count
+        !> @brief Returns the order of the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! pure integer(int32) function get_order(class(bsrk32_integrator) this)
+        !! @endcode
+        !!
+        !! @param[in] this The @ref bsrk32_integrator object.
+        !! @return The order of the integrator.
+        procedure, public :: get_order => bsrk32_get_order
+        !> @brief Provides interpolation between integration points allowing
+        !! for dense output.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine interpolate( &
+        !!  class(bsrk32_integrator) this, &
+        !!  real(real64) xprev, &
+        !!  real(real64) xnew, &
+        !!  real(real64) x, &
+        !!  real(real64) y(:),
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The bsrk32_integrator object.
+        !! @param[in] xprev The previous value of the independent variable.
+        !! @param[in] xnew The updated value of the independent variable.
+        !! @param[in] x The value at which to perform the interpolation.
+        !! @param[out] y An N-element array containing the interpolated 
+        !!  values for each equation.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.
+        procedure, public :: interpolate => bsrk32_interp
+        !> @brief Sets up the interpolation polynomial.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_up_interpolation( &
+        !!  class(bsrk32_integrator) this, &
+        !!  real(real64) y(:), &
+        !!  real(real64) yn(:), &
+        !!  real(real64) k(:,:) &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The bsrk32_integrator object.
+        !! @param[in] y An N-element array containing the current solution
+        !!  values.
+        !! @param[in] yn An N-element array containing the solution values at
+        !!  the next step.
+        !! @param[in] k An N-by-M matrix containing the intermediate step
+        !!  function outputs where M is the number of stages of the integrator.
+        procedure, public :: set_up_interpolation => bsrk32_set_up_interp
+    end type
+
+    ! diffeq_bsrk32.f90
+    interface
+        module subroutine bsrk32_define_model(this)
+            class(bsrk32_integrator), intent(inout) :: this
+        end subroutine
+
+        pure module function bsrk32_get_method_factor(this, i, j) result(rst)
+            class(bsrk32_integrator), intent(in) :: this
+            integer(int32), intent(in) :: i, j
+            real(real64) :: rst
+        end function
+
+        pure module function bsrk32_get_quad_weights(this, i) result(rst)
+            class(bsrk32_integrator), intent(in) :: this
+            integer(int32), intent(in) :: i
+            real(real64) :: rst
+        end function
+
+        pure module function bsrk32_get_error_factor(this, i) result(rst)
+            class(bsrk32_integrator), intent(in) :: this
+            integer(int32), intent(in) :: i
+            real(real64) :: rst
+        end function
+
+        pure module function bsrk32_get_position_factor(this, i) result(rst)
+            class(bsrk32_integrator), intent(in) :: this
+            integer(int32), intent(in) :: i
+            real(real64) :: rst
+        end function
+
+        pure module function bsrk32_is_fsal(this) result(rst)
+            class(bsrk32_integrator), intent(in) :: this
+            logical :: rst
+        end function
+
+        pure module function bsrk32_get_stage_count(this) result(rst)
+            class(bsrk32_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+
+        pure module function bsrk32_get_order(this) result(rst)
+            class(bsrk32_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+
+        module subroutine bsrk32_set_up_interp(this, y, yn, k)
+            class(bsrk32_integrator), intent(inout) :: this
+            real(real64), intent(in), dimension(:) :: y, yn
+            real(real64), intent(in), dimension(:,:) :: k
+        end subroutine
+
+        module subroutine bsrk32_interp(this, xprev, xnew, x, y, err)
+            class(bsrk32_integrator), intent(in) :: this
+            real(real64), intent(in) :: xprev, xnew, x
+            real(real64), intent(out), dimension(:) :: y
+            class(errors), intent(inout), optional, target :: err
         end subroutine
     end interface
 
