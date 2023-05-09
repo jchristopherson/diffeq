@@ -145,7 +145,7 @@ module subroutine rkv_on_successful_step(this, x, xn, y, yn)
     integer(int32) :: n
 
     ! Set up the interpolation polynomial - TO DO check for dense output first
-    call this%set_up_interpolation(y, yn, this%m_work)
+    call this%set_up_interpolation(x, xn, y, yn, this%m_work)
 
     ! Store the last result as the first, if this is FSAL
     if (this%is_fsal()) then

@@ -60,6 +60,9 @@ program test
     rst = test_bsrk32_2()
     if (.not.rst) flag = 15
 
+    rst = test_bsrk32_3()
+    if (.not.rst) flag = 16
+
     ! Output
     stop flag
 end program

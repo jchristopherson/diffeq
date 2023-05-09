@@ -1908,6 +1908,8 @@ module diffeq
         !! @code{.f90}
         !! subroutine set_up_interpolation( &
         !!  class(rk_variable_integrator) this, &
+        !!  real(real64) x, &
+        !!  real(real64) xn, &
         !!  real(real64) y(:), &
         !!  real(real64) yn(:), &
         !!  real(real64) k(:,:) &
@@ -1915,6 +1917,8 @@ module diffeq
         !! @endcode
         !!
         !! @param[in,out] this The rk_variable_integrator object.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] xn The value of the independent variable at the next step.
         !! @param[in] y An N-element array containing the current solution
         !!  values.
         !! @param[in] yn An N-element array containing the solution values at
@@ -1959,10 +1963,11 @@ module diffeq
             class(rk_variable_integrator), intent(inout) :: this
         end subroutine
 
-        subroutine rkv_set_up_interp(this, y, yn, k)
+        subroutine rkv_set_up_interp(this, x, xn, y, yn, k)
             use iso_fortran_env
             import rk_variable_integrator
             class(rk_variable_integrator), intent(inout) :: this
+            real(real64), intent(in) :: x, xn
             real(real64), intent(in), dimension(:) :: y, yn
             real(real64), intent(in), dimension(:,:) :: k
         end subroutine
@@ -2223,6 +2228,8 @@ module diffeq
         !! @code{.f90}
         !! subroutine set_up_interpolation( &
         !!  class(dprk45_integrator) this, &
+        !!  real(real64) x, &
+        !!  real(real64) xn, &
         !!  real(real64) y(:), &
         !!  real(real64) yn(:), &
         !!  real(real64) k(:,:) &
@@ -2230,6 +2237,8 @@ module diffeq
         !! @endcode
         !!
         !! @param[in,out] this The dprk45_integrator object.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] xn The value of the independent variable at the next step.
         !! @param[in] y An N-element array containing the current solution
         !!  values.
         !! @param[in] yn An N-element array containing the solution values at
@@ -2296,8 +2305,9 @@ module diffeq
             class(errors), intent(inout), optional, target :: err
         end subroutine
 
-        module subroutine dprk45_set_up_interp(this, y, yn, k)
+        module subroutine dprk45_set_up_interp(this, x, xn, y, yn, k)
             class(dprk45_integrator), intent(inout) :: this
+            real(real64), intent(in) :: x, xn
             real(real64), intent(in), dimension(:) :: y, yn
             real(real64), intent(in), dimension(:,:) :: k
         end subroutine
@@ -2311,6 +2321,7 @@ module diffeq
         real(real64), private, dimension(4) :: m_b
         real(real64), private, dimension(4) :: m_c
         real(real64), private, dimension(4) :: m_e
+        real(real64), private, allocatable, dimension(:,:) :: m_bsrk23work
     contains
         !> @brief Defines (initializes) the model parameters.
         !!
@@ -2447,6 +2458,8 @@ module diffeq
         !! @code{.f90}
         !! subroutine set_up_interpolation( &
         !!  class(bsrk32_integrator) this, &
+        !!  real(real64) x, &
+        !!  real(real64) xn, &
         !!  real(real64) y(:), &
         !!  real(real64) yn(:), &
         !!  real(real64) k(:,:) &
@@ -2454,6 +2467,8 @@ module diffeq
         !! @endcode
         !!
         !! @param[in,out] this The bsrk32_integrator object.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] xn The value of the independent variable at the next step.
         !! @param[in] y An N-element array containing the current solution
         !!  values.
         !! @param[in] yn An N-element array containing the solution values at
@@ -2508,8 +2523,9 @@ module diffeq
             integer(int32) :: rst
         end function
 
-        module subroutine bsrk32_set_up_interp(this, y, yn, k)
+        module subroutine bsrk32_set_up_interp(this, x, xn, y, yn, k)
             class(bsrk32_integrator), intent(inout) :: this
+            real(real64), intent(in) :: x, xn
             real(real64), intent(in), dimension(:) :: y, yn
             real(real64), intent(in), dimension(:,:) :: k
         end subroutine

@@ -114,11 +114,41 @@ pure module function bsrk32_get_order(this) result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
-module subroutine bsrk32_set_up_interp(this, y, yn, k)
+module subroutine bsrk32_set_up_interp(this, x, xn, y, yn, k)
     ! Arguments
     class(bsrk32_integrator), intent(inout) :: this
+    real(real64), intent(in) :: x, xn
     real(real64), intent(in), dimension(:) :: y, yn
     real(real64), intent(in), dimension(:,:) :: k
+
+    ! Parameters
+    integer(int32), parameter :: n = 3
+
+    ! Local Variables
+    integer(int32) :: i, neqn
+    real(real64) :: h
+
+    ! Initialization
+    neqn = size(y)
+    h = this%get_step_size()
+
+    ! Memory ALlocation
+    if (allocated(this%m_bsrk23work)) then
+        if (size(this%m_bsrk23work, 1) /= neqn .or. &
+            size(this%m_bsrk23work, 2) /= n) &
+        then
+            deallocate(this%m_bsrk23work)
+            allocate(this%m_bsrk23work(neqn, n))
+        end if
+    else
+        allocate(this%m_bsrk23work(neqn, n))
+    end if
+
+    ! Construct the coefficient arrays
+    this%m_bsrk23work(:,1) = -(y - yn + k(:,1) * h) / h**2
+    this%m_bsrk23work(:,2) = k(:,1) - 2.0d0 * x * this%m_bsrk23work(:,1)
+    this%m_bsrk23work(:,3) = y - this%m_bsrk23work(:,1) * x**2 - &
+        this%m_bsrk23work(:,2) * x
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -128,9 +158,43 @@ module subroutine bsrk32_interp(this, xprev, xnew, x, y, err)
     real(real64), intent(in) :: xprev, xnew, x
     real(real64), intent(out), dimension(:) :: y
     class(errors), intent(inout), optional, target :: err
-end subroutine
 
-! ------------------------------------------------------------------------------
+    ! Local Variables
+    integer(int32) :: neqn
+    class(errors), pointer :: errmgr
+    type(errors), target :: deferr
+    character(len = :), allocatable :: errmsg
+    
+    ! Initialization
+    if (present(err)) then
+        errmgr => err
+    else
+        errmgr => deferr
+    end if
+    neqn = size(this%m_bsrk23work, 1)
+
+    ! Input Check
+    if (size(y) /= neqn) go to 10
+
+    ! Process
+    y = this%m_bsrk23work(:,1) * x**2 + this%m_bsrk23work(:,2) * x + &
+        this%m_bsrk23work(:,3)
+
+    ! End
+    return
+
+    ! Y is not sized correctly
+10  continue
+    allocate(character(len = 256) :: errmsg)
+    write(errmsg, 100) "The output array was expected to be of length ", &
+        neqn, ", but was found to be of length ", size(y), "."
+    call errmgr%report_error("bsrk32_interp", trim(errmsg), &
+        DIFFEQ_ARRAY_SIZE_ERROR)
+    return
+
+    ! Formatting
+100 format(A, I0, A, I0, A)
+end subroutine
 
 ! ------------------------------------------------------------------------------
 end submodule

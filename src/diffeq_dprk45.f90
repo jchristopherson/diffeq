@@ -168,9 +168,10 @@ pure module function dprk45_get_order(this) result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
-module subroutine dprk45_set_up_interp(this, y, yn, k)
+module subroutine dprk45_set_up_interp(this, x, xn, y, yn, k)
     ! Arguments
     class(dprk45_integrator), intent(inout) :: this
+    real(real64), intent(in) :: x, xn
     real(real64), intent(in), dimension(:) :: y, yn
     real(real64), intent(in), dimension(:,:) :: k
 
