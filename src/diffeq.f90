@@ -1,3 +1,4 @@
+!> @brief This module contains several ODE solvers and associated types.
 module diffeq
     use iso_fortran_env
     use ferror
@@ -21,6 +22,7 @@ module diffeq
     public :: rk_variable_integrator
     public :: dprk45_integrator
     public :: bsrk32_integrator
+    public :: variable_multistep_integrator
     public :: DIFFEQ_MEMORY_ALLOCATION_ERROR
     public :: DIFFEQ_NULL_POINTER_ERROR
     public :: DIFFEQ_MATRIX_SIZE_ERROR
@@ -1430,6 +1432,29 @@ module diffeq
         !!      count is exceeded for a single step.
         !!  - DIFFEQ_NULL_POINTER_ERROR: Occurs if no ODE routine is defined.
         procedure, public :: step => vsi_step
+        !> @brief Computes an estimate to the first step size based upon the
+        !! initial function values.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function estimate_first_step_size( &
+        !!  class(variable_step_integrator) this, &
+        !!  real(real64) xo, &
+        !!  real(real64) xf, &
+        !!  real(real64) yo(:), &
+        !!  real(real64) fo(:) &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The variable_step_integrator object.
+        !! @param[in] xo The initial value of the independent variable.
+        !! @param[in] xf The final value of the independent variable.
+        !! @param[in] yo An N-element array containing the initial values.
+        !! @param[in] fo An N-element array containing the initial function 
+        !!  values.
+        !!
+        !! @return An estimate on the initial step size.
+        procedure, public :: estimate_first_step_size => vsi_estimate_first_step
         !> @brief Provides interpolation between integration points allowing
         !! for dense output.
         !!
@@ -1647,6 +1672,14 @@ module diffeq
             real(real64), intent(inout), optional, dimension(:,:) :: fprev
             class(errors), intent(inout), optional, target :: err
         end subroutine
+
+        pure module function vsi_estimate_first_step(this, xo, xf, yo, fo) &
+        result(rst)
+            class(variable_step_integrator), intent(in) :: this
+            real(real64), intent(in) :: xo, xf
+            real(real64), intent(in), dimension(:) :: yo, fo
+            real(real64) :: rst
+        end function
     end interface
 
 ! ------------------------------------------------------------------------------
@@ -2315,6 +2348,72 @@ module diffeq
 
 ! ------------------------------------------------------------------------------
     !> @brief Defines the Bogacki-Shampine 3rd/2nd order integrator.
+    !!
+    !! @par Example
+    !! The following example illustrates how to use this integrator to solve the
+    !! Van der Pol model.
+    !! @code{.f90}
+    !! program example
+    !!     use iso_fortran_env
+    !!     use diffeq
+    !!     use diffeq_models
+    !!     use fplot_core
+    !!     implicit none
+    !!
+    !!     ! Parameters
+    !!     real(real64), parameter :: xmax = 2.5d1
+    !!
+    !!     ! Local Variables
+    !!     type(bsrk32_integrator) :: integrator
+    !!     type(ode_container) :: mdl
+    !!     real(real64), allocatable :: sol(:,:)
+    !!
+    !!     ! Plot Variables
+    !!     type(plot_2d) :: plt
+    !!     type(plot_data_2d) :: pd
+    !!     class(plot_axis), pointer :: xAxis, yAxis
+    !!
+    !!     ! Define the model
+    !!     mdl%fcn => vanderpol
+    !!
+    !!     ! Compute the solution
+    !!     sol = integrator%solve(mdl, [0.0d0, xmax], [2.0d0, 0.0d0])
+    !!
+    !!     ! Plot the results
+    !!     call plt%initialize()
+    !!     xAxis => plt%get_x_axis()
+    !!     yAxis => plt%get_y_axis()
+    !!     call xAxis%set_title("x")
+    !!     call yAxis%set_title("y(x)")
+    !!     call xAxis%set_autoscale(.false.)
+    !!     call xAxis%set_limits(0.0d0, xmax)
+    !!
+    !!     call pd%define_data(sol(:,1), sol(:,2))
+    !!     call pd%set_line_width(2.0)
+    !!     call plt%push(pd)
+    !!
+    !!     call plt%draw()
+    !! end program
+    !! @endcode
+    !! The ODE routine was stored in a seperate module; however, here is the
+    !! code for the ODE routine.
+    !! @code{.f90}
+    !! subroutine vanderpol(x, y, dydx)
+    !!     ! Arguments
+    !!     real(real64), intent(in) :: x, y(:)
+    !!     real(real64), intent(out) :: dydx(:)
+    !!
+    !!     ! Model Constants
+    !!     real(real64), parameter :: mu = 5.0d0
+    !!
+    !!     ! Equations
+    !!     dydx(1) = y(2)
+    !!     dydx(2) = mu * (1.0d0 - y(1)**2) * y(2) - y(1)
+    !! end subroutine
+    !! @endcode
+    !! The above program produces the following plot using the 
+    !! [FPLOT](https://github.com/jchristopherson/fplot) library.
+    !! @image html bsrk32_vanderpol_example_1.png
     type, extends(rk_variable_integrator) :: bsrk32_integrator
         logical, private :: m_modelDefined = .false.
         real(real64), private, dimension(4,4) :: m_a
@@ -2537,6 +2636,15 @@ module diffeq
             class(errors), intent(inout), optional, target :: err
         end subroutine
     end interface
+
+
+
+! ------------------------------------------------------------------------------
+    !> @brief Defines a variable-stepsize, multi-step integrator.
+    type, abstract, extends(variable_step_integrator) :: &
+        variable_multistep_integrator
+    contains
+    end type
 
 ! ------------------------------------------------------------------------------
 end module

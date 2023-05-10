@@ -7,3 +7,8 @@ set(ferror_INCLUDE_DIR ${ferror_INCLUDE_DIR} PARENT_SCOPE)
 add_subdirectory(linalg)
 set(linalg_LIBRARY ${linalg_LIBRARY} PARENT_SCOPE)
 set(linalg_INCLUDE_DIR ${linalg_INCLUDE_DIR} PARENT_SCOPE)
+
+# Get SPECTRUM
+add_subdirectory(spectrum)
+set(spectrum_LIBRARY ${spectrum_LIBRARY} PARENT_SCOPE)
+set(spectrum_INCLUDE_DIR ${spectrum_INCLUDE_DIR} PARENT_SCOPE)

@@ -446,4 +446,31 @@ module subroutine vsi_step(this, sys, x, xmax, y, yn, xprev, yprev, fprev, err)
 end subroutine
 
 ! ------------------------------------------------------------------------------
+pure module function vsi_estimate_first_step(this, xo, xf, yo, fo) &
+    result(rst)
+    ! Arguments
+    class(variable_step_integrator), intent(in) :: this
+    real(real64), intent(in) :: xo, xf
+    real(real64), intent(in), dimension(:) :: yo, fo
+    real(real64) :: rst
+
+    ! Local Variables
+    real(real64) :: fnrm, h1, h2, h3
+
+    ! Determine the Euclidean norm of the derivatives
+    fnrm = norm2(fo)
+    if (fnrm <= 1.0d2 * epsilon(fnrm)) then
+        ! The function values are too close to zero to be useful for this
+        ! approximation.  Set fnrm to unity
+        fnrm = 1.0d0
+    end if
+    
+    ! Process
+    h1 = 0.25d0 * sqrt(1.0d-6 / fnrm)
+    h2 = 0.5d0 * (xf - xo)
+    h3 = this%get_max_step_size()
+    rst = min(h1, h2, h3)
+end function
+
+! ------------------------------------------------------------------------------
 end submodule

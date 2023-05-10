@@ -15,5 +15,6 @@ set(DIFFEQ_SOURCES
     ${dir}/diffeq_rkvariable.f90
     ${dir}/diffeq_dprk45.f90
     ${dir}/diffeq_bsrk32.f90
+    ${dir}/diffeq_harmonics.f90
 )
 set(DIFFEQ_SOURCES ${DIFFEQ_SOURCES} PARENT_SCOPE)

@@ -98,8 +98,10 @@ module function vssi_solve_driver(this, sys, x, iv, err) result(rst)
     if (err%has_error_occurred()) return
 
     ! Provide an initial step size estimate
-    call this%set_next_step_size(min(0.5d0 * (x(2) - x(1)), &
-        this%get_max_step_size()))
+    call sys%fcn(xn, iv, yn1)
+    call this%set_next_step_size( &
+        this%estimate_first_step_size(xn, xmax, iv, yn1) &
+    )
 
     ! Cycle until complete
     i = 0

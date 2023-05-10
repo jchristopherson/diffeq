@@ -38,3 +38,12 @@ add_executable(
 )
 link_library(dprk45_dense_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
 link_library(dprk45_dense_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
+
+# BSRK32 Example
+add_executable(
+    bsrk32_example
+    bsrk32_example.f90
+    ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
+)
+link_library(bsrk32_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
+link_library(bsrk32_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
