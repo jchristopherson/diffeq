@@ -113,7 +113,7 @@ end function
 module function frf_sweep(sys, freq, iv, solver, ncycles, ntransient, &
     pointspercycle, err) result(rst)
     ! Arguments
-    class(harmonic_ode_container) :: sys
+    class(harmonic_ode_container), intent(inout) :: sys
     real(real64), intent(in), dimension(:) :: freq, iv
     class(ode_integrator), intent(inout), optional, target :: solver
     integer(int32), intent(in), optional :: ncycles, ntransient, pointspercycle
@@ -140,17 +140,17 @@ module function frf_sweep(sys, freq, iv, solver, ncycles, ntransient, &
     if (present(ncycles)) then
         nc = ncycles
     else
-        nc = 2
+        nc = 5
     end if
     if (present(ntransient)) then
         nt = ntransient
     else
-        nt = 10
+        nt = 30
     end if
     if (present(pointspercycle)) then
         ppc = pointspercycle
     else
-        ppc = 10
+        ppc = 30
     end if
     if (present(err)) then
         errmgr => err
@@ -178,7 +178,7 @@ module function frf_sweep(sys, freq, iv, solver, ncycles, ntransient, &
     ! Cycle over each frequency point
     do i = 1, nfreq
         ! Define the time vector
-        dt = ppc / freq(i)
+        dt = ntotal / freq(i)
         t = (/ (dt * j, j = 0, npts - 1) /)
 
         ! Update the frequency
@@ -213,23 +213,39 @@ function get_magnitude_phase(x, work) result(rst)
 
     ! Local Variables
     integer(int32) :: i, n, m
-    real(real64) :: mag, check, scale
+    real(real64) :: mag, check, scale, w, sumw
     complex(real64) :: val
+    type(hamming_window) :: win
 
-    ! Process
+    ! Initialization
     n = size(x)
+    win%size = n
     m = compute_transform_length(n)
     if (mod(n, 2) == 0) then
         scale = 2.0d0 / n
     else
         scale = 2.0d0 / (n - 1.0d0)
     end if
+
+    ! Window the data
+    sumw = 0.0d0
+    do i = 1, n
+        w = win%evaluate(i - 1)
+        x(i) = w * x(i)
+        sumw = sumw + w
+    end do
+    scale = scale * n / sumw
+
+    ! Transform the data and find the largest magnitude component
     call dfftf(n, x, work)
     check = 0.0d0
     do i = 2, m
         val = scale * cmplx(x(2*i-1), x(2*i), real64)
         mag = abs(val)
-        if (mag > check) rst = val
+        if (mag > check) then
+            rst = val
+            check = mag
+        end if
     end do
 end function
 

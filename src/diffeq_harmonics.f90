@@ -211,6 +211,187 @@ module diffeq_harmonics
     !! The above program produces the following plot using the 
     !! [FPLOT](https://github.com/jchristopherson/fplot) library.
     !! @image html frf_example_1.png
+    !!
+    !! @par Syntax 2
+    !! This implementation utilizes a frequency sweeping approach to compute
+    !! the frequency response function for each ODE.  Frequency sweeping allows
+    !! for identification of nonlinear phenomenon such as jump in the frequency
+    !! response.  Such phenomenon are not directly available when using linear
+    !! system methods.  The drawback of this method however is the potentially
+    !! long solution time determined by not only the frequency resolution that
+    !! is sought, but also the difficulty in solving the ODEs.
+    !! @code{.f90}
+    !! allocatable real(real64)(:,:) function frequency_response( &
+    !!  class(harmonic_ode_container) sys, &
+    !!  real(real64) freq(:), &
+    !!  real(real64) iv(:), &
+    !!  optional class(ode_integrator) solver, &
+    !!  optional integer(int32) ncycles, &
+    !!  optional integer(int32) ntransient, &
+    !!  optional integer(int32) pointspercycle, &
+    !!  optional class(errors) err &
+    !! )
+    !! @endcode
+    !!
+    !! @param[in,out] sys The @ref harmonic_ode_container object containing the
+    !!  ODEs to integrate.  To utilize this routine effectively you will need
+    !!  to inherit from the @ref harmonic_ode_container type and overload the
+    !!  ode subroutine.  Utilize the excitation_frequency property of this type
+    !!  in order to obtain the current frequency being analyzed by the solver.
+    !! @param[in] freq An M-element array containing the frequency points at
+    !!  which the solution should be computed.  Notice, whatever units are 
+    !!  utilized for this array are also the units of the excitation_frequency
+    !!  property in @p sys.  It is recommended that the units be set to Hz.
+    !! @param[in] iv An N-element array containing the initial conditions for
+    !!  each of the N ODEs.
+    !! @param[in,out] solver An optional differential equation solver.  The 
+    !!  default solver is the Dormand-Prince Runge-Kutta integrator
+    !!  @ref dprk45_integrator.
+    !! @param[in] An optional parameter controlling the number of cycles to 
+    !!  analyze when determining the amplitude and phase of the response.  The
+    !!  default is 5.
+    !! @param[in] ntransient An optional parameter controlling how many of the
+    !!  initial "transient" cycles to ignore.  The default is 30.
+    !! @param[in] pointspercycle An optional parameter controlling how many
+    !!  evenly spaced solution points should be considered per cycle.  The 
+    !!  default is 30.
+    !! @param[in,out] err An optional errors-based object that if provided 
+    !!  can be used to retrieve information relating to any errors 
+    !!  encountered during execution. If not provided, a default 
+    !!  implementation of the errors class is used internally to provide 
+    !!  error handling. Possible errors and warning messages that may be 
+    !!  encountered are as follows.
+    !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
+    !!      allocation issue.
+    !!
+    !! @return An M-by-N matrix containing the complex-valued frequency response
+    !!  functions normalized by the magnitude of the forcing function for each
+    !!  of the N equations in the system of ODEs.
+    !!
+    !! @par Example
+    !! The following example illustrates how to utilize this routine to 
+    !! determine the frequency response function for the Duffing equation.  This
+    !! example sweeps both ascending and descending frequencies to reveal the
+    !! jump condition for the Duffing equation.  Also, notice the overloading
+    !! of the ode routine from the @ref harmonic_ode_container type in order
+    !! to define the ODE.
+    !! @code{.f90}
+    !! module ode_module
+    !!     use iso_fortran_env
+    !!     use diffeq_harmonics
+    !!     implicit none
+    !!
+    !!     ! Model Constants
+    !!     real(real64), parameter :: alpha = 1.0d0
+    !!     real(real64), parameter :: beta = 0.4d0
+    !!     real(real64), parameter :: delta = 0.1d0
+    !!     real(real64), parameter :: gamma = 1.0d0
+    !!
+    !!     ! ODE_CONTAINER object
+    !!     type, extends(harmonic_ode_container) :: duffing_ode
+    !!     contains
+    !!         ! Overloads the ODE subroutine providing the ability to obtain
+    !!         ! frequency information from the solver via the excitation_frequency
+    !!         ! property.
+    !!         procedure, public :: ode => duffing_model
+    !!     end type
+    !!
+    !! contains
+    !!     subroutine duffing_model(this, x, y, dydx)
+    !!         ! Arguments
+    !!         class(duffing_ode), intent(in) :: this
+    !!         real(real64), intent(in) :: x
+    !!         real(real64), intent(in), dimension(:) :: y
+    !!         real(real64), intent(out), dimension(:) :: dydx
+    !!
+    !!         ! Equations
+    !!         dydx(1) = y(2)
+    !!         dydx(2) = gamma * cos(this%excitation_frequency * x) - &
+    !!             delta * y(2) - alpha * y(1) - beta * y(1)**3
+    !!     end subroutine
+    !! end module
+    !!
+    !! program example
+    !!     use iso_fortran_env
+    !!     use ode_module
+    !!     use diffeq_harmonics
+    !!     use fplot_core
+    !!     implicit none
+    !!
+    !!     ! Parameters
+    !!     real(real64), parameter :: f1 = 0.5d0
+    !!     real(real64), parameter :: f2 = 2.5d0
+    !!     real(real64), parameter :: df = 0.01d0
+    !!     real(real64), parameter :: pi = 2.0d0 * acos(0.0d0)
+    !!     real(real64), parameter :: deg = 1.8d2 / pi
+    !!
+    !!     ! Local Variables
+    !!     type(duffing_ode) :: sys
+    !!     integer(int32) :: i, n
+    !!     real(real64), allocatable, dimension(:) :: fup, fdown
+    !!     complex(real64), allocatable, dimension(:,:) :: rup, rdown
+    !!
+    !!     ! Plot Variables
+    !!     type(multiplot) :: plt
+    !!     type(plot_2d) :: plt1, plt2
+    !!     type(plot_data_2d) :: pd1, pd2
+    !!     class(plot_axis), pointer :: xAxis, yAxis
+    !!     class(legend), pointer :: lgnd
+    !!
+    !!     ! Define the frequency vectors
+    !!     n = floor((f2 - f1) / df) + 1
+    !!     allocate(fup(n), fdown(n))
+    !!     fup = (/ (df * i + f1, i = 0, n - 1) /)
+    !!     fdown = (/ (df * i + f1, i = n - 1, 0, -1) /)
+    !!
+    !!     ! Perform the ascending sweep
+    !!     rup = frequency_response(sys, fup, [0.0d0, 0.0d0])
+    !!
+    !!     ! Perform the descending sweep
+    !!     rdown = frequency_response(sys, fdown, [0.0d0, 0.0d0])
+    !!
+    !!     ! Plot the results
+    !!     call plt%initialize(2, 1)
+    !!     call plt1%initialize()
+    !!     xAxis => plt1%get_x_axis()
+    !!     yAxis => plt1%get_y_axis()
+    !!     lgnd => plt1%get_legend()
+    !!     call xAxis%set_title("w")
+    !!     call yAxis%set_title("X(w)")
+    !!     call lgnd%set_is_visible(.true.)
+    !!     call lgnd%set_horizontal_position(LEGEND_LEFT)
+    !!
+    !!     call pd1%define_data(fup, abs(rup(:,1)))
+    !!     call pd1%set_name("Ascending")
+    !!     call pd1%set_line_width(2.0)
+    !!     call plt1%push(pd1)
+    !!
+    !!     call pd2%define_data(fdown, abs(rdown(:,1)))
+    !!     call pd2%set_name("Descending")
+    !!     call pd2%set_line_width(2.0)
+    !!     call pd2%set_line_style(LINE_DASHED)
+    !!     call plt1%push(pd2)
+    !!
+    !!     call plt2%initialize()
+    !!     xAxis => plt2%get_x_axis()
+    !!     yAxis => plt2%get_y_axis()
+    !!     call xAxis%set_title("w")
+    !!     call yAxis%set_title("{/Symbol f} [deg]")
+    !!
+    !!     call pd1%define_data(fup, deg * atan2(aimag(rup(:,1)), real(rup(:,1))))
+    !!     call plt2%push(pd1)
+    !!
+    !!     call pd2%define_data(fdown, deg * atan2(aimag(rdown(:,1)), real(rdown(:,1))))
+    !!     call plt2%push(pd2)
+    !!
+    !!     call plt%set(1, 1, plt1)
+    !!     call plt%set(2, 1, plt2)
+    !!     call plt%draw()
+    !! end program
+    !! @endcode
+    !! The above program produces the following plot using the 
+    !! [FPLOT](https://github.com/jchristopherson/fplot) library.
+    !! @image html frf_sweep_example_1.png
     interface frequency_response
         module procedure :: frf_fft_1
         module procedure :: frf_sweep
@@ -235,7 +416,7 @@ module diffeq_harmonics
 
         module function frf_sweep(sys, freq, iv, solver, ncycles, ntransient, &
             pointspercycle, err) result(rst)
-            class(harmonic_ode_container) :: sys
+            class(harmonic_ode_container), intent(inout) :: sys
             real(real64), intent(in), dimension(:) :: freq, iv
             class(ode_integrator), intent(inout), optional, target :: solver
             integer(int32), intent(in), optional :: ncycles, ntransient, &

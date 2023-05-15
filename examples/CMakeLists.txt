@@ -57,3 +57,11 @@ add_executable(
 link_library(frf_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
 link_library(frf_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
 link_library(frf_example ${spectrum_LIBRARY} ${spectrum_INCLUDE_DIR})
+
+# FRF Sweep Example
+add_executable(
+    frf_sweep_example
+    frf_sweep_example.f90
+)
+link_library(frf_sweep_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
+link_library(frf_sweep_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
