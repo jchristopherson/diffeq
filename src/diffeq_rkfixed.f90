@@ -79,7 +79,7 @@ module subroutine rkf_step(this, sys, h, x, y, yn, xprev, yprev, fprev, err)
     if (errmgr%has_error_occurred()) return
 
     ! As this is an explicit routine, the Butcher tableau is lower triangular.
-    call sys%fcn(x, y, this%m_work(:,1))
+    call sys%ode(x, y, this%m_work(:,1))
     do i = 2, n
         this%m_work(:,n1) = 0.0d0
         do j = 1, i - 1 ! only reference the sub-diagonal components
@@ -87,7 +87,7 @@ module subroutine rkf_step(this, sys, h, x, y, yn, xprev, yprev, fprev, err)
                 this%get_method_factor(i,j) * this%m_work(:,j)
         end do
 
-        call sys%fcn( &
+        call sys%ode( &
             x + h * this%get_position_factor(i), &
             y + h * this%m_work(:,n1), &
             this%m_work(:,i) &   ! output

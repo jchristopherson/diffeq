@@ -96,7 +96,7 @@ module subroutine rkv_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
         ! as the integrator uses the last evaluation from the previous step
         ! as this step.  On non-FSAL integrators we always need to compute an
         ! updated first step.
-        call sys%fcn(x, y, this%m_work(:,1))
+        call sys%ode(x, y, this%m_work(:,1))
     end if
     do i = 2, n
         this%m_ywork = 0.0d0
@@ -105,7 +105,7 @@ module subroutine rkv_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
                 this%m_work(:,j)
         end do
 
-        call sys%fcn( &
+        call sys%ode( &
             x + h * this%get_position_factor(i), &
             y + h * this%m_ywork, &
             this%m_work(:,i) &  ! output

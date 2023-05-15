@@ -54,17 +54,13 @@ module subroutine oc_jacobian(this, x, y, dydx, jac, err)
     h = this%get_finite_difference_step()
 
     ! Input Checking
-    if (size(jac, 1) /= ndof .or. size(jac, 2) /= ndof) go to 20
+    if (size(jac, 1) /= ndof .or. size(jac, 2) /= ndof) go to 10
 
     ! Use a user-defined routine, and then be done
     if (associated(this%jacobian)) then
         call this%jacobian(x, y, dydx, jac)
         return
     end if
-
-    ! More input checking - only necessary if the user is not supplying the
-    ! Jacobian.
-    if (.not.associated(this%fcn)) go to 10
 
     ! Allocate workspace.  No action is taken if the proper workspace is
     ! already allocated.
@@ -76,7 +72,7 @@ module subroutine oc_jacobian(this, x, y, dydx, jac, err)
     this%m_jwork = y
     do i = 1, ndof
         this%m_jwork(i) = this%m_jwork(i) + h
-        call this%fcn(x, this%m_jwork, jac(:,i))
+        call this%ode(x, this%m_jwork, jac(:,i))
         jac(:,i) = (jac(:,i) - dydx) / h
         this%m_jwork(i) = y(i)
     end do
@@ -84,14 +80,8 @@ module subroutine oc_jacobian(this, x, y, dydx, jac, err)
     ! End
     return
 
-    ! Null Function Error
-10  continue
-    call errmgr%report_error("oc_jacobian", "The ODE routine cannot be null.", &
-        DIFFEQ_NULL_POINTER_ERROR)
-    return
-
     ! Jacobian Size Error
-20  continue
+10  continue
     allocate(character(len = 256) :: errmsg)
     write(errmsg, 100) "The output matrix must be (", n, "-by-", n, &
         "), but was found to be (", size(jac, 1), "-by-", size(jac, 2), ")."
@@ -139,6 +129,18 @@ module subroutine oc_alloc_workspace(this, ndof, err)
 
     ! Formatting
 100 format(A, I0, A)
+end subroutine
+
+! ------------------------------------------------------------------------------
+module subroutine oc_ode_fcn(this, x, y, dydx)
+    ! Arguments
+    class(ode_container), intent(in) :: this
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:) :: dydx
+
+    ! Process
+    if (associated(this%fcn)) call this%fcn(x, y, dydx)
 end subroutine
 
 ! ------------------------------------------------------------------------------

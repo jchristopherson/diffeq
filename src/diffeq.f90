@@ -165,6 +165,26 @@ module diffeq
         !!      and the calculation is being performed by finite differences.
         !!  - DIFFEQ_MATRIX_SIZE_ERROR: Occurs if @p jac is not N-by-N.
         procedure, public :: compute_jacobian => oc_jacobian
+        !> @brief Evaluates the ODEs by evaluating the routine defined by
+        !! @ref fcn.  This routine may also be overidden to provide custom
+        !! functionallity.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine ode( &
+        !!  class(ode_container) this, &
+        !!  real(real64) x, &
+        !!  real(real64) y(:), &
+        !!  real(real64) dydx(:) &
+        !! )
+        !!
+        !! @param[in] this The @ref ode_container object.
+        !! @param[in] x The current value of the independent variables.
+        !! @param[in] y An N-element array containing the current values of the
+        !!  dependent variables.
+        !! @param[out] dydx An N-element array where the output of each of the
+        !!  N ODEs will be written.
+        procedure, public :: ode => oc_ode_fcn
     end type
 
     ! diffeq_ode_container.f90
@@ -222,6 +242,13 @@ module diffeq
             real(real64), intent(in), dimension(:) :: y, dydx
             real(real64), intent(out), dimension(:,:) :: jac
             class(errors), intent(inout), optional, target :: err
+        end subroutine
+
+        module subroutine oc_ode_fcn(this, x, y, dydx)
+            class(ode_container), intent(in) :: this
+            real(real64), intent(in) :: x
+            real(real64), intent(in), dimension(:) :: y
+            real(real64), intent(out), dimension(:) :: dydx
         end subroutine
     end interface
 

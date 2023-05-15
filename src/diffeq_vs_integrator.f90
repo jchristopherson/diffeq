@@ -351,7 +351,6 @@ module subroutine vsi_step(this, sys, x, xmax, y, yn, xprev, yprev, fprev, err)
 
     ! Input Checking
     if (size(yn) /= neqn) go to 10
-    if (.not.associated(sys%fcn)) go to 40
 
     ! Allocate the workspaces
     call this%allocate_vsi_workspace(neqn, errmgr)
@@ -431,12 +430,6 @@ module subroutine vsi_step(this, sys, x, xmax, y, yn, xprev, yprev, fprev, err)
         x, "."
     call errmgr%report_error("vsi_step", trim(errmsg), &
         DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR)
-    return
-
-    ! No ODE is defined
-40  continue
-    call errmgr%report_error("vsi_step", "No ODE routine defined.", &
-        DIFFEQ_NULL_POINTER_ERROR)
     return
 
     ! Formatting

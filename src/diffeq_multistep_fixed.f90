@@ -70,7 +70,6 @@ module function fms_solver(this, sys, x, iv, err) result(rst)
     mn = min(order, npts)
 
     ! Input Checking
-    if (.not.associated(sys%fcn)) go to 20
     if (npts < 2) go to 30
 
     ! Memory Allocation
@@ -83,13 +82,13 @@ module function fms_solver(this, sys, x, iv, err) result(rst)
     ! Use a 4th order Runge-Kutta integrator to step into the problem
     rst(1,1) = x(1)
     rst(1,2:) = iv
-    call sys%fcn(x(1), iv, this%m_buffer(:,order))
+    call sys%ode(x(1), iv, this%m_buffer(:,order))
     j2 = order - 1
     do i = 2, mn
         j = i - 1
         h = x(j) - x(i)
         call starter%step(sys, h, x(j), rst(j,2:), rst(i,2:))
-        call sys%fcn(x(i), rst(i,2:), this%m_buffer(:,j2))
+        call sys%ode(x(i), rst(i,2:), this%m_buffer(:,j2))
         j2 = j2 - 1
     end do
 
@@ -115,12 +114,6 @@ module function fms_solver(this, sys, x, iv, err) result(rst)
     write(errmsg, 100) "Memory allocation error flag ", flag, "."
     call errmgr%report_error("fms_solver", trim(errmsg), &
         DIFFEQ_MEMORY_ALLOCATION_ERROR)
-    return
-
-    ! No Function Defined Error
-20  continue
-    call errmgr%report_error("fms_solver", "The ODE routine is not defined.", &
-        DIFFEQ_NULL_POINTER_ERROR)
     return
 
     ! Independent Variable Array Size Error

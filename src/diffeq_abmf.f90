@@ -78,7 +78,7 @@ module subroutine afi_step(this, sys, h, x, y, yn, xprev, yprev, fprev, err)
         a4 * fprev(:,4) &
     )
     call shift(fprev)
-    call sys%fcn(x + h, yn, fprev(:,1))
+    call sys%ode(x + h, yn, fprev(:,1))
 
     ! Compute the Adams-Moulton corrector
     yn = y + h * ( &
@@ -87,7 +87,7 @@ module subroutine afi_step(this, sys, h, x, y, yn, xprev, yprev, fprev, err)
         b3 * fprev(:,3) + &
         b4 * fprev(:,4) &
     )
-    call sys%fcn(x + h, yn, fprev(:,1))
+    call sys%ode(x + h, yn, fprev(:,1))
 
     ! End
     return

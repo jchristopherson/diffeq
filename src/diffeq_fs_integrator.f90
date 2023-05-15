@@ -26,7 +26,6 @@ module function fsi_solver(this, sys, x, iv, err) result(rst)
     neqn = size(iv)
 
     ! Input Checking
-    if (.not.associated(sys%fcn)) go to 20
     if (npts < 2) go to 30
 
     ! Memory Allocation

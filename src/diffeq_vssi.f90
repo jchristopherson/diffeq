@@ -25,7 +25,6 @@ module function vssi_solve(this, sys, x, iv, err) result(rst)
 
     ! Input Checking
     if (nx < 2) go to 10
-    if (.not.associated(sys%fcn)) go to 20
     if (abs(maxval(x) - minval(x)) < epsilon(1.0d0)) go to 30
 
     ! Process
@@ -98,7 +97,7 @@ module function vssi_solve_driver(this, sys, x, iv, err) result(rst)
     if (err%has_error_occurred()) return
 
     ! Provide an initial step size estimate
-    call sys%fcn(xn, iv, yn1)
+    call sys%ode(xn, iv, yn1)
     call this%set_next_step_size( &
         this%estimate_first_step_size(xn, xmax, iv, yn1) &
     )
