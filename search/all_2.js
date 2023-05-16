@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['estimate_5ferror_0',['estimate_error',['../structdiffeq_1_1variable__step__integrator.html#a8923d4a61011424206bc60b3a30bb8cd',1,'diffeq::variable_step_integrator']]],
-  ['exponential_5ffixed_5fintegrator_1',['exponential_fixed_integrator',['../structdiffeq_1_1exponential__fixed__integrator.html',1,'diffeq']]]
+  ['clear_5fbuffer_0',['clear_buffer',['../structdiffeq_1_1variable__step__integrator.html#a1eb3151e3afbe6aea2a40f65bb177565',1,'diffeq::variable_step_integrator']]],
+  ['compute_5fjacobian_1',['compute_jacobian',['../structdiffeq_1_1ode__container.html#af39f03ed45cda59adc231a2a7bf45111',1,'diffeq::ode_container']]],
+  ['compute_5fnext_5fstep_5fsize_2',['compute_next_step_size',['../structdiffeq_1_1variable__step__integrator.html#af3a2658ac5a5ed5670f01be323a96ec9',1,'diffeq::variable_step_integrator']]]
 ];

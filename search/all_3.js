@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['fcn_0',['fcn',['../structdiffeq_1_1ode__container.html#a0bdb2c184d723a7456879f7f00ad764a',1,'diffeq::ode_container']]],
-  ['fixed_5fmultistep_5fintegrator_1',['fixed_multistep_integrator',['../structdiffeq_1_1fixed__multistep__integrator.html',1,'diffeq']]],
-  ['fixed_5fstep_5fintegrator_2',['fixed_step_integrator',['../structdiffeq_1_1fixed__step__integrator.html',1,'diffeq']]]
+  ['define_5fmodel_0',['define_model',['../structdiffeq_1_1rk__variable__integrator.html#a335715dd38797868ddf702b5e1332c01',1,'diffeq::rk_variable_integrator::define_model()'],['../structdiffeq_1_1dprk45__integrator.html#a1cc984219089cf5cddee3c1cbdf44f1f',1,'diffeq::dprk45_integrator::define_model()'],['../structdiffeq_1_1bsrk32__integrator.html#a344dd0765bc983972457b010c416c631',1,'diffeq::bsrk32_integrator::define_model()']]],
+  ['diffeq_1',['diffeq',['../namespacediffeq.html',1,'']]],
+  ['diffeq_5fharmonics_2',['diffeq_harmonics',['../namespacediffeq__harmonics.html',1,'']]],
+  ['dprk45_5fintegrator_3',['dprk45_integrator',['../structdiffeq_1_1dprk45__integrator.html',1,'diffeq']]]
 ];

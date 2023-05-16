@@ -1,8 +1,9 @@
 var annotated_dup =
 [
-    [ "diffeq", null, [
+    [ "diffeq", "namespacediffeq.html", [
       [ "adams_fixed_integerator", "structdiffeq_1_1adams__fixed__integerator.html", "structdiffeq_1_1adams__fixed__integerator" ],
-      [ "exponential_fixed_integrator", "structdiffeq_1_1exponential__fixed__integrator.html", "structdiffeq_1_1exponential__fixed__integrator" ],
+      [ "bsrk32_integrator", "structdiffeq_1_1bsrk32__integrator.html", "structdiffeq_1_1bsrk32__integrator" ],
+      [ "dprk45_integrator", "structdiffeq_1_1dprk45__integrator.html", "structdiffeq_1_1dprk45__integrator" ],
       [ "fixed_multistep_integrator", "structdiffeq_1_1fixed__multistep__integrator.html", "structdiffeq_1_1fixed__multistep__integrator" ],
       [ "fixed_step_integrator", "structdiffeq_1_1fixed__step__integrator.html", "structdiffeq_1_1fixed__step__integrator" ],
       [ "ode", "interfacediffeq_1_1ode.html", null ],
@@ -15,8 +16,24 @@ var annotated_dup =
       [ "ode_solver", "interfacediffeq_1_1ode__solver.html", null ],
       [ "rk4_fixed_integrator", "structdiffeq_1_1rk4__fixed__integrator.html", "structdiffeq_1_1rk4__fixed__integrator" ],
       [ "rk_fixed_integrator", "structdiffeq_1_1rk__fixed__integrator.html", "structdiffeq_1_1rk__fixed__integrator" ],
+      [ "rk_variable_integrator", "structdiffeq_1_1rk__variable__integrator.html", "structdiffeq_1_1rk__variable__integrator" ],
       [ "rkf_get_array_parameter", "interfacediffeq_1_1rkf__get__array__parameter.html", null ],
       [ "rkf_get_matrix_parameter", "interfacediffeq_1_1rkf__get__matrix__parameter.html", null ],
-      [ "variable_step_integrator", "structdiffeq_1_1variable__step__integrator.html", "structdiffeq_1_1variable__step__integrator" ]
+      [ "rkv_action", "interfacediffeq_1_1rkv__action.html", null ],
+      [ "rkv_get_array_parameter", "interfacediffeq_1_1rkv__get__array__parameter.html", null ],
+      [ "rkv_get_boolean_parameter", "interfacediffeq_1_1rkv__get__boolean__parameter.html", null ],
+      [ "rkv_get_matrix_parameter", "interfacediffeq_1_1rkv__get__matrix__parameter.html", null ],
+      [ "variable_multistep_integrator", "structdiffeq_1_1variable__multistep__integrator.html", null ],
+      [ "variable_singlestep_integrator", "structdiffeq_1_1variable__singlestep__integrator.html", "structdiffeq_1_1variable__singlestep__integrator" ],
+      [ "variable_step_action", "interfacediffeq_1_1variable__step__action.html", null ],
+      [ "variable_step_attempt", "interfacediffeq_1_1variable__step__attempt.html", null ],
+      [ "variable_step_integrator", "structdiffeq_1_1variable__step__integrator.html", "structdiffeq_1_1variable__step__integrator" ],
+      [ "variable_step_interpolation", "interfacediffeq_1_1variable__step__interpolation.html", null ]
+    ] ],
+    [ "diffeq_harmonics", "namespacediffeq__harmonics.html", [
+      [ "forced_ode_container", "structdiffeq__harmonics_1_1forced__ode__container.html", null ],
+      [ "frequency_response", "interfacediffeq__harmonics_1_1frequency__response.html", null ],
+      [ "harmonic_ode_container", "structdiffeq__harmonics_1_1harmonic__ode__container.html", null ],
+      [ "ode_excite", "interfacediffeq__harmonics_1_1ode__excite.html", null ]
     ] ]
 ];
