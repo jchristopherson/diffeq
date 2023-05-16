@@ -265,8 +265,7 @@ module diffeq_harmonics
     !!      allocation issue.
     !!
     !! @return An M-by-N matrix containing the complex-valued frequency response
-    !!  functions normalized by the magnitude of the forcing function for each
-    !!  of the N equations in the system of ODEs.
+    !!  functions for each of the N equations in the system of ODEs.
     !!
     !! @par Example
     !! The following example illustrates how to utilize this routine to 

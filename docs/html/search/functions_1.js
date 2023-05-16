@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['estimate_5ferror_0',['estimate_error',['../structdiffeq_1_1variable__step__integrator.html#a8923d4a61011424206bc60b3a30bb8cd',1,'diffeq::variable_step_integrator']]]
+  ['buffer_5fresults_0',['buffer_results',['../structdiffeq_1_1variable__step__integrator.html#a4607a40dd8aadb1355fd63f806add1d4',1,'diffeq::variable_step_integrator']]]
 ];

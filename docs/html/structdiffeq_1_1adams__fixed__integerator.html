@@ -154,9 +154,9 @@ Additional Inherited Members</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Defines a fixed-step, 4th-order, Adams-Bashforth-Moulton PECE integrator. </p>
 <dl class="section user"><dt>Example</dt><dd>The following example solves the Van der Pol equation \( 
- \frac{d^2y}{dx^2} - \mu \left( 1 - y^2 \right) \frac{dy}{dx} + y = 0 \) using both this Adams method integrator, and the exponential integrator <a class="el" href="structdiffeq_1_1exponential__fixed__integrator.html">exponential_fixed_integrator</a>. <div class="fragment"><div class="line"><span class="keyword">program</span> example</div>
+ \frac{d^2y}{dx^2} - \mu \left( 1 - y^2 \right) \frac{dy}{dx} + y = 0 \) using both this Adams method integrator, and the 4th order Runge-Kutta integrator <a class="el" href="structdiffeq_1_1rk4__fixed__integrator.html">rk4_fixed_integrator</a>. <div class="fragment"><div class="line"><span class="keyword">program</span> example</div>
 <div class="line">    <span class="keywordtype">use </span>iso_fortran_env</div>
-<div class="line">    <span class="keywordtype">use </span>diffeq</div>
+<div class="line">    <span class="keywordtype">use </span><a class="code hl_namespace" href="namespacediffeq.html">diffeq</a></div>
 <div class="line">    <span class="keywordtype">use </span>diffeq_models</div>
 <div class="line">    <span class="keywordtype">use </span>fplot_core</div>
 <div class="line">    <span class="keywordtype">implicit none</span></div>
@@ -167,7 +167,7 @@ Additional Inherited Members</h2></td></tr>
 <div class="line"> </div>
 <div class="line">    <span class="comment">! Local Variables</span></div>
 <div class="line">    <span class="keywordtype">type</span>(adams_fixed_integerator) :: integrator</div>
-<div class="line">    <span class="keywordtype">type</span>(exponential_fixed_integrator) :: comparison</div>
+<div class="line">    <span class="keywordtype">type</span>(rk4_fixed_integrator) :: comparison</div>
 <div class="line">    <span class="keywordtype">type</span>(ode_container) :: mdl</div>
 <div class="line">    <span class="keywordtype">integer(int32)</span> :: i</div>
 <div class="line"><span class="keywordtype">    real</span>(real64) :: x(npts), sol(npts, 3), csol(npts, 3)</div>
@@ -205,13 +205,14 @@ Additional Inherited Members</h2></td></tr>
 <div class="line">    <span class="keyword">call </span>plt%push(pd1)</div>
 <div class="line"> </div>
 <div class="line">    <span class="keyword">call </span>pd2%define_data(csol(:,1), csol(:,2))</div>
-<div class="line">    <span class="keyword">call </span>pd2%set_name(<span class="stringliteral">&quot;Exponential&quot;</span>)</div>
+<div class="line">    <span class="keyword">call </span>pd2%set_name(<span class="stringliteral">&quot;Runge Kutta&quot;</span>)</div>
 <div class="line">    <span class="keyword">call </span>pd2%set_line_width(4.0)</div>
 <div class="line">    <span class="keyword">call </span>pd2%set_line_style(line_dashed)</div>
 <div class="line">    <span class="keyword">call </span>plt%push(pd2)</div>
 <div class="line"> </div>
 <div class="line">    <span class="keyword">call </span>plt%draw()</div>
 <div class="line"><span class="keyword">end program</span></div>
+<div class="ttc" id="anamespacediffeq_html"><div class="ttname"><a href="namespacediffeq.html">diffeq</a></div><div class="ttdoc">This module contains several ODE solvers and associated types.</div><div class="ttdef"><b>Definition:</b> <a href="diffeq_8f90_source.html#l00002">diffeq.f90:2</a></div></div>
 </div><!-- fragment --> The ODE routine was stored in a seperate module; however, here is the code for the ODE routine. <div class="fragment"><div class="line"><span class="keyword">subroutine </span>vanderpol(x, y, dydx)</div>
 <div class="line">    <span class="comment">! Arguments</span></div>
 <div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">intent(in)</span> :: x, y(:)</div>
@@ -225,11 +226,11 @@ Additional Inherited Members</h2></td></tr>
 <div class="line">    dydx(2) = mu * (1.0d0 - y(1)**2) * y(2) - y(1)</div>
 <div class="line"><span class="keyword">end subroutine</span></div>
 </div><!-- fragment --> The above program produces the following plot using the <a href="https://github.com/jchristopherson/fplot">FPLOT</a> library. <div class="image">
-<img src="vanderpol_fixed_adams_vs_exponential_example_1.png" alt=""/>
+<img src="vanderpol_fixed_adams_vs_runge_kutta_example_1.png" alt=""/>
 </div>
  </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01015">1015</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00890">890</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 </div><h2 class="groupheader">Member Function/Subroutine Documentation</h2>
 <a id="ab83879c2ecbf2d406155d739e7c7676e" name="ab83879c2ecbf2d406155d739e7c7676e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab83879c2ecbf2d406155d739e7c7676e">&#9670;&#160;</a></span>get_order()</h2>
@@ -254,7 +255,7 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The order of the integrator. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01026">1026</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00901">901</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -276,7 +277,8 @@ Additional Inherited Members</h2></td></tr>
 <div class="line"> <span class="keywordtype">class</span>(ode_container) sys, &amp;</div>
 <div class="line"> <span class="keywordtype">real(real64)</span> h, &amp;</div>
 <div class="line"> <span class="keywordtype">real(real64)</span> x, &amp;</div>
-<div class="line"> <span class="keywordtype">real(real64)</span> yn, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> y(:), &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> yn(:), &amp;</div>
 <div class="line"> <span class="keywordtype">optional</span> <span class="keywordtype">real(real64)</span> xprev(:), &amp;</div>
 <div class="line"> <span class="keywordtype">optional</span> <span class="keywordtype">real(real64)</span> yprev(:,:), &amp;</div>
 <div class="line"> <span class="keywordtype">optional</span> <span class="keywordtype">class</span>(errors) err &amp;</div>
@@ -291,13 +293,14 @@ Additional Inherited Members</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">y</td><td>An N-element array containing the current values of the dependent variables. </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">yn</td><td>An N-element array where the values of the dependent variables at <code>x</code> + <code>h</code> will be written. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">xprev</td><td>An M-element array containing the previous M values of the independent variable where M is the order of the method. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">yprve</td><td>An M-by-NEQN array containing the previous M arrays of dependent variable values where M is the order of the method. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">yprev</td><td>An M-by-NEQN array containing the previous M arrays of dependent variable values where M is the order of the method. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">fprev</td><td>An M-by-NEQN array where the previous M function values are written. This is typically useful for multi-step methods. In single-step methods this parameter is not used. </td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">An</td><td>optional errors-based object that if provided can be used to retrieve information relating to any errors encountered during execution. If not provided, a default implementation of the errors class is used internally to provide error handling. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01061">1061</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00940">940</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -309,7 +312,7 @@ Additional Inherited Members</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>diffeq</b></li><li class="navelem"><a class="el" href="structdiffeq_1_1adams__fixed__integerator.html">adams_fixed_integerator</a></li>
+    <li class="navelem"><a class="el" href="namespacediffeq.html">diffeq</a></li><li class="navelem"><a class="el" href="structdiffeq_1_1adams__fixed__integerator.html">adams_fixed_integerator</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.5 </li>
   </ul>
 </div>

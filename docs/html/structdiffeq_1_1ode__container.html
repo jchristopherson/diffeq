@@ -107,6 +107,16 @@ $(document).ready(function(){initNavTree('structdiffeq_1_1ode__container.html','
 
 <p>A container for the routine containing the ODEs to integrate.  
  <a href="structdiffeq_1_1ode__container.html#details">More...</a></p>
+<div class="dynheader">
+Inheritance diagram for diffeq::ode_container:</div>
+<div class="dyncontent">
+ <div class="center">
+  <img src="structdiffeq_1_1ode__container.png" usemap="#diffeq::ode_5Fcontainer_map" alt=""/>
+  <map id="diffeq::ode_5Fcontainer_map" name="diffeq::ode_5Fcontainer_map">
+<area href="structdiffeq__harmonics_1_1forced__ode__container.html" alt="diffeq_harmonics::forced_ode_container" shape="rect" coords="0,56,254,80"/>
+<area href="structdiffeq__harmonics_1_1harmonic__ode__container.html" alt="diffeq_harmonics::harmonic_ode_container" shape="rect" coords="264,56,518,80"/>
+  </map>
+</div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -125,6 +135,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af39f03ed45cda59adc231a2a7bf45111"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1ode__container.html#af39f03ed45cda59adc231a2a7bf45111">compute_jacobian</a> =&gt; oc_jacobian</td></tr>
 <tr class="memdesc:af39f03ed45cda59adc231a2a7bf45111"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the Jacobian matrix for the system of ODEs. If a routine is provided with an analytical Jacobian, the supplied routine is utilized; else, the Jacobian is estimated via a forward difference approximation.  <a href="structdiffeq_1_1ode__container.html#af39f03ed45cda59adc231a2a7bf45111">More...</a><br /></td></tr>
 <tr class="separator:af39f03ed45cda59adc231a2a7bf45111"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad35fae3c6c8eae2776c6de0d3eebbdcd"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1ode__container.html#ad35fae3c6c8eae2776c6de0d3eebbdcd">ode</a> =&gt; oc_ode_fcn</td></tr>
+<tr class="memdesc:ad35fae3c6c8eae2776c6de0d3eebbdcd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluates the ODEs by evaluating the routine defined by <a class="el" href="structdiffeq_1_1ode__container.html#a0bdb2c184d723a7456879f7f00ad764a">fcn</a>. This routine may also be overidden to provide custom functionallity.  <a href="structdiffeq_1_1ode__container.html#ad35fae3c6c8eae2776c6de0d3eebbdcd">More...</a><br /></td></tr>
+<tr class="separator:ad35fae3c6c8eae2776c6de0d3eebbdcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -141,7 +154,7 @@ Public Attributes</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >A container for the routine containing the ODEs to integrate. </p>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00037">37</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00046">46</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 </div><h2 class="groupheader">Member Function/Subroutine Documentation</h2>
 <a id="af39f03ed45cda59adc231a2a7bf45111" name="af39f03ed45cda59adc231a2a7bf45111"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af39f03ed45cda59adc231a2a7bf45111">&#9670;&#160;</a></span>compute_jacobian()</h2>
@@ -182,7 +195,7 @@ Public Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00158">158</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00167">167</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -211,7 +224,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The step size. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00073">73</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00082">82</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -240,7 +253,39 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the mass matrix is state-dependent such that it requires updating at each integration step; else, false if the mass matrix is not state-dependent and can be treated as constant for all integration steps. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00103">103</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00112">112</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="ad35fae3c6c8eae2776c6de0d3eebbdcd" name="ad35fae3c6c8eae2776c6de0d3eebbdcd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad35fae3c6c8eae2776c6de0d3eebbdcd">&#9670;&#160;</a></span>ode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure, public diffeq::ode_container::ode</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Evaluates the ODEs by evaluating the routine defined by <a class="el" href="structdiffeq_1_1ode__container.html#a0bdb2c184d723a7456879f7f00ad764a">fcn</a>. This routine may also be overidden to provide custom functionallity. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keyword">subroutine </span>ode( &amp;</div>
+<div class="line"> class(ode_container) this, &amp;</div>
+<div class="line"><span class="keywordtype"> real</span>(real64) x, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> y(:), &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> dydx(:) &amp;</div>
+<div class="line">)</div>
+<div class="line"> </div>
+<div class="line">@param[in] this the @ref ode_container object.</div>
+<div class="line">@param[in] x the current <span class="keywordtype">value</span> of the independent variables.</div>
+<div class="line">@param[in] y an n-element array containing the current values of the</div>
+<div class="line"> dependent variables.</div>
+<div class="line">@param[out] dydx an n-element array <span class="keywordflow">where</span> the output of each of the</div>
+<div class="line"> n odes will be written.</div>
+</div><!-- fragment --></dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00187">187</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -270,7 +315,7 @@ Public Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00087">87</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00096">96</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -300,7 +345,7 @@ Public Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00121">121</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00130">130</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -319,7 +364,7 @@ Public Attributes</h2></td></tr>
 
 <p>A pointer to the routine containing the ODEs to integrate. </p>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00046">46</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00055">55</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -337,7 +382,7 @@ Public Attributes</h2></td></tr>
 
 <p>A pointer to the routine containing the analytical Jacobian. If supplied, this routine is utilized; however, if null, a finite difference approximation is utilized. </p>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00050">50</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00059">59</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -355,7 +400,7 @@ Public Attributes</h2></td></tr>
 
 <p>A pointer to the routine containing the mass matrix for the system. If set to null (the default), an identity mass matrix will be assumed. </p>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00055">55</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00064">64</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -367,7 +412,7 @@ Public Attributes</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>diffeq</b></li><li class="navelem"><a class="el" href="structdiffeq_1_1ode__container.html">ode_container</a></li>
+    <li class="navelem"><a class="el" href="namespacediffeq.html">diffeq</a></li><li class="navelem"><a class="el" href="structdiffeq_1_1ode__container.html">ode_container</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.5 </li>
   </ul>
 </div>

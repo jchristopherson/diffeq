@@ -99,6 +99,7 @@ $(document).ready(function(){initNavTree('structdiffeq_1_1variable__step__integr
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="structdiffeq_1_1variable__step__integrator-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">diffeq::variable_step_integrator Type Reference</div></div>
 </div><!--header-->
@@ -112,33 +113,108 @@ Inheritance diagram for diffeq::variable_step_integrator:</div>
  <div class="center">
   <img src="structdiffeq_1_1variable__step__integrator.png" usemap="#diffeq::variable_5Fstep_5Fintegrator_map" alt=""/>
   <map id="diffeq::variable_5Fstep_5Fintegrator_map" name="diffeq::variable_5Fstep_5Fintegrator_map">
-<area href="structdiffeq_1_1ode__integrator.html" title="The most basic ODE integrator object capable of integrating systems of ODE&#39;s." alt="diffeq::ode_integrator" shape="rect" coords="0,0,186,24"/>
+<area href="structdiffeq_1_1ode__integrator.html" title="The most basic ODE integrator object capable of integrating systems of ODE&#39;s." alt="diffeq::ode_integrator" shape="rect" coords="114,0,333,24"/>
+<area href="structdiffeq_1_1variable__multistep__integrator.html" title="Defines a variable-stepsize, multi-step integrator." alt="diffeq::variable_multistep_integrator" shape="rect" coords="0,112,219,136"/>
+<area href="structdiffeq_1_1variable__singlestep__integrator.html" title="Defines a variable-step, single-stage integrator." alt="diffeq::variable_singlestep_integrator" shape="rect" coords="229,112,448,136"/>
+<area href="structdiffeq_1_1rk__variable__integrator.html" title="Defines a variable-step, Runge-Kutta integrator." alt="diffeq::rk_variable_integrator" shape="rect" coords="229,168,448,192"/>
+<area href="structdiffeq_1_1bsrk32__integrator.html" title="Defines the Bogacki-Shampine 3rd/2nd order integrator." alt="diffeq::bsrk32_integrator" shape="rect" coords="114,224,333,248"/>
+<area href="structdiffeq_1_1dprk45__integrator.html" title="Defines the classical Dormand-Prince 4th/5th order integrator." alt="diffeq::dprk45_integrator" shape="rect" coords="343,224,562,248"/>
   </map>
 </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a5a6abaa0768d1b9288e3c66d74ea3e30"><td class="memItemLeft" align="right" valign="top">procedure(<a class="el" href="interfacediffeq_1_1variable__step__attempt.html">variable_step_attempt</a>), deferred, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a5a6abaa0768d1b9288e3c66d74ea3e30">attempt_step</a></td></tr>
+<tr class="memdesc:a5a6abaa0768d1b9288e3c66d74ea3e30"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempts a single integration step.  <a href="structdiffeq_1_1variable__step__integrator.html#a5a6abaa0768d1b9288e3c66d74ea3e30">More...</a><br /></td></tr>
+<tr class="separator:a5a6abaa0768d1b9288e3c66d74ea3e30"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af799852de4bf7c234b8680a78dc63c89"><td class="memItemLeft" align="right" valign="top">procedure(<a class="el" href="interfacediffeq_1_1variable__step__action.html">variable_step_action</a>), deferred, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#af799852de4bf7c234b8680a78dc63c89">on_successful_step</a></td></tr>
+<tr class="memdesc:af799852de4bf7c234b8680a78dc63c89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform necessary actions on completion of a successful step.  <a href="structdiffeq_1_1variable__step__integrator.html#af799852de4bf7c234b8680a78dc63c89">More...</a><br /></td></tr>
+<tr class="separator:af799852de4bf7c234b8680a78dc63c89"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9b520075cfa5c90a5eac13c19961ced6"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a9b520075cfa5c90a5eac13c19961ced6">get_safety_factor</a> =&gt; vsi_get_safety_factor</td></tr>
+<tr class="memdesc:a9b520075cfa5c90a5eac13c19961ced6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a safety factor used to limit the predicted step size.  <a href="structdiffeq_1_1variable__step__integrator.html#a9b520075cfa5c90a5eac13c19961ced6">More...</a><br /></td></tr>
 <tr class="separator:a9b520075cfa5c90a5eac13c19961ced6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aac6be17795cdfaebefd369711cb14f03"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#aac6be17795cdfaebefd369711cb14f03">set_safety_factor</a> =&gt; vsi_set_safety_factor</td></tr>
+<tr class="memdesc:aac6be17795cdfaebefd369711cb14f03"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a safety factor used to limit the predicted step size.  <a href="structdiffeq_1_1variable__step__integrator.html#aac6be17795cdfaebefd369711cb14f03">More...</a><br /></td></tr>
 <tr class="separator:aac6be17795cdfaebefd369711cb14f03"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a92ba4e6f41d5d63015c49b647181b7c5"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a92ba4e6f41d5d63015c49b647181b7c5">get_alpha</a> =&gt; vsi_get_alpha</td></tr>
+<tr class="memdesc:a92ba4e6f41d5d63015c49b647181b7c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the \( alpha \) control parameter in the PI controller  \( h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} e_n^{\alpha} 
+ e_{n-1}^{\beta}\), where \( f \) is a safety factor, and \( k \) is the order of the integration method.  <a href="structdiffeq_1_1variable__step__integrator.html#a92ba4e6f41d5d63015c49b647181b7c5">More...</a><br /></td></tr>
 <tr class="separator:a92ba4e6f41d5d63015c49b647181b7c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad6abd440b9ac18e9ae3477d68c4a0c19"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#ad6abd440b9ac18e9ae3477d68c4a0c19">set_alpha</a> =&gt; vsi_set_alpha</td></tr>
+<tr class="memdesc:ad6abd440b9ac18e9ae3477d68c4a0c19"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the \( alpha \) control parameter in the PI controller  \( h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} e_n^{\alpha} 
+ e_{n-1}^{\beta}\), where \( f \) is a safety factor, and \( k \) is the order of the integration method.  <a href="structdiffeq_1_1variable__step__integrator.html#ad6abd440b9ac18e9ae3477d68c4a0c19">More...</a><br /></td></tr>
 <tr class="separator:ad6abd440b9ac18e9ae3477d68c4a0c19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a195d2a3443b97b8286838eed47e258e6"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a195d2a3443b97b8286838eed47e258e6">get_beta</a> =&gt; vsi_get_beta</td></tr>
+<tr class="memdesc:a195d2a3443b97b8286838eed47e258e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the \( beta \) control parameter in the PI controller  \( h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} e_n^{\alpha} 
+ e_{n-1}^{\beta}\), where \( f \) is a safety factor, and \( k \) is the order of the integration method.  <a href="structdiffeq_1_1variable__step__integrator.html#a195d2a3443b97b8286838eed47e258e6">More...</a><br /></td></tr>
 <tr class="separator:a195d2a3443b97b8286838eed47e258e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4444ec97259bb3e2da452398f4437874"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a4444ec97259bb3e2da452398f4437874">set_beta</a> =&gt; vsi_set_beta</td></tr>
+<tr class="memdesc:a4444ec97259bb3e2da452398f4437874"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the \( beta \) control parameter in the PI controller  \( h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} e_n^{\alpha} 
+ e_{n-1}^{\beta}\), where \( f \) is a safety factor, and \( k \) is the order of the integration method.  <a href="structdiffeq_1_1variable__step__integrator.html#a4444ec97259bb3e2da452398f4437874">More...</a><br /></td></tr>
 <tr class="separator:a4444ec97259bb3e2da452398f4437874"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abbe6e7466a985c271d275023d8c93dd2"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#abbe6e7466a985c271d275023d8c93dd2">get_max_step_size</a> =&gt; vsi_get_max_step</td></tr>
+<tr class="memdesc:abbe6e7466a985c271d275023d8c93dd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the maximum allowed step size.  <a href="structdiffeq_1_1variable__step__integrator.html#abbe6e7466a985c271d275023d8c93dd2">More...</a><br /></td></tr>
 <tr class="separator:abbe6e7466a985c271d275023d8c93dd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a656af118e12748fb6028b5614511f7cc"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a656af118e12748fb6028b5614511f7cc">set_max_step_size</a> =&gt; vsi_set_max_step</td></tr>
+<tr class="memdesc:a656af118e12748fb6028b5614511f7cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the maximum allowed step size.  <a href="structdiffeq_1_1variable__step__integrator.html#a656af118e12748fb6028b5614511f7cc">More...</a><br /></td></tr>
 <tr class="separator:a656af118e12748fb6028b5614511f7cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8923d4a61011424206bc60b3a30bb8cd"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a8923d4a61011424206bc60b3a30bb8cd">estimate_error</a> =&gt; vsi_estimate_error</td></tr>
-<tr class="memdesc:a8923d4a61011424206bc60b3a30bb8cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes a normalized estimates the error for the given step.  <a href="structdiffeq_1_1variable__step__integrator.html#a8923d4a61011424206bc60b3a30bb8cd">More...</a><br /></td></tr>
-<tr class="separator:a8923d4a61011424206bc60b3a30bb8cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af8fdbb2134938a77b5e1a890f524d754"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#af8fdbb2134938a77b5e1a890f524d754">get_min_step_size</a> =&gt; vsi_get_min_step</td></tr>
+<tr class="memdesc:af8fdbb2134938a77b5e1a890f524d754"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the minimum allowed step size.  <a href="structdiffeq_1_1variable__step__integrator.html#af8fdbb2134938a77b5e1a890f524d754">More...</a><br /></td></tr>
+<tr class="separator:af8fdbb2134938a77b5e1a890f524d754"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1e8a4c2badf956df93614eca0b361d1"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#af1e8a4c2badf956df93614eca0b361d1">set_min_step_size</a> =&gt; vsi_set_min_step</td></tr>
+<tr class="memdesc:af1e8a4c2badf956df93614eca0b361d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the minimum allowed step size.  <a href="structdiffeq_1_1variable__step__integrator.html#af1e8a4c2badf956df93614eca0b361d1">More...</a><br /></td></tr>
+<tr class="separator:af1e8a4c2badf956df93614eca0b361d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae748b13c86d482e25faff302c7ba11c4"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#ae748b13c86d482e25faff302c7ba11c4">get_max_per_step_iteration_count</a> =&gt; vsi_get_max_iter_count</td></tr>
+<tr class="memdesc:ae748b13c86d482e25faff302c7ba11c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the maximum number of iterations per step allowed.  <a href="structdiffeq_1_1variable__step__integrator.html#ae748b13c86d482e25faff302c7ba11c4">More...</a><br /></td></tr>
+<tr class="separator:ae748b13c86d482e25faff302c7ba11c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad42337a4bf64d9b2707bf6839742a6c4"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#ad42337a4bf64d9b2707bf6839742a6c4">set_max_per_step_iteration_count</a> =&gt; vsi_set_max_iter_count</td></tr>
+<tr class="memdesc:ad42337a4bf64d9b2707bf6839742a6c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the maximum number of iterations per step allowed.  <a href="structdiffeq_1_1variable__step__integrator.html#ad42337a4bf64d9b2707bf6839742a6c4">More...</a><br /></td></tr>
+<tr class="separator:ad42337a4bf64d9b2707bf6839742a6c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adef0b2fa3bde6f72b9da35e8fcdfb6d6"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#adef0b2fa3bde6f72b9da35e8fcdfb6d6">get_max_integration_step_count</a> =&gt; vsi_get_max_step_count</td></tr>
+<tr class="memdesc:adef0b2fa3bde6f72b9da35e8fcdfb6d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the maximum number of integration steps allowed.  <a href="structdiffeq_1_1variable__step__integrator.html#adef0b2fa3bde6f72b9da35e8fcdfb6d6">More...</a><br /></td></tr>
+<tr class="separator:adef0b2fa3bde6f72b9da35e8fcdfb6d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6332eca278938293cf55f01097dcb327"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a6332eca278938293cf55f01097dcb327">set_max_integration_step_count</a> =&gt; vsi_set_max_step_count</td></tr>
+<tr class="memdesc:a6332eca278938293cf55f01097dcb327"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the maximum number of integration steps allowed.  <a href="structdiffeq_1_1variable__step__integrator.html#a6332eca278938293cf55f01097dcb327">More...</a><br /></td></tr>
+<tr class="separator:a6332eca278938293cf55f01097dcb327"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af3a2658ac5a5ed5670f01be323a96ec9"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#af3a2658ac5a5ed5670f01be323a96ec9">compute_next_step_size</a> =&gt; vsi_next_step</td></tr>
+<tr class="memdesc:af3a2658ac5a5ed5670f01be323a96ec9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the next step size.  <a href="structdiffeq_1_1variable__step__integrator.html#af3a2658ac5a5ed5670f01be323a96ec9">More...</a><br /></td></tr>
 <tr class="separator:af3a2658ac5a5ed5670f01be323a96ec9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4607a40dd8aadb1355fd63f806add1d4"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a4607a40dd8aadb1355fd63f806add1d4">buffer_results</a> =&gt; vsi_append_to_buffer</td></tr>
+<tr class="memdesc:a4607a40dd8aadb1355fd63f806add1d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Buffers a results set.  <a href="structdiffeq_1_1variable__step__integrator.html#a4607a40dd8aadb1355fd63f806add1d4">More...</a><br /></td></tr>
+<tr class="separator:a4607a40dd8aadb1355fd63f806add1d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42764cb50adba138102f083756ac7c63"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a42764cb50adba138102f083756ac7c63">get_buffer_size</a> =&gt; vsi_get_buffer_count</td></tr>
+<tr class="memdesc:a42764cb50adba138102f083756ac7c63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the number of entries into the solution buffer.  <a href="structdiffeq_1_1variable__step__integrator.html#a42764cb50adba138102f083756ac7c63">More...</a><br /></td></tr>
+<tr class="separator:a42764cb50adba138102f083756ac7c63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1eb3151e3afbe6aea2a40f65bb177565"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a1eb3151e3afbe6aea2a40f65bb177565">clear_buffer</a> =&gt; vsi_clear_buffer</td></tr>
+<tr class="memdesc:a1eb3151e3afbe6aea2a40f65bb177565"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clears the results buffer.  <a href="structdiffeq_1_1variable__step__integrator.html#a1eb3151e3afbe6aea2a40f65bb177565">More...</a><br /></td></tr>
+<tr class="separator:a1eb3151e3afbe6aea2a40f65bb177565"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b3bc1e6c3c2de9645a2bcd3f47d8425"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a7b3bc1e6c3c2de9645a2bcd3f47d8425">get_step_size</a> =&gt; vsi_get_step_size</td></tr>
+<tr class="memdesc:a7b3bc1e6c3c2de9645a2bcd3f47d8425"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the current step size.  <a href="structdiffeq_1_1variable__step__integrator.html#a7b3bc1e6c3c2de9645a2bcd3f47d8425">More...</a><br /></td></tr>
+<tr class="separator:a7b3bc1e6c3c2de9645a2bcd3f47d8425"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb245e257685480e10794e03b9814fde"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#aeb245e257685480e10794e03b9814fde">set_step_size</a> =&gt; vsi_set_step_size</td></tr>
+<tr class="memdesc:aeb245e257685480e10794e03b9814fde"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the current step size.  <a href="structdiffeq_1_1variable__step__integrator.html#aeb245e257685480e10794e03b9814fde">More...</a><br /></td></tr>
+<tr class="separator:aeb245e257685480e10794e03b9814fde"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f7abb9be702dda0e1659d446d7d7636"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a4f7abb9be702dda0e1659d446d7d7636">get_next_step_size</a> =&gt; vsi_get_next_step_size</td></tr>
+<tr class="memdesc:a4f7abb9be702dda0e1659d446d7d7636"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the next step size.  <a href="structdiffeq_1_1variable__step__integrator.html#a4f7abb9be702dda0e1659d446d7d7636">More...</a><br /></td></tr>
+<tr class="separator:a4f7abb9be702dda0e1659d446d7d7636"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3532f64d5dcd31b5baa654a97cb9efb"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#ae3532f64d5dcd31b5baa654a97cb9efb">set_next_step_size</a> =&gt; vsi_set_next_step_size</td></tr>
+<tr class="memdesc:ae3532f64d5dcd31b5baa654a97cb9efb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the next step size.  <a href="structdiffeq_1_1variable__step__integrator.html#ae3532f64d5dcd31b5baa654a97cb9efb">More...</a><br /></td></tr>
+<tr class="separator:ae3532f64d5dcd31b5baa654a97cb9efb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9efd40e2c2e17aecfe9394612e74ee86"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a9efd40e2c2e17aecfe9394612e74ee86">get_respect_x_max</a> =&gt; vsi_get_respect_xmax</td></tr>
+<tr class="memdesc:a9efd40e2c2e17aecfe9394612e74ee86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a value determining if the integrator should respect a hard limit in the independent variable range. If false, the integrator may step pass the limit.  <a href="structdiffeq_1_1variable__step__integrator.html#a9efd40e2c2e17aecfe9394612e74ee86">More...</a><br /></td></tr>
+<tr class="separator:a9efd40e2c2e17aecfe9394612e74ee86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0dd7b599f926ea6bd3cf825667afe46b"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a0dd7b599f926ea6bd3cf825667afe46b">set_respect_x_max</a> =&gt; vsi_set_respect_xmax</td></tr>
+<tr class="memdesc:a0dd7b599f926ea6bd3cf825667afe46b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a value determining if the integrator should respect a hard limit in the independent variable range. If false, the integrator may step pass the limit.  <a href="structdiffeq_1_1variable__step__integrator.html#a0dd7b599f926ea6bd3cf825667afe46b">More...</a><br /></td></tr>
+<tr class="separator:a0dd7b599f926ea6bd3cf825667afe46b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab725888e02d9b2c65448a1bbf2b651e2"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#ab725888e02d9b2c65448a1bbf2b651e2">step</a> =&gt; vsi_step</td></tr>
+<tr class="memdesc:ab725888e02d9b2c65448a1bbf2b651e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Takes one integration step.  <a href="structdiffeq_1_1variable__step__integrator.html#ab725888e02d9b2c65448a1bbf2b651e2">More...</a><br /></td></tr>
+<tr class="separator:ab725888e02d9b2c65448a1bbf2b651e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b2ff9681708b40f7ab554e2b50645f0"><td class="memItemLeft" align="right" valign="top">procedure, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a7b2ff9681708b40f7ab554e2b50645f0">estimate_first_step_size</a> =&gt; vsi_estimate_first_step</td></tr>
+<tr class="memdesc:a7b2ff9681708b40f7ab554e2b50645f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes an estimate to the first step size based upon the initial function values.  <a href="structdiffeq_1_1variable__step__integrator.html#a7b2ff9681708b40f7ab554e2b50645f0">More...</a><br /></td></tr>
+<tr class="separator:a7b2ff9681708b40f7ab554e2b50645f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a14725cdf3c385cb3cf190aeae70c81a2"><td class="memItemLeft" align="right" valign="top">procedure(<a class="el" href="interfacediffeq_1_1variable__step__interpolation.html">variable_step_interpolation</a>), deferred, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a14725cdf3c385cb3cf190aeae70c81a2">interpolate</a></td></tr>
+<tr class="memdesc:a14725cdf3c385cb3cf190aeae70c81a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides interpolation between integration points allowing for dense output.  <a href="structdiffeq_1_1variable__step__integrator.html#a14725cdf3c385cb3cf190aeae70c81a2">More...</a><br /></td></tr>
+<tr class="separator:a14725cdf3c385cb3cf190aeae70c81a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_structdiffeq_1_1ode__integrator"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_structdiffeq_1_1ode__integrator')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="structdiffeq_1_1ode__integrator.html">diffeq::ode_integrator</a></td></tr>
 <tr class="memitem:a2ea5d323ed37c65e199d82dec572f869 inherit pub_methods_structdiffeq_1_1ode__integrator"><td class="memItemLeft" align="right" valign="top">procedure(<a class="el" href="interfacediffeq_1_1ode__solver.html">ode_solver</a>), deferred, pass, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1ode__integrator.html#a2ea5d323ed37c65e199d82dec572f869">solve</a></td></tr>
 <tr class="memdesc:a2ea5d323ed37c65e199d82dec572f869 inherit pub_methods_structdiffeq_1_1ode__integrator"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves the supplied system of ODEs.  <a href="structdiffeq_1_1ode__integrator.html#a2ea5d323ed37c65e199d82dec572f869">More...</a><br /></td></tr>
@@ -146,12 +222,134 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af7ca88612930f2772289df389554f215 inherit pub_methods_structdiffeq_1_1ode__integrator"><td class="memItemLeft" align="right" valign="top">procedure(<a class="el" href="interfacediffeq_1_1ode__integer__inquiry.html">ode_integer_inquiry</a>), deferred, pass, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1ode__integrator.html#af7ca88612930f2772289df389554f215">get_order</a></td></tr>
 <tr class="memdesc:af7ca88612930f2772289df389554f215 inherit pub_methods_structdiffeq_1_1ode__integrator"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the order of the integrator.  <a href="structdiffeq_1_1ode__integrator.html#af7ca88612930f2772289df389554f215">More...</a><br /></td></tr>
 <tr class="separator:af7ca88612930f2772289df389554f215 inherit pub_methods_structdiffeq_1_1ode__integrator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:a841cf2dbf83f57edd50802ad07172599"><td class="memItemLeft" align="right" valign="top">integer(int32)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a841cf2dbf83f57edd50802ad07172599">m_buffercount</a> = 0</td></tr>
+<tr class="separator:a841cf2dbf83f57edd50802ad07172599"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1651e396f21c98377cc2c19a6501f0db"><td class="memItemLeft" align="right" valign="top">real(real64), dimension(:), allocatable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a1651e396f21c98377cc2c19a6501f0db">m_ework</a></td></tr>
+<tr class="separator:a1651e396f21c98377cc2c19a6501f0db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a22dfc7945f274e869f19d354f54e7322"><td class="memItemLeft" align="right" valign="top">real(real64), dimension(:), allocatable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a22dfc7945f274e869f19d354f54e7322">m_rtol</a></td></tr>
+<tr class="separator:a22dfc7945f274e869f19d354f54e7322"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a57b4ab126b6a93ebd0fedd2aec1a191b"><td class="memItemLeft" align="right" valign="top">real(real64), dimension(:), allocatable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__step__integrator.html#a57b4ab126b6a93ebd0fedd2aec1a191b">m_atol</a></td></tr>
+<tr class="separator:a57b4ab126b6a93ebd0fedd2aec1a191b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Defines a variable-step integrator. </p>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01097">1097</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00979">979</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 </div><h2 class="groupheader">Member Function/Subroutine Documentation</h2>
+<a id="a5a6abaa0768d1b9288e3c66d74ea3e30" name="a5a6abaa0768d1b9288e3c66d74ea3e30"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5a6abaa0768d1b9288e3c66d74ea3e30">&#9670;&#160;</a></span>attempt_step()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure(<a class="el" href="interfacediffeq_1_1variable__step__attempt.html">variable_step_attempt</a>), deferred, public diffeq::variable_step_integrator::attempt_step</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Attempts a single integration step. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keyword">subroutine </span>attempt_step( &amp;</div>
+<div class="line"> class(variable_step_integrator) this, &amp;</div>
+<div class="line"> <span class="keywordtype">class</span>(ode_container) sys, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> h, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> x, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> y(:), &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> yn(:), &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> en(:), &amp;</div>
+<div class="line"> <span class="keywordtype">optional</span> <span class="keywordtype">real(real64)</span> xprev(:), &amp;</div>
+<div class="line"> <span class="keywordtype">optional</span> <span class="keywordtype">real(real64)</span> yprev(:,:), &amp;</div>
+<div class="line"> <span class="keywordtype">optional</span> <span class="keywordtype">real(real64)</span> fprev(:,:), &amp;</div>
+<div class="line"> <span class="keywordtype">optional</span> <span class="keywordtype">class</span>(errors) err &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sys</td><td>The <a class="el" href="structdiffeq_1_1ode__container.html">ode_container</a> object containing the ODEs to integrate. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">h</td><td>The current step size. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">x</td><td>The current value of the independent variable. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">y</td><td>An N-element array containing the current values of the dependent variables. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">yn</td><td>An N-element array where the values of the dependent variables at <code>x</code> + <code>h</code> will be written. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ys</td><td>AN N-element array where the supplemental solution values at <code>x</code> + <code>h</code> will be written. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xprev</td><td>An M-element array containing the previous M values of the independent variable where M is the order of the method. This is typically useful for multi-step methods. In single-step methods this parameter is not used. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">yprev</td><td>An M-by-NEQN array containing the previous M arrays of dependent variable values where M is the order of the method. This is typically useful for multi-step methods. In single-step methods this parameter is not used. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">An</td><td>optional errors-based object that if provided can be used to retrieve information relating to any errors encountered during execution. If not provided, a default implementation of the errors class is used internally to provide error handling. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01046">1046</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="a4607a40dd8aadb1355fd63f806add1d4" name="a4607a40dd8aadb1355fd63f806add1d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4607a40dd8aadb1355fd63f806add1d4">&#9670;&#160;</a></span>buffer_results()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure, public diffeq::variable_step_integrator::buffer_results</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Buffers a results set. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keyword">subroutine </span>buffer_results( &amp;</div>
+<div class="line"> class(variable_step_integrator) this, &amp;</div>
+<div class="line"><span class="keywordtype"> real</span>(real64) x, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> y(:), &amp;</div>
+<div class="line"> <span class="keywordtype">optional</span> <span class="keywordtype">class</span>(errors) err &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">x</td><td>The independent variable value. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">y</td><td>An N-element array containing the solution values. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">err</td><td>An optional errors-based object that if provided can be used to retrieve information relating to any errors encountered during execution. If not provided, a default implementation of the errors class is used internally to provide error handling. Possible errors and warning messages that may be encountered are as follows.<ul>
+<li>DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory allocation issue.</li>
+<li>DIFFEQ_ARRAY_SIZE_ERROR: Occurs if <code>y</code> is not compatible with the buffer size. </li>
+</ul>
+</td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01309">1309</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="a1eb3151e3afbe6aea2a40f65bb177565" name="a1eb3151e3afbe6aea2a40f65bb177565"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1eb3151e3afbe6aea2a40f65bb177565">&#9670;&#160;</a></span>clear_buffer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure, public diffeq::variable_step_integrator::clear_buffer</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Clears the results buffer. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keyword">subroutine </span>clear_buffer(class(variable_step_integrator) this)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01330">1330</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
 <a id="af3a2658ac5a5ed5670f01be323a96ec9" name="af3a2658ac5a5ed5670f01be323a96ec9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af3a2658ac5a5ed5670f01be323a96ec9">&#9670;&#160;</a></span>compute_next_step_size()</h2>
 
@@ -164,44 +362,65 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01133">1133</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p>Computes the next step size. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">real</span>(real64) <span class="keywordtype">pure</span> function compute_next_step_size( &amp;</div>
+<div class="line"> <span class="keywordtype">class</span>(variable_step_integrator) this, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> hn, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> en, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> enm1 &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">hn</td><td>The current step size. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">en</td><td>The norm of the error for the current step size. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">enm1</td><td>The norm of the error from the previous step size.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The new step size.</dd></dl>
+<dl class="section user"><dt>Remarks</dt><dd>The step size estimate makes use of a PI type controller such that  \( h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} e_n^{\alpha} 
+ e_{n-1}^{\beta}\), where \( f \) is a safety factor, and \( k \) is the order of the integration method. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01283">1283</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
-<a id="a8923d4a61011424206bc60b3a30bb8cd" name="a8923d4a61011424206bc60b3a30bb8cd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8923d4a61011424206bc60b3a30bb8cd">&#9670;&#160;</a></span>estimate_error()</h2>
+<a id="a7b2ff9681708b40f7ab554e2b50645f0" name="a7b2ff9681708b40f7ab554e2b50645f0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b2ff9681708b40f7ab554e2b50645f0">&#9670;&#160;</a></span>estimate_first_step_size()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">procedure, public diffeq::variable_step_integrator::estimate_error</td>
+          <td class="memname">procedure, public diffeq::variable_step_integrator::estimate_first_step_size</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Computes a normalized estimates the error for the given step. </p>
-<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">real</span>(real64) <span class="keywordtype">pure</span> function estimate_error( &amp;</div>
+<p>Computes an estimate to the first step size based upon the initial function values. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">real</span>(real64) <span class="keywordtype">pure</span> function estimate_first_step_size( &amp;</div>
 <div class="line"> <span class="keywordtype">class</span>(variable_step_integrator) this, &amp;</div>
-<div class="line"> <span class="keywordtype">real(real64)</span> y(:), &amp;</div>
-<div class="line"> <span class="keywordtype">real(real64)</span> ys(:), &amp;</div>
-<div class="line"> <span class="keywordtype">real(real64)</span> atol(:), &amp;</div>
-<div class="line"> <span class="keywordtype">real(real64)</span> rtol(:) &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> xo, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> xf, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> yo(:), &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> fo(:) &amp;</div>
 <div class="line">)</div>
 </div><!-- fragment --></dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html" title="Defines a variable-step integrator.">variable_step_integrator</a> object. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">y</td><td>The current solution estimate. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ys</td><td>A suplemental solution estimate typically the result of an embedded estimate. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">atol</td><td>The absolute tolerance value. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">rtol</td><td>The relative tolerance value.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xo</td><td>The initial value of the independent variable. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xf</td><td>The final value of the independent variable. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">yo</td><td>An N-element array containing the initial values. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">fo</td><td>An N-element array containing the initial function values.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The normalized error estimate. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>An estimate on the initial step size. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01132">1132</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01484">1484</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -217,7 +436,21 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01105">1105</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p>Gets the \( alpha \) control parameter in the PI controller  \( h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} e_n^{\alpha} 
+ e_{n-1}^{\beta}\), where \( f \) is a safety factor, and \( k \) is the order of the integration method. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">real</span>(real64) <span class="keywordtype">pure</span> function get_alpha( &amp;</div>
+<div class="line"> <span class="keywordtype">class</span>(variable_step_integrator) this &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The parameter value. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01107">1107</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -233,7 +466,108 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01107">1107</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p>Gets the \( beta \) control parameter in the PI controller  \( h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} e_n^{\alpha} 
+ e_{n-1}^{\beta}\), where \( f \) is a safety factor, and \( k \) is the order of the integration method. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">real</span>(real64) <span class="keywordtype">pure</span> function get_beta( &amp;</div>
+<div class="line"> <span class="keywordtype">class</span>(variable_step_integrator) this &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The parameter value. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01138">1138</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="a42764cb50adba138102f083756ac7c63" name="a42764cb50adba138102f083756ac7c63"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a42764cb50adba138102f083756ac7c63">&#9670;&#160;</a></span>get_buffer_size()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure, public diffeq::variable_step_integrator::get_buffer_size</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Gets the number of entries into the solution buffer. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">integer(int32)</span> <span class="keywordtype">pure</span> function get_buffer_size( &amp;</div>
+<div class="line"> <span class="keywordtype">class</span>(variable_step_integrator) this &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The number of buffer entries. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01321">1321</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="adef0b2fa3bde6f72b9da35e8fcdfb6d6" name="adef0b2fa3bde6f72b9da35e8fcdfb6d6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adef0b2fa3bde6f72b9da35e8fcdfb6d6">&#9670;&#160;</a></span>get_max_integration_step_count()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure, public diffeq::variable_step_integrator::get_max_integration_step_count</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Gets the maximum number of integration steps allowed. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">integer(int32)</span> <span class="keywordtype">pure</span> function get_max_integration_step_count( &amp;</div>
+<div class="line"> <span class="keywordtype">class</span>(variable_step_integrator) this &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The parameter value. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01243">1243</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="ae748b13c86d482e25faff302c7ba11c4" name="ae748b13c86d482e25faff302c7ba11c4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae748b13c86d482e25faff302c7ba11c4">&#9670;&#160;</a></span>get_max_per_step_iteration_count()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure, public diffeq::variable_step_integrator::get_max_per_step_iteration_count</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Gets the maximum number of iterations per step allowed. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">integer(int32)</span> <span class="keywordtype">pure</span> function get_max_per_step_iteration_count( &amp;</div>
+<div class="line"> <span class="keywordtype">class</span>(variable_step_integrator) this &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The parameter value. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01216">1216</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -249,7 +583,103 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01109">1109</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p>Gets the maximum allowed step size. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">real</span>(real64) <span class="keywordtype">pure</span> function get_max_step_size( &amp;</div>
+<div class="line"> <span class="keywordtype">class</span>(variable_step_integrator) this &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The parameter value. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01166">1166</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="af8fdbb2134938a77b5e1a890f524d754" name="af8fdbb2134938a77b5e1a890f524d754"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af8fdbb2134938a77b5e1a890f524d754">&#9670;&#160;</a></span>get_min_step_size()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure, public diffeq::variable_step_integrator::get_min_step_size</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Gets the minimum allowed step size. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">real</span>(real64) <span class="keywordtype">pure</span> function get_min_step_size( &amp;</div>
+<div class="line"> <span class="keywordtype">class</span>(variable_step_integrator) this &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The parameter value. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01191">1191</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="a4f7abb9be702dda0e1659d446d7d7636" name="a4f7abb9be702dda0e1659d446d7d7636"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4f7abb9be702dda0e1659d446d7d7636">&#9670;&#160;</a></span>get_next_step_size()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure, public diffeq::variable_step_integrator::get_next_step_size</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Gets the next step size. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">real</span>(real64) <span class="keywordtype">pure</span> function get_step_size( &amp;</div>
+<div class="line"> <span class="keywordtype">class</span>(variable_step_integrator) this &amp;</div>
+<div class="line">)</div>
+<div class="line"> </div>
+<div class="line">@param[in] this the @ref variable_step_integrator object.</div>
+<div class="line">@<span class="keywordflow">return</span> the step size.</div>
+</div><!-- fragment --></dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01364">1364</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="a9efd40e2c2e17aecfe9394612e74ee86" name="a9efd40e2c2e17aecfe9394612e74ee86"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9efd40e2c2e17aecfe9394612e74ee86">&#9670;&#160;</a></span>get_respect_x_max()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure, public diffeq::variable_step_integrator::get_respect_x_max</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Gets a value determining if the integrator should respect a hard limit in the independent variable range. If false, the integrator may step pass the limit. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">logical</span> <span class="keywordtype">pure</span> function get_respect_x_max( &amp;</div>
+<div class="line"> <span class="keywordtype">class</span>(variable_step_integrator) this &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the integrator should respect the limiting value of the independent variable; else, false. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01391">1391</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -265,7 +695,119 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01103">1103</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p>Gets a safety factor used to limit the predicted step size. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">real</span>(real64) <span class="keywordtype">pure</span> function get_safety_factor( &amp;</div>
+<div class="line"> <span class="keywordtype">class</span>(variable_step_integrator) this &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The parameter value. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01079">1079</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="a7b3bc1e6c3c2de9645a2bcd3f47d8425" name="a7b3bc1e6c3c2de9645a2bcd3f47d8425"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b3bc1e6c3c2de9645a2bcd3f47d8425">&#9670;&#160;</a></span>get_step_size()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure, public diffeq::variable_step_integrator::get_step_size</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Gets the current step size. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keywordtype">real</span>(real64) <span class="keywordtype">pure</span> function get_step_size( &amp;</div>
+<div class="line"> <span class="keywordtype">class</span>(variable_step_integrator) this &amp;</div>
+<div class="line">)</div>
+<div class="line"> </div>
+<div class="line">@param[in] this the @ref variable_step_integrator object.</div>
+<div class="line">@<span class="keywordflow">return</span> the step size.</div>
+</div><!-- fragment --></dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01341">1341</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="a14725cdf3c385cb3cf190aeae70c81a2" name="a14725cdf3c385cb3cf190aeae70c81a2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a14725cdf3c385cb3cf190aeae70c81a2">&#9670;&#160;</a></span>interpolate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure(<a class="el" href="interfacediffeq_1_1variable__step__interpolation.html">variable_step_interpolation</a>), deferred, public diffeq::variable_step_integrator::interpolate</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Provides interpolation between integration points allowing for dense output. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keyword">subroutine </span>interpolate( &amp;</div>
+<div class="line"> class(variable_step_integrator) this, &amp;</div>
+<div class="line"><span class="keywordtype"> real</span>(real64) xprev, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> xnew, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> x, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> y(:),</div>
+<div class="line"> <span class="keywordtype">optional</span> <span class="keywordtype">class</span>(errors) err &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html" title="Defines a variable-step integrator.">variable_step_integrator</a> object. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xprev</td><td>The previous value of the independent variable. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xnew</td><td>The updated value of the independent variable. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">x</td><td>The value at which to perform the interpolation. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">y</td><td>An N-element array containing the interpolated values for each equation. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">err</td><td>An optional errors-based object that if provided can be used to retrieve information relating to any errors encountered during execution. If not provided, a default implementation of the errors class is used internally to provide error handling. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01511">1511</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="af799852de4bf7c234b8680a78dc63c89" name="af799852de4bf7c234b8680a78dc63c89"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af799852de4bf7c234b8680a78dc63c89">&#9670;&#160;</a></span>on_successful_step()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure(<a class="el" href="interfacediffeq_1_1variable__step__action.html">variable_step_action</a>), deferred, public diffeq::variable_step_integrator::on_successful_step</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Perform necessary actions on completion of a successful step. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keyword">subroutine </span>on_successful_step( &amp;</div>
+<div class="line"> class(variable_step_integrator) this, &amp;</div>
+<div class="line"><span class="keywordtype"> real</span>(real64) x, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> xn, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> y(:), &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> yn(:) &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">x</td><td>The current value of the independent variable. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xn</td><td>The new value of the independent variable. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">y</td><td>An N-element array containing the values of the dependent variables at <code>x</code>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">yn</td><td>An N-element array containing the values of the dependent variables at <code>xn</code>. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01067">1067</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -281,7 +823,22 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01106">1106</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p>Sets the \( alpha \) control parameter in the PI controller  \( h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} e_n^{\alpha} 
+ e_{n-1}^{\beta}\), where \( f \) is a safety factor, and \( k \) is the order of the integration method. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keyword">subroutine </span>set_alpha( &amp;</div>
+<div class="line"> class(variable_step_integrator) this, &amp;</div>
+<div class="line"><span class="keywordtype"> real</span>(real64) x &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">The</td><td>parameter value. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01123">1123</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -297,7 +854,82 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01108">1108</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p>Sets the \( beta \) control parameter in the PI controller  \( h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} e_n^{\alpha} 
+ e_{n-1}^{\beta}\), where \( f \) is a safety factor, and \( k \) is the order of the integration method. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keyword">subroutine </span>set_beta( &amp;</div>
+<div class="line"> class(variable_step_integrator) this, &amp;</div>
+<div class="line"><span class="keywordtype"> real</span>(real64) x &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">The</td><td>parameter value. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01154">1154</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="a6332eca278938293cf55f01097dcb327" name="a6332eca278938293cf55f01097dcb327"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6332eca278938293cf55f01097dcb327">&#9670;&#160;</a></span>set_max_integration_step_count()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure, public diffeq::variable_step_integrator::set_max_integration_step_count</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets the maximum number of integration steps allowed. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keyword">subroutine </span>set_max_integration_step_count( &amp;</div>
+<div class="line"> class(variable_step_integrator) this, &amp;</div>
+<div class="line"> <span class="keywordtype">integer(int32)</span> x &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">x</td><td>The parameter value. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01257">1257</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="ad42337a4bf64d9b2707bf6839742a6c4" name="ad42337a4bf64d9b2707bf6839742a6c4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad42337a4bf64d9b2707bf6839742a6c4">&#9670;&#160;</a></span>set_max_per_step_iteration_count()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure, public diffeq::variable_step_integrator::set_max_per_step_iteration_count</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets the maximum number of iterations per step allowed. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keyword">subroutine </span>set_max_per_step_iteration_count( &amp;</div>
+<div class="line"> class(variable_step_integrator) this, &amp;</div>
+<div class="line"> <span class="keywordtype">integer(int32)</span> x &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">The</td><td>parameter value. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01230">1230</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -313,7 +945,107 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01110">1110</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p>Sets the maximum allowed step size. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keyword">subroutine </span>set_max_step_size( &amp;</div>
+<div class="line"> class(variable_step_integrator) this, &amp;</div>
+<div class="line"><span class="keywordtype"> real</span>(real64) x &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">The</td><td>parameter value. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01179">1179</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="af1e8a4c2badf956df93614eca0b361d1" name="af1e8a4c2badf956df93614eca0b361d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af1e8a4c2badf956df93614eca0b361d1">&#9670;&#160;</a></span>set_min_step_size()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure, public diffeq::variable_step_integrator::set_min_step_size</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets the minimum allowed step size. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keyword">subroutine </span>set_min_step_size( &amp;</div>
+<div class="line"> class(variable_step_integrator) this, &amp;</div>
+<div class="line"><span class="keywordtype"> real</span>(real64) x &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">The</td><td>parameter value. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01204">1204</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="ae3532f64d5dcd31b5baa654a97cb9efb" name="ae3532f64d5dcd31b5baa654a97cb9efb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae3532f64d5dcd31b5baa654a97cb9efb">&#9670;&#160;</a></span>set_next_step_size()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure, public diffeq::variable_step_integrator::set_next_step_size</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets the next step size. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keyword">subroutine </span>set_step_size( &amp;</div>
+<div class="line"> class(variable_step_integrator) this, &amp;</div>
+<div class="line"><span class="keywordtype"> real</span>(real64) x &amp;</div>
+<div class="line">)</div>
+<div class="line"> </div>
+<div class="line">@param[in,out] this the @ref variable_step_integrator object.</div>
+<div class="line">@param[in] x the step size.</div>
+</div><!-- fragment --></dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01376">1376</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="a0dd7b599f926ea6bd3cf825667afe46b" name="a0dd7b599f926ea6bd3cf825667afe46b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0dd7b599f926ea6bd3cf825667afe46b">&#9670;&#160;</a></span>set_respect_x_max()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure, public diffeq::variable_step_integrator::set_respect_x_max</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets a value determining if the integrator should respect a hard limit in the independent variable range. If false, the integrator may step pass the limit. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keyword">subroutine </span>set_respect_x_max( &amp;</div>
+<div class="line"> class(variable_step_integrator) this, &amp;</div>
+<div class="line"> <span class="keywordtype">logical</span> x &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">x</td><td>True if the integrator should respect the limiting value of the independent variable; else, false. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01407">1407</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -329,7 +1061,165 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01104">1104</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p>Sets a safety factor used to limit the predicted step size. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keyword">subroutine </span>set_safety_factor( &amp;</div>
+<div class="line"> class(variable_step_integrator) this, &amp;</div>
+<div class="line"><span class="keywordtype"> real</span>(real64) x &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">The</td><td>parameter value. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01092">1092</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="aeb245e257685480e10794e03b9814fde" name="aeb245e257685480e10794e03b9814fde"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeb245e257685480e10794e03b9814fde">&#9670;&#160;</a></span>set_step_size()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure, public diffeq::variable_step_integrator::set_step_size</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets the current step size. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keyword">subroutine </span>set_step_size( &amp;</div>
+<div class="line"> class(variable_step_integrator) this, &amp;</div>
+<div class="line"><span class="keywordtype"> real</span>(real64) x &amp;</div>
+<div class="line">)</div>
+<div class="line"> </div>
+<div class="line">@param[in,out] this the @ref variable_step_integrator object.</div>
+<div class="line">@param[in] x the step size.</div>
+</div><!-- fragment --></dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01353">1353</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="ab725888e02d9b2c65448a1bbf2b651e2" name="ab725888e02d9b2c65448a1bbf2b651e2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab725888e02d9b2c65448a1bbf2b651e2">&#9670;&#160;</a></span>step()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure, public diffeq::variable_step_integrator::step</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Takes one integration step. </p>
+<dl class="section user"><dt>Syntax</dt><dd><div class="fragment"><div class="line"><span class="keyword">subroutine </span>step( &amp;</div>
+<div class="line"> class(variable_step_integrator) this, &amp;</div>
+<div class="line"> <span class="keywordtype">class</span>(ode_container) sys, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> x, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> xmax, &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> y(:), &amp;</div>
+<div class="line"> <span class="keywordtype">real(real64)</span> yn(:), &amp;</div>
+<div class="line"> <span class="keywordtype">optional</span> <span class="keywordtype">real(real64)</span> xprev(:), &amp;</div>
+<div class="line"> <span class="keywordtype">optional</span> <span class="keywordtype">real(real64)</span> yprev(:,:), &amp;</div>
+<div class="line"> <span class="keywordtype">optional</span> <span class="keywordtype">real(real64)</span> fprev(:,:), &amp;</div>
+<div class="line"> <span class="keywordtype">optional</span> <span class="keywordtype">class</span>(errors) err &amp;</div>
+<div class="line">)</div>
+</div><!-- fragment --></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>The <a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a> object. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sys</td><td>The <a class="el" href="structdiffeq_1_1ode__container.html">ode_container</a> object containing the ODEs to integrate. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">x</td><td>The current value of the independent variable. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmax</td><td>The upper integration limit. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">y</td><td>An N-element array containing the current values of the dependent variables. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">yn</td><td>An N-element array where the values of the dependent variables at <code>x</code> + <code>h</code> will be written. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xprev</td><td>An M-element array containing the previous M values of the independent variable where M is the order of the method. This is typically useful for multi-step methods. In single-step methods this parameter is not used. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">yprev</td><td>An M-by-NEQN array containing the previous M arrays of dependent variable values where M is the order of the method. This is typically useful for multi-step methods. In single-step methods this parameter is not used. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">fprev</td><td>An M-by-NEQN array where the previous M function values are written. This is typically useful for multi-step methods. In single-step methods this parameter is not used. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">An</td><td>optional errors-based object that if provided can be used to retrieve information relating to any errors encountered during execution. If not provided, a default implementation of the errors class is used internally to provide error handling. Possible errors and warning messages that may be encountered are as follows.<ul>
+<li>DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory allocation issue.</li>
+<li>DIFFEQ_ARRAY_SIZE_ERROR: Occurs if <code>yn</code> is not the same size as <code>y</code>.</li>
+<li>DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR: Occurs if the step size becomes too small.</li>
+<li>DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR: Occurs if the iteration count is exceeded for a single step.</li>
+<li>DIFFEQ_NULL_POINTER_ERROR: Occurs if no ODE routine is defined. </li>
+</ul>
+</td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l01461">1461</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="a57b4ab126b6a93ebd0fedd2aec1a191b" name="a57b4ab126b6a93ebd0fedd2aec1a191b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a57b4ab126b6a93ebd0fedd2aec1a191b">&#9670;&#160;</a></span>m_atol</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">real(real64), dimension(:), allocatable diffeq::variable_step_integrator::m_atol</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00998">998</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="a841cf2dbf83f57edd50802ad07172599" name="a841cf2dbf83f57edd50802ad07172599"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a841cf2dbf83f57edd50802ad07172599">&#9670;&#160;</a></span>m_buffercount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer(int32) diffeq::variable_step_integrator::m_buffercount = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00993">993</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="a1651e396f21c98377cc2c19a6501f0db" name="a1651e396f21c98377cc2c19a6501f0db"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1651e396f21c98377cc2c19a6501f0db">&#9670;&#160;</a></span>m_ework</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">real(real64), dimension(:), allocatable diffeq::variable_step_integrator::m_ework</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00995">995</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="a22dfc7945f274e869f19d354f54e7322" name="a22dfc7945f274e869f19d354f54e7322"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a22dfc7945f274e869f19d354f54e7322">&#9670;&#160;</a></span>m_rtol</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">real(real64), dimension(:), allocatable diffeq::variable_step_integrator::m_rtol</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00997">997</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -341,7 +1231,7 @@ Public Member Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>diffeq</b></li><li class="navelem"><a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a></li>
+    <li class="navelem"><a class="el" href="namespacediffeq.html">diffeq</a></li><li class="navelem"><a class="el" href="structdiffeq_1_1variable__step__integrator.html">variable_step_integrator</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.5 </li>
   </ul>
 </div>

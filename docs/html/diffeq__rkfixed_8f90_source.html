@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('diffeq__rkfixed_8f90_source.html','');
   <div class="headertitle"><div class="title">diffeq_rkfixed.f90</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span>submodule(diffeq) diffeq_rkfixed</div>
+<div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span>submodule(<a class="code hl_namespace" href="namespacediffeq.html">diffeq</a>) diffeq_rkfixed</div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="keyword">contains</span></div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment">! ------------------------------------------------------------------------------</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="comment">! n = method order</span></div>
@@ -117,7 +117,7 @@ $(document).ready(function(){initNavTree('diffeq__rkfixed_8f90_source.html','');
 <div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span> </div>
 <div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    <span class="comment">! Process</span></div>
 <div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    mw = neqn</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    nw = n + 1  <span class="comment">! +1 for 1 additional N-element workspace array</span></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    nw = n + 1  <span class="comment">! +1 for 1 additional NEQN-element workspace array</span></div>
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    <span class="keywordflow">if</span> (<span class="keyword">allocated</span>(this%m_work)) <span class="keywordflow">then</span></div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>        <span class="keywordflow">if</span> (<span class="keyword">size</span>(this%m_work, 1) /= mw .or. <span class="keyword">size</span>(this%m_work, 2) /= nw) <span class="keywordflow">then</span></div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>            <span class="keyword">deallocate</span>(this%m_work)</div>
@@ -181,7 +181,7 @@ $(document).ready(function(){initNavTree('diffeq__rkfixed_8f90_source.html','');
 <div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    <span class="keywordflow">if</span> (errmgr%has_error_occurred()) <span class="keywordflow">return</span></div>
 <div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
 <div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>    <span class="comment">! As this is an explicit routine, the Butcher tableau is lower triangular.</span></div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    <span class="keyword">call </span>sys%fcn(x, y, this%m_work(:,1))</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    <span class="keyword">call </span>sys%ode(x, y, this%m_work(:,1))</div>
 <div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    <span class="keywordflow">do</span> i = 2, n</div>
 <div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>        this%m_work(:,n1) = 0.0d0</div>
 <div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>        <span class="keywordflow">do</span> j = 1, i - 1 <span class="comment">! only reference the sub-diagonal components</span></div>
@@ -189,7 +189,7 @@ $(document).ready(function(){initNavTree('diffeq__rkfixed_8f90_source.html','');
 <div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>                this%get_method_factor(i,j) * this%m_work(:,j)</div>
 <div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span><span class="keywordflow">        end do</span></div>
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>        <span class="keyword">call </span>sys%fcn( &amp;</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>        <span class="keyword">call </span>sys%ode( &amp;</div>
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>            x + h * this%get_position_factor(i), &amp;</div>
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>            y + h * this%m_work(:,n1), &amp;</div>
 <div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>            this%m_work(:,i) &amp;   <span class="comment">! output</span></div>
@@ -197,31 +197,35 @@ $(document).ready(function(){initNavTree('diffeq__rkfixed_8f90_source.html','');
 <div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span><span class="keywordflow">    end do</span></div>
 <div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span> </div>
 <div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    <span class="comment">! Compute the next solution estimate</span></div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    this%m_work(:,n1) = 0.0d0</div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>    <span class="keywordflow">do</span> i = 1, n</div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>        this%m_work(:,n1) = this%m_work(:,n1) + &amp;</div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>            this%get_quadrature_weight(i) * this%m_work(:,i)</div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span><span class="keywordflow">    end do</span></div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>    yn = y + h * this%m_work(:,n1)</div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span> </div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>    <span class="comment">! End</span></div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    <span class="keywordflow">return</span></div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    <span class="keywordflow">do</span> i = 1, n</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>        <span class="keywordflow">if</span> (i == 1) <span class="keywordflow">then</span></div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>            this%m_work(:,n1) = this%get_quadrature_weight(i) * this%m_work(:,i)</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>        <span class="keywordflow">else</span></div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>            this%m_work(:,n1) = this%m_work(:,n1) + &amp;</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>                this%get_quadrature_weight(i) * this%m_work(:,i)</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span><span class="keywordflow">        end if</span></div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span><span class="keywordflow">    end do</span></div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    yn = y + h * this%m_work(:,n1)</div>
 <div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span> </div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>    <span class="comment">! YN array size error</span></div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>10  <span class="keywordflow">continue</span></div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>    <span class="keyword">allocate</span>(<span class="keywordtype">character(len = 256)</span> :: errmsg)</div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>    <span class="keyword">write</span>(errmsg, 100) <span class="stringliteral">&quot;The output array was expected to have &quot;</span>, neqn, &amp;</div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>        <span class="stringliteral">&quot; elements, but was found to have &quot;</span>, <span class="keyword">size</span>(yn), <span class="stringliteral">&quot; elements.&quot;</span></div>
-<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    <span class="keyword">call </span>errmgr%report_error(<span class="stringliteral">&quot;ef_step&quot;</span>, trim(errmsg), &amp;</div>
-<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>        diffeq_array_size_error)</div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>    <span class="keywordflow">return</span></div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span> </div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>    <span class="comment">! Formatting</span></div>
-<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>100 <span class="keyword">format</span>(a, i0, a, i0, a)</div>
-<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span><span class="keyword">end subroutine</span></div>
-<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span> </div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span><span class="comment">! ------------------------------------------------------------------------------</span></div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span><span class="keyword">end </span>submodule</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>    <span class="comment">! End</span></div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>    <span class="keywordflow">return</span></div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span> </div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>    <span class="comment">! YN array size error</span></div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>10  <span class="keywordflow">continue</span></div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    <span class="keyword">allocate</span>(<span class="keywordtype">character(len = 256)</span> :: errmsg)</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>    <span class="keyword">write</span>(errmsg, 100) <span class="stringliteral">&quot;The output array was expected to have &quot;</span>, neqn, &amp;</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>        <span class="stringliteral">&quot; elements, but was found to have &quot;</span>, <span class="keyword">size</span>(yn), <span class="stringliteral">&quot; elements.&quot;</span></div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>    <span class="keyword">call </span>errmgr%report_error(<span class="stringliteral">&quot;ef_step&quot;</span>, trim(errmsg), &amp;</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>        diffeq_array_size_error)</div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>    <span class="keywordflow">return</span></div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span> </div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>    <span class="comment">! Formatting</span></div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>100 <span class="keyword">format</span>(a, i0, a, i0, a)</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span><span class="keyword">end subroutine</span></div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span> </div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span><span class="comment">! ------------------------------------------------------------------------------</span></div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span><span class="keyword">end </span>submodule</div>
+<div class="ttc" id="anamespacediffeq_html"><div class="ttname"><a href="namespacediffeq.html">diffeq</a></div><div class="ttdoc">This module contains several ODE solvers and associated types.</div><div class="ttdef"><b>Definition:</b> <a href="diffeq_8f90_source.html#l00002">diffeq.f90:2</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

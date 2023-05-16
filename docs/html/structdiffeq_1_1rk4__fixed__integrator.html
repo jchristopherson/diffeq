@@ -165,7 +165,7 @@ Public Member Functions</h2></td></tr>
 <dl class="section user"><dt>Example</dt><dd>The following example solves the first-order differential equation \( \frac{dy}{dx} + y \sin^{2}x = 0 \) where the solution is \( y = C \exp \left( \frac{1}{4} \sin(2 x) - \frac{x}{2} \right) \).</dd></dl>
 <div class="fragment"><div class="line"><span class="keyword">program</span> example</div>
 <div class="line">    <span class="keywordtype">use </span>iso_fortran_env</div>
-<div class="line">    <span class="keywordtype">use </span>diffeq</div>
+<div class="line">    <span class="keywordtype">use </span><a class="code hl_namespace" href="namespacediffeq.html">diffeq</a></div>
 <div class="line">    <span class="keywordtype">use </span>diffeq_models</div>
 <div class="line">    <span class="keywordtype">use </span>fplot_core</div>
 <div class="line">    <span class="keywordtype">implicit none</span></div>
@@ -221,6 +221,7 @@ Public Member Functions</h2></td></tr>
 <div class="line"> </div>
 <div class="line">    <span class="keyword">call </span>plt%draw()</div>
 <div class="line"><span class="keyword">end program</span></div>
+<div class="ttc" id="anamespacediffeq_html"><div class="ttname"><a href="namespacediffeq.html">diffeq</a></div><div class="ttdoc">This module contains several ODE solvers and associated types.</div><div class="ttdef"><b>Definition:</b> <a href="diffeq_8f90_source.html#l00002">diffeq.f90:2</a></div></div>
 </div><!-- fragment --><p> The ODE routine was stored in a seperate module; however, here is the code for the ODE routine. </p><div class="fragment"><div class="line"><span class="keyword">subroutine </span>test_1dof_1(x, y, dydx)</div>
 <div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">intent(in)</span> :: x, y(:)</div>
 <div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">intent(out)</span> :: dydx(:)</div>
@@ -230,7 +231,7 @@ Public Member Functions</h2></td></tr>
 <img src="rk4_example_1.png" alt=""/>
 </div>
  
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00609">609</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00650">650</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 </div><h2 class="groupheader">Member Function/Subroutine Documentation</h2>
 <a id="a00f5b1d70a134f4478704a21a1b3a1db" name="a00f5b1d70a134f4478704a21a1b3a1db"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a00f5b1d70a134f4478704a21a1b3a1db">&#9670;&#160;</a></span>get_method_factor()</h2>
@@ -261,7 +262,7 @@ Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The requested parameter. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00637">637</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00678">678</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -288,7 +289,7 @@ Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The order of the integrator. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00620">620</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00661">661</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -319,7 +320,7 @@ Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The requested parameter. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00665">665</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00706">706</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -350,7 +351,7 @@ Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The requested parameter. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00651">651</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00692">692</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -362,7 +363,7 @@ Public Member Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>diffeq</b></li><li class="navelem"><a class="el" href="structdiffeq_1_1rk4__fixed__integrator.html">rk4_fixed_integrator</a></li>
+    <li class="navelem"><a class="el" href="namespacediffeq.html">diffeq</a></li><li class="navelem"><a class="el" href="structdiffeq_1_1rk4__fixed__integrator.html">rk4_fixed_integrator</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.5 </li>
   </ul>
 </div>

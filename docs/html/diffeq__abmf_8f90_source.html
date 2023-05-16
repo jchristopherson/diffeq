@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('diffeq__abmf_8f90_source.html',''); in
   <div class="headertitle"><div class="title">diffeq_abmf.f90</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span>submodule(diffeq) diffeq_abmf</div>
+<div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span>submodule(<a class="code hl_namespace" href="namespacediffeq.html">diffeq</a>) diffeq_abmf</div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="keyword">contains</span></div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment">! ------------------------------------------------------------------------------</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="keywordtype">pure</span> <span class="keyword">module</span> function afi_get_order(this) result(rst)</div>
@@ -110,7 +110,7 @@ $(document).ready(function(){initNavTree('diffeq__abmf_8f90_source.html',''); in
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="keyword">end function</span></div>
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="comment">! ------------------------------------------------------------------------------</span></div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="keyword">module</span> subroutine shift(x)</div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="keyword">subroutine </span>shift(x)</div>
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>    <span class="comment">! Arguments</span></div>
 <div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="keywordtype">    real</span>(real64), <span class="keywordtype">intent(inout)</span>, <span class="keywordtype">dimension(:,:)</span> :: x</div>
 <div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span> </div>
@@ -180,7 +180,7 @@ $(document).ready(function(){initNavTree('diffeq__abmf_8f90_source.html',''); in
 <div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>        a4 * fprev(:,4) &amp;</div>
 <div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    )</div>
 <div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    <span class="keyword">call </span>shift(fprev)</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>    <span class="keyword">call </span>sys%fcn(x + h, yn, fprev(:,1))</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>    <span class="keyword">call </span>sys%ode(x + h, yn, fprev(:,1))</div>
 <div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span> </div>
 <div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    <span class="comment">! Compute the Adams-Moulton corrector</span></div>
 <div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>    yn = y + h * ( &amp;</div>
@@ -189,7 +189,7 @@ $(document).ready(function(){initNavTree('diffeq__abmf_8f90_source.html',''); in
 <div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>        b3 * fprev(:,3) + &amp;</div>
 <div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>        b4 * fprev(:,4) &amp;</div>
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>    )</div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>    <span class="keyword">call </span>sys%fcn(x + h, yn, fprev(:,1))</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>    <span class="keyword">call </span>sys%ode(x + h, yn, fprev(:,1))</div>
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span> </div>
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    <span class="comment">! End</span></div>
 <div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    <span class="keywordflow">return</span></div>
@@ -246,6 +246,7 @@ $(document).ready(function(){initNavTree('diffeq__abmf_8f90_source.html',''); in
 <div class="line"><a id="l00144" name="l00144"></a><span class="lineno">  144</span> </div>
 <div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span><span class="comment">! ------------------------------------------------------------------------------</span></div>
 <div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span><span class="keyword">end </span>submodule</div>
+<div class="ttc" id="anamespacediffeq_html"><div class="ttname"><a href="namespacediffeq.html">diffeq</a></div><div class="ttdoc">This module contains several ODE solvers and associated types.</div><div class="ttdef"><b>Definition:</b> <a href="diffeq_8f90_source.html#l00002">diffeq.f90:2</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
