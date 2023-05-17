@@ -1,0 +1,48 @@
+
+***** ERROR *****
+16/5/2023; 13:9:31
+Function: vsi_step
+Error Flag: 10007
+Message:
+The allowable iteration count was exceeded at x =  0.380E-04.
+
+
+***** ERROR *****
+16/5/2023; 15:53:28
+Function: vsi_step
+Error Flag: 10007
+Message:
+The allowable iteration count was exceeded at x =  0.900E-04.
+
+
+***** ERROR *****
+16/5/2023; 15:53:57
+Function: vsi_step
+Error Flag: 10007
+Message:
+The allowable iteration count was exceeded at x =  0.188E-03.
+
+
+***** ERROR *****
+16/5/2023; 16:6:40
+Function: vsi_step
+Error Flag: 10007
+Message:
+The allowable iteration count was exceeded at x =  0.677E-12.
+
+
+***** ERROR *****
+16/5/2023; 16:7:26
+Function: vsi_step
+Error Flag: 10007
+Message:
+The allowable iteration count was exceeded at x =  0.677E-12.
+
+
+***** ERROR *****
+16/5/2023; 16:7:39
+Function: vsi_step
+Error Flag: 10007
+Message:
+The allowable iteration count was exceeded at x =  0.677E-12.
+

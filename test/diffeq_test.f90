@@ -5,6 +5,7 @@ program test
     use diffeq_adamsfixed_tests
     use diffeq_dprk45_tests
     use diffeq_bsrk32_tests
+    use diffeq_frf_tests
     implicit none
 
     ! Local Variables
@@ -62,6 +63,12 @@ program test
 
     rst = test_bsrk32_3()
     if (.not.rst) flag = 16
+
+    rst = test_frf_1()
+    if (.not.rst) flag = 17
+
+    rst = test_frf_2()
+    if (.not.rst) flag = 18
 
     ! Output
     stop flag

@@ -94,8 +94,6 @@ module diffeq_harmonics
     !!     implicit none
     !!
     !!     ! Parameters
-    !!     real(real64), parameter :: fmin = 1.0d0
-    !!     real(real64), parameter :: fmax = 1.0d2
     !!     real(real64), parameter :: fs = 2.56d2
     !!     real(real64), parameter :: pi = 2.0d0 * acos(0.0d0)
     !!     real(real64), parameter :: z = 1.0d-1
@@ -242,6 +240,9 @@ module diffeq_harmonics
     !!  which the solution should be computed.  Notice, whatever units are 
     !!  utilized for this array are also the units of the excitation_frequency
     !!  property in @p sys.  It is recommended that the units be set to Hz.
+    !!  Additionally, this array cannot contain any zero-valued elements as the
+    !!  ODE solution time for each frequency is determined by the period of
+    !!  oscillation and number of cycles.
     !! @param[in] iv An N-element array containing the initial conditions for
     !!  each of the N ODEs.
     !! @param[in,out] solver An optional differential equation solver.  The 
@@ -249,12 +250,15 @@ module diffeq_harmonics
     !!  @ref dprk45_integrator.
     !! @param[in] An optional parameter controlling the number of cycles to 
     !!  analyze when determining the amplitude and phase of the response.  The
-    !!  default is 5.
+    !!  default is 20.
     !! @param[in] ntransient An optional parameter controlling how many of the
-    !!  initial "transient" cycles to ignore.  The default is 30.
+    !!  initial "transient" cycles to ignore.  The default is 200.
     !! @param[in] pointspercycle An optional parameter controlling how many
     !!  evenly spaced solution points should be considered per cycle.  The 
-    !!  default is 30.
+    !!  default is 1000.  Notice, there must be at least 2 points per cycle for
+    !!  the analysis to be effective.  The algorithm utilizes a discrete Fourier
+    !!  transform to determine the phase and amplitude, and in order to satisfy
+    !!  Nyquist conditions, the value must be at least 2.
     !! @param[in,out] err An optional errors-based object that if provided 
     !!  can be used to retrieve information relating to any errors 
     !!  encountered during execution. If not provided, a default 
@@ -278,11 +282,12 @@ module diffeq_harmonics
     !! module ode_module
     !!     use iso_fortran_env
     !!     use diffeq_harmonics
+    !!     use ieee_arithmetic
     !!     implicit none
     !!
     !!     ! Model Constants
     !!     real(real64), parameter :: alpha = 1.0d0
-    !!     real(real64), parameter :: beta = 0.4d0
+    !!     real(real64), parameter :: beta = 0.04d0
     !!     real(real64), parameter :: delta = 0.1d0
     !!     real(real64), parameter :: gamma = 1.0d0
     !!
@@ -308,6 +313,58 @@ module diffeq_harmonics
     !!         dydx(2) = gamma * cos(this%excitation_frequency * x) - &
     !!             delta * y(2) - alpha * y(1) - beta * y(1)**3
     !!     end subroutine
+    !!
+    !!     ! Analytical Solution - Leg 1
+    !!     pure elemental function leg1(z) result(rst)
+    !!         ! Arguments
+    !!         real(real64), intent(in) :: z
+    !!         real(real64) :: rst
+    !!
+    !!         ! Local Variables
+    !!         real(real64) :: arg, s, nan
+    !!
+    !!         ! Process
+    !!         nan = ieee_value(nan, ieee_quiet_nan)
+    !!         arg = 4.0d0 * gamma**2 - 3.0d0 * beta * delta**2 * z**4 + &
+    !!             (delta**2 - 4.0d0 * alpha) * delta**2 * z**2
+    !!         if (arg < 0.0d0) then
+    !!             s = -1.0d0
+    !!         else
+    !!             s = (2.0d0 * sqrt(arg) + z * (3.0d0 * beta * z**2 - &
+    !!                 2.0d0 * delta**2 + 4.0d0 * alpha)) / (4.0d0 * z)
+    !!         end if
+    !!         if (s < 0.0d0) then
+    !!             rst = nan
+    !!         else
+    !!             rst = sqrt(s)
+    !!         end if
+    !!     end function
+    !!
+    !!     ! Analytical Solution - Leg 2
+    !!     pure elemental function leg2(z) result(rst)
+    !!         ! Arguments
+    !!         real(real64), intent(in) :: z
+    !!         real(real64) :: rst
+    !!
+    !!         ! Local Variables
+    !!         real(real64) :: arg, s, nan
+    !!
+    !!         ! Process
+    !!         nan = ieee_value(nan, ieee_quiet_nan)
+    !!         arg = 4.0d0 * gamma**2 - 3.0d0 * beta * delta**2 * z**4 + &
+    !!             (delta**2 - 4.0d0 * alpha) * delta**2 * z**2
+    !!         if (arg < 0.0d0) then
+    !!             s = -1.0d0
+    !!         else
+    !!             s = (-2.0d0 * sqrt(arg) + z * (3.0d0 * beta * z**2 - &
+    !!                 2.0d0 * delta**2 + 4.0d0 * alpha)) / (4.0d0 * z)
+    !!         end if
+    !!         if (s < 0.0d0) then
+    !!             rst = nan
+    !!         else
+    !!             rst = sqrt(s)
+    !!         end if
+    !!     end function
     !! end module
     !!
     !! program example
@@ -319,21 +376,21 @@ module diffeq_harmonics
     !!
     !!     ! Parameters
     !!     real(real64), parameter :: f1 = 0.5d0
-    !!     real(real64), parameter :: f2 = 2.5d0
-    !!     real(real64), parameter :: df = 0.01d0
+    !!     real(real64), parameter :: f2 = 2.0d0
+    !!     real(real64), parameter :: df = 0.05d0
     !!     real(real64), parameter :: pi = 2.0d0 * acos(0.0d0)
     !!     real(real64), parameter :: deg = 1.8d2 / pi
     !!
     !!     ! Local Variables
     !!     type(duffing_ode) :: sys
     !!     integer(int32) :: i, n
-    !!     real(real64), allocatable, dimension(:) :: fup, fdown
+    !!     real(real64), allocatable, dimension(:) :: fup, fdown, w1, w2, z
     !!     complex(real64), allocatable, dimension(:,:) :: rup, rdown
     !!
     !!     ! Plot Variables
     !!     type(multiplot) :: plt
     !!     type(plot_2d) :: plt1, plt2
-    !!     type(plot_data_2d) :: pd1, pd2
+    !!     type(plot_data_2d) :: pd1, pd2, pd3
     !!     class(plot_axis), pointer :: xAxis, yAxis
     !!     class(legend), pointer :: lgnd
     !!
@@ -349,6 +406,11 @@ module diffeq_harmonics
     !!     ! Perform the descending sweep
     !!     rdown = frequency_response(sys, fdown, [0.0d0, 0.0d0])
     !!
+    !!     ! Compute the analytical solution
+    !!     z = linspace(0.5d0, 1.0d1, 1000)
+    !!     w1 = leg1(z)
+    !!     w2 = leg2(z)
+    !!
     !!     ! Plot the results
     !!     call plt%initialize(2, 1)
     !!     call plt1%initialize()
@@ -363,19 +425,36 @@ module diffeq_harmonics
     !!     call pd1%define_data(fup, abs(rup(:,1)))
     !!     call pd1%set_name("Ascending")
     !!     call pd1%set_line_width(2.0)
+    !!     call pd1%set_draw_line(.false.)
+    !!     call pd1%set_draw_markers(.true.)
+    !!     call pd1%set_marker_style(MARKER_EMPTY_CIRCLE)
     !!     call plt1%push(pd1)
     !!
     !!     call pd2%define_data(fdown, abs(rdown(:,1)))
     !!     call pd2%set_name("Descending")
     !!     call pd2%set_line_width(2.0)
-    !!     call pd2%set_line_style(LINE_DASHED)
+    !!     call pd2%set_draw_line(.false.)
+    !!     call pd2%set_draw_markers(.true.)
+    !!     call pd2%set_marker_style(MARKER_EMPTY_TRIANGLE)
     !!     call plt1%push(pd2)
+    !!
+    !!     call pd3%define_data(w1, z)
+    !!     call pd3%set_name("Analytical")
+    !!     call pd3%set_line_width(2.0)
+    !!     call pd3%set_line_color(CLR_BLACK)
+    !!     call plt1%push(pd3)
+    !!
+    !!     call pd3%define_data(w2, z)
+    !!     call pd3%set_name("")
+    !!     call plt1%push(pd3)
     !!
     !!     call plt2%initialize()
     !!     xAxis => plt2%get_x_axis()
     !!     yAxis => plt2%get_y_axis()
     !!     call xAxis%set_title("w")
     !!     call yAxis%set_title("{/Symbol f} [deg]")
+    !!     call xAxis%set_autoscale(.false.)
+    !!     call xAxis%set_limits(0.0d0, 2.0d0)
     !!
     !!     call pd1%define_data(fup, deg * atan2(aimag(rup(:,1)), real(rup(:,1))))
     !!     call plt2%push(pd1)
@@ -437,7 +516,7 @@ contains
     !! @param[in] f2Hz The upper excitation frequency, in Hz.
     !!
     !! @return The resulting value of the function at @p t.
-    pure module elemental function chirp(t, amp, span, f1Hz, f2Hz) result(rst)
+    pure elemental function chirp(t, amp, span, f1Hz, f2Hz) result(rst)
         ! Arguments
         real(real64), intent(in) :: t, amp, span, f1Hz, f2Hz
         real(real64) :: rst

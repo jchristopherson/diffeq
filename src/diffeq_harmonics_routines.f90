@@ -1,5 +1,6 @@
 submodule (diffeq_harmonics) diffeq_harmonics_routines
     use fftpack
+    use spectrum
 contains
 ! ------------------------------------------------------------------------------
 module function frf_fft_1(sys, span, iv, fs, solver, win, freq, &
@@ -120,11 +121,16 @@ module function frf_sweep(sys, freq, iv, solver, ncycles, ntransient, &
     class(errors), intent(inout), optional, target :: err
     complex(real64), allocatable, dimension(:,:) :: rst
 
+    ! Parameters
+    real(real64), parameter :: zerotol = sqrt(epsilon(0.0d0))
+
     ! Local Variables
-    integer(int32) :: i, j, nfreq, neqn, nc, nt, ntotal, npts, ppc, flag, lwork
+    integer(int32) :: i, j, nfreq, neqn, nc, nt, ntotal, npts, ppc, flag, &
+        nfft, i1, ncpts
     real(real64) :: dt
-    real(real64), allocatable, dimension(:) :: ic, t, fftwork
+    real(real64), allocatable, dimension(:) :: ic, t
     real(real64), allocatable, dimension(:,:) :: sol
+    complex(real64), allocatable, dimension(:) :: xpts
     class(ode_integrator), pointer :: integrator
     type(dprk45_integrator), target :: default_integrator
     class(errors), pointer :: errmgr
@@ -132,25 +138,20 @@ module function frf_sweep(sys, freq, iv, solver, ncycles, ntransient, &
     character(len = :), allocatable :: errmsg
     
     ! Initialization
-    if (present(solver)) then
-        integrator => solver
-    else
-        integrator => default_integrator
-    end if
     if (present(ncycles)) then
         nc = ncycles
     else
-        nc = 5
+        nc = 20
     end if
     if (present(ntransient)) then
         nt = ntransient
     else
-        nt = 30
+        nt = 200
     end if
     if (present(pointspercycle)) then
         ppc = pointspercycle
     else
-        ppc = 30
+        ppc = 1000
     end if
     if (present(err)) then
         errmgr => err
@@ -161,24 +162,36 @@ module function frf_sweep(sys, freq, iv, solver, ncycles, ntransient, &
     neqn = size(iv)
     ntotal = nt + nc
     npts = ntotal * ppc
-    lwork = 2 * nc * ppc + 15
+    ncpts = nc * ppc
+    i1 = npts - ncpts + 1
+    nfft = 2**next_power_of_two(ppc * nc)
+
+    ! Set up the integrator
+    if (present(solver)) then
+        integrator => solver
+    else
+        integrator => default_integrator
+    end if
 
     ! Input Checking
+    if (nc < 1) go to 20
+    if (nt < 1) go to 30
+    if (ppc < 2) go to 40
+    do i = 1, nfreq
+        if (abs(freq(i)) < zerotol) go to 50
+    end do
 
     ! Local Memory Allocation
     allocate(rst(nfreq, neqn), stat = flag)
     if (flag == 0) allocate(ic(neqn), stat = flag, source = iv)
     if (flag == 0) allocate(t(npts), stat = flag)
-    if (flag == 0) allocate(fftwork(lwork), stat = flag)
+    if (flag == 0) allocate(xpts(nfft), stat = flag, source = (0.0d0, 0.0d0))
     if (flag /= 0) go to 10
-
-    ! Set up the Fourier transform
-    call dffti(nc * ppc, fftwork)
 
     ! Cycle over each frequency point
     do i = 1, nfreq
         ! Define the time vector
-        dt = ntotal / freq(i)
+        dt = (1.0d0 / freq(i)) / (ppc - 1.0d0)
         t = (/ (dt * j, j = 0, npts - 1) /)
 
         ! Update the frequency
@@ -193,7 +206,7 @@ module function frf_sweep(sys, freq, iv, solver, ncycles, ntransient, &
 
         ! Determine the magnitude and phase for each equation
         do j = 1, neqn
-            rst(i,j) = get_magnitude_phase(sol(nt*ppc+1:,j+1), fftwork)
+            rst(i,j) = get_magnitude_phase(sol(i1:,j+1), xpts)
         end do
     end do
 
@@ -202,51 +215,75 @@ module function frf_sweep(sys, freq, iv, solver, ncycles, ntransient, &
 
     ! Memory Error
 10  continue
+    allocate(character(len = 256) :: errmsg)
+    write(errmsg, 100) "Memory allocation error flag ", flag, "."
+    call err%report_error("frf_sweep", trim(errmsg), &
+        DIFFEQ_MEMORY_ALLOCATION_ERROR)
     return
+
+    ! Number of Cycles Error
+20  continue
+    allocate(character(len = 256) :: errmsg)
+    write(errmsg, 100) "The number of cycles to analyze must be at " // &
+        "least 1; however, a value of ", nc, " was found."
+    call errmgr%report_error("frf_sweep", trim(errmsg), &
+        DIFFEQ_INVALID_INPUT_ERROR)
+    return
+
+    ! Number of Transient Cycles Error
+30  continue
+    allocate(character(len = 256) :: errmsg)
+    write(errmsg, 100) "The number of transient cycles must be at " // &
+        "least 1; however, a value of ", nt, " was found."
+    call errmgr%report_error("frf_sweep", trim(errmsg), &
+        DIFFEQ_INVALID_INPUT_ERROR)
+    return
+
+    ! Points Per Cycle Error
+40  continue
+    write(errmsg, 100) "The number of points per cycle must be at " // &
+        "least 2; however, a value of ", ppc, " was found."
+    call errmgr%report_error("frf_sweep", trim(errmsg), &
+        DIFFEQ_INVALID_INPUT_ERROR)
+    return
+
+    ! Zero-Valued Frequency Error
+50  continue
+    write(errmsg, 100) "A zero-valued frequency was found at index ", i, "."
+    call errmgr%report_error("frf_sweep", trim(errmsg), &
+        DIFFEQ_INVALID_INPUT_ERROR)
+    return
+
+    ! Formatting
+100 format(A, I0, A)
 end function
 
 ! ------------------------------------------------------------------------------
-function get_magnitude_phase(x, work) result(rst)
+function get_magnitude_phase(x, xzeros) result(rst)
     ! Arguments
-    real(real64), intent(inout), dimension(:) :: x, work
+    real(real64), intent(in), dimension(:) :: x
+    complex(real64), intent(inout), dimension(:) :: xzeros
     complex(real64) :: rst
 
     ! Local Variables
-    integer(int32) :: i, n, m
-    real(real64) :: mag, check, scale, w, sumw
-    complex(real64) :: val
-    type(hamming_window) :: win
+    integer(int32) :: ind, n, m, nx
+    real(real64) :: amp, phase
 
     ! Initialization
-    n = size(x)
-    win%size = n
+    nx = size(x)
+    n = size(xzeros)
     m = compute_transform_length(n)
-    if (mod(n, 2) == 0) then
-        scale = 2.0d0 / n
-    else
-        scale = 2.0d0 / (n - 1.0d0)
-    end if
+    amp = 0.5d0 * (maxval(x) - minval(x))
 
-    ! Window the data
-    sumw = 0.0d0
-    do i = 1, n
-        w = win%evaluate(i - 1)
-        x(i) = w * x(i)
-        sumw = sumw + w
-    end do
-    scale = scale * n / sumw
+    ! Zero pad the data
+    xzeros(1:nx) = cmplx(x, 0.0d0, real64)
+    xzeros(nx+1:) = cmplx(0.0d0, 0.0d0, real64)
 
-    ! Transform the data and find the largest magnitude component
-    call dfftf(n, x, work)
-    check = 0.0d0
-    do i = 2, m
-        val = scale * cmplx(x(2*i-1), x(2*i), real64)
-        mag = abs(val)
-        if (mag > check) then
-            rst = val
-            check = mag
-        end if
-    end do
+    ! Compute the FFT to estimate the phase
+    xzeros = fft(xzeros)
+    ind = maxloc(abs(xzeros(1:m)), 1)
+    phase = atan2(aimag(xzeros(ind)), real(xzeros(ind)))
+    rst = cmplx(amp * cos(phase), amp * sin(phase), real64)
 end function
 
 ! ------------------------------------------------------------------------------

@@ -6,8 +6,6 @@ program example
     implicit none
 
     ! Parameters
-    real(real64), parameter :: fmin = 1.0d0
-    real(real64), parameter :: fmax = 1.0d2
     real(real64), parameter :: fs = 2.56d2
     real(real64), parameter :: pi = 2.0d0 * acos(0.0d0)
     real(real64), parameter :: z = 1.0d-1
