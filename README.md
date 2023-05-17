@@ -1,11 +1,27 @@
 # diffeq
-A modern Fortran library providing an object-oriented approach to solving ordinary differential equations.
+A modern Fortran library providing an object-oriented approach to solving ordinary differential equations and related analyses.
+
+## Work-In-Progress
+This library is currently a work-in-progress.  The API is definitely not in a stable condition.
 
 ## Build Status
 [![CMake](https://github.com/jchristopherson/diffeq/actions/workflows/cmake.yml/badge.svg)](https://github.com/jchristopherson/diffeq/actions/workflows/cmake.yml)
 
 ## Documentation
 The documentation can be found [here](https://jchristopherson.github.io/diffeq/).
+
+## Available ODE Solvers
+### Fixed Step
+- 4th Order Runge-Kutta
+- Adams-Bashforth-Moulton
+
+### Variable Step
+- Dormand-Prince Runge-Kutta 5th/4th Order
+- Bogacki-Shampine Runge-Kutta 3rd/2nd Order
+
+## Additional Operations
+- FFT-Based Frequency Response Function Estimation
+- Frequency-Sweep-Based Frequency Response Function Estimation
 
 ## References
 1. Butcher, J. C. (2003). Numerical methods for ordinary differential equations. J. Wiley.
