@@ -15,34 +15,6 @@ module subroutine vsi_set_safety_factor(this, x)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-pure module function vsi_get_alpha(this) result(rst)
-    class(variable_step_integrator), intent(in) :: this
-    real(real64) :: rst
-    rst = this%m_alpha
-end function
-
-! --------------------
-module subroutine vsi_set_alpha(this, x)
-    class(variable_step_integrator), intent(inout) :: this
-    real(real64) :: x
-    this%m_alpha = x
-end subroutine
-
-! ------------------------------------------------------------------------------
-pure module function vsi_get_beta(this) result(rst)
-    class(variable_step_integrator), intent(in) :: this
-    real(real64) :: rst
-    rst = this%m_beta
-end function
-
-! --------------------
-module subroutine vsi_set_beta(this, x)
-    class(variable_step_integrator), intent(inout) :: this
-    real(real64), intent(in) :: x
-    this%m_beta = x
-end subroutine
-
-! ------------------------------------------------------------------------------
 pure module function vsi_get_max_step(this) result(rst)
     class(variable_step_integrator), intent(in) :: this
     real(real64) :: rst
@@ -97,31 +69,6 @@ module subroutine vsi_set_max_step_count(this, x)
     integer(int32), intent(in) :: x
     this%m_maxstepcount = x
 end subroutine
-
-! ------------------------------------------------------------------------------
-pure module function vsi_next_step(this, hn, en, enm1) result(rst)
-    ! Arguments
-    class(variable_step_integrator), intent(in) :: this
-    real(real64), intent(in) :: hn, en, enm1
-    real(real64) :: rst
-
-    ! Arguments
-    integer(int32) :: k
-    real(real64) :: s, hest, a, b, maxstep
-
-    ! Process
-    k = this%get_order()
-    s = this%get_safety_factor()
-    hest = s * hn * (1.0d0 / en)**(1.0d0 / k)
-    
-    a = this%get_alpha() / k
-    b = this%get_beta() / k
-    rst = hest * (en**a) * (enm1**b)
-
-    maxstep = abs(this%get_max_step_size())
-    if (abs(rst) > maxstep) rst = sign(maxstep, rst)
-    if (rst / hn > 2.0d0) rst = 2.0d0 * hn
-end function
 
 ! ------------------------------------------------------------------------------
 module subroutine vsi_append_to_buffer(this, x, y, err)
@@ -462,7 +409,7 @@ pure module function vsi_estimate_first_step(this, xo, xf, yo, fo) &
     h1 = 0.25d0 * sqrt(1.0d-6 / fnrm)
     h2 = 0.5d0 * (xf - xo)
     h3 = this%get_max_step_size()
-    rst = min(h1, h2, h3)
+    rst = min(h1, h2)
 end function
 
 ! ------------------------------------------------------------------------------

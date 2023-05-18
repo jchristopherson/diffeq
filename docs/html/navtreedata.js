@@ -26,7 +26,11 @@ var NAVTREE =
 [
   [ "diffeq", "index.html", [
     [ "Modules", "namespaces.html", [
-      [ "Modules List", "namespaces.html", "namespaces_dup" ]
+      [ "Modules List", "namespaces.html", "namespaces_dup" ],
+      [ "Module Members", "namespacemembers.html", [
+        [ "All", "namespacemembers.html", null ],
+        [ "Functions/Subroutines", "namespacemembers_func.html", null ]
+      ] ]
     ] ],
     [ "Data Types List", "annotated.html", [
       [ "Data Types List", "annotated.html", "annotated_dup" ],
@@ -47,7 +51,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"structdiffeq_1_1variable__step__integrator.html#af1e8a4c2badf956df93614eca0b361d1"
+"structdiffeq_1_1variable__step__integrator.html#aeb245e257685480e10794e03b9814fde"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
