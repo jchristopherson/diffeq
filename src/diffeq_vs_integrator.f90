@@ -209,15 +209,14 @@ module subroutine vsi_alloc_workspace(this, neqn, err)
     integer(int32), intent(in) :: neqn
     class(errors), intent(inout) :: err
 
-    ! Parameters
-    real(real64), parameter :: default_rtol = 1.0d-6
-    real(real64), parameter :: default_atol = 1.0d-6
-
     ! Local Variables
     integer(int32) :: flag
+    real(real64) :: default_rtol, default_atol
     character(len = :), allocatable :: errmsg
 
     ! Process
+    default_atol = this%get_default_absolute_tolerance()
+    default_rtol = this%get_default_relative_tolerance()
     if (allocated(this%m_ework)) then
         if (size(this%m_ework) /= neqn) then
             deallocate(this%m_ework)
@@ -395,21 +394,26 @@ pure module function vsi_estimate_first_step(this, xo, xf, yo, fo) &
     real(real64) :: rst
 
     ! Local Variables
-    real(real64) :: fnrm, h1, h2, h3
-
-    ! Determine the Euclidean norm of the derivatives
-    fnrm = norm2(fo)
-    if (fnrm <= 1.0d2 * epsilon(fnrm)) then
-        ! The function values are too close to zero to be useful for this
-        ! approximation.  Set fnrm to unity
-        fnrm = 1.0d0
-    end if
+    real(real64) :: h1, h2
     
     ! Process
-    h1 = 0.25d0 * sqrt(1.0d-6 / fnrm)
-    h2 = 0.5d0 * (xf - xo)
-    h3 = this%get_max_step_size()
+    h1 = 0.5d0 * (xf - xo)
+    h2 = this%get_max_step_size()
     rst = min(h1, h2)
+end function
+
+! ------------------------------------------------------------------------------
+pure module function vsi_get_default_rel_tol(this) result(rst)
+    class(variable_step_integrator), intent(in) :: this
+    real(real64) :: rst
+    rst = 1.0d-6
+end function
+
+! ------------------------------------------------------------------------------
+pure module function vsi_get_default_abs_tol(this) result(rst)
+    class(variable_step_integrator), intent(in) :: this
+    real(real64) :: rst
+    rst = 1.0d-6
 end function
 
 ! ------------------------------------------------------------------------------

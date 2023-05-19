@@ -257,8 +257,62 @@ $(document).ready(function(){initNavTree('diffeq__rkvariable_8f90_source.html','
 <div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span><span class="keywordflow">    end if</span></div>
 <div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span><span class="keyword">end subroutine</span></div>
 <div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span> </div>
-<div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span><span class="comment">! ------------------------------------------------------------------------------</span></div>
-<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span><span class="keyword">end </span>submodule</div>
+<div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span> </div>
+<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span><span class="comment">! ------------------------------------------------------------------------------</span></div>
+<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span><span class="keywordtype">pure</span> <span class="keyword">module</span> function rkv_get_alpha(this) result(rst)</div>
+<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>    <span class="keywordtype">class</span>(rk_variable_integrator), <span class="keywordtype">intent(in)</span> :: this</div>
+<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span><span class="keywordtype">    real</span>(real64) :: rst</div>
+<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>    rst = this%m_alpha</div>
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span><span class="keyword">end function</span></div>
+<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span> </div>
+<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span><span class="comment">! --------------------</span></div>
+<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span><span class="keyword">module</span> subroutine rkv_set_alpha(this, x)</div>
+<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>    <span class="keywordtype">class</span>(rk_variable_integrator), <span class="keywordtype">intent(inout)</span> :: this</div>
+<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span><span class="keywordtype">    real</span>(real64) :: x</div>
+<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>    this%m_alpha = x</div>
+<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span><span class="keyword">end subroutine</span></div>
+<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span> </div>
+<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span><span class="comment">! ------------------------------------------------------------------------------</span></div>
+<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span><span class="keywordtype">pure</span> <span class="keyword">module</span> function rkv_get_beta(this) result(rst)</div>
+<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>    <span class="keywordtype">class</span>(rk_variable_integrator), <span class="keywordtype">intent(in)</span> :: this</div>
+<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span><span class="keywordtype">    real</span>(real64) :: rst</div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>    rst = this%m_beta</div>
+<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span><span class="keyword">end function</span></div>
+<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span> </div>
+<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span><span class="comment">! --------------------</span></div>
+<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span><span class="keyword">module</span> subroutine rkv_set_beta(this, x)</div>
+<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span>    <span class="keywordtype">class</span>(rk_variable_integrator), <span class="keywordtype">intent(inout)</span> :: this</div>
+<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span><span class="keywordtype">    real</span>(real64), <span class="keywordtype">intent(in)</span> :: x</div>
+<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>    this%m_beta = x</div>
+<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span><span class="keyword">end subroutine</span></div>
+<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span> </div>
+<div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span><span class="comment">! ------------------------------------------------------------------------------</span></div>
+<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span><span class="keyword">module</span> function rkv_next_step(this, hn, en, enm1) result(rst)</div>
+<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span>    <span class="comment">! Arguments</span></div>
+<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span>    <span class="keywordtype">class</span>(rk_variable_integrator), <span class="keywordtype">intent(inout)</span> :: this</div>
+<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span><span class="keywordtype">    real</span>(real64), <span class="keywordtype">intent(in)</span> :: hn, en, enm1</div>
+<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span><span class="keywordtype">    real</span>(real64) :: rst</div>
+<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span> </div>
+<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span>    <span class="comment">! Local Variables</span></div>
+<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span>    <span class="keywordtype">integer(int32)</span> :: k</div>
+<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span><span class="keywordtype">    real</span>(real64) :: s, hest, a, b, maxstep</div>
+<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span> </div>
+<div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span>    <span class="comment">! Process</span></div>
+<div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span>    k = this%get_order()</div>
+<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>    s = this%get_safety_factor()</div>
+<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>    hest = s * hn * (1.0d0 / en)**(1.0d0 / k)</div>
+<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>    </div>
+<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>    a = this%get_alpha() / k</div>
+<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>    b = this%get_beta() / k</div>
+<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>    rst = hest * (en**a) * (enm1**b)</div>
+<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span> </div>
+<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span>    maxstep = abs(this%get_max_step_size())</div>
+<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>    <span class="keywordflow">if</span> (abs(rst) &gt; maxstep) rst = sign(maxstep, rst)</div>
+<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span>    <span class="keywordflow">if</span> (rst / hn &gt; 2.0d0) rst = 2.0d0 * hn</div>
+<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span><span class="keyword">end function</span></div>
+<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span> </div>
+<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span><span class="comment">! ------------------------------------------------------------------------------</span></div>
+<div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span><span class="keyword">end </span>submodule</div>
 <div class="ttc" id="anamespacediffeq_html"><div class="ttname"><a href="namespacediffeq.html">diffeq</a></div><div class="ttdoc">This module contains several ODE solvers and associated types.</div><div class="ttdef"><b>Definition:</b> <a href="diffeq_8f90_source.html#l00002">diffeq.f90:2</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->

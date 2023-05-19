@@ -124,6 +124,8 @@ Data Types</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">type &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1fixed__step__integrator.html">fixed_step_integrator</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines a fixed-step integrator.  <a href="structdiffeq_1_1fixed__step__integrator.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacediffeq_1_1next__step__size__calculator.html">next_step_size_calculator</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacediffeq_1_1ode.html">ode</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">type &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1ode__container.html">ode_container</a></td></tr>
@@ -163,9 +165,6 @@ Data Types</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacediffeq_1_1rkv__get__matrix__parameter.html">rkv_get_matrix_parameter</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">type &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__multistep__integrator.html">variable_multistep_integrator</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines a variable-stepsize, multi-step integrator.  <a href="structdiffeq_1_1variable__multistep__integrator.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">type &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffeq_1_1variable__singlestep__integrator.html">variable_singlestep_integrator</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines a variable-step, single-stage integrator.  <a href="structdiffeq_1_1variable__singlestep__integrator.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -195,6 +194,8 @@ Variables</h2></td></tr>
 <tr class="separator:a6548b5ac309412c734eb943e3575778f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a090e876793f8505f286234ce0fa6725b"><td class="memItemLeft" align="right" valign="top">integer(int32), parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacediffeq.html#a090e876793f8505f286234ce0fa6725b">diffeq_iteration_count_exceeded_error</a> = 10007</td></tr>
 <tr class="separator:a090e876793f8505f286234ce0fa6725b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e6c88cffaf7f77f2ea12965a93b63eb"><td class="memItemLeft" align="right" valign="top">integer(int32), parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacediffeq.html#a3e6c88cffaf7f77f2ea12965a93b63eb">diffeq_invalid_operation_error</a> = 10008</td></tr>
+<tr class="separator:a3e6c88cffaf7f77f2ea12965a93b63eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >This module contains several ODE solvers and associated types. </p>
@@ -228,6 +229,22 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 
 <p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00039">39</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+
+</div>
+</div>
+<a id="a3e6c88cffaf7f77f2ea12965a93b63eb" name="a3e6c88cffaf7f77f2ea12965a93b63eb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e6c88cffaf7f77f2ea12965a93b63eb">&#9670;&#160;</a></span>diffeq_invalid_operation_error</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer(int32), parameter, public diffeq::diffeq_invalid_operation_error = 10008</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00043">43</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>

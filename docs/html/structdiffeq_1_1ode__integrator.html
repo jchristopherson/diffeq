@@ -113,16 +113,15 @@ Inheritance diagram for diffeq::ode_integrator:</div>
   <img src="structdiffeq_1_1ode__integrator.png" usemap="#diffeq::ode_5Fintegrator_map" alt=""/>
   <map id="diffeq::ode_5Fintegrator_map" name="diffeq::ode_5Fintegrator_map">
 <area href="structdiffeq_1_1fixed__step__integrator.html" title="Defines a fixed-step integrator." alt="diffeq::fixed_step_integrator" shape="rect" coords="114,56,333,80"/>
-<area href="structdiffeq_1_1variable__step__integrator.html" title="Defines a variable-step integrator." alt="diffeq::variable_step_integrator" shape="rect" coords="572,56,791,80"/>
+<area href="structdiffeq_1_1variable__step__integrator.html" title="Defines a variable-step integrator." alt="diffeq::variable_step_integrator" shape="rect" coords="458,56,677,80"/>
 <area href="structdiffeq_1_1fixed__multistep__integrator.html" title="Defines a fixed step-size, multi-step integrator." alt="diffeq::fixed_multistep_integrator" shape="rect" coords="0,112,219,136"/>
 <area href="structdiffeq_1_1rk__fixed__integrator.html" title="Defines an explicit, Runge-Kutta fixed-step integrator." alt="diffeq::rk_fixed_integrator" shape="rect" coords="229,112,448,136"/>
-<area href="structdiffeq_1_1variable__multistep__integrator.html" title="Defines a variable-stepsize, multi-step integrator." alt="diffeq::variable_multistep_integrator" shape="rect" coords="458,112,677,136"/>
-<area href="structdiffeq_1_1variable__singlestep__integrator.html" title="Defines a variable-step, single-stage integrator." alt="diffeq::variable_singlestep_integrator" shape="rect" coords="687,112,906,136"/>
+<area href="structdiffeq_1_1variable__singlestep__integrator.html" title="Defines a variable-step, single-stage integrator." alt="diffeq::variable_singlestep_integrator" shape="rect" coords="458,112,677,136"/>
 <area href="structdiffeq_1_1adams__fixed__integerator.html" title="Defines a fixed-step, 4th-order, Adams-Bashforth-Moulton PECE integrator." alt="diffeq::adams_fixed_integerator" shape="rect" coords="0,168,219,192"/>
 <area href="structdiffeq_1_1rk4__fixed__integrator.html" title="Defines the explicit, 4th order, Runge-Kutta fixed-step integrator." alt="diffeq::rk4_fixed_integrator" shape="rect" coords="229,168,448,192"/>
-<area href="structdiffeq_1_1rk__variable__integrator.html" title="Defines a variable-step, Runge-Kutta integrator." alt="diffeq::rk_variable_integrator" shape="rect" coords="687,168,906,192"/>
-<area href="structdiffeq_1_1bsrk32__integrator.html" title="Defines the Bogacki-Shampine 3rd/2nd order integrator." alt="diffeq::bsrk32_integrator" shape="rect" coords="572,224,791,248"/>
-<area href="structdiffeq_1_1dprk45__integrator.html" title="Defines the classical Dormand-Prince 4th/5th order integrator." alt="diffeq::dprk45_integrator" shape="rect" coords="801,224,1020,248"/>
+<area href="structdiffeq_1_1rk__variable__integrator.html" title="Defines a variable-step, Runge-Kutta integrator." alt="diffeq::rk_variable_integrator" shape="rect" coords="458,168,677,192"/>
+<area href="structdiffeq_1_1bsrk32__integrator.html" title="Defines the Bogacki-Shampine 3rd/2nd order integrator." alt="diffeq::bsrk32_integrator" shape="rect" coords="343,224,562,248"/>
+<area href="structdiffeq_1_1dprk45__integrator.html" title="Defines the classical Dormand-Prince 4th/5th order integrator." alt="diffeq::dprk45_integrator" shape="rect" coords="572,224,791,248"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -138,7 +137,7 @@ Public Member Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >The most basic ODE integrator object capable of integrating systems of ODE's. </p>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00258">258</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00259">259</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 </div><h2 class="groupheader">Member Function/Subroutine Documentation</h2>
 <a id="af7ca88612930f2772289df389554f215" name="af7ca88612930f2772289df389554f215"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af7ca88612930f2772289df389554f215">&#9670;&#160;</a></span>get_order()</h2>
@@ -163,7 +162,7 @@ Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The order of the integrator. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00308">308</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00309">309</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>
@@ -205,7 +204,7 @@ Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>An M-by-N matrix where M is the number of solution points, and N is the number of ODEs plus 1. The first column contains the values of the independent variable at which the results were computed. The remaining columns contain the integration results for each ODE. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00298">298</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq_8f90_source.html#l00299">299</a> of file <a class="el" href="diffeq_8f90_source.html">diffeq.f90</a>.</p>
 
 </div>
 </div>

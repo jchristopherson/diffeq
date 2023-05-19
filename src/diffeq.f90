@@ -22,8 +22,6 @@ module diffeq
     public :: rk_variable_integrator
     public :: dprk45_integrator
     public :: bsrk32_integrator
-    public :: rosenbrock_integrator
-    public :: variable_multistep_integrator
     public :: DIFFEQ_MEMORY_ALLOCATION_ERROR
     public :: DIFFEQ_NULL_POINTER_ERROR
     public :: DIFFEQ_MATRIX_SIZE_ERROR
@@ -31,6 +29,7 @@ module diffeq
     public :: DIFFEQ_INVALID_INPUT_ERROR
     public :: DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR
     public :: DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR
+    public :: DIFFEQ_INVALID_OPERATION_ERROR
 
 ! ------------------------------------------------------------------------------
     integer(int32), parameter :: DIFFEQ_MEMORY_ALLOCATION_ERROR = 10000
@@ -41,6 +40,7 @@ module diffeq
     integer(int32), parameter :: DIFFEQ_MISSING_ARGUMENT_ERROR = 10005
     integer(int32), parameter :: DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR = 10006
     integer(int32), parameter :: DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR = 10007
+    integer(int32), parameter :: DIFFEQ_INVALID_OPERATION_ERROR = 10008
 
 ! ------------------------------------------------------------------------------
     !> @brief A container for the routine containing the ODEs to integrate.
@@ -1027,8 +1027,8 @@ module diffeq
         !!  the dependent variables.
         !! @param[out] yn An N-element array where the values of the dependent
         !!  variables at @p x + @p h will be written.
-        !! @param[out] ys AN N-element array where the supplemental solution
-        !!  values at @p x + @p h will be written.
+        !! @param[out] en An N-element array where the values of the error
+        !!  estimates will be written.
         !! @param[in] xprev An M-element array containing the previous M values
         !!  of the independent variable where M is the order of the method.
         !!  This is typically useful for multi-step methods.  In single-step
@@ -1037,7 +1037,11 @@ module diffeq
         !!  of dependent variable values where M is the order of the method.
         !!  This is typically useful for multi-step methods.  In single-step
         !!  methods this parameter is not used.
-        !! @param[in,out] An optional errors-based object that if provided 
+        !! @param[in] fprev An M-by-NEQN array containing the previous M arrays
+        !!  of function (derivative) values where M is the order of the method.
+        !!  This is typically useful for multi-step methods.  In single-step
+        !!  methods this parameter is not used.
+        !! @param[in,out] err An optional errors-based object that if provided 
         !!  can be used to retrieve information relating to any errors 
         !!  encountered during execution. If not provided, a default 
         !!  implementation of the errors class is used internally to provide 
@@ -1441,6 +1445,32 @@ module diffeq
         !!  implementation of the errors class is used internally to provide 
         !!  error handling.
         procedure(variable_step_interpolation), public, deferred :: interpolate
+        !> @brief Gets the default relative error tolerance.
+        !! 
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_default_relative_tolerance( &
+        !!  class(variable_step_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref variable_step_integrator object.
+        !! @return The tolerance value.
+        procedure, public :: get_default_relative_tolerance => &
+            vsi_get_default_rel_tol
+        !> @brief Gets the default absolute error tolerance.
+        !! 
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_default_absolute_tolerance( &
+        !!  class(variable_step_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref variable_step_integrator object.
+        !! @return The tolerance value.
+        procedure, public :: get_default_absolute_tolerance => &
+            vsi_get_default_abs_tol
     end type
 
     ! diffeq_vs_integrator.f90
@@ -1619,6 +1649,16 @@ module diffeq
             class(variable_step_integrator), intent(in) :: this
             real(real64), intent(in) :: xo, xf
             real(real64), intent(in), dimension(:) :: yo, fo
+            real(real64) :: rst
+        end function
+
+        pure module function vsi_get_default_rel_tol(this) result(rst)
+            class(variable_step_integrator), intent(in) :: this
+            real(real64) :: rst
+        end function
+
+        pure module function vsi_get_default_abs_tol(this) result(rst)
+            class(variable_step_integrator), intent(in) :: this
             real(real64) :: rst
         end function
     end interface
@@ -1854,8 +1894,8 @@ module diffeq
         !!  the dependent variables.
         !! @param[out] yn An N-element array where the values of the dependent
         !!  variables at @p x + @p h will be written.
-        !! @param[out] ys AN N-element array where the supplemental solution
-        !!  values at @p x + @p h will be written.
+        !! @param[out] en An N-element array where the values of the error
+        !!  estimates will be written.
         !! @param[in] xprev An M-element array containing the previous M values
         !!  of the independent variable where M is the order of the method.
         !!  This is typically useful for multi-step methods.  In single-step
@@ -1864,7 +1904,11 @@ module diffeq
         !!  of dependent variable values where M is the order of the method.
         !!  This is typically useful for multi-step methods.  In single-step
         !!  methods this parameter is not used.
-        !! @param[in,out] An optional errors-based object that if provided 
+        !! @param[in] fprev An M-by-NEQN array containing the previous M arrays
+        !!  of function (derivative) values where M is the order of the method.
+        !!  This is typically useful for multi-step methods.  In single-step
+        !!  methods this parameter is not used.
+        !! @param[in,out] err An optional errors-based object that if provided 
         !!  can be used to retrieve information relating to any errors 
         !!  encountered during execution. If not provided, a default 
         !!  implementation of the errors class is used internally to provide 
@@ -2707,318 +2751,8 @@ module diffeq
     end interface
 
 ! ------------------------------------------------------------------------------
-    !> @brief Defines a Rosenbrock 4th/3rd order method.
-    type, extends(variable_singlestep_integrator) :: rosenbrock_integrator
-        ! Workspace matrix with one column for each stage evaluation
-        real(real64), private, allocatable, dimension(:,:) :: m_work
-        ! NEQN-element workspace array
-        real(real64), private, allocatable, dimension(:) :: m_ywork
-        ! NEQN-element storage for the current ODE output (dy/dx)
-        real(real64), private, allocatable, dimension(:) :: m_dydx
-        ! Jacobian matrix (NEQN-by-NEQN)
-        real(real64), private, allocatable, dimension(:,:) :: m_jac
-        ! Gradient vector (df/dx) (NEQN)
-        real(real64), private, allocatable, dimension(:) :: m_dfdx
-        ! NEQN-by-NEQN linear algebra workspace
-        real(real64), private, allocatable, dimension(:,:) :: m_a
-        ! NEQN linear algebra pivot tracking workspace
-        integer(int32), private, allocatable, dimension(:) :: m_iwork
-        ! NEQN-by-4 interpolation coefficients
-        real(real64), private, allocatable, dimension(:,:) :: m_interp
-        ! Is this the first step?
-        logical :: m_firstStep = .true.
-        ! Previoius step size
-        real(real64) :: m_prevStep
-    contains
-        procedure, private :: allocate_workspace => rbk_alloc_workspace
-        !> @brief Resets the integrator to its initial state.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! subroutine reset(class(rosenbrock_integrator) this)
-        !! @endcode
-        !!
-        !! @param[in,out] this The @ref rosenbrock_integrator object.
-        procedure, public :: reset => rbk_reset
-        !> @brief Takes one integration step.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! subroutine step( &
-        !!  class(rosenbrock_integrator) this, &
-        !!  class(ode_container) sys, &
-        !!  real(real64) x, &
-        !!  real(real64) xmax, &
-        !!  real(real64) y(:), &
-        !!  real(real64) yn(:), &
-        !!  optional real(real64) xprev(:), &
-        !!  optional real(real64) yprev(:,:), &
-        !!  optional real(real64) fprev(:,:), &
-        !!  optional class(errors) err &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in,out] this The @ref rosenbrock_integrator object.
-        !! @param[in] sys The @ref ode_container object containing the ODEs
-        !!  to integrate.
-        !! @param[in] x The current value of the independent variable.
-        !! @param[in] xmax The upper integration limit.
-        !! @param[in] y An N-element array containing the current values of
-        !!  the dependent variables.
-        !! @param[out] yn An N-element array where the values of the dependent
-        !!  variables at @p x + @p h will be written.
-        !! @param[in] xprev An M-element array containing the previous M values
-        !!  of the independent variable where M is the order of the method.
-        !!  This is typically useful for multi-step methods.  In single-step
-        !!  methods this parameter is not used.
-        !! @param[in] yprev An M-by-NEQN array containing the previous M arrays
-        !!  of dependent variable values where M is the order of the method.
-        !!  This is typically useful for multi-step methods.  In single-step
-        !!  methods this parameter is not used.
-        !! @param[out] fprev An M-by-NEQN array where the previous M function
-        !!  values are written.  This is typically useful for multi-step 
-        !!  methods.  In single-step methods this parameter is not used.
-        !! @param[in,out] An optional errors-based object that if provided 
-        !!  can be used to retrieve information relating to any errors 
-        !!  encountered during execution. If not provided, a default 
-        !!  implementation of the errors class is used internally to provide 
-        !!  error handling.  Possible errors and warning messages that may be 
-        !!  encountered are as follows.
-        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
-        !!      allocation issue.
-        !!  - DIFFEQ_ARRAY_SIZE_ERROR: Occurs if @p yn is not the same size
-        !!      as @p y.
-        !!  - DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR: Occurs if the step size becomes
-        !!      too small.
-        !!  - DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR: Occurs if the iteration
-        !!      count is exceeded for a single step.
-        !!  - DIFFEQ_NULL_POINTER_ERROR: Occurs if no ODE routine is defined.
-        procedure, public :: step => rbk_step
-        !> @brief Attempts a single integration step.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! subroutine attempt_step( &
-        !!  class(rosenbrock_integrator) this, &
-        !!  class(ode_container) sys, &
-        !!  real(real64) h, &
-        !!  real(real64) x, &
-        !!  real(real64) y(:), &
-        !!  real(real64) yn(:), &
-        !!  real(real64) en(:), &
-        !!  optional real(real64) xprev(:), &
-        !!  optional real(real64) yprev(:,:), &
-        !!  optional real(real64) fprev(:,:), &
-        !!  optional class(errors) err &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in,out] this The @ref rosenbrock_integrator object.
-        !! @param[in] sys The @ref ode_container object containing the ODEs
-        !!  to integrate.
-        !! @param[in] h The current step size.
-        !! @param[in] x The current value of the independent variable.
-        !! @param[in] y An N-element array containing the current values of
-        !!  the dependent variables.
-        !! @param[out] yn An N-element array where the values of the dependent
-        !!  variables at @p x + @p h will be written.
-        !! @param[out] ys AN N-element array where the supplemental solution
-        !!  values at @p x + @p h will be written.
-        !! @param[in] xprev An M-element array containing the previous M values
-        !!  of the independent variable where M is the order of the method.
-        !!  This is typically useful for multi-step methods.  In single-step
-        !!  methods this parameter is not used.
-        !! @param[in] yprev An M-by-NEQN array containing the previous M arrays
-        !!  of dependent variable values where M is the order of the method.
-        !!  This is typically useful for multi-step methods.  In single-step
-        !!  methods this parameter is not used.
-        !! @param[in,out] An optional errors-based object that if provided 
-        !!  can be used to retrieve information relating to any errors 
-        !!  encountered during execution. If not provided, a default 
-        !!  implementation of the errors class is used internally to provide 
-        !!  error handling.
-        procedure, public :: attempt_step => rbk_attempt_step
-        !> @brief Perform necessary actions on completion of a successful step.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! subroutine on_successful_step( &
-        !!  class(rosenbrock_integrator) this, &
-        !!  real(real64) x, &
-        !!  real(real64) xn, &
-        !!  real(real64) y(:), &
-        !!  real(real64) yn(:) &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in,out] this The @ref rosenbrock_integrator object.
-        !! @param[in] x The current value of the independent variable.
-        !! @param[in] xn The value of the independent variable at the next step.
-        !! @param[in] y An N-element array containing the current solution
-        !!  values.
-        !! @param[in] yn An N-element array containing the solution values at
-        !!  the next step.
-        procedure, public :: on_successful_step => rbk_on_successful_step
-        !> @brief Sets up the interpolation polynomial.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! subroutine set_up_interpolation( &
-        !!  class(rosenbrock_integrator) this, &
-        !!  real(real64) x, &
-        !!  real(real64) xn, &
-        !!  real(real64) y(:), &
-        !!  real(real64) yn(:), &
-        !!  real(real64) k(:,:) &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in,out] this The rosenbrock_integrator object.
-        !! @param[in] x The current value of the independent variable.
-        !! @param[in] xn The value of the independent variable at the next step.
-        !! @param[in] y An N-element array containing the current solution
-        !!  values.
-        !! @param[in] yn An N-element array containing the solution values at
-        !!  the next step.
-        !! @param[in] k An N-by-M matrix containing the intermediate step
-        !!  function outputs where M is the number of stages of the integrator.
-        procedure, public :: set_up_interpolation => rbk_set_up_interp
-        !> @brief Provides interpolation between integration points allowing
-        !! for dense output.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! subroutine interpolate( &
-        !!  class(rosenbrock_integrator) this, &
-        !!  real(real64) xprev, &
-        !!  real(real64) xnew, &
-        !!  real(real64) x, &
-        !!  real(real64) y(:),
-        !!  optional class(errors) err &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The rosenbrock_integrator object.
-        !! @param[in] xprev The previous value of the independent variable.
-        !! @param[in] xnew The updated value of the independent variable.
-        !! @param[in] x The value at which to perform the interpolation.
-        !! @param[out] y An N-element array containing the interpolated 
-        !!  values for each equation.
-        !! @param[in,out] err An optional errors-based object that if provided 
-        !!  can be used to retrieve information relating to any errors 
-        !!  encountered during execution. If not provided, a default 
-        !!  implementation of the errors class is used internally to provide 
-        !!  error handling.
-        procedure, public :: interpolate => rbk_interp
-        !> @brief Returns the order of the integrator.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! pure integer(int32) function get_order( &
-        !!  class(rosenbrock_integrator) this &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref rosenbrock_integrator object.
-        !! @return The order of the integrator.
-        procedure, public :: get_order => rbk_get_order
-        !> @brief Computes the next step size.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) function compute_next_step_size( &
-        !!  class(rosenbrock_integrator) this, &
-        !!  real(real64) hn, &
-        !!  real(real64) en, &
-        !!  real(real64) enm1 &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in,out] this The @ref rosenbrock_integrator object.
-        !! @param[in] hn The current step size.
-        !! @param[in] en The norm of the error for the current step size.
-        !! @param[in] enm1 The norm of the error from the previous step size.
-        !!
-        !! @return The new step size.
-        procedure, public :: compute_next_step_size => rbk_next_step
-    end type
-
-    ! diffeq_rosenbrock.f90
-    interface
-        module subroutine rbk_alloc_workspace(this, neqn, err)
-            class(rosenbrock_integrator), intent(inout) :: this
-            integer(int32), intent(in) :: neqn
-            class(errors), intent(inout), optional, target :: err
-        end subroutine
-
-        module subroutine rbk_reset(this)
-            class(rosenbrock_integrator), intent(inout) :: this
-        end subroutine
-
-        module subroutine rbk_step(this, sys, x, xmax, y, yn, xprev, &
-            yprev, fprev, err)
-            class(rosenbrock_integrator), intent(inout) :: this
-            class(ode_container), intent(inout) :: sys
-            real(real64), intent(in) :: x, xmax
-            real(real64), intent(in), dimension(:) :: y
-            real(real64), intent(out), dimension(:) :: yn
-            real(real64), intent(in), optional, dimension(:) :: xprev
-            real(real64), intent(in), optional, dimension(:,:) :: yprev
-            real(real64), intent(inout), optional, dimension(:,:) :: fprev
-            class(errors), intent(inout), optional, target :: err
-        end subroutine
-
-        module subroutine rbk_attempt_step(this, sys, h, x, y, yn, en, xprev, &
-            yprev, fprev, err)
-            class(rosenbrock_integrator), intent(inout) :: this
-            class(ode_container), intent(inout) :: sys
-            real(real64), intent(in) :: h, x
-            real(real64), intent(in), dimension(:) :: y
-            real(real64), intent(out), dimension(:) :: yn, en
-            real(real64), intent(in), optional, dimension(:) :: xprev
-            real(real64), intent(in), optional, dimension(:,:) :: yprev
-            real(real64), intent(inout), optional, dimension(:,:) :: fprev
-            class(errors), intent(inout), optional, target :: err
-        end subroutine
-
-        module subroutine rbk_on_successful_step(this, x, xn, y, yn)
-            class(rosenbrock_integrator), intent(inout) :: this
-            real(real64), intent(in) :: x, xn
-            real(real64), intent(in), dimension(:) :: y, yn
-        end subroutine
-
-        module subroutine rbk_set_up_interp(this, x, xn, y, yn, k)
-            class(rosenbrock_integrator), intent(inout) :: this
-            real(real64), intent(in) :: x, xn
-            real(real64), intent(in), dimension(:) :: y, yn
-            real(real64), intent(in), dimension(:,:) :: k
-        end subroutine
-
-        module subroutine rbk_interp(this, xprev, xnew, x, y, err)
-            class(rosenbrock_integrator), intent(in) :: this
-            real(real64), intent(in) :: xprev, xnew, x
-            real(real64), intent(out), dimension(:) :: y
-            class(errors), intent(inout), optional, target :: err
-        end subroutine
-
-        pure module function rbk_get_order(this) result(rst)
-            class(rosenbrock_integrator), intent(in) :: this
-            integer(int32) :: rst
-        end function
-
-        module function rbk_next_step(this, hn, en, enm1) result(rst)
-            class(rosenbrock_integrator), intent(inout) :: this
-            real(real64), intent(in) :: hn, en, enm1
-            real(real64) :: rst
-        end function
-    end interface
-
+    
 ! ------------------------------------------------------------------------------
-    !> @brief Defines a variable-stepsize, multi-step integrator.
-    type, abstract, extends(variable_step_integrator) :: &
-        variable_multistep_integrator
-    contains
-    end type
 
 ! ------------------------------------------------------------------------------
 end module

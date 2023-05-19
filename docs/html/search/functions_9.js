@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['set_5falpha_0',['set_alpha',['../structdiffeq_1_1variable__step__integrator.html#ad6abd440b9ac18e9ae3477d68c4a0c19',1,'diffeq::variable_step_integrator']]],
-  ['set_5fbeta_1',['set_beta',['../structdiffeq_1_1variable__step__integrator.html#a4444ec97259bb3e2da452398f4437874',1,'diffeq::variable_step_integrator']]],
+  ['set_5falpha_0',['set_alpha',['../structdiffeq_1_1rk__variable__integrator.html#a2516696b635da249540f089733ecdc2c',1,'diffeq::rk_variable_integrator']]],
+  ['set_5fbeta_1',['set_beta',['../structdiffeq_1_1rk__variable__integrator.html#a27ef6334d44b4e44c25e700e4f81ad3c',1,'diffeq::rk_variable_integrator']]],
   ['set_5ffinite_5fdifference_5fstep_2',['set_finite_difference_step',['../structdiffeq_1_1ode__container.html#a81d257785b4f49901b9576b4e353441a',1,'diffeq::ode_container']]],
   ['set_5fis_5fmass_5fmatrix_5fdependent_3',['set_is_mass_matrix_dependent',['../structdiffeq_1_1ode__container.html#ab1a81b48af6169ebe21c5b4cc7b17a7c',1,'diffeq::ode_container']]],
   ['set_5fmax_5fintegration_5fstep_5fcount_4',['set_max_integration_step_count',['../structdiffeq_1_1variable__step__integrator.html#a6332eca278938293cf55f01097dcb327',1,'diffeq::variable_step_integrator']]],
