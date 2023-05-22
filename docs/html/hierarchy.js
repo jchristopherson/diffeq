@@ -1,6 +1,7 @@
 var hierarchy =
 [
     [ "diffeq_harmonics::frequency_response", "interfacediffeq__harmonics_1_1frequency__response.html", null ],
+    [ "diffeq::next_step_size_calculator", "interfacediffeq_1_1next__step__size__calculator.html", null ],
     [ "diffeq::ode", "interfacediffeq_1_1ode.html", null ],
     [ "diffeq::ode_container", "structdiffeq_1_1ode__container.html", [
       [ "diffeq_harmonics::forced_ode_container", "structdiffeq__harmonics_1_1forced__ode__container.html", null ],
@@ -19,7 +20,6 @@ var hierarchy =
         ] ]
       ] ],
       [ "diffeq::variable_step_integrator", "structdiffeq_1_1variable__step__integrator.html", [
-        [ "diffeq::variable_multistep_integrator", "structdiffeq_1_1variable__multistep__integrator.html", null ],
         [ "diffeq::variable_singlestep_integrator", "structdiffeq_1_1variable__singlestep__integrator.html", [
           [ "diffeq::rk_variable_integrator", "structdiffeq_1_1rk__variable__integrator.html", [
             [ "diffeq::bsrk32_integrator", "structdiffeq_1_1bsrk32__integrator.html", null ],

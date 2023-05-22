@@ -1,9 +1,18 @@
 var searchData=
 [
-  ['variable_5fmultistep_5fintegrator_0',['variable_multistep_integrator',['../structdiffeq_1_1variable__multistep__integrator.html',1,'diffeq']]],
-  ['variable_5fsinglestep_5fintegrator_1',['variable_singlestep_integrator',['../structdiffeq_1_1variable__singlestep__integrator.html',1,'diffeq']]],
-  ['variable_5fstep_5faction_2',['variable_step_action',['../interfacediffeq_1_1variable__step__action.html',1,'diffeq']]],
-  ['variable_5fstep_5fattempt_3',['variable_step_attempt',['../interfacediffeq_1_1variable__step__attempt.html',1,'diffeq']]],
-  ['variable_5fstep_5fintegrator_4',['variable_step_integrator',['../structdiffeq_1_1variable__step__integrator.html',1,'diffeq']]],
-  ['variable_5fstep_5finterpolation_5',['variable_step_interpolation',['../interfacediffeq_1_1variable__step__interpolation.html',1,'diffeq']]]
+  ['set_5falpha_0',['set_alpha',['../structdiffeq_1_1rk__variable__integrator.html#a2516696b635da249540f089733ecdc2c',1,'diffeq::rk_variable_integrator']]],
+  ['set_5fbeta_1',['set_beta',['../structdiffeq_1_1rk__variable__integrator.html#a27ef6334d44b4e44c25e700e4f81ad3c',1,'diffeq::rk_variable_integrator']]],
+  ['set_5ffinite_5fdifference_5fstep_2',['set_finite_difference_step',['../structdiffeq_1_1ode__container.html#a81d257785b4f49901b9576b4e353441a',1,'diffeq::ode_container']]],
+  ['set_5fis_5fmass_5fmatrix_5fdependent_3',['set_is_mass_matrix_dependent',['../structdiffeq_1_1ode__container.html#ab1a81b48af6169ebe21c5b4cc7b17a7c',1,'diffeq::ode_container']]],
+  ['set_5fmax_5fintegration_5fstep_5fcount_4',['set_max_integration_step_count',['../structdiffeq_1_1variable__step__integrator.html#a6332eca278938293cf55f01097dcb327',1,'diffeq::variable_step_integrator']]],
+  ['set_5fmax_5fper_5fstep_5fiteration_5fcount_5',['set_max_per_step_iteration_count',['../structdiffeq_1_1variable__step__integrator.html#ad42337a4bf64d9b2707bf6839742a6c4',1,'diffeq::variable_step_integrator']]],
+  ['set_5fmax_5fstep_5fsize_6',['set_max_step_size',['../structdiffeq_1_1variable__step__integrator.html#a656af118e12748fb6028b5614511f7cc',1,'diffeq::variable_step_integrator']]],
+  ['set_5fmin_5fstep_5fsize_7',['set_min_step_size',['../structdiffeq_1_1variable__step__integrator.html#af1e8a4c2badf956df93614eca0b361d1',1,'diffeq::variable_step_integrator']]],
+  ['set_5fnext_5fstep_5fsize_8',['set_next_step_size',['../structdiffeq_1_1variable__step__integrator.html#ae3532f64d5dcd31b5baa654a97cb9efb',1,'diffeq::variable_step_integrator']]],
+  ['set_5frespect_5fx_5fmax_9',['set_respect_x_max',['../structdiffeq_1_1variable__step__integrator.html#a0dd7b599f926ea6bd3cf825667afe46b',1,'diffeq::variable_step_integrator']]],
+  ['set_5fsafety_5ffactor_10',['set_safety_factor',['../structdiffeq_1_1variable__step__integrator.html#aac6be17795cdfaebefd369711cb14f03',1,'diffeq::variable_step_integrator']]],
+  ['set_5fstep_5fsize_11',['set_step_size',['../structdiffeq_1_1variable__step__integrator.html#aeb245e257685480e10794e03b9814fde',1,'diffeq::variable_step_integrator']]],
+  ['set_5fup_5finterpolation_12',['set_up_interpolation',['../structdiffeq_1_1rk__variable__integrator.html#ade599bb39be978aa479c36865f64f1b0',1,'diffeq::rk_variable_integrator::set_up_interpolation()'],['../structdiffeq_1_1dprk45__integrator.html#aa84d1928f0d25a0e77c515d8b5e7691b',1,'diffeq::dprk45_integrator::set_up_interpolation()'],['../structdiffeq_1_1bsrk32__integrator.html#aa009976e99e5a3c709267697f63772a9',1,'diffeq::bsrk32_integrator::set_up_interpolation()']]],
+  ['solve_13',['solve',['../structdiffeq_1_1ode__integrator.html#a2ea5d323ed37c65e199d82dec572f869',1,'diffeq::ode_integrator::solve()'],['../structdiffeq_1_1fixed__step__integrator.html#ad8a9489a1efae5feaa884aacd37c93c6',1,'diffeq::fixed_step_integrator::solve()'],['../structdiffeq_1_1fixed__multistep__integrator.html#a1f98025f7ea17984fcda8d74a4b7196a',1,'diffeq::fixed_multistep_integrator::solve()'],['../structdiffeq_1_1variable__singlestep__integrator.html#ab89b6b0109721a5db7115187bc32c3df',1,'diffeq::variable_singlestep_integrator::solve()']]],
+  ['step_14',['step',['../structdiffeq_1_1fixed__step__integrator.html#a0b22f801d7d73927445fa135bb896228',1,'diffeq::fixed_step_integrator::step()'],['../structdiffeq_1_1rk__fixed__integrator.html#aeebd4c459d1126602ccbde0296a21ce7',1,'diffeq::rk_fixed_integrator::step()'],['../structdiffeq_1_1adams__fixed__integerator.html#a50fdd627fc3851c01cc1386bd5c2bddb',1,'diffeq::adams_fixed_integerator::step()'],['../structdiffeq_1_1variable__step__integrator.html#ab725888e02d9b2c65448a1bbf2b651e2',1,'diffeq::variable_step_integrator::step()']]]
 ];

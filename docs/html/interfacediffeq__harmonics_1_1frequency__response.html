@@ -144,8 +144,6 @@ $(document).ready(function(){initNavTree('interfacediffeq__harmonics_1_1frequenc
 <div class="line">    <span class="keywordtype">implicit none</span></div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">! Parameters</span></div>
-<div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">parameter</span> :: fmin = 1.0d0</div>
-<div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">parameter</span> :: fmax = 1.0d2</div>
 <div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">parameter</span> :: fs = 2.56d2</div>
 <div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">parameter</span> :: pi = 2.0d0 * acos(0.0d0)</div>
 <div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">parameter</span> :: z = 1.0d-1</div>
@@ -223,7 +221,7 @@ $(document).ready(function(){initNavTree('interfacediffeq__harmonics_1_1frequenc
 <div class="line">    <span class="keyword">call </span>plt%set(2, 1, plt2)</div>
 <div class="line">    <span class="keyword">call </span>plt%draw()</div>
 <div class="line"><span class="keyword">end program</span></div>
-<div class="ttc" id="ainterfacediffeq__harmonics_1_1frequency__response_html"><div class="ttname"><a href="interfacediffeq__harmonics_1_1frequency__response.html">diffeq_harmonics::frequency_response</a></div><div class="ttdoc">Computes the frequency response of each equation in a system of forced differential equations.</div><div class="ttdef"><b>Definition:</b> <a href="diffeq__harmonics_8f90_source.html#l00394">diffeq_harmonics.f90:394</a></div></div>
+<div class="ttc" id="ainterfacediffeq__harmonics_1_1frequency__response_html"><div class="ttname"><a href="interfacediffeq__harmonics_1_1frequency__response.html">diffeq_harmonics::frequency_response</a></div><div class="ttdoc">Computes the frequency response of each equation in a system of forced differential equations.</div><div class="ttdef"><b>Definition:</b> <a href="diffeq__harmonics_8f90_source.html#l00473">diffeq_harmonics.f90:473</a></div></div>
 <div class="ttc" id="anamespacediffeq__harmonics_html"><div class="ttname"><a href="namespacediffeq__harmonics.html">diffeq_harmonics</a></div><div class="ttdoc">This module contains routines for assisting in the harmonic analysis of systems of ODE's.</div><div class="ttdef"><b>Definition:</b> <a href="diffeq__harmonics_8f90_source.html#l00003">diffeq_harmonics.f90:3</a></div></div>
 </div><!-- fragment --> The ODE routine and forcing function routine were stored in a seperate module; however, here is the code for these routines. <div class="fragment"><div class="line"><span class="keywordtype">pure</span> <span class="keyword">function </span>example_2nd_order_forcing(t) <span class="keyword">result</span>(rst)</div>
 <div class="line">    <span class="keywordtype">use </span><a class="code hl_namespace" href="namespacediffeq__harmonics.html">diffeq_harmonics</a>, <span class="keywordtype">only</span> : chirp</div>
@@ -273,12 +271,12 @@ $(document).ready(function(){initNavTree('interfacediffeq__harmonics_1_1frequenc
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">sys</td><td>The <a class="el" href="structdiffeq__harmonics_1_1harmonic__ode__container.html">harmonic_ode_container</a> object containing the ODEs to integrate. To utilize this routine effectively you will need to inherit from the <a class="el" href="structdiffeq__harmonics_1_1harmonic__ode__container.html">harmonic_ode_container</a> type and overload the ode subroutine. Utilize the excitation_frequency property of this type in order to obtain the current frequency being analyzed by the solver. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">freq</td><td>An M-element array containing the frequency points at which the solution should be computed. Notice, whatever units are utilized for this array are also the units of the excitation_frequency property in <code>sys</code>. It is recommended that the units be set to Hz. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">freq</td><td>An M-element array containing the frequency points at which the solution should be computed. Notice, whatever units are utilized for this array are also the units of the excitation_frequency property in <code>sys</code>. It is recommended that the units be set to Hz. Additionally, this array cannot contain any zero-valued elements as the ODE solution time for each frequency is determined by the period of oscillation and number of cycles. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">iv</td><td>An N-element array containing the initial conditions for each of the N ODEs. </td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">solver</td><td>An optional differential equation solver. The default solver is the Dormand-Prince Runge-Kutta integrator dprk45_integrator. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">An</td><td>optional parameter controlling the number of cycles to analyze when determining the amplitude and phase of the response. The default is 5. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ntransient</td><td>An optional parameter controlling how many of the initial "transient" cycles to ignore. The default is 30. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pointspercycle</td><td>An optional parameter controlling how many evenly spaced solution points should be considered per cycle. The default is 30. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">An</td><td>optional parameter controlling the number of cycles to analyze when determining the amplitude and phase of the response. The default is 20. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ntransient</td><td>An optional parameter controlling how many of the initial "transient" cycles to ignore. The default is 200. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pointspercycle</td><td>An optional parameter controlling how many evenly spaced solution points should be considered per cycle. The default is 1000. Notice, there must be at least 2 points per cycle for the analysis to be effective. The algorithm utilizes a discrete Fourier transform to determine the phase and amplitude, and in order to satisfy Nyquist conditions, the value must be at least 2. </td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">err</td><td>An optional errors-based object that if provided can be used to retrieve information relating to any errors encountered during execution. If not provided, a default implementation of the errors class is used internally to provide error handling. Possible errors and warning messages that may be encountered are as follows.<ul>
 <li>DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory allocation issue.</li>
 </ul>
@@ -290,11 +288,12 @@ $(document).ready(function(){initNavTree('interfacediffeq__harmonics_1_1frequenc
 <dl class="section user"><dt>Example</dt><dd>The following example illustrates how to utilize this routine to determine the frequency response function for the Duffing equation. This example sweeps both ascending and descending frequencies to reveal the jump condition for the Duffing equation. Also, notice the overloading of the ode routine from the <a class="el" href="structdiffeq__harmonics_1_1harmonic__ode__container.html">harmonic_ode_container</a> type in order to define the ODE. <div class="fragment"><div class="line"><span class="keyword">module</span> ode_module</div>
 <div class="line">    <span class="keywordtype">use </span>iso_fortran_env</div>
 <div class="line">    <span class="keywordtype">use </span><a class="code hl_namespace" href="namespacediffeq__harmonics.html">diffeq_harmonics</a></div>
+<div class="line">    <span class="keywordtype">use </span>ieee_arithmetic</div>
 <div class="line">    <span class="keywordtype">implicit none</span></div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">! Model Constants</span></div>
 <div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">parameter</span> :: alpha = 1.0d0</div>
-<div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">parameter</span> :: beta = 0.4d0</div>
+<div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">parameter</span> :: beta = 0.04d0</div>
 <div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">parameter</span> :: delta = 0.1d0</div>
 <div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">parameter</span> :: gamma = 1.0d0</div>
 <div class="line"> </div>
@@ -320,6 +319,58 @@ $(document).ready(function(){initNavTree('interfacediffeq__harmonics_1_1frequenc
 <div class="line">        dydx(2) = gamma * cos(this%excitation_frequency * x) - &amp;</div>
 <div class="line">            delta * y(2) - alpha * y(1) - beta * y(1)**3</div>
 <div class="line">    <span class="keyword">end subroutine</span></div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">! Analytical Solution - Leg 1</span></div>
+<div class="line">    <span class="keywordtype">pure</span> <span class="keywordtype">elemental</span> <span class="keyword">function </span>leg1(z) <span class="keyword">result</span>(rst)</div>
+<div class="line">        <span class="comment">! Arguments</span></div>
+<div class="line"><span class="keywordtype">        real</span>(real64), <span class="keywordtype">intent(in)</span> :: z</div>
+<div class="line"><span class="keywordtype">        real</span>(real64) :: rst</div>
+<div class="line"> </div>
+<div class="line">        <span class="comment">! Local Variables</span></div>
+<div class="line"><span class="keywordtype">        real</span>(real64) :: arg, s, nan</div>
+<div class="line"> </div>
+<div class="line">        <span class="comment">! Process</span></div>
+<div class="line">        nan = ieee_value(nan, ieee_quiet_nan)</div>
+<div class="line">        arg = 4.0d0 * gamma**2 - 3.0d0 * beta * delta**2 * z**4 + &amp;</div>
+<div class="line">            (delta**2 - 4.0d0 * alpha) * delta**2 * z**2</div>
+<div class="line">        <span class="keywordflow">if</span> (arg &lt; 0.0d0) <span class="keywordflow">then</span></div>
+<div class="line">            s = -1.0d0</div>
+<div class="line">        <span class="keywordflow">else</span></div>
+<div class="line">            s = (2.0d0 * sqrt(arg) + z * (3.0d0 * beta * z**2 - &amp;</div>
+<div class="line">                2.0d0 * delta**2 + 4.0d0 * alpha)) / (4.0d0 * z)</div>
+<div class="line"><span class="keywordflow">        end if</span></div>
+<div class="line">        <span class="keywordflow">if</span> (s &lt; 0.0d0) <span class="keywordflow">then</span></div>
+<div class="line">            rst = nan</div>
+<div class="line">        <span class="keywordflow">else</span></div>
+<div class="line">            rst = sqrt(s)</div>
+<div class="line"><span class="keywordflow">        end if</span></div>
+<div class="line">    <span class="keyword">end function</span></div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">! Analytical Solution - Leg 2</span></div>
+<div class="line">    <span class="keywordtype">pure</span> <span class="keywordtype">elemental</span> <span class="keyword">function </span>leg2(z) <span class="keyword">result</span>(rst)</div>
+<div class="line">        <span class="comment">! Arguments</span></div>
+<div class="line"><span class="keywordtype">        real</span>(real64), <span class="keywordtype">intent(in)</span> :: z</div>
+<div class="line"><span class="keywordtype">        real</span>(real64) :: rst</div>
+<div class="line"> </div>
+<div class="line">        <span class="comment">! Local Variables</span></div>
+<div class="line"><span class="keywordtype">        real</span>(real64) :: arg, s, nan</div>
+<div class="line"> </div>
+<div class="line">        <span class="comment">! Process</span></div>
+<div class="line">        nan = ieee_value(nan, ieee_quiet_nan)</div>
+<div class="line">        arg = 4.0d0 * gamma**2 - 3.0d0 * beta * delta**2 * z**4 + &amp;</div>
+<div class="line">            (delta**2 - 4.0d0 * alpha) * delta**2 * z**2</div>
+<div class="line">        <span class="keywordflow">if</span> (arg &lt; 0.0d0) <span class="keywordflow">then</span></div>
+<div class="line">            s = -1.0d0</div>
+<div class="line">        <span class="keywordflow">else</span></div>
+<div class="line">            s = (-2.0d0 * sqrt(arg) + z * (3.0d0 * beta * z**2 - &amp;</div>
+<div class="line">                2.0d0 * delta**2 + 4.0d0 * alpha)) / (4.0d0 * z)</div>
+<div class="line"><span class="keywordflow">        end if</span></div>
+<div class="line">        <span class="keywordflow">if</span> (s &lt; 0.0d0) <span class="keywordflow">then</span></div>
+<div class="line">            rst = nan</div>
+<div class="line">        <span class="keywordflow">else</span></div>
+<div class="line">            rst = sqrt(s)</div>
+<div class="line"><span class="keywordflow">        end if</span></div>
+<div class="line">    <span class="keyword">end function</span></div>
 <div class="line"><span class="keyword">end module</span></div>
 <div class="line"> </div>
 <div class="line"><span class="keyword">program</span> example</div>
@@ -331,21 +382,21 @@ $(document).ready(function(){initNavTree('interfacediffeq__harmonics_1_1frequenc
 <div class="line"> </div>
 <div class="line">    <span class="comment">! Parameters</span></div>
 <div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">parameter</span> :: f1 = 0.5d0</div>
-<div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">parameter</span> :: f2 = 2.5d0</div>
-<div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">parameter</span> :: df = 0.01d0</div>
+<div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">parameter</span> :: f2 = 2.0d0</div>
+<div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">parameter</span> :: df = 0.05d0</div>
 <div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">parameter</span> :: pi = 2.0d0 * acos(0.0d0)</div>
 <div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">parameter</span> :: deg = 1.8d2 / pi</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">! Local Variables</span></div>
 <div class="line">    <span class="keywordtype">type</span>(duffing_ode) :: sys</div>
 <div class="line">    <span class="keywordtype">integer(int32)</span> :: i, n</div>
-<div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">allocatable</span>, <span class="keywordtype">dimension(:)</span> :: fup, fdown</div>
+<div class="line"><span class="keywordtype">    real</span>(real64), <span class="keywordtype">allocatable</span>, <span class="keywordtype">dimension(:)</span> :: fup, fdown, w1, w2, z</div>
 <div class="line">    <span class="keywordtype">complex(real64)</span>, <span class="keywordtype">allocatable</span>, <span class="keywordtype">dimension(:,:)</span> :: rup, rdown</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">! Plot Variables</span></div>
 <div class="line">    <span class="keywordtype">type</span>(multiplot) :: plt</div>
 <div class="line">    <span class="keywordtype">type</span>(plot_2d) :: plt1, plt2</div>
-<div class="line">    <span class="keywordtype">type</span>(plot_data_2d) :: pd1, pd2</div>
+<div class="line">    <span class="keywordtype">type</span>(plot_data_2d) :: pd1, pd2, pd3</div>
 <div class="line">    <span class="keywordtype">class</span>(plot_axis), <span class="keywordtype">pointer</span> :: xAxis, yAxis</div>
 <div class="line">    <span class="keywordtype">class</span>(legend), <span class="keywordtype">pointer</span> :: lgnd</div>
 <div class="line"> </div>
@@ -361,6 +412,11 @@ $(document).ready(function(){initNavTree('interfacediffeq__harmonics_1_1frequenc
 <div class="line">    <span class="comment">! Perform the descending sweep</span></div>
 <div class="line">    rdown = <a class="code hl_interface" href="interfacediffeq__harmonics_1_1frequency__response.html">frequency_response</a>(sys, fdown, [0.0d0, 0.0d0])</div>
 <div class="line"> </div>
+<div class="line">    <span class="comment">! Compute the analytical solution</span></div>
+<div class="line">    z = linspace(0.5d0, 1.0d1, 1000)</div>
+<div class="line">    w1 = leg1(z)</div>
+<div class="line">    w2 = leg2(z)</div>
+<div class="line"> </div>
 <div class="line">    <span class="comment">! Plot the results</span></div>
 <div class="line">    <span class="keyword">call </span>plt%initialize(2, 1)</div>
 <div class="line">    <span class="keyword">call </span>plt1%initialize()</div>
@@ -375,19 +431,36 @@ $(document).ready(function(){initNavTree('interfacediffeq__harmonics_1_1frequenc
 <div class="line">    <span class="keyword">call </span>pd1%define_data(fup, abs(rup(:,1)))</div>
 <div class="line">    <span class="keyword">call </span>pd1%set_name(<span class="stringliteral">&quot;Ascending&quot;</span>)</div>
 <div class="line">    <span class="keyword">call </span>pd1%set_line_width(2.0)</div>
+<div class="line">    <span class="keyword">call </span>pd1%set_draw_line(.false.)</div>
+<div class="line">    <span class="keyword">call </span>pd1%set_draw_markers(.true.)</div>
+<div class="line">    <span class="keyword">call </span>pd1%set_marker_style(marker_empty_circle)</div>
 <div class="line">    <span class="keyword">call </span>plt1%push(pd1)</div>
 <div class="line"> </div>
 <div class="line">    <span class="keyword">call </span>pd2%define_data(fdown, abs(rdown(:,1)))</div>
 <div class="line">    <span class="keyword">call </span>pd2%set_name(<span class="stringliteral">&quot;Descending&quot;</span>)</div>
 <div class="line">    <span class="keyword">call </span>pd2%set_line_width(2.0)</div>
-<div class="line">    <span class="keyword">call </span>pd2%set_line_style(line_dashed)</div>
+<div class="line">    <span class="keyword">call </span>pd2%set_draw_line(.false.)</div>
+<div class="line">    <span class="keyword">call </span>pd2%set_draw_markers(.true.)</div>
+<div class="line">    <span class="keyword">call </span>pd2%set_marker_style(marker_empty_triangle)</div>
 <div class="line">    <span class="keyword">call </span>plt1%push(pd2)</div>
+<div class="line"> </div>
+<div class="line">    <span class="keyword">call </span>pd3%define_data(w1, z)</div>
+<div class="line">    <span class="keyword">call </span>pd3%set_name(<span class="stringliteral">&quot;Analytical&quot;</span>)</div>
+<div class="line">    <span class="keyword">call </span>pd3%set_line_width(2.0)</div>
+<div class="line">    <span class="keyword">call </span>pd3%set_line_color(clr_black)</div>
+<div class="line">    <span class="keyword">call </span>plt1%push(pd3)</div>
+<div class="line"> </div>
+<div class="line">    <span class="keyword">call </span>pd3%define_data(w2, z)</div>
+<div class="line">    <span class="keyword">call </span>pd3%set_name(<span class="stringliteral">&quot;&quot;</span>)</div>
+<div class="line">    <span class="keyword">call </span>plt1%push(pd3)</div>
 <div class="line"> </div>
 <div class="line">    <span class="keyword">call </span>plt2%initialize()</div>
 <div class="line">    xaxis =&gt; plt2%get_x_axis()</div>
 <div class="line">    yaxis =&gt; plt2%get_y_axis()</div>
 <div class="line">    <span class="keyword">call </span>xaxis%set_title(<span class="stringliteral">&quot;w&quot;</span>)</div>
 <div class="line">    <span class="keyword">call </span>yaxis%set_title(<span class="stringliteral">&quot;{/Symbol f} [deg]&quot;</span>)</div>
+<div class="line">    <span class="keyword">call </span>xaxis%set_autoscale(.false.)</div>
+<div class="line">    <span class="keyword">call </span>xaxis%set_limits(0.0d0, 2.0d0)</div>
 <div class="line"> </div>
 <div class="line">    <span class="keyword">call </span>pd1%define_data(fup, deg * atan2(aimag(rup(:,1)), real(rup(:,1))))</div>
 <div class="line">    <span class="keyword">call </span>plt2%push(pd1)</div>
@@ -405,7 +478,7 @@ $(document).ready(function(){initNavTree('interfacediffeq__harmonics_1_1frequenc
 </div>
  </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="diffeq__harmonics_8f90_source.html#l00394">394</a> of file <a class="el" href="diffeq__harmonics_8f90_source.html">diffeq_harmonics.f90</a>.</p>
+<p class="definition">Definition at line <a class="el" href="diffeq__harmonics_8f90_source.html#l00473">473</a> of file <a class="el" href="diffeq__harmonics_8f90_source.html">diffeq_harmonics.f90</a>.</p>
 </div><hr/>The documentation for this interface was generated from the following file:<ul>
 <li>D:/Code/diffeq/src/<a class="el" href="diffeq__harmonics_8f90_source.html">diffeq_harmonics.f90</a></li>
 </ul>

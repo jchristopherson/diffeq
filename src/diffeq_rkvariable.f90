@@ -155,5 +155,59 @@ module subroutine rkv_on_successful_step(this, x, xn, y, yn)
     end if
 end subroutine
 
+
+! ------------------------------------------------------------------------------
+pure module function rkv_get_alpha(this) result(rst)
+    class(rk_variable_integrator), intent(in) :: this
+    real(real64) :: rst
+    rst = this%m_alpha
+end function
+
+! --------------------
+module subroutine rkv_set_alpha(this, x)
+    class(rk_variable_integrator), intent(inout) :: this
+    real(real64) :: x
+    this%m_alpha = x
+end subroutine
+
+! ------------------------------------------------------------------------------
+pure module function rkv_get_beta(this) result(rst)
+    class(rk_variable_integrator), intent(in) :: this
+    real(real64) :: rst
+    rst = this%m_beta
+end function
+
+! --------------------
+module subroutine rkv_set_beta(this, x)
+    class(rk_variable_integrator), intent(inout) :: this
+    real(real64), intent(in) :: x
+    this%m_beta = x
+end subroutine
+
+! ------------------------------------------------------------------------------
+module function rkv_next_step(this, hn, en, enm1) result(rst)
+    ! Arguments
+    class(rk_variable_integrator), intent(inout) :: this
+    real(real64), intent(in) :: hn, en, enm1
+    real(real64) :: rst
+
+    ! Local Variables
+    integer(int32) :: k
+    real(real64) :: s, hest, a, b, maxstep
+
+    ! Process
+    k = this%get_order()
+    s = this%get_safety_factor()
+    hest = s * hn * (1.0d0 / en)**(1.0d0 / k)
+    
+    a = this%get_alpha() / k
+    b = this%get_beta() / k
+    rst = hest * (en**a) * (enm1**b)
+
+    maxstep = abs(this%get_max_step_size())
+    if (abs(rst) > maxstep) rst = sign(maxstep, rst)
+    if (rst / hn > 2.0d0) rst = 2.0d0 * hn
+end function
+
 ! ------------------------------------------------------------------------------
 end submodule
