@@ -127,7 +127,7 @@ module function frf_sweep(sys, freq, iv, solver, ncycles, ntransient, &
     ! Local Variables
     integer(int32) :: i, j, nfreq, neqn, nc, nt, ntotal, npts, ppc, flag, &
         nfft, i1, ncpts
-    real(real64) :: dt
+    real(real64) :: dt, tare, phase, amp
     real(real64), allocatable, dimension(:) :: ic, t
     real(real64), allocatable, dimension(:,:) :: sol
     complex(real64), allocatable, dimension(:) :: xpts
@@ -207,6 +207,17 @@ module function frf_sweep(sys, freq, iv, solver, ncycles, ntransient, &
         ! Determine the magnitude and phase for each equation
         do j = 1, neqn
             rst(i,j) = get_magnitude_phase(sol(i1:,j+1), xpts)
+        end do
+    end do
+
+    ! Offset phase to be zero at the lowest frequency for each DOF
+    i1 = minloc(freq, 1)
+    do j = 1, neqn
+        tare = atan2(aimag(rst(i1,j)), real(rst(i1,j)))
+        do i = 1, nfreq
+            phase = atan2(aimag(rst(i,j)), real(rst(i,j))) - tare
+            amp = abs(rst(i,j))
+            rst(i,j) = cmplx(amp * cos(phase), amp * sin(phase))
         end do
     end do
 
