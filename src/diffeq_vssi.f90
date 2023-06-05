@@ -23,6 +23,10 @@ module function vssi_solve(this, sys, x, iv, err) result(rst)
     end if
     nx = size(x)
 
+    ! Initialize the integrator
+    call this%initialize(size(iv), errmgr)
+    if (errmgr%has_error_occurred()) return
+
     ! Input Checking
     if (nx < 2) go to 10
     if (abs(maxval(x) - minval(x)) < epsilon(1.0d0)) go to 30

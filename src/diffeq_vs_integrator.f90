@@ -207,12 +207,21 @@ module subroutine vsi_alloc_workspace(this, neqn, err)
     ! Arguments
     class(variable_step_integrator), intent(inout) :: this
     integer(int32), intent(in) :: neqn
-    class(errors), intent(inout) :: err
+    class(errors), intent(inout), optional, target :: err
 
     ! Local Variables
     integer(int32) :: flag
     real(real64) :: default_rtol, default_atol
     character(len = :), allocatable :: errmsg
+    class(errors), pointer :: errmgr
+    type(errors), target :: deferr
+    
+    ! Initialization
+    if (present(err)) then
+        errmgr => err
+    else
+        errmgr => deferr
+    end if
 
     ! Process
     default_atol = this%get_default_absolute_tolerance()
@@ -258,7 +267,7 @@ module subroutine vsi_alloc_workspace(this, neqn, err)
 10  continue
     allocate(character(len = 256) :: errmsg)
     write(errmsg, 100) "Memory allocation error flag ", flag, "."
-    call err%report_error("vsi_alloc_workspace", trim(errmsg), &
+    call errmgr%report_error("vsi_alloc_workspace", trim(errmsg), &
         DIFFEQ_MEMORY_ALLOCATION_ERROR)
     return
 
@@ -297,10 +306,6 @@ module subroutine vsi_step(this, sys, x, xmax, y, yn, xprev, yprev, fprev, err)
 
     ! Input Checking
     if (size(yn) /= neqn) go to 10
-
-    ! Allocate the workspaces
-    call this%allocate_vsi_workspace(neqn, errmgr)
-    if (errmgr%has_error_occurred()) return
 
     ! Process
     i = 0

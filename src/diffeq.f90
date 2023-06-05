@@ -22,6 +22,8 @@ module diffeq
     public :: rk_variable_integrator
     public :: dprk45_integrator
     public :: bsrk32_integrator
+    public :: implicit_rk_variable_integrator
+    public :: radau_integrator
     public :: DIFFEQ_MEMORY_ALLOCATION_ERROR
     public :: DIFFEQ_NULL_POINTER_ERROR
     public :: DIFFEQ_MATRIX_SIZE_ERROR
@@ -996,9 +998,28 @@ module diffeq
         real(real64), allocatable, dimension(:) :: m_rtol       ! NEQN element
         real(real64), allocatable, dimension(:) :: m_atol       ! NEQN element
     contains
-        ! Use to allocate internal workspaces.  This routine only takes action
-        ! if the workspace array(s) are not sized properly for the application.
-        procedure, private :: allocate_vsi_workspace => vsi_alloc_workspace
+        !> @brief Initializes the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine initialize( &
+        !!  class(variable_step_integrator) this, &
+        !!  integer(int32) neqn, &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref variable_step_integrator object.
+        !! @param[in] neqn The number of equations being integrated.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.  Possible errors and warning messages that may be 
+        !!  encountered are as follows.
+        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
+        !!      allocation issue.
+        procedure, public :: initialize => vsi_alloc_workspace
         !> @brief Attempts a single integration step.
         !!
         !! @par Syntax
@@ -1618,7 +1639,7 @@ module diffeq
         module subroutine vsi_alloc_workspace(this, neqn, err)
             class(variable_step_integrator), intent(inout) :: this
             integer(int32), intent(in) :: neqn
-            class(errors), intent(inout) :: err
+            class(errors), intent(inout), optional, target :: err
         end subroutine
 
         pure module function vsi_get_respect_xmax(this) result(rst)
@@ -1693,13 +1714,7 @@ module diffeq
         !!  can be used to retrieve information relating to any errors 
         !!  encountered during execution. If not provided, a default 
         !!  implementation of the errors class is used internally to provide 
-        !!  error handling.
-        !!
-        !! @return An M-by-N matrix where M is the number of solution points, 
-        !!  and N is the number of ODEs plus 1.  The first column contains
-        !!  the values of the independent variable at which the results were
-        !!  computed.  The remaining columns contain the integration results
-        !!  for each ODE.  Possible errors and warning messages that may be 
+        !!  error handling.  Possible errors and warning messages that may be 
         !!  encountered are as follows.
         !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
         !!      allocation issue.
@@ -1710,6 +1725,12 @@ module diffeq
         !!      count is exceeded for a single step.
         !!  - DIFFEQ_NULL_POINTER_ERROR: Occurs if no ODE routine is defined.
         !!  - DIFFEQ_INVALID_INPUT_ERROR: Occurs if max(@p x) - min(@p x) = 0.
+        !!
+        !! @return An M-by-N matrix where M is the number of solution points, 
+        !!  and N is the number of ODEs plus 1.  The first column contains
+        !!  the values of the independent variable at which the results were
+        !!  computed.  The remaining columns contain the integration results
+        !!  for each ODE.
         procedure, public :: solve => vssi_solve
         procedure, private :: solve_driver => vssi_solve_driver
         procedure, private :: dense_solve_driver => vssi_dense_solve_driver
@@ -1757,9 +1778,28 @@ module diffeq
         real(real64), private :: m_alpha = 0.7d0
         real(real64), private :: m_beta = 0.4d-1
     contains
-        ! Use to allocate internal workspaces.  This routine only takes action
-        ! if the workspace array(s) are not sized properly for the application.
-        procedure, private :: allocate_rkv_workspace => rkv_alloc_workspace
+        !> @brief Initializes the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine initialize( &
+        !!  class(rk_variable_integrator) this, &
+        !!  integer(int32) neqn, &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref rk_variable_integrator object.
+        !! @param[in] neqn The number of equations being integrated.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.  Possible errors and warning messages that may be 
+        !!  encountered are as follows.
+        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
+        !!      allocation issue.
+        procedure, public :: initialize => rkv_alloc_workspace
         !> @brief Gets the requested method factor from the Butcher tableau.
         !!
         !! @par Syntax
@@ -2095,7 +2135,7 @@ module diffeq
         module subroutine rkv_alloc_workspace(this, neqn, err)
             class(rk_variable_integrator), intent(inout) :: this
             integer(int32), intent(in) :: neqn
-            class(errors), intent(inout) :: err
+            class(errors), intent(inout), optional, target :: err
         end subroutine
 
         module subroutine rkv_reset(this)
@@ -2751,7 +2791,530 @@ module diffeq
     end interface
 
 ! ------------------------------------------------------------------------------
-    
+    !> @brief Defines an implicit Runge-Kutta variable-step integrator.
+    type, abstract, extends(variable_singlestep_integrator) :: &
+    implicit_rk_variable_integrator
+        ! The most recent successful step size
+        real(real64) :: m_hold = 0.0d0
+        ! First step?
+        logical :: m_firstStep = .true.
+    contains
+        !> @brief Gets the most recent successful step size.
+        !!
+        !! @par Synatx
+        !! @code{.f90}
+        !! real(real64) pure function get_previous_step_size( &
+        !!  class(implicit_rk_variable_integrator) this &
+        !! )
+        !! @endcode
+        !! 
+        !! @param[in] this The @ref implicit_rk_variable_integrator object.
+        !! @return The step size.
+        procedure, public :: get_previous_step_size => irk_get_old_step
+        !> @brief Sets the most recent successful step size.
+        !!
+        !! @par Synatx
+        !! @code{.f90}
+        !! subroutine set_previous_step_size( &
+        !!  class(implicit_rk_variable_integrator) this, &
+        !!  real(real64) x &
+        !! )
+        !! @endcode
+        !! 
+        !! @param[in,out] this The @ref implicit_rk_variable_integrator object.
+        !! @param[in] x The step size.
+        procedure, public :: set_previous_step_size => irk_set_old_step
+        !> @brief Computes the next step size.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) function compute_next_step_size( &
+        !!  class(implicit_rk_variable_integrator) this, &
+        !!  real(real64) hn, &
+        !!  real(real64) en, &
+        !!  real(real64) enm1 &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref implicit_rk_variable_integrator object.
+        !! @param[in] hn The current step size.
+        !! @param[in] en The norm of the error for the current step size.
+        !! @param[in] enm1 The norm of the error from the previous step size.
+        !!
+        !! @return The new step size.
+        procedure, public :: compute_next_step_size => &
+            irk_compute_next_step_size
+    end type
+
+    ! diffeq_implicit_rk.f90
+    interface
+        pure module function irk_get_old_step(this) result(rst)
+            class(implicit_rk_variable_integrator), intent(in) :: this
+            real(real64) :: rst
+        end function
+
+        module subroutine irk_set_old_step(this, x)
+            class(implicit_rk_variable_integrator), intent(inout) :: this
+            real(real64), intent(in) :: x
+        end subroutine
+
+        module function irk_compute_next_step_size(this, hn, en, enm1) &
+            result(rst)
+            class(implicit_rk_variable_integrator), intent(inout) :: this
+            real(real64), intent(in) :: hn, en, enm1
+            real(real64) :: rst
+        end function
+    end interface
+
+! ------------------------------------------------------------------------------
+    !> @brief Defines a 5th order, Radau IIA integrator for solving problems of
+    !! the form \f$ M y' = f(x, y) \f$.  This routine follows the implementation
+    !! put forward in RADAU5 code, and is suitable for integration of stiff
+    !! systems.
+    type, extends(implicit_rk_variable_integrator) :: radau_integrator
+        ! An NEQN-by-NEQN storage matrix for the Jacobian
+        real(real64), private, allocatable, dimension(:,:) :: m_jac
+        ! An NEQN-by-NEQN storage matrix for the mass matrix
+        real(real64), private, allocatable, dimension(:,:) :: m_mass
+        ! An NEQN-by-NEQN storage matrix for the E1 matrix
+        real(real64), private, allocatable, dimension(:,:) :: m_e1
+        ! An NEQN-by-NEQN storage matrix for the E2 matrix
+        complex(real64), private, allocatable, dimension(:,:) :: m_e2
+        ! NEQN element pivot tracking arrays for LU factorization of E1 & E2
+        integer(int32), private, allocatable, dimension(:) :: m_ie1
+        integer(int32), private, allocatable, dimension(:) :: m_ie2
+        ! 4*NEQN element array containing the current derivative estimate in the
+        ! first NEQN elements, the remaining elements store coefficients needed
+        ! for dense output
+        real(real64), private, allocatable, dimension(:) :: m_cont
+        ! NEQN element array for storing the current derivative estimates
+        real(real64), private, allocatable, dimension(:) :: m_dydx
+        ! Uses a mass matrix
+        logical, private :: m_usemass = .false.
+        ! Use default Newton iteration starting values (true) or use the 
+        ! extrapolated collocation solution
+        logical, private :: m_usedefaultstart = .true.
+        ! NEQN-element storage arrays for the Newton iteration
+        real(real64), private, allocatable, dimension(:) :: m_z1
+        real(real64), private, allocatable, dimension(:) :: m_z2
+        real(real64), private, allocatable, dimension(:) :: m_z3
+        real(real64), private, allocatable, dimension(:) :: m_f1
+        real(real64), private, allocatable, dimension(:) :: m_f2
+        real(real64), private, allocatable, dimension(:) :: m_f3
+        complex(real64), private, allocatable, dimension(:) :: m_zc
+        ! The order of index 2 variables
+        integer(int32), private :: m_index2 = 0
+        ! The order of index 3 variables
+        integer(int32), private :: m_index3 = 0
+        ! NEQN scaled error tolerance array
+        real(real64), private, allocatable, dimension(:) :: m_scale
+        ! The maximum number of Newton iterations to allow per step
+        integer(int32), private :: m_maxnewton = 7
+        ! Newton iteration tolerance
+        real(real64), private :: m_newtontol = 1.0d-6
+        ! Update the Jacobian?
+        logical, private :: m_updatejac = .true.
+    contains
+        !> @brief Initializes the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine initialize( &
+        !!  class(radau_integrator) this, &
+        !!  integer(int32) neqn, &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref radau_integrator object.
+        !! @param[in] neqn The number of equations being integrated.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.  Possible errors and warning messages that may be 
+        !!  encountered are as follows.
+        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
+        !!      allocation issue.
+        procedure, public :: initialize => rad_alloc_workspace
+        ! Builds the system matrices
+        procedure, private :: build_e1 => rad_build_e1
+        procedure, private :: build_e2 => rad_build_e2
+        ! Sets up the parameters for Newton iteration
+        procedure, private :: set_up_newton_iteration => rad_set_up_newton
+        ! Estimates the error
+        procedure, private :: estimate_error => rad_estrad
+        ! Determines if the Newton iteration has converged
+        procedure, private :: newton_converged => rad_is_newton_converged
+        ! Solves the Newton iteration problem
+        procedure, private :: newton_iteration => rad_newton_iteration
+
+        ! Solves the linear systems as part of the Newton iteration process
+        procedure, private :: solve_linear_systems => rad_solve_linear_system
+        !> @brief Gets a value determining if the default starting values for
+        !! the Newton iteration process should be utilized (true), or if 
+        !! the extrapolated collcation solution should be utilized (false).
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! logical pure function get_use_default_newton_start( &
+        !!  class(radau_integrator) this &
+        !! )
+        !! @endcode
+        !! 
+        !! @param[in] this The @ref radau_integrator object.
+        !! @return True if the default values should be used; else, false if
+        !!  the extrapolated solution should be used.
+        procedure, public :: get_use_default_newton_start => &
+            rad_get_use_default_newton
+        !> @brief Sets a value determining if the default starting values for
+        !! the Newton iteration process should be utilized (true), or if 
+        !! the extrapolated collcation solution should be utilized (false).
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_use_default_newton_start( &
+        !!  class(radau_integrator) this, &
+        !!  logical x &
+        !! )
+        !! @endcode
+        !! 
+        !! @param[in,out] this The @ref radau_integrator object.
+        !! @param[in] x True if the default values should be used; else, false
+        !!  if the extrapolated solution should be used.
+        procedure, public :: set_use_default_newton_start => &
+            rad_set_use_default_newton
+        !> @brief Gets the dimension of the index 2 variables.
+        !! 
+        !! @par Syntax
+        !! @code{.f90}
+        !! integer(int32) pure function get_index_2_variable_dimension( &
+        !!  class(radau_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref radau_integrator object.
+        !! @return The dimension.
+        procedure, public :: get_index_2_variable_dimension => rad_get_index_2
+        !> @brief Sets the dimension of the index 2 variables.
+        !! 
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_index_2_variable_dimension( &
+        !!  class(radau_integrator) this, &
+        !!  integer(int32) x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref radau_integrator object.
+        !! @param[in] x The dimension.
+        procedure, public :: set_index_2_variable_dimension => rad_set_index_2
+        !> @brief Gets the dimension of the index 3 variables.
+        !! 
+        !! @par Syntax
+        !! @code{.f90}
+        !! integer(int32) pure function get_index_3_variable_dimension( &
+        !!  class(radau_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref radau_integrator object.
+        !! @return The dimension.
+        procedure, public :: get_index_3_variable_dimension => rad_get_index_3
+        !> @brief Sets the dimension of the index 3 variables.
+        !! 
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_index_3_variable_dimension( &
+        !!  class(radau_integrator) this, &
+        !!  integer(int32) x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref radau_integrator object.
+        !! @param[in] x The dimension.
+        procedure, public :: set_index_3_variable_dimension => rad_set_index_3
+        !> @brief Gets the maximum allowed number of Newton iterations per step.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! integer(int32) pure function get_max_newton_iteration( &
+        !!  class(radau_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref radau_integrator object.
+        !! @return The maximum allowed iteration count.
+        procedure, public :: get_max_newton_iteration => rad_get_max_newton_iter
+        !> @brief Sets the maximum allowed number of Newton iterations per step.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_max_newton_iteration( &
+        !!  class(radau_integrator) this, &
+        !!  integer(int32) x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref radau_integrator object.
+        !! @param[in] x The maximum allowed iteration count.
+        procedure, public :: set_max_newton_iteration => rad_set_max_newton_iter
+        !> @brief Gets the tolerance for convergence for the Newton iteration
+        !! process.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_newton_tolerance( &
+        !!  class(radau_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref radau_integrator object.
+        !! @return The tolerance value.
+        procedure, public :: get_newton_tolerance => rad_get_newton_tol
+        !> @brief Sets the tolerance for convergence for the Newton iteration
+        !! process.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_newton_tolerance( &
+        !!  class(radau_integrator) this, &
+        !!  real(real64) x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref radau_integrator object.
+        !! @param[in] x The tolerance value.
+        procedure, public :: set_newton_tolerance => rad_set_newton_tol
+        !> @brief Perform necessary actions on completion of a successful step.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine on_successful_step( &
+        !!  class(radau_integrator) this, &
+        !!  real(real64) x, &
+        !!  real(real64) xn, &
+        !!  real(real64) y(:), &
+        !!  real(real64) yn(:) &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref radau_integrator object.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] xn The value of the independent variable at the next step.
+        !! @param[in] y An N-element array containing the current solution
+        !!  values.
+        !! @param[in] yn An N-element array containing the solution values at
+        !!  the next step.
+        procedure, public :: on_successful_step => rad_on_successful_step
+        !> @brief Sets up the interpolation polynomial.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_up_interpolation( &
+        !!  class(radau_integrator) this, &
+        !!  real(real64) y(:) &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The radau_integrator object.
+        !! @param[in] y An N-element array containing the current solution
+        !!  values.
+        procedure, public :: set_up_interpolation => rad_set_up_interp
+        !> @brief Provides interpolation between integration points allowing
+        !! for dense output.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine interpolate( &
+        !!  class(radau_integrator) this, &
+        !!  real(real64) xprev, &
+        !!  real(real64) xnew, &
+        !!  real(real64) x, &
+        !!  real(real64) y(:),
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The radau_integrator object.
+        !! @param[in] xprev The previous value of the independent variable.
+        !! @param[in] xnew The updated value of the independent variable.
+        !! @param[in] x The value at which to perform the interpolation.
+        !! @param[out] y An N-element array containing the interpolated 
+        !!  values for each equation.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.
+        procedure, public :: interpolate => rad_interp
+        procedure, public :: attempt_step => rad_attempt_step
+        procedure, public :: step => rad_step
+        procedure, public :: get_order => rad_get_order
+    end type
+
+    ! diffeq_radau.f90
+    interface
+        module subroutine rad_alloc_workspace(this, neqn, err)
+            class(radau_integrator), intent(inout) :: this
+            integer(int32), intent(in) :: neqn
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+
+        module subroutine rad_build_e1(this, fac, err)
+            class(radau_integrator), intent(inout) :: this
+            real(real64), intent(in) :: fac
+            class(errors), intent(inout) :: err
+        end subroutine
+
+        module subroutine rad_build_e2(this, alphan, betan, err)
+            class(radau_integrator), intent(inout) :: this
+            real(real64), intent(in) :: alphan, betan
+            class(errors), intent(inout) :: err
+        end subroutine
+
+        pure module function rad_get_use_default_newton(this) result(rst)
+            class(radau_integrator), intent(in) :: this
+            logical :: rst
+        end function
+
+        module subroutine rad_set_use_default_newton(this, x)
+            class(radau_integrator), intent(inout) :: this
+            logical, intent(in) :: x
+        end subroutine
+
+        module subroutine rad_set_up_newton(this, first, neqn, h)
+            class(radau_integrator), intent(inout) :: this
+            logical, intent(in) :: first
+            integer(int32), intent(in) :: neqn
+            real(real64), intent(in) :: h
+        end subroutine
+
+        module subroutine rad_solve_linear_system(this, fac, alphan, betan)
+            class(radau_integrator), intent(inout) :: this
+            real(real64), intent(in) :: fac, alphan, betan
+        end subroutine
+
+        pure module function rad_get_index_2(this) result(rst)
+            class(radau_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+
+        module subroutine rad_set_index_2(this, x)
+            class(radau_integrator), intent(inout) :: this
+            integer(int32), intent(in) :: x
+        end subroutine
+
+        pure module function rad_get_index_3(this) result(rst)
+            class(radau_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+
+        module subroutine rad_set_index_3(this, x)
+            class(radau_integrator), intent(inout) :: this
+            integer(int32), intent(in) :: x
+        end subroutine
+
+        pure module function rad_get_max_newton_iter(this) result(rst)
+            class(radau_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+
+        module subroutine rad_set_max_newton_iter(this, x)
+            class(radau_integrator), intent(inout) :: this
+            integer(int32), intent(in) :: x
+        end subroutine
+
+        module subroutine rad_estrad(this, sys, h, x, y, first, reject, en)
+            class(radau_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(in) :: h, x
+            real(real64), intent(in), dimension(:) :: y
+            logical, intent(in) :: first, reject
+            real(real64), intent(out), dimension(:) :: en
+        end subroutine
+
+        pure module function rad_get_newton_tol(this) result(rst)
+            class(radau_integrator), intent(in) :: this
+            real(real64) :: rst
+        end function
+
+        module subroutine rad_set_newton_tol(this, x)
+            class(radau_integrator), intent(inout) :: this
+            real(real64), intent(in) :: x
+        end subroutine
+
+        module function rad_is_newton_converged(this, niter, h, &
+            reject, last) result(rst)
+            class(radau_integrator), intent(inout) :: this
+            integer(int32), intent(inout) :: niter
+            real(real64), intent(inout) :: h
+            logical, intent(inout) :: reject, last
+            logical :: rst
+        end function
+
+        module recursive subroutine rad_newton_iteration(this, sys, h, x, y, &
+            dydx, niter, reject, first, last, err)
+            class(radau_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(inout) :: h
+            real(real64), intent(in) :: x
+            real(real64), intent(in), dimension(:) :: y, dydx
+            integer(int32), intent(inout) :: niter
+            logical, intent(inout) :: reject, first, last
+            class(errors), intent(inout) :: err
+        end subroutine
+
+        module subroutine rad_on_successful_step(this, x, xn, y, yn)
+            class(radau_integrator), intent(inout) :: this
+            real(real64), intent(in) :: x, xn
+            real(real64), intent(in), dimension(:) :: y, yn
+        end subroutine
+
+        module subroutine rad_set_up_interp(this, y)
+            class(radau_integrator), intent(inout) :: this
+            real(real64), intent(in), dimension(:) :: y
+        end subroutine
+
+        module subroutine rad_interp(this, xprev, xnew, x, y, err)
+            class(radau_integrator), intent(in) :: this
+            real(real64), intent(in) :: xprev, xnew, x
+            real(real64), intent(out), dimension(:) :: y
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+
+        module subroutine rad_attempt_step(this, sys, h, x, y, yn, en, xprev, &
+            yprev, fprev, err)
+            class(radau_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(in) :: h, x
+            real(real64), intent(in), dimension(:) :: y
+            real(real64), intent(out), dimension(:) :: yn, en
+            real(real64), intent(in), optional, dimension(:) :: xprev
+            real(real64), intent(in), optional, dimension(:,:) :: yprev
+            real(real64), intent(inout), optional, dimension(:,:) :: fprev
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+
+        module subroutine rad_step(this, sys, x, xmax, y, yn, xprev, yprev, &
+            fprev, err)
+            class(radau_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(in) :: x, xmax
+            real(real64), intent(in), dimension(:) :: y
+            real(real64), intent(out), dimension(:) :: yn
+            real(real64), intent(in), optional, dimension(:) :: xprev
+            real(real64), intent(in), optional, dimension(:,:) :: yprev
+            real(real64), intent(inout), optional, dimension(:,:) :: fprev
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+
+        pure module function rad_get_order(this) result(rst)
+            class(radau_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+    end interface
+
 ! ------------------------------------------------------------------------------
 
 ! ------------------------------------------------------------------------------

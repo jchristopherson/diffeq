@@ -5,11 +5,20 @@ module subroutine rkv_alloc_workspace(this, neqn, err)
     ! Arguments
     class(rk_variable_integrator), intent(inout) :: this
     integer(int32), intent(in) :: neqn
-    class(errors), intent(inout) :: err
+    class(errors), intent(inout), optional, target :: err
 
     ! Local Variables
     integer(int32) :: m, n, flag
     character(len = :), allocatable :: errmsg
+    class(errors), pointer :: errmgr
+    type(errors), target :: deferr
+    
+    ! Initialization
+    if (present(err)) then
+        errmgr => err
+    else
+        errmgr => deferr
+    end if
 
     ! Process
     m = neqn
@@ -36,6 +45,9 @@ module subroutine rkv_alloc_workspace(this, neqn, err)
         if (flag /= 0) go to 10
     end if
 
+    ! Call the base method
+    call vsi_alloc_workspace(this, neqn, errmgr)
+
     ! End
     return
 
@@ -43,7 +55,7 @@ module subroutine rkv_alloc_workspace(this, neqn, err)
 10  continue
     allocate(character(len = 256) :: errmsg)
     write(errmsg, 100) "Memory allocation error flag ", flag, "."
-    call err%report_error("rkv_alloc_workspace", trim(errmsg), &
+    call errmgr%report_error("rkv_alloc_workspace", trim(errmsg), &
         DIFFEQ_MEMORY_ALLOCATION_ERROR)
     return
 
@@ -85,10 +97,6 @@ module subroutine rkv_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
     n = this%get_stage_count()
     neqn = size(y)
     call this%define_model()
-
-    ! Ensure the workspace arrays are allocated
-    call this%allocate_rkv_workspace(neqn, errmgr)
-    if (errmgr%has_error_occurred()) return
 
     ! The Butcher tableau is lower triangular as this is an explicit integrator
     if (.not.this%is_fsal() .or. this%m_firstStep) then
