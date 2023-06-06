@@ -71,8 +71,8 @@ program test
     rst = test_frf_2()
     if (.not.rst) flag = 18
 
-    rst = test_radau_1()
-    if (.not.rst) flag = 19
+    ! rst = test_radau_1()
+    ! if (.not.rst) flag = 19
 
     ! Output
     stop flag

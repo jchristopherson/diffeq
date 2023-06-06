@@ -24,6 +24,7 @@ module diffeq
     public :: bsrk32_integrator
     public :: implicit_rk_variable_integrator
     public :: radau_integrator
+    public :: dirk_integrator
     public :: DIFFEQ_MEMORY_ALLOCATION_ERROR
     public :: DIFFEQ_NULL_POINTER_ERROR
     public :: DIFFEQ_MATRIX_SIZE_ERROR
@@ -3311,6 +3312,30 @@ module diffeq
 
         pure module function rad_get_order(this) result(rst)
             class(radau_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+    end interface
+
+! ------------------------------------------------------------------------------
+    !> @brief Defines a diagonally implicit 4th order Runge-Kutta integrator
+    !! suitable for integrating stiff systems of differential equations.
+    type, extends(implicit_rk_variable_integrator) :: dirk_integrator
+    contains
+        !> @brief Returns the order of the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! pure integer(int32) function get_order(class(dirk_integrator) this)
+        !! @endcode
+        !!
+        !! @param[in] this The @ref dirk_integrator object.
+        !! @return The order of the integrator.
+        procedure, public :: get_order => dirk_get_order
+    end type
+
+    interface
+        pure module function dirk_get_order(this) result(rst)
+            class(dirk_integrator), intent(in) :: this
             integer(int32) :: rst
         end function
     end interface
