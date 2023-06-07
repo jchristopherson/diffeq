@@ -18,7 +18,7 @@ set(DIFFEQ_SOURCES
     ${dir}/diffeq_harmonics.f90
     ${dir}/diffeq_harmonics_routines.f90
     ${dir}/diffeq_implicit_rk.f90
-    ${dir}/diffeq_radau.f90
     ${dir}/diffeq_dirk.f90
+    ${dir}/diffeq_sdirk4.f90
 )
 set(DIFFEQ_SOURCES ${DIFFEQ_SOURCES} PARENT_SCOPE)
