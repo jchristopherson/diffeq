@@ -143,7 +143,6 @@ module diffeq
         !!  class(ode_container) this, &
         !!  real(real64) x, &
         !!  real(real64) y(:), &
-        !!  real(real64) dydx(:), &
         !!  real(real64) jac(:,:), &
         !!  optional class(errors) err &
         !! )
@@ -153,8 +152,6 @@ module diffeq
         !! @param[in] x The current independent variable value.
         !! @param[in] y An N-element array containing the current dependent
         !!  variable values.
-        !! @param[in] dydx An N-element array containing the current derivative
-        !!  values.
         !! @param[out] jac An N-by-N matrix where the Jacobian will be written.
         !! @param[in,out] err An optional errors-based object that if provided 
         !!  can be used to retrieve information relating to any errors 
@@ -199,17 +196,17 @@ module diffeq
             real(real64), intent(out), dimension(:) :: dydx
         end subroutine
 
-        subroutine ode_jacobian(x, y, dydx, jac)
+        subroutine ode_jacobian(x, y, jac)
             use iso_fortran_env
             real(real64), intent(in) :: x
-            real(real64), intent(in), dimension(:) :: y, dydx
+            real(real64), intent(in), dimension(:) :: y
             real(real64), intent(out), dimension(:,:) :: jac
         end subroutine
 
-        subroutine ode_mass_matrix(x, y, dydx, m)
+        subroutine ode_mass_matrix(x, y, m)
             use iso_fortran_env
             real(real64), intent(in) :: x
-            real(real64), intent(in), dimension(:) :: y, dydx
+            real(real64), intent(in), dimension(:) :: y
             real(real64), intent(out), dimension(:,:) :: m
         end subroutine
 
@@ -239,10 +236,10 @@ module diffeq
             class(errors), intent(inout) :: err
         end subroutine
 
-        module subroutine oc_jacobian(this, x, y, dydx, jac, err)
+        module subroutine oc_jacobian(this, x, y, jac, err)
             class(ode_container), intent(inout) :: this
             real(real64), intent(in) :: x
-            real(real64), intent(in), dimension(:) :: y, dydx
+            real(real64), intent(in), dimension(:) :: y
             real(real64), intent(out), dimension(:,:) :: jac
             class(errors), intent(inout), optional, target :: err
         end subroutine
@@ -1414,7 +1411,6 @@ module diffeq
         !!      too small.
         !!  - DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR: Occurs if the iteration
         !!      count is exceeded for a single step.
-        !!  - DIFFEQ_NULL_POINTER_ERROR: Occurs if no ODE routine is defined.
         procedure, public :: step => vsi_step
         !> @brief Computes an estimate to the first step size based upon the
         !! initial function values.
@@ -2795,7 +2791,11 @@ module diffeq
     type, abstract, extends(rk_variable_integrator) :: &
     implicit_rk_variable_integrator
         ! The most recent successful step size
-        real(real64) :: m_hold = 0.0d0
+        real(real64), private :: m_hold = 0.0d0
+        ! Is the Jacobian current?
+        logical, private :: m_isJacCurrent = .false.
+        ! Allowable number of Newton iterations
+        integer(int32), private :: m_maxNewtonIter = 7
     contains
         !> @brief Gets the most recent successful step size.
         !!
@@ -2842,10 +2842,161 @@ module diffeq
         !! @return The new step size.
         procedure, public :: compute_next_step_size => &
             irk_compute_next_step_size
+        !> @brief Gets a value determining if the Jacobian matrix estimate is
+        !! current such that it does not need to be recomputed at this time.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! logical pure function get_is_jacobian_current( &
+        !!  class(implicit_rk_variable_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref implicit_rk_variable_integrator object.
+        !! @return True if the Jacobian matrix is current; else, false.
+        procedure, public :: get_is_jacobian_current => irk_get_is_jac_current
+        !> @brief Sets a value determining if the Jacobian matrix estimate is
+        !! current such that it does not need to be recomputed at this time.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_is_jacobian_current( &
+        !!  class(implicit_rk_variable_integrator) this, &
+        !!  logical x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref implicit_rk_variable_integrator object.
+        !! @param[in] x True if the Jacobian matrix is current; else, false.
+        procedure, public :: set_is_jacobian_current => irk_set_is_jac_current
+        !> @brief Builds the matrix of the form \f$ X = f I - J \f$,
+        !! or \f$ X = f M - J \f$ if a mass matrix is defined, and then computes
+        !! its LU factorization.  The Jacobian and mass matrices are evaluated
+        !! as part of this process, if necessary.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine build_factored_matrix( &
+        !!  class(implicit_rk_variable_integrator) this, &
+        !!  class(ode_container) sys, &
+        !!  real(real64) h, &
+        !!  real(real64) x, &
+        !!  real(real64) y(:), &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref implicit_rk_variable_integrator object.
+        !! @param[in,out] sys The @ref ode_container object containing the
+        !!  equations to integrate.
+        !! @param[in] h The current step size.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] y An N-element array containing the current values of
+        !!  the dependent variables.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.
+        procedure(build_factored_newton_matrix_routine), public, deferred :: &
+            build_factored_newton_matrix
+        !> @brief Takes one integration step.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine step( &
+        !!  class(implicit_rk_variable_integrator) this, &
+        !!  class(ode_container) sys, &
+        !!  real(real64) x, &
+        !!  real(real64) xmax, &
+        !!  real(real64) y(:), &
+        !!  real(real64) yn(:), &
+        !!  optional real(real64) xprev(:), &
+        !!  optional real(real64) yprev(:,:), &
+        !!  optional real(real64) fprev(:,:), &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref implicit_rk_variable_integrator object.
+        !! @param[in] sys The @ref ode_container object containing the ODEs
+        !!  to integrate.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] xmax The upper integration limit.
+        !! @param[in] y An N-element array containing the current values of
+        !!  the dependent variables.
+        !! @param[out] yn An N-element array where the values of the dependent
+        !!  variables at @p x + @p h will be written.
+        !! @param[in] xprev An M-element array containing the previous M values
+        !!  of the independent variable where M is the order of the method.
+        !!  This is typically useful for multi-step methods.  In single-step
+        !!  methods this parameter is not used.
+        !! @param[in] yprev An M-by-NEQN array containing the previous M arrays
+        !!  of dependent variable values where M is the order of the method.
+        !!  This is typically useful for multi-step methods.  In single-step
+        !!  methods this parameter is not used.
+        !! @param[out] fprev An M-by-NEQN array where the previous M function
+        !!  values are written.  This is typically useful for multi-step 
+        !!  methods.  In single-step methods this parameter is not used.
+        !! @param[in,out] An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.  Possible errors and warning messages that may be 
+        !!  encountered are as follows.
+        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
+        !!      allocation issue.
+        !!  - DIFFEQ_ARRAY_SIZE_ERROR: Occurs if @p yn is not the same size
+        !!      as @p y.
+        !!  - DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR: Occurs if the step size becomes
+        !!      too small.
+        !!  - DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR: Occurs if the iteration
+        !!      count is exceeded for a single step.
+        procedure, public :: step => irk_step
+        !> @brief Gets the maximum allowed number of Newton iterations.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! integer(int32) pure function get_max_newton_iteration_count( &
+        !!  class(implicit_rk_variable_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref implicit_rk_variable_integrator object.
+        !! @return The iteration limit.
+        procedure, public :: get_max_newton_iteration_count => &
+            irk_get_max_newton_iter
+        !> @brief Sets the maximum allowed number of Newton iterations.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_max_newton_iteration_count( &
+        !!  class(implicit_rk_variable_integrator) this, &
+        !!  integer(int32) x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref implicit_rk_variable_integrator object.
+        !! @param[in] x The iteration limit.
+        procedure, public :: set_max_newton_iteration_count => &
+            irk_set_max_newton_iter
+
+        ! TO DO: Compute initial step size
     end type
 
     ! diffeq_implicit_rk.f90
     interface
+        subroutine build_factored_newton_matrix_routine(this, sys, h, x, y, err)
+            use iso_fortran_env, only : real64
+            use ferror, only : errors
+            import implicit_rk_variable_integrator
+            import ode_container
+            class(implicit_rk_variable_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(in) :: h, x
+            real(real64), intent(in), dimension(:) :: y
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
         pure module function irk_get_old_step(this) result(rst)
             class(implicit_rk_variable_integrator), intent(in) :: this
             real(real64) :: rst
@@ -2862,16 +3013,163 @@ module diffeq
             real(real64), intent(in) :: hn, en, enm1
             real(real64) :: rst
         end function
+
+        pure module function irk_get_is_jac_current(this) result(rst)
+            class(implicit_rk_variable_integrator), intent(in) :: this
+            logical :: rst
+        end function
+
+        module subroutine irk_set_is_jac_current(this, x)
+            class(implicit_rk_variable_integrator), intent(inout) :: this
+            logical, intent(in) :: x
+        end subroutine
+
+        module subroutine irk_step(this, sys, x, xmax, y, yn, xprev, yprev, &
+            fprev, err)
+            class(implicit_rk_variable_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(in) :: x, xmax
+            real(real64), intent(in), dimension(:) :: y
+            real(real64), intent(out), dimension(:) :: yn
+            real(real64), intent(in), optional, dimension(:) :: xprev
+            real(real64), intent(in), optional, dimension(:,:) :: yprev
+            real(real64), intent(inout), optional, dimension(:,:) :: fprev
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+
+        pure module function irk_get_max_newton_iter(this) result(rst)
+            class(implicit_rk_variable_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+
+        module subroutine irk_set_max_newton_iter(this, x)
+            class(implicit_rk_variable_integrator), intent(inout) :: this
+            integer(int32), intent(in) :: x
+        end subroutine
     end interface
 
 ! ------------------------------------------------------------------------------
-    
+    !> @brief Defines a base structure for diagonally implicit Runge-Kutta 
+    !! integrators.
     type, abstract, extends(implicit_rk_variable_integrator) :: dirk_integrator
+        ! Jacobian matrix workspace
+        real(real64), private, allocatable, dimension(:,:) :: m_jac
+        ! Mass matrix workspace
+        real(real64), private, allocatable, dimension(:,:) :: m_mass
+        ! System matrix workspace
+        real(real64), private, allocatable, dimension(:,:) :: m_mtx
+        ! LU pivot tracking workspace
+        integer(int32), private, allocatable, dimension(:) :: m_pvt
     contains
+        !> @brief Initializes the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine initialize( &
+        !!  class(dirk_integrator) this, &
+        !!  integer(int32) neqn, &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref dirk_integrator object.
+        !! @param[in] neqn The number of equations being integrated.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.  Possible errors and warning messages that may be 
+        !!  encountered are as follows.
+        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
+        !!      allocation issue.
+        procedure, public :: initialize => dirk_alloc_workspace
+        !> @brief Builds the system matrix of the form \f$ X = f I - J \f$,
+        !! or \f$ X = f M - J \f$ if a mass matrix is defined.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine build_matrix( &
+        !!  class(dirk_integrator) this, &
+        !!  real(real64) h, &
+        !!  real(real64) jac(:,:), &
+        !!  real(real64) x(:,:), &
+        !!  optional real(real64) m(:,:), &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref dirk_integrator object.
+        !! @param[in] h The current step size.
+        !! @param[in] jac The current NEQN-by-NEQN Jacobian matrix.
+        !! @param[out] x An NEQN-by-NEQN matrix where the output will be 
+        !!  written.
+        !! @param[in] m An optional NEQN-by-NEQN mass matrix.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.  Possible errors and warning messages that may be 
+        !!  encountered are as follows.
+        !!  - DIFFEQ_MATRIX_SIZE_ERROR: Occurs if any of the matrices are not
+        !!      sized correctly.
+        procedure, public :: build_newton_matrix => dirk_build_matrix
+        !> @brief Builds the matrix of the form \f$ X = f I - J \f$,
+        !! or \f$ X = f M - J \f$ if a mass matrix is defined, and then computes
+        !! its LU factorization.  The Jacobian and mass matrices are evaluated
+        !! as part of this process, if necessary.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine build_factored_matrix( &
+        !!  class(dirk_integrator) this, &
+        !!  class(ode_container) sys, &
+        !!  real(real64) h, &
+        !!  real(real64) x, &
+        !!  real(real64) y(:), &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref dirk_integrator object.
+        !! @param[in,out] sys The @ref ode_container object containing the
+        !!  equations to integrate.
+        !! @param[in] h The current step size.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] y An N-element array containing the current values of
+        !!  the dependent variables.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.
+        procedure, public :: build_factored_newton_matrix => &
+            dirk_build_factored_matrix
     end type
 
     ! diffeq_dirk.f90
     interface
+        module subroutine dirk_alloc_workspace(this, neqn, err)
+            class(dirk_integrator), intent(inout) :: this
+            integer(int32), intent(in) :: neqn
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+
+        module subroutine dirk_build_matrix(this, h, jac, x, m, err)
+            class(dirk_integrator), intent(in) :: this
+            real(real64), intent(in) :: h
+            real(real64), intent(in), dimension(:,:) :: jac
+            real(real64), intent(out), dimension(:,:) :: x
+            real(real64), intent(in), dimension(:,:), optional :: m
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+
+        module subroutine dirk_build_factored_matrix(this, sys, h, x, y, err)
+            class(dirk_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(in) :: h, x
+            real(real64), intent(in), dimension(:) :: y
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
     end interface
 
 ! ------------------------------------------------------------------------------

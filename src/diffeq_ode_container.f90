@@ -29,11 +29,11 @@ module subroutine oc_set_is_mass_dependent(this, x)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-module subroutine oc_jacobian(this, x, y, dydx, jac, err)
+module subroutine oc_jacobian(this, x, y, jac, err)
     ! Arguments
     class(ode_container), intent(inout) :: this
     real(real64), intent(in) :: x
-    real(real64), intent(in), dimension(:) :: y, dydx
+    real(real64), intent(in), dimension(:) :: y
     real(real64), intent(out), dimension(:,:) :: jac
     class(errors), intent(inout), optional, target :: err
 
@@ -58,7 +58,7 @@ module subroutine oc_jacobian(this, x, y, dydx, jac, err)
 
     ! Use a user-defined routine, and then be done
     if (associated(this%jacobian)) then
-        call this%jacobian(x, y, dydx, jac)
+        call this%jacobian(x, y, jac)
         return
     end if
 
@@ -69,11 +69,12 @@ module subroutine oc_jacobian(this, x, y, dydx, jac, err)
 
     ! Finite Difference Approximation
     ! J(i,j) = df(i) / dy(j)
-    this%m_jwork = y
+    this%m_jwork(1:ndof) = y
+    call this%ode(x, y, this%m_jwork(ndof+1:))
     do i = 1, ndof
         this%m_jwork(i) = this%m_jwork(i) + h
-        call this%ode(x, this%m_jwork, jac(:,i))
-        jac(:,i) = (jac(:,i) - dydx) / h
+        call this%ode(x, this%m_jwork(1:ndof), jac(:,i))
+        jac(:,i) = (jac(:,i) - this%m_jwork(ndof+1:)) / h
         this%m_jwork(i) = y(i)
     end do
 
@@ -106,13 +107,13 @@ module subroutine oc_alloc_workspace(this, ndof, err)
 
     ! Jacobian Workspace Allocation
     if (allocated(this%m_jwork)) then
-        if (size(this%m_jwork) /= ndof) then
+        if (size(this%m_jwork) /= 2 * ndof) then
             deallocate(this%m_jwork)
-            allocate(this%m_jwork(ndof), stat = flag, source = 0.0d0)
+            allocate(this%m_jwork(2 * ndof), stat = flag, source = 0.0d0)
             if (flag /= 0) go to 10
         end if
     else
-        allocate(this%m_jwork(ndof), stat = flag, source = 0.0d0)
+        allocate(this%m_jwork(2 * ndof), stat = flag, source = 0.0d0)
         if (flag /= 0) go to 10
     end if
 
