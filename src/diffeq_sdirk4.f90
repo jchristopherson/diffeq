@@ -31,8 +31,14 @@ submodule (diffeq) diffeq_sdirk4
     real(real64), parameter :: b3 = &
         47.0d0 * (-267.0d0 + 1.783d3 * sqrt(2.0d0)) / 2.73343d5
     real(real64), parameter :: b2 = (1.181d3 - 9.87d2 * sqrt(2.0d0)) / 1.3782d4
-    real(real64), parameter :: b1 = (1.0d0 - b2 - b3 - b4 - b5 - gamma)
+    real(real64), parameter :: b1 = 1.0d0 - b2 - b3 - b4 - b5 - gamma
     real(real64), parameter :: b6 = gamma
+    real(real64), parameter :: b2a = -4.80923228411d11 / 4.982971448372d12
+    real(real64), parameter :: b3a = 6.709447293961d12 / 1.2833189095359d13
+    real(real64), parameter :: b4a = 3.513175791894d12 / 6.748737351361d12
+    real(real64), parameter :: b5a = -4.98863281070d11 / 6.042575550617d12
+    real(real64), parameter :: b6a = 2.077005547802d12 / 8.945017530137d12
+    real(real64), parameter :: b1a = 1.0d0 - b2a - b3a - b4a - b5a - b6a
 
 contains
 ! ------------------------------------------------------------------------------
@@ -76,7 +82,20 @@ module subroutine sd4_define_model(this)
     this%m_a(5,4) = a54
     this%m_a(5,5) = a55
 
+    this%m_a(6,1) = b1
+    this%m_a(6,2) = b2
+    this%m_a(6,3) = b3
+    this%m_a(6,4) = b4
+    this%m_a(6,5) = b5
+    this%m_a(6,6) = b6
+
     ! B
+    this%m_b(1) = b1
+    this%m_b(2) = b2
+    this%m_b(3) = b3
+    this%m_b(4) = b4
+    this%m_b(5) = b5
+    this%m_b(6) = b6
 
     ! C
     this%m_c(1) = 0.0d0
@@ -87,6 +106,12 @@ module subroutine sd4_define_model(this)
     this%m_c(6) = c6
 
     ! E
+    this%m_e(1) = b1a - b1
+    this%m_e(2) = b2a - b2
+    this%m_e(3) = b3a - b3
+    this%m_e(4) = b4a - b4
+    this%m_e(5) = b5a - b5
+    this%m_e(6) = b6a - b6
 
     ! Update definition status
     this%m_modelDefined = .true.
