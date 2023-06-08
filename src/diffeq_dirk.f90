@@ -66,6 +66,28 @@ module subroutine dirk_alloc_workspace(this, neqn, err)
         if (flag /= 0) go to 10
     end if
 
+    if (allocated(this%m_w)) then
+        if (size(this%m_w) /= neqn) then
+            deallocate(this%m_w)
+            allocate(this%m_w(neqn), stat = flag, source = 0.0d0)
+            if (flag /= 0) go to 10
+        end if
+    else
+        allocate(this%m_w(neqn), stat = flag, source = 0.0d0)
+        if (flag /= 0) go to 10
+    end if
+
+    if (allocated(this%m_dy)) then
+        if (size(this%m_dy) /= neqn) then
+            deallocate(this%m_dy)
+            allocate(this%m_dy(neqn), stat = flag, source = 0.0d0)
+            if (flag /= 0) go to 10
+        end if
+    else
+        allocate(this%m_dy(neqn), stat = flag, source = 0.0d0)
+        if (flag /= 0) go to 10
+    end if
+
     ! End
     return
 
@@ -145,7 +167,7 @@ module subroutine dirk_build_matrix(this, h, jac, x, m, err)
     class(errors), intent(inout), optional, target :: err
 
     ! Local Variables
-    integer(int32) :: i, j, neqn
+    integer(int32) :: i, neqn
     real(real64) :: fac
     class(errors), pointer :: errmgr
     type(errors), target :: deferr
@@ -171,14 +193,9 @@ module subroutine dirk_build_matrix(this, h, jac, x, m, err)
     if (present(m)) then
         x = m * fac - jac
     else
-        do j = 1, neqn
-            do i = 1, neqn
-                if (i == j) then
-                    x(i,j) = fac - jac(i,j)
-                else
-                    x(i,j) = -jac(i,j)
-                end if
-            end do
+        x = -jac
+        do i = 1, neqn
+            x(i,i) = x(i,i) + fac
         end do
     end if
 
@@ -220,34 +237,139 @@ module subroutine dirk_build_matrix(this, h, jac, x, m, err)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-! module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
-!     fprev, err)
-!     ! Arguments
-!     class(dirk_integrator), intent(inout) :: this
-!     class(ode_container), intent(inout) :: sys
-!     real(real64), intent(in) :: h, x
-!     real(real64), intent(in), dimension(:) :: y
-!     real(real64), intent(out), dimension(:) :: yn, en
-!     real(real64), intent(in), optional, dimension(:) :: xprev
-!     real(real64), intent(in), optional, dimension(:,:) :: yprev
-!     real(real64), intent(inout), optional, dimension(:,:) :: fprev
-!     class(errors), intent(inout), optional, target :: err
+module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
+    fprev, err)
+    ! Arguments
+    class(dirk_integrator), intent(inout) :: this
+    class(ode_container), intent(inout) :: sys
+    real(real64), intent(in) :: h, x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:) :: yn, en
+    real(real64), intent(in), optional, dimension(:) :: xprev
+    real(real64), intent(in), optional, dimension(:,:) :: yprev
+    real(real64), intent(inout), optional, dimension(:,:) :: fprev
+    class(errors), intent(inout), optional, target :: err
 
-!     ! Local Variables
-!     class(errors), pointer :: errmgr
-!     type(errors), target :: deferr
+    ! Local Variables
+    logical :: accept
+    integer(int32) :: i, j, k, neqn, nstages, niter, maxiter
+    real(real64) :: z, tol, disp, val, eval
+    class(errors), pointer :: errmgr
+    type(errors), target :: deferr
     
-!     ! Initialization
-!     if (present(err)) then
-!         errmgr => err
-!     else
-!         errmgr => deferr
-!     end if
+    ! Initialization
+    if (present(err)) then
+        errmgr => err
+    else
+        errmgr => deferr
+    end if
+    neqn = size(y)
+    nstages = this%get_stage_count()
+    maxiter = this%get_max_newton_iteration_count()
+    accept = .false.
+    tol = this%get_newton_tolerance()
 
-!     !
-! end subroutine
+    ! Process
+    if (.not.this%is_fsal() .or. this%m_firstStep) then
+        ! On FSAL integrators, we only need to make this call on the first step
+        ! as the integrator uses the last evaluation from the previous step
+        ! as this step.  On non-FSAL integrators we always need to compute an
+        ! updated first step.
+        call sys%ode(x, y, this%m_work(:,1))
+    end if
+    outer : do i = 1, nstages
+        do j = 1, neqn
+            ! Compute A(i,1:i-1) * F(1:i-1,:) where F is NSTAGES-by-NEQN
+            ! Result is 1-by-NEQN
+            this%m_w(j) = 0.0d0
+            do k = 1, i - 1
+                this%m_w(j) = this%m_w(j) + &
+                    this%get_method_factor(i,k) * this%m_work(j,k)
+            end do
+            this%m_w(j) = y(j) + h * this%m_w(j)
+        end do
+        z = x + this%get_position_factor(i) * h
+        call sys%ode(z, y, this%m_work(:,i))
+
+        ! Newton Iteration Process
+        niter = 0
+        yn = y
+        newton: do
+            ! Define the right-hand-side
+            this%m_dy = this%m_w + h * this%get_method_factor(i,i) * &
+                this%m_work(:,i) - yn
+            
+            ! Compute the solution
+            call solve_lu(this%m_mtx, this%m_pvt, this%m_dy)
+            yn = yn + this%m_dy
+
+            ! Update the function evaluation
+            call sys%ode(z, yn, this%m_work(:,i))
+
+            ! Check for convergence
+            disp = norm2(this%m_dy)
+            if (disp < tol) then
+                accept = .true.
+                exit newton
+            end if
+
+            ! Check the iteration counter
+            niter = niter + 1
+            if (niter > maxiter) exit outer
+        end do newton
+    end do outer
+
+    ! Update the solution estimate and error estimate
+    do i = 1, neqn
+        val = 0.0d0
+        eval = 0.0d0
+        do j = 1, nstages
+            val = val + this%get_quadrature_weight(j) * this%m_work(j,i)
+            eval = eval + this%get_error_factor(j) * this%m_work(j,i)
+        end do
+        yn(i) = y(i) + h * val
+        en(i) = h * eval
+    end do
+
+    ! Do we need to update the Jacobian?
+    if (.not.accept) then
+        ! We couldn't converge - force a Jacobian update
+        call this%set_is_jacobian_current(.false.)
+    end if
+
+    ! TO DO: Base a Jacobian update on # of iterations
+
+    ! End
+    return
+end subroutine
 
 ! ------------------------------------------------------------------------------
+pure module function dirk_get_max_newton_iter(this) result(rst)
+    class(dirk_integrator), intent(in) :: this
+    integer(int32) :: rst
+    rst = this%m_maxNewtonIter
+end function
+
+! --------------------
+module subroutine dirk_set_max_newton_iter(this, x)
+    class(dirk_integrator), intent(inout) :: this
+    integer(int32), intent(in) :: x
+    this%m_maxNewtonIter = x
+end subroutine
+
+! ------------------------------------------------------------------------------
+pure module function dirk_get_newton_tol(this) result(rst)
+    class(dirk_integrator), intent(in) :: this
+    real(real64) :: rst
+    rst = this%m_newtontol
+end function
+
+! --------------------
+module subroutine dirk_set_newton_tol(this, x)
+    class(dirk_integrator), intent(inout) :: this
+    real(real64), intent(in) :: x
+    this%m_newtontol = x
+end subroutine
 
 ! ------------------------------------------------------------------------------
 

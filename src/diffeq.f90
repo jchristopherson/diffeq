@@ -2794,8 +2794,6 @@ module diffeq
         real(real64), private :: m_hold = 0.0d0
         ! Is the Jacobian current?
         logical, private :: m_isJacCurrent = .false.
-        ! Allowable number of Newton iterations
-        integer(int32), private :: m_maxNewtonIter = 7
     contains
         !> @brief Gets the most recent successful step size.
         !!
@@ -2953,33 +2951,6 @@ module diffeq
         !!  - DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR: Occurs if the iteration
         !!      count is exceeded for a single step.
         procedure, public :: step => irk_step
-        !> @brief Gets the maximum allowed number of Newton iterations.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! integer(int32) pure function get_max_newton_iteration_count( &
-        !!  class(implicit_rk_variable_integrator) this &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref implicit_rk_variable_integrator object.
-        !! @return The iteration limit.
-        procedure, public :: get_max_newton_iteration_count => &
-            irk_get_max_newton_iter
-        !> @brief Sets the maximum allowed number of Newton iterations.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! subroutine set_max_newton_iteration_count( &
-        !!  class(implicit_rk_variable_integrator) this, &
-        !!  integer(int32) x &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in,out] this The @ref implicit_rk_variable_integrator object.
-        !! @param[in] x The iteration limit.
-        procedure, public :: set_max_newton_iteration_count => &
-            irk_set_max_newton_iter
 
         ! TO DO: Compute initial step size
     end type
@@ -3036,16 +3007,6 @@ module diffeq
             real(real64), intent(inout), optional, dimension(:,:) :: fprev
             class(errors), intent(inout), optional, target :: err
         end subroutine
-
-        pure module function irk_get_max_newton_iter(this) result(rst)
-            class(implicit_rk_variable_integrator), intent(in) :: this
-            integer(int32) :: rst
-        end function
-
-        module subroutine irk_set_max_newton_iter(this, x)
-            class(implicit_rk_variable_integrator), intent(inout) :: this
-            integer(int32), intent(in) :: x
-        end subroutine
     end interface
 
 ! ------------------------------------------------------------------------------
@@ -3060,6 +3021,14 @@ module diffeq
         real(real64), private, allocatable, dimension(:,:) :: m_mtx
         ! LU pivot tracking workspace
         integer(int32), private, allocatable, dimension(:) :: m_pvt
+        ! NEQN-element workspace array
+        real(real64), private, allocatable, dimension(:) :: m_w
+        ! NEQN-element workspace array
+        real(real64), private, allocatable, dimension(:) :: m_dy
+        ! Allowable number of Newton iterations
+        integer(int32), private :: m_maxNewtonIter = 7
+        ! Newton iteration tolerance
+        real(real64), private :: m_newtontol = 1.0d-4
     contains
         !> @brief Initializes the integrator.
         !!
@@ -3144,6 +3113,60 @@ module diffeq
         !!  error handling.
         procedure, public :: build_factored_newton_matrix => &
             dirk_build_factored_matrix
+        !> @brief Gets the maximum allowed number of Newton iterations.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! integer(int32) pure function get_max_newton_iteration_count( &
+        !!  class(dirk_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref dirk_integrator object.
+        !! @return The iteration limit.
+        procedure, public :: get_max_newton_iteration_count => &
+            dirk_get_max_newton_iter
+        !> @brief Sets the maximum allowed number of Newton iterations.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_max_newton_iteration_count( &
+        !!  class(dirk_integrator) this, &
+        !!  integer(int32) x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref dirk_integrator object.
+        !! @param[in] x The iteration limit.
+        procedure, public :: set_max_newton_iteration_count => &
+            dirk_set_max_newton_iter
+        !> @brief Gets the tolerance used to check for convergence of the
+        !! Newton iterations.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_newton_tolerance( &
+        !!  class(dirk_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref dirk_integrator object.
+        !! @return The tolerance.
+        procedure, public :: get_newton_tolerance => dirk_get_newton_tol
+        !> @brief Sets the tolerance used to check for convergence of the
+        !! Newton iterations.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_newton_tolerance( &
+        !!  class(dirk_integrator) this, &
+        !!  real(real64) x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref dirk_integrator object.
+        !! @param[in] x The tolerance.
+        procedure, public :: set_newton_tolerance => dirk_set_newton_tol
     end type
 
     ! diffeq_dirk.f90
@@ -3169,6 +3192,26 @@ module diffeq
             real(real64), intent(in) :: h, x
             real(real64), intent(in), dimension(:) :: y
             class(errors), intent(inout), optional, target :: err
+        end subroutine
+
+        pure module function dirk_get_max_newton_iter(this) result(rst)
+            class(dirk_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+
+        module subroutine dirk_set_max_newton_iter(this, x)
+            class(dirk_integrator), intent(inout) :: this
+            integer(int32), intent(in) :: x
+        end subroutine
+
+        pure module function dirk_get_newton_tol(this) result(rst)
+            class(dirk_integrator), intent(in) :: this
+            real(real64) :: rst
+        end function
+
+        module subroutine dirk_set_newton_tol(this, x)
+            class(dirk_integrator), intent(inout) :: this
+            real(real64), intent(in) :: x
         end subroutine
     end interface
 

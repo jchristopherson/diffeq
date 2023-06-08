@@ -100,18 +100,4 @@ module subroutine irk_step(this, sys, x, xmax, y, yn, xprev, yprev, fprev, err)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-pure module function irk_get_max_newton_iter(this) result(rst)
-    class(implicit_rk_variable_integrator), intent(in) :: this
-    integer(int32) :: rst
-    rst = this%m_maxNewtonIter
-end function
-
-! --------------------
-module subroutine irk_set_max_newton_iter(this, x)
-    class(implicit_rk_variable_integrator), intent(inout) :: this
-    integer(int32), intent(in) :: x
-    this%m_maxNewtonIter = x
-end subroutine
-
-! ------------------------------------------------------------------------------
 end submodule
