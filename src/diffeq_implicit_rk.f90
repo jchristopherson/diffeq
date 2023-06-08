@@ -49,6 +49,11 @@ module function irk_compute_next_step_size(this, hn, en, enm1) result(rst)
         this%m_enormPrev = max(1.0d-2, en)
     end if
     if (abs(rst) > abs(hmax)) rst = sign(hmax, rst)
+
+    ! Update the Jacobian matrix if the step size has changed
+    if (abs(rst - hn) > 2.0d0 * epsilon(hn)) then
+        call this%set_is_jacobian_current(.false.)
+    end if
 end function
 
 ! ------------------------------------------------------------------------------
@@ -63,40 +68,6 @@ module subroutine irk_set_is_jac_current(this, x)
     class(implicit_rk_variable_integrator), intent(inout) :: this
     logical, intent(in) :: x
     this%m_isJacCurrent = x
-end subroutine
-
-! ------------------------------------------------------------------------------
-module subroutine irk_step(this, sys, x, xmax, y, yn, xprev, yprev, fprev, err)
-    ! Arguments
-    class(implicit_rk_variable_integrator), intent(inout) :: this
-    class(ode_container), intent(inout) :: sys
-    real(real64), intent(in) :: x, xmax
-    real(real64), intent(in), dimension(:) :: y
-    real(real64), intent(out), dimension(:) :: yn
-    real(real64), intent(in), optional, dimension(:) :: xprev
-    real(real64), intent(in), optional, dimension(:,:) :: yprev
-    real(real64), intent(inout), optional, dimension(:,:) :: fprev
-    class(errors), intent(inout), optional, target :: err
-
-    ! Local Variables
-    class(errors), pointer :: errmgr
-    type(errors), target :: deferr
-    real(real64) :: h
-    
-    ! Initialization
-    if (present(err)) then
-        errmgr => err
-    else
-        errmgr => deferr
-    end if
-    h = this%get_next_step_size()
-
-    ! Compute the system matrices
-    call this%build_factored_newton_matrix(sys, h, x, y, errmgr)
-    if (errmgr%has_error_occurred()) return
-
-    ! Call the base routine to finish the step
-    call vsi_step(this, sys, x, xmax, y, yn, xprev, yprev, fprev, errmgr)
 end subroutine
 
 ! ------------------------------------------------------------------------------

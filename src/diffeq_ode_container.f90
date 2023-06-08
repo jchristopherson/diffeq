@@ -64,7 +64,7 @@ module subroutine oc_jacobian(this, x, y, jac, err)
 
     ! Allocate workspace.  No action is taken if the proper workspace is
     ! already allocated.
-    call this%allocate_workspace(n, errmgr)
+    call this%allocate_workspace(ndof, errmgr)
     if (errmgr%has_error_occurred()) return
 
     ! Finite Difference Approximation

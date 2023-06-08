@@ -88,6 +88,9 @@ module subroutine dirk_alloc_workspace(this, neqn, err)
         if (flag /= 0) go to 10
     end if
 
+    ! Call the base routine
+    call rkv_alloc_workspace(this, neqn, errmgr)
+
     ! End
     return
 
@@ -253,7 +256,7 @@ module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
     ! Local Variables
     logical :: accept
     integer(int32) :: i, j, k, neqn, nstages, niter, maxiter
-    real(real64) :: z, tol, disp, val, eval
+    real(real64) :: a, z, tol, disp, val, eval
     class(errors), pointer :: errmgr
     type(errors), target :: deferr
     
@@ -268,6 +271,13 @@ module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
     maxiter = this%get_max_newton_iteration_count()
     accept = .false.
     tol = this%get_newton_tolerance()
+    call this%define_model()
+
+    ! Ensure the Jacobian is up to date prior to the step
+    if (.not.this%get_is_jacobian_current()) then
+        call this%build_factored_newton_matrix(sys, h, x, y, errmgr)
+        if (errmgr%has_error_occurred()) return
+    end if
 
     ! Process
     if (.not.this%is_fsal() .or. this%m_firstStep) then
@@ -283,8 +293,8 @@ module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
             ! Result is 1-by-NEQN
             this%m_w(j) = 0.0d0
             do k = 1, i - 1
-                this%m_w(j) = this%m_w(j) + &
-                    this%get_method_factor(i,k) * this%m_work(j,k)
+                a = this%get_method_factor(i,k)
+                this%m_w(j) = this%m_w(j) + a * this%m_work(j,k)
             end do
             this%m_w(j) = y(j) + h * this%m_w(j)
         end do
@@ -296,8 +306,8 @@ module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
         yn = y
         newton: do
             ! Define the right-hand-side
-            this%m_dy = this%m_w + h * this%get_method_factor(i,i) * &
-                this%m_work(:,i) - yn
+            a = this%get_method_factor(i,i)
+            this%m_dy = this%m_w + h * a * this%m_work(:,i) - yn
             
             ! Compute the solution
             call solve_lu(this%m_mtx, this%m_pvt, this%m_dy)

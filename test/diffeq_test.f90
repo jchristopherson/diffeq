@@ -6,6 +6,7 @@ program test
     use diffeq_dprk45_tests
     use diffeq_bsrk32_tests
     use diffeq_frf_tests
+    use diffeq_sdirk4_tests
     implicit none
 
     ! Local Variables
@@ -69,6 +70,9 @@ program test
 
     rst = test_frf_2()
     if (.not.rst) flag = 18
+
+    rst = test_sdirk4_1()
+    if (.not.rst) flag = 19
 
     ! Output
     stop flag

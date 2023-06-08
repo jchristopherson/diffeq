@@ -24,6 +24,7 @@ module diffeq
     public :: bsrk32_integrator
     public :: implicit_rk_variable_integrator
     public :: dirk_integrator
+    public :: sdirk4_integrator
     public :: DIFFEQ_MEMORY_ALLOCATION_ERROR
     public :: DIFFEQ_NULL_POINTER_ERROR
     public :: DIFFEQ_MATRIX_SIZE_ERROR
@@ -2898,59 +2899,6 @@ module diffeq
         !!  error handling.
         procedure(build_factored_newton_matrix_routine), public, deferred :: &
             build_factored_newton_matrix
-        !> @brief Takes one integration step.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! subroutine step( &
-        !!  class(implicit_rk_variable_integrator) this, &
-        !!  class(ode_container) sys, &
-        !!  real(real64) x, &
-        !!  real(real64) xmax, &
-        !!  real(real64) y(:), &
-        !!  real(real64) yn(:), &
-        !!  optional real(real64) xprev(:), &
-        !!  optional real(real64) yprev(:,:), &
-        !!  optional real(real64) fprev(:,:), &
-        !!  optional class(errors) err &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in,out] this The @ref implicit_rk_variable_integrator object.
-        !! @param[in] sys The @ref ode_container object containing the ODEs
-        !!  to integrate.
-        !! @param[in] x The current value of the independent variable.
-        !! @param[in] xmax The upper integration limit.
-        !! @param[in] y An N-element array containing the current values of
-        !!  the dependent variables.
-        !! @param[out] yn An N-element array where the values of the dependent
-        !!  variables at @p x + @p h will be written.
-        !! @param[in] xprev An M-element array containing the previous M values
-        !!  of the independent variable where M is the order of the method.
-        !!  This is typically useful for multi-step methods.  In single-step
-        !!  methods this parameter is not used.
-        !! @param[in] yprev An M-by-NEQN array containing the previous M arrays
-        !!  of dependent variable values where M is the order of the method.
-        !!  This is typically useful for multi-step methods.  In single-step
-        !!  methods this parameter is not used.
-        !! @param[out] fprev An M-by-NEQN array where the previous M function
-        !!  values are written.  This is typically useful for multi-step 
-        !!  methods.  In single-step methods this parameter is not used.
-        !! @param[in,out] An optional errors-based object that if provided 
-        !!  can be used to retrieve information relating to any errors 
-        !!  encountered during execution. If not provided, a default 
-        !!  implementation of the errors class is used internally to provide 
-        !!  error handling.  Possible errors and warning messages that may be 
-        !!  encountered are as follows.
-        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
-        !!      allocation issue.
-        !!  - DIFFEQ_ARRAY_SIZE_ERROR: Occurs if @p yn is not the same size
-        !!      as @p y.
-        !!  - DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR: Occurs if the step size becomes
-        !!      too small.
-        !!  - DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR: Occurs if the iteration
-        !!      count is exceeded for a single step.
-        procedure, public :: step => irk_step
 
         ! TO DO: Compute initial step size
     end type
@@ -2993,19 +2941,6 @@ module diffeq
         module subroutine irk_set_is_jac_current(this, x)
             class(implicit_rk_variable_integrator), intent(inout) :: this
             logical, intent(in) :: x
-        end subroutine
-
-        module subroutine irk_step(this, sys, x, xmax, y, yn, xprev, yprev, &
-            fprev, err)
-            class(implicit_rk_variable_integrator), intent(inout) :: this
-            class(ode_container), intent(inout) :: sys
-            real(real64), intent(in) :: x, xmax
-            real(real64), intent(in), dimension(:) :: y
-            real(real64), intent(out), dimension(:) :: yn
-            real(real64), intent(in), optional, dimension(:) :: xprev
-            real(real64), intent(in), optional, dimension(:,:) :: yprev
-            real(real64), intent(inout), optional, dimension(:,:) :: fprev
-            class(errors), intent(inout), optional, target :: err
         end subroutine
     end interface
 
@@ -3167,6 +3102,54 @@ module diffeq
         !! @param[in,out] this The @ref dirk_integrator object.
         !! @param[in] x The tolerance.
         procedure, public :: set_newton_tolerance => dirk_set_newton_tol
+        !> @brief Attempts a single integration step.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine attempt_step( &
+        !!  class(dirk_integrator) this, &
+        !!  class(ode_container) sys, &
+        !!  real(real64) h, &
+        !!  real(real64) x, &
+        !!  real(real64) y(:), &
+        !!  real(real64) yn(:), &
+        !!  real(real64) en(:), &
+        !!  optional real(real64) xprev(:), &
+        !!  optional real(real64) yprev(:,:), &
+        !!  optional real(real64) fprev(:,:), &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref dirk_integrator object.
+        !! @param[in] sys The @ref ode_container object containing the ODEs
+        !!  to integrate.
+        !! @param[in] h The current step size.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] y An N-element array containing the current values of
+        !!  the dependent variables.
+        !! @param[out] yn An N-element array where the values of the dependent
+        !!  variables at @p x + @p h will be written.
+        !! @param[out] en An N-element array where the values of the error
+        !!  estimates will be written.
+        !! @param[in] xprev An M-element array containing the previous M values
+        !!  of the independent variable where M is the order of the method.
+        !!  This is typically useful for multi-step methods.  In single-step
+        !!  methods this parameter is not used.
+        !! @param[in] yprev An M-by-NEQN array containing the previous M arrays
+        !!  of dependent variable values where M is the order of the method.
+        !!  This is typically useful for multi-step methods.  In single-step
+        !!  methods this parameter is not used.
+        !! @param[in] fprev An M-by-NEQN array containing the previous M arrays
+        !!  of function (derivative) values where M is the order of the method.
+        !!  This is typically useful for multi-step methods.  In single-step
+        !!  methods this parameter is not used.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.
+        procedure, public :: attempt_step => dirk_attempt_step
     end type
 
     ! diffeq_dirk.f90
@@ -3212,6 +3195,19 @@ module diffeq
         module subroutine dirk_set_newton_tol(this, x)
             class(dirk_integrator), intent(inout) :: this
             real(real64), intent(in) :: x
+        end subroutine
+
+        module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, &
+            xprev, yprev, fprev, err)
+            class(dirk_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(in) :: h, x
+            real(real64), intent(in), dimension(:) :: y
+            real(real64), intent(out), dimension(:) :: yn, en
+            real(real64), intent(in), optional, dimension(:) :: xprev
+            real(real64), intent(in), optional, dimension(:,:) :: yprev
+            real(real64), intent(inout), optional, dimension(:,:) :: fprev
+            class(errors), intent(inout), optional, target :: err
         end subroutine
     end interface
 

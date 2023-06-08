@@ -64,6 +64,8 @@ module subroutine sd4_define_model(this)
     if (this%m_modelDefined) return
 
     ! A
+    this%m_a = 0.0d0
+    
     this%m_a(2,1) = a21
     this%m_a(2,2) = a22
 
