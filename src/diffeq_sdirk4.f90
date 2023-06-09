@@ -64,92 +64,62 @@ module subroutine sd4_define_model(this)
     if (this%m_modelDefined) return
 
     ! A
-    this%m_a = 0.0d0
+    this%a = 0.0d0
     
-    this%m_a(2,1) = a21
-    this%m_a(2,2) = a22
+    this%a(1,1) = a22
 
-    this%m_a(3,1) = a31
-    this%m_a(3,2) = a32
-    this%m_a(3,3) = a33
+    this%a(2,1) = a21
+    this%a(2,2) = a22
 
-    this%m_a(4,1) = a41
-    this%m_a(4,2) = a42
-    this%m_a(4,3) = a43
-    this%m_a(4,4) = a44
+    this%a(3,1) = a31
+    this%a(3,2) = a32
+    this%a(3,3) = a33
 
-    this%m_a(5,1) = a51
-    this%m_a(5,2) = a52
-    this%m_a(5,3) = a53
-    this%m_a(5,4) = a54
-    this%m_a(5,5) = a55
+    this%a(4,1) = a41
+    this%a(4,2) = a42
+    this%a(4,3) = a43
+    this%a(4,4) = a44
 
-    this%m_a(6,1) = b1
-    this%m_a(6,2) = b2
-    this%m_a(6,3) = b3
-    this%m_a(6,4) = b4
-    this%m_a(6,5) = b5
-    this%m_a(6,6) = b6
+    this%a(5,1) = a51
+    this%a(5,2) = a52
+    this%a(5,3) = a53
+    this%a(5,4) = a54
+    this%a(5,5) = a55
+
+    this%a(6,1) = b1
+    this%a(6,2) = b2
+    this%a(6,3) = b3
+    this%a(6,4) = b4
+    this%a(6,5) = b5
+    this%a(6,6) = b6
 
     ! B
-    this%m_b(1) = b1
-    this%m_b(2) = b2
-    this%m_b(3) = b3
-    this%m_b(4) = b4
-    this%m_b(5) = b5
-    this%m_b(6) = b6
+    this%b(1) = b1
+    this%b(2) = b2
+    this%b(3) = b3
+    this%b(4) = b4
+    this%b(5) = b5
+    this%b(6) = b6
 
     ! C
-    this%m_c(1) = 0.0d0
-    this%m_c(2) = c2
-    this%m_c(3) = c3
-    this%m_c(4) = c4
-    this%m_c(5) = c5
-    this%m_c(6) = c6
+    this%c(1) = 0.0d0
+    this%c(2) = c2
+    this%c(3) = c3
+    this%c(4) = c4
+    this%c(5) = c5
+    this%c(6) = c6
 
     ! E
-    this%m_e(1) = b1a - b1
-    this%m_e(2) = b2a - b2
-    this%m_e(3) = b3a - b3
-    this%m_e(4) = b4a - b4
-    this%m_e(5) = b5a - b5
-    this%m_e(6) = b6a - b6
+    this%e(1) = b1a - b1
+    this%e(2) = b2a - b2
+    this%e(3) = b3a - b3
+    this%e(4) = b4a - b4
+    this%e(5) = b5a - b5
+    this%e(6) = b6a - b6
 
     ! Update definition status
     this%m_modelDefined = .true.
 end subroutine
-
-! ------------------------------------------------------------------------------
-pure module function sd4_get_method_factor(this, i, j) result(rst)
-    class(sdirk4_integrator), intent(in) :: this
-    integer(int32), intent(in) :: i, j
-    real(real64) :: rst
-    rst = this%m_a(i, j)
-end function
-
-! ------------------------------------------------------------------------------
-pure module function sd4_get_quad_weights(this, i) result(rst)
-    class(sdirk4_integrator), intent(in) :: this
-    integer(int32), intent(in) :: i
-    real(real64) :: rst
-    rst = this%m_b(i)
-end function
-
-! ------------------------------------------------------------------------------
-pure module function sd4_get_error_factor(this, i) result(rst)
-    class(sdirk4_integrator), intent(in) :: this
-    integer(int32), intent(in) :: i
-    real(real64) :: rst
-    rst = this%m_e(i)
-end function
-
-! ------------------------------------------------------------------------------
-pure module function sd4_get_position_factor(this, i) result(rst)
-    class(sdirk4_integrator), intent(in) :: this
-    integer(int32), intent(in) :: i
-    real(real64) :: rst
-    rst = this%m_c(i)
-end function
 
 ! ------------------------------------------------------------------------------
 pure module function sd4_is_fsal(this) result(rst)

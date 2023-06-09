@@ -1774,6 +1774,14 @@ module diffeq
         ! Step-size PI control parameters
         real(real64), private :: m_alpha = 0.7d0
         real(real64), private :: m_beta = 0.4d-1
+        !> @brief The NSTAGE-by-NSTAGE method factor matrix A.
+        real(real64), public, allocatable, dimension(:,:) :: a
+        !> @brief The NSTAGE-element quadrature weight array B.
+        real(real64), public, allocatable, dimension(:) :: b
+        !> @brief The NSTAGE-element position factor array C.
+        real(real64), public, allocatable, dimension(:) :: c
+        !> @brief The NSTAGE-element error estimate factor array E.
+        real(real64), public, allocatable, dimension(:) :: e
     contains
         !> @brief Initializes the integrator.
         !!
@@ -1797,69 +1805,69 @@ module diffeq
         !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
         !!      allocation issue.
         procedure, public :: initialize => rkv_alloc_workspace
-        !> @brief Gets the requested method factor from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_method_factor( &
-        !!  class(rk_variable_integrator) this, &
-        !!  integer(int32), intent(in) i, &
-        !!  integer(int32), intent(in) j &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref rk_variable_integrator object.
-        !! @param[in] i The row index of the parameter from the Butcher tableau.
-        !! @param[in] j The column index of the parameter from the Butcher 
-        !!  tableau.
-        !! @return The requested parameter.
-        procedure(rkv_get_matrix_parameter), deferred, public :: &
-            get_method_factor
-        !> @brief Gets the requested quadrature weight from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_quadrature_weight( &
-        !!  class(rk_variable_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref rk_variable_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure(rkv_get_array_parameter), deferred, public :: &
-            get_quadrature_weight
-        !> @brief Gets the requested error coefficient from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_error_factor( &
-        !!  class(rk_variable_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref rk_variable_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure(rkv_get_array_parameter), deferred, public :: &
-            get_error_factor
-        !> @brief Gets the requested position factor from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_position_factor( &
-        !!  class(rk_variable_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref rk_variable_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure(rkv_get_array_parameter), deferred, public :: &
-            get_position_factor
+        ! !> @brief Gets the requested method factor from the Butcher tableau.
+        ! !!
+        ! !! @par Syntax
+        ! !! @code{.f90}
+        ! !! real(real64) pure function get_method_factor( &
+        ! !!  class(rk_variable_integrator) this, &
+        ! !!  integer(int32), intent(in) i, &
+        ! !!  integer(int32), intent(in) j &
+        ! !! )
+        ! !! @endcode
+        ! !!
+        ! !! @param[in] this The @ref rk_variable_integrator object.
+        ! !! @param[in] i The row index of the parameter from the Butcher tableau.
+        ! !! @param[in] j The column index of the parameter from the Butcher 
+        ! !!  tableau.
+        ! !! @return The requested parameter.
+        ! procedure(rkv_get_matrix_parameter), deferred, public :: &
+        !     get_method_factor
+        ! !> @brief Gets the requested quadrature weight from the Butcher tableau.
+        ! !!
+        ! !! @par Syntax
+        ! !! @code{.f90}
+        ! !! real(real64) pure function get_quadrature_weight( &
+        ! !!  class(rk_variable_integrator) this, &
+        ! !!  integer(int32), intent(in) i &
+        ! !! )
+        ! !! @endcode
+        ! !!
+        ! !! @param[in] this The @ref rk_variable_integrator object.
+        ! !! @param[in] i The index of the parameter from the Butcher tableau.
+        ! !! @return The requested parameter.
+        ! procedure(rkv_get_array_parameter), deferred, public :: &
+        !     get_quadrature_weight
+        ! !> @brief Gets the requested error coefficient from the Butcher tableau.
+        ! !!
+        ! !! @par Syntax
+        ! !! @code{.f90}
+        ! !! real(real64) pure function get_error_factor( &
+        ! !!  class(rk_variable_integrator) this, &
+        ! !!  integer(int32), intent(in) i &
+        ! !! )
+        ! !! @endcode
+        ! !!
+        ! !! @param[in] this The @ref rk_variable_integrator object.
+        ! !! @param[in] i The index of the parameter from the Butcher tableau.
+        ! !! @return The requested parameter.
+        ! procedure(rkv_get_array_parameter), deferred, public :: &
+        !     get_error_factor
+        ! !> @brief Gets the requested position factor from the Butcher tableau.
+        ! !!
+        ! !! @par Syntax
+        ! !! @code{.f90}
+        ! !! real(real64) pure function get_position_factor( &
+        ! !!  class(rk_variable_integrator) this, &
+        ! !!  integer(int32), intent(in) i &
+        ! !! )
+        ! !! @endcode
+        ! !!
+        ! !! @param[in] this The @ref rk_variable_integrator object.
+        ! !! @param[in] i The index of the parameter from the Butcher tableau.
+        ! !! @return The requested parameter.
+        ! procedure(rkv_get_array_parameter), deferred, public :: &
+        !     get_position_factor
         !> @brief Determines if the integrator is an FSAL (first same as last)
         !! integrator (e.g. the 4th/5th order Dormand-Prince integrator).
         !!
@@ -2270,10 +2278,6 @@ module diffeq
     !! @image html dprk45_diffing_example_1.png
     type, extends(rk_variable_integrator) :: dprk45_integrator
         logical, private :: m_modelDefined = .false.
-        real(real64), private, dimension(7,7) :: m_a
-        real(real64), private, dimension(7) :: m_b
-        real(real64), private, dimension(7) :: m_c
-        real(real64), private, dimension(7) :: m_e
         real(real64), private, allocatable, dimension(:,:) :: m_dprk45work
     contains
         !> @brief Defines (initializes) the model parameters.
@@ -2285,65 +2289,6 @@ module diffeq
         !!
         !! @param[in] this The @ref dprk45_integrator object.
         procedure, public :: define_model => dprk45_define_model
-        !> @brief Gets the requested method factor from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_method_factor( &
-        !!  class(dprk45_integrator) this, &
-        !!  integer(int32), intent(in) i, &
-        !!  integer(int32), intent(in) j &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref dprk45_integrator object.
-        !! @param[in] i The row index of the parameter from the Butcher tableau.
-        !! @param[in] j The column index of the parameter from the Butcher 
-        !!  tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_method_factor => dprk45_get_method_factor
-        !> @brief Gets the requested quadrature weight from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_quadrature_weight( &
-        !!  class(dprk45_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref dprk45_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_quadrature_weight => dprk45_get_quad_weights
-        !> @brief Gets the requested error coefficient from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_error_factor( &
-        !!  class(dprk45_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref dprk45_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_error_factor => dprk45_get_error_factor
-        !> @brief Gets the requested position factor from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_position_factor( &
-        !!  class(dprk45_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref dprk45_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_position_factor => dprk45_get_position_factor
         !> @brief Determines if the integrator is an FSAL (first same as last)
         !! integrator (e.g. the 4th/5th order Dormand-Prince integrator).
         !!
@@ -2437,30 +2382,6 @@ module diffeq
             class(dprk45_integrator), intent(inout) :: this
         end subroutine
 
-        pure module function dprk45_get_method_factor(this, i, j) result(rst)
-            class(dprk45_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i, j
-            real(real64) :: rst
-        end function
-
-        pure module function dprk45_get_quad_weights(this, i) result(rst)
-            class(dprk45_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i
-            real(real64) :: rst
-        end function
-
-        pure module function dprk45_get_error_factor(this, i) result(rst)
-            class(dprk45_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i
-            real(real64) :: rst
-        end function
-
-        pure module function dprk45_get_position_factor(this, i) result(rst)
-            class(dprk45_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i
-            real(real64) :: rst
-        end function
-
         pure module function dprk45_is_fsal(this) result(rst)
             class(dprk45_integrator), intent(in) :: this
             logical :: rst
@@ -2475,11 +2396,6 @@ module diffeq
             class(dprk45_integrator), intent(in) :: this
             integer(int32) :: rst
         end function
-
-        ! pure module function dprk45_is_single_step(this) result(rst)
-        !     class(dprk45_integrator), intent(in) :: this
-        !     logical :: rst
-        ! end function
 
         module subroutine dprk45_interp(this, xprev, xnew, x, y, err)
             class(dprk45_integrator), intent(in) :: this
@@ -2566,10 +2482,6 @@ module diffeq
     !! @image html bsrk32_vanderpol_example_1.png
     type, extends(rk_variable_integrator) :: bsrk32_integrator
         logical, private :: m_modelDefined = .false.
-        real(real64), private, dimension(4,4) :: m_a
-        real(real64), private, dimension(4) :: m_b
-        real(real64), private, dimension(4) :: m_c
-        real(real64), private, dimension(4) :: m_e
         real(real64), private, allocatable, dimension(:,:) :: m_bsrk23work
     contains
         !> @brief Defines (initializes) the model parameters.
@@ -2581,65 +2493,6 @@ module diffeq
         !!
         !! @param[in] this The @ref bsrk32_integrator object.
         procedure, public :: define_model => bsrk32_define_model
-        !> @brief Gets the requested method factor from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_method_factor( &
-        !!  class(bsrk32_integrator) this, &
-        !!  integer(int32), intent(in) i, &
-        !!  integer(int32), intent(in) j &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref bsrk32_integrator object.
-        !! @param[in] i The row index of the parameter from the Butcher tableau.
-        !! @param[in] j The column index of the parameter from the Butcher 
-        !!  tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_method_factor => bsrk32_get_method_factor
-        !> @brief Gets the requested quadrature weight from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_quadrature_weight( &
-        !!  class(bsrk32_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref bsrk32_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_quadrature_weight => bsrk32_get_quad_weights
-        !> @brief Gets the requested error coefficient from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_error_factor( &
-        !!  class(bsrk32_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref bsrk32_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_error_factor => bsrk32_get_error_factor
-        !> @brief Gets the requested position factor from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_position_factor( &
-        !!  class(bsrk32_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref bsrk32_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_position_factor => bsrk32_get_position_factor
         !> @brief Determines if the integrator is an FSAL (first same as last)
         !! integrator (e.g. the 4th/5th order Dormand-Prince integrator).
         !!
@@ -2733,30 +2586,6 @@ module diffeq
             class(bsrk32_integrator), intent(inout) :: this
         end subroutine
 
-        pure module function bsrk32_get_method_factor(this, i, j) result(rst)
-            class(bsrk32_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i, j
-            real(real64) :: rst
-        end function
-
-        pure module function bsrk32_get_quad_weights(this, i) result(rst)
-            class(bsrk32_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i
-            real(real64) :: rst
-        end function
-
-        pure module function bsrk32_get_error_factor(this, i) result(rst)
-            class(bsrk32_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i
-            real(real64) :: rst
-        end function
-
-        pure module function bsrk32_get_position_factor(this, i) result(rst)
-            class(bsrk32_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i
-            real(real64) :: rst
-        end function
-
         pure module function bsrk32_is_fsal(this) result(rst)
             class(bsrk32_integrator), intent(in) :: this
             logical :: rst
@@ -2795,6 +2624,8 @@ module diffeq
         real(real64), private :: m_hold = 0.0d0
         ! Is the Jacobian current?
         logical, private :: m_isJacCurrent = .false.
+        ! Use a PI step size (true) or a Gustafsson controller (false)
+        logical, private :: m_usePI = .true.
     contains
         !> @brief Gets the most recent successful step size.
         !!
@@ -2899,6 +2730,37 @@ module diffeq
         !!  error handling.
         procedure(build_factored_newton_matrix_routine), public, deferred :: &
             build_factored_newton_matrix
+        !> @brief Gets a parameter determining if a PI step size controller
+        !! or a Gustafsson step size controller should be used. The default is
+        !! to use a PI step size controller.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! logical pure function get_use_pi_controller(
+        !!  class(implicit_rk_variable_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref implicit_rk_variable_integrator object.
+        !! @return True to use a PI controller; else, false to use a
+        !!  Gustafsson controller.
+        procedure, public :: get_use_pi_controller => irk_get_use_pi_controller
+        !> @brief Sets a parameter determining if a PI step size controller
+        !! or a Gustafsson step size controller should be used. The default is
+        !! to use a PI step size controller.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_use_pi_controller(
+        !!  class(implicit_rk_variable_integrator) this, &
+        !!  logical x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref implicit_rk_variable_integrator object.
+        !! @param[in] x True to use a PI controller; else, false to use a
+        !!  Gustafsson controller.
+        procedure, public :: set_use_pi_controller => irk_set_use_pi_controller
 
         ! TO DO: Compute initial step size
     end type
@@ -2916,6 +2778,7 @@ module diffeq
             real(real64), intent(in), dimension(:) :: y
             class(errors), intent(inout), optional, target :: err
         end subroutine
+
         pure module function irk_get_old_step(this) result(rst)
             class(implicit_rk_variable_integrator), intent(in) :: this
             real(real64) :: rst
@@ -2939,6 +2802,16 @@ module diffeq
         end function
 
         module subroutine irk_set_is_jac_current(this, x)
+            class(implicit_rk_variable_integrator), intent(inout) :: this
+            logical, intent(in) :: x
+        end subroutine
+
+        pure module function irk_get_use_pi_controller(this) result(rst)
+            class(implicit_rk_variable_integrator), intent(in) :: this
+            logical :: rst
+        end function
+
+        module subroutine irk_set_use_pi_controller(this, x)
             class(implicit_rk_variable_integrator), intent(inout) :: this
             logical, intent(in) :: x
         end subroutine
@@ -3216,10 +3089,6 @@ module diffeq
     !! suitable for integrating stiff systems of differential equations.
     type, extends(dirk_integrator) :: sdirk4_integrator
         logical, private :: m_modelDefined = .false.
-        real(real64), private, dimension(6,6) :: m_a
-        real(real64), private, dimension(6) :: m_b
-        real(real64), private, dimension(6) :: m_c
-        real(real64), private, dimension(6) :: m_e
     contains
         !> @brief Returns the order of the integrator.
         !!
@@ -3254,65 +3123,6 @@ module diffeq
         !!
         !! @param[in] this The @ref sdirk4_integrator object.
         procedure, public :: define_model => sd4_define_model
-        !> @brief Gets the requested method factor from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_method_factor( &
-        !!  class(sdirk4_integrator) this, &
-        !!  integer(int32), intent(in) i, &
-        !!  integer(int32), intent(in) j &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref sdirk4_integrator object.
-        !! @param[in] i The row index of the parameter from the Butcher tableau.
-        !! @param[in] j The column index of the parameter from the Butcher 
-        !!  tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_method_factor => sd4_get_method_factor
-        !> @brief Gets the requested quadrature weight from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_quadrature_weight( &
-        !!  class(sdirk4_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref sdirk4_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_quadrature_weight => sd4_get_quad_weights
-        !> @brief Gets the requested error coefficient from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_error_factor( &
-        !!  class(sdirk4_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref sdirk4_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_error_factor => sd4_get_error_factor
-        !> @brief Gets the requested position factor from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_position_factor( &
-        !!  class(sdirk4_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref sdirk4_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_position_factor => sd4_get_position_factor
         !> @brief Determines if the integrator is an FSAL (first same as last)
         !! integrator (e.g. the 4th/5th order Dormand-Prince integrator).
         !!
@@ -3393,30 +3203,6 @@ module diffeq
         module subroutine sd4_define_model(this)
             class(sdirk4_integrator), intent(inout) :: this
         end subroutine
-
-        pure module function sd4_get_method_factor(this, i, j) result(rst)
-            class(sdirk4_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i, j
-            real(real64) :: rst
-        end function
-
-        pure module function sd4_get_quad_weights(this, i) result(rst)
-            class(sdirk4_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i
-            real(real64) :: rst
-        end function
-
-        pure module function sd4_get_error_factor(this, i) result(rst)
-            class(sdirk4_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i
-            real(real64) :: rst
-        end function
-
-        pure module function sd4_get_position_factor(this, i) result(rst)
-            class(sdirk4_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i
-            real(real64) :: rst
-        end function
 
         pure module function sd4_is_fsal(this) result(rst)
             class(sdirk4_integrator), intent(in) :: this

@@ -30,67 +30,35 @@ module subroutine bsrk32_define_model(this)
     if (this%m_modelDefined) return
 
     ! A
-    this%m_a = 0.0d0
+    this%a = 0.0d0
 
-    this%m_a(2,1) = a21
+    this%a(2,1) = a21
 
-    this%m_a(3,1) = a31
-    this%m_a(3,2) = a32
+    this%a(3,1) = a31
+    this%a(3,2) = a32
 
-    this%m_a(4,1) = a41
-    this%m_a(4,2) = a42
-    this%m_a(4,3) = a43
+    this%a(4,1) = a41
+    this%a(4,2) = a42
+    this%a(4,3) = a43
 
     ! B
-    this%m_b(1) = b1
-    this%m_b(2) = b2
-    this%m_b(3) = b3
-    this%m_b(4) = b4
+    this%b(1) = b1
+    this%b(2) = b2
+    this%b(3) = b3
+    this%b(4) = b4
 
     ! C
-    this%m_c(1) = c1
-    this%m_c(2) = c2
-    this%m_c(3) = c3
-    this%m_c(4) = c4
+    this%c(1) = c1
+    this%c(2) = c2
+    this%c(3) = c3
+    this%c(4) = c4
 
     ! E
-    this%m_e(1) = b1a - b1
-    this%m_e(2) = b2a - b2
-    this%m_e(3) = b3a - b3
-    this%m_e(4) = b4a - b4
+    this%e(1) = b1a - b1
+    this%e(2) = b2a - b2
+    this%e(3) = b3a - b3
+    this%e(4) = b4a - b4
 end subroutine
-
-! ------------------------------------------------------------------------------
-pure module function bsrk32_get_method_factor(this, i, j) result(rst)
-    class(bsrk32_integrator), intent(in) :: this
-    integer(int32), intent(in) :: i, j
-    real(real64) :: rst
-    rst = this%m_a(i, j)
-end function
-
-! ------------------------------------------------------------------------------
-pure module function bsrk32_get_quad_weights(this, i) result(rst)
-    class(bsrk32_integrator), intent(in) :: this
-    integer(int32), intent(in) :: i
-    real(real64) :: rst
-    rst = this%m_b(i)
-end function
-
-! ------------------------------------------------------------------------------
-pure module function bsrk32_get_error_factor(this, i) result(rst)
-    class(bsrk32_integrator), intent(in) :: this
-    integer(int32), intent(in) :: i
-    real(real64) :: rst
-    rst = this%m_e(i)
-end function
-
-! ------------------------------------------------------------------------------
-pure module function bsrk32_get_position_factor(this, i) result(rst)
-    class(bsrk32_integrator), intent(in) :: this
-    integer(int32), intent(in) :: i
-    real(real64) :: rst
-    rst = this%m_c(i)
-end function
 
 ! ------------------------------------------------------------------------------
 pure module function bsrk32_is_fsal(this) result(rst)

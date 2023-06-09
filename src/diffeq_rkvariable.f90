@@ -45,6 +45,53 @@ module subroutine rkv_alloc_workspace(this, neqn, err)
         if (flag /= 0) go to 10
     end if
 
+    if (allocated(this%a)) then
+        if (size(this%a, 1) /= n .or. size(this%a, 2) /= n) then
+            deallocate(this%a)
+            allocate(this%a(n, n), stat = flag, source = 0.0d0)
+            if (flag /= 0) go to 10
+        end if
+    else
+        allocate(this%a(n, n), stat = flag, source = 0.0d0)
+        if (flag /= 0) go to 10
+    end if
+
+    if (allocated(this%b)) then
+        if (size(this%b) /= n) then
+            deallocate(this%b)
+            allocate(this%b(n), stat = flag, source = 0.0d0)
+            if (flag /= 0) go to 10
+        end if
+    else
+        allocate(this%b(n), stat = flag, source = 0.0d0)
+        if (flag /= 0) go to 10
+    end if
+
+    if (allocated(this%c)) then
+        if (size(this%c) /= n) then
+            deallocate(this%c)
+            allocate(this%c(n), stat = flag, source = 0.0d0)
+            if (flag /= 0) go to 10
+        end if
+    else
+        allocate(this%c(n), stat = flag, source = 0.0d0)
+        if (flag /= 0) go to 10
+    end if
+
+    if (allocated(this%e)) then
+        if (size(this%e) /= n) then
+            deallocate(this%e)
+            allocate(this%e(n), stat = flag, source = 0.0d0)
+            if (flag /= 0) go to 10
+        end if
+    else
+        allocate(this%e(n), stat = flag, source = 0.0d0)
+        if (flag /= 0) go to 10
+    end if
+
+    ! Define the model parameters
+    call this%define_model()
+
     ! Call the base method
     call vsi_alloc_workspace(this, neqn, errmgr)
 
@@ -96,7 +143,6 @@ module subroutine rkv_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
     end if
     n = this%get_stage_count()
     neqn = size(y)
-    call this%define_model()
 
     ! The Butcher tableau is lower triangular as this is an explicit integrator
     if (.not.this%is_fsal() .or. this%m_firstStep) then
@@ -109,12 +155,12 @@ module subroutine rkv_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
     do i = 2, n
         this%m_ywork = 0.0d0
         do j = 1, i - 1 ! only reference the sub-diagonal components
-            this%m_ywork = this%m_ywork + this%get_method_factor(i, j) * &
+            this%m_ywork = this%m_ywork + this%a(i, j) * &
                 this%m_work(:,j)
         end do
 
         call sys%ode( &
-            x + h * this%get_position_factor(i), &
+            x + h * this%c(i), &
             y + h * this%m_ywork, &
             this%m_work(:,i) &  ! output
         )
@@ -123,9 +169,9 @@ module subroutine rkv_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
     ! Compute the two solution estimates, and the resulting error estimate
     do i = 1, n
         if (i == 1) then
-            this%m_ywork = this%get_quadrature_weight(i) * this%m_work(:,i)
+            this%m_ywork = this%b(i) * this%m_work(:,i)
         else
-            this%m_ywork = this%m_ywork + this%get_quadrature_weight(i) * &
+            this%m_ywork = this%m_ywork + this%b(i) * &
                 this%m_work(:,i)
         end if
     end do
@@ -133,9 +179,9 @@ module subroutine rkv_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
 
     do i = 1, n
         if (i == 1) then
-            this%m_ywork = this%get_error_factor(i) * this%m_work(:,i)
+            this%m_ywork = this%e(i) * this%m_work(:,i)
         else
-            this%m_ywork = this%m_ywork + this%get_error_factor(i) * &
+            this%m_ywork = this%m_ywork + this%e(i) * &
                 this%m_work(:,i)
         end if
     end do

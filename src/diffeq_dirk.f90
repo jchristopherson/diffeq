@@ -192,7 +192,7 @@ module subroutine dirk_build_matrix(this, h, jac, x, m, err)
     end if
 
     ! Process
-    fac = 1.0d0 / (this%get_method_factor(1,1) * h)
+    fac = 1.0d0 / (this%a(2,2) * h)
     if (present(m)) then
         x = m * fac - jac
     else
@@ -255,8 +255,8 @@ module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
 
     ! Local Variables
     logical :: accept
-    integer(int32) :: i, j, k, neqn, nstages, niter, maxiter
-    real(real64) :: a, z, tol, disp, val, eval
+    integer(int32) :: i, neqn, nstages, niter, maxiter
+    real(real64) :: z, tol, disp, val, eval
     class(errors), pointer :: errmgr
     type(errors), target :: deferr
     
@@ -288,26 +288,18 @@ module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
         call sys%ode(x, y, this%m_work(:,1))
     end if
     outer : do i = 1, nstages
-        do j = 1, neqn
-            ! Compute A(i,1:i-1) * F(1:i-1,:) where F is NSTAGES-by-NEQN
-            ! Result is 1-by-NEQN
-            this%m_w(j) = 0.0d0
-            do k = 1, i - 1
-                a = this%get_method_factor(i,k)
-                this%m_w(j) = this%m_w(j) + a * this%m_work(j,k)
-            end do
-            this%m_w(j) = y(j) + h * this%m_w(j)
-        end do
-        z = x + this%get_position_factor(i) * h
+        ! Compute A(i,1:i-1) * F(1:i-1,:) where F is NSTAGES-by-NEQN
+        this%m_w = y + h * matmul(this%m_work(:,1:i-1), this%a(i,1:i-1))
+        z = x + this%c(i) * h
         call sys%ode(z, y, this%m_work(:,i))
 
         ! Newton Iteration Process
         niter = 0
         yn = y
+        accept = .false.
         newton: do
             ! Define the right-hand-side
-            a = this%get_method_factor(i,i)
-            this%m_dy = this%m_w + h * a * this%m_work(:,i) - yn
+            this%m_dy = this%m_w + h * this%a(i,i) * this%m_work(:,i) - yn
             
             ! Compute the solution
             call solve_lu(this%m_mtx, this%m_pvt, this%m_dy)
@@ -330,16 +322,8 @@ module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
     end do outer
 
     ! Update the solution estimate and error estimate
-    do i = 1, neqn
-        val = 0.0d0
-        eval = 0.0d0
-        do j = 1, nstages
-            val = val + this%get_quadrature_weight(j) * this%m_work(j,i)
-            eval = eval + this%get_error_factor(j) * this%m_work(j,i)
-        end do
-        yn(i) = y(i) + h * val
-        en(i) = h * eval
-    end do
+    yn = y + h * matmul(this%m_work, this%b)
+    en = h * matmul(this%m_work, this%e)
 
     ! Do we need to update the Jacobian?
     if (.not.accept) then

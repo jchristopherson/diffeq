@@ -54,97 +54,65 @@ module subroutine dprk45_define_model(this)
     if (this%m_modelDefined) return
 
     ! A
-    this%m_a = 0.0d0
+    this%a = 0.0d0
     
-    this%m_a(2,1) = a21
+    this%a(2,1) = a21
 
-    this%m_a(3,1) = a31
-    this%m_a(3,2) = a32
+    this%a(3,1) = a31
+    this%a(3,2) = a32
 
-    this%m_a(4,1) = a41
-    this%m_a(4,2) = a42
-    this%m_a(4,3) = a43
+    this%a(4,1) = a41
+    this%a(4,2) = a42
+    this%a(4,3) = a43
 
-    this%m_a(5,1) = a51
-    this%m_a(5,2) = a52
-    this%m_a(5,3) = a53
-    this%m_a(5,4) = a54
+    this%a(5,1) = a51
+    this%a(5,2) = a52
+    this%a(5,3) = a53
+    this%a(5,4) = a54
 
-    this%m_a(6,1) = a61
-    this%m_a(6,2) = a62
-    this%m_a(6,3) = a63
-    this%m_a(6,4) = a64
-    this%m_a(6,5) = a65
+    this%a(6,1) = a61
+    this%a(6,2) = a62
+    this%a(6,3) = a63
+    this%a(6,4) = a64
+    this%a(6,5) = a65
     
-    this%m_a(7,1) = a71
-    this%m_a(7,2) = a72
-    this%m_a(7,3) = a73
-    this%m_a(7,4) = a74
-    this%m_a(7,5) = a75
-    this%m_a(7,6) = a76
+    this%a(7,1) = a71
+    this%a(7,2) = a72
+    this%a(7,3) = a73
+    this%a(7,4) = a74
+    this%a(7,5) = a75
+    this%a(7,6) = a76
 
     ! B
-    this%m_b(1) = a71
-    this%m_b(2) = a72
-    this%m_b(3) = a73
-    this%m_b(4) = a74
-    this%m_b(5) = a75
-    this%m_b(6) = a76
-    this%m_b(7) = 0.0d0
+    this%b(1) = a71
+    this%b(2) = a72
+    this%b(3) = a73
+    this%b(4) = a74
+    this%b(5) = a75
+    this%b(6) = a76
+    this%b(7) = 0.0d0
 
     ! C
-    this%m_c(1) = 0.0d0
-    this%m_c(2) = c2
-    this%m_c(3) = c3
-    this%m_c(4) = c4
-    this%m_c(5) = c5
-    this%m_c(6) = c6
-    this%m_c(7) = c7
+    this%c(1) = 0.0d0
+    this%c(2) = c2
+    this%c(3) = c3
+    this%c(4) = c4
+    this%c(5) = c5
+    this%c(6) = c6
+    this%c(7) = c7
 
     ! E
-    this%m_e(1) = e1
-    this%m_e(2) = e2
-    this%m_e(3) = e3
-    this%m_e(4) = e4
-    this%m_e(5) = e5
-    this%m_e(6) = e6
-    this%m_e(7) = e7
+    this%e(1) = e1
+    this%e(2) = e2
+    this%e(3) = e3
+    this%e(4) = e4
+    this%e(5) = e5
+    this%e(6) = e6
+    this%e(7) = e7
 
     ! Update definition status
     this%m_modelDefined = .true.
 end subroutine
-
-! ------------------------------------------------------------------------------
-pure module function dprk45_get_method_factor(this, i, j) result(rst)
-    class(dprk45_integrator), intent(in) :: this
-    integer(int32), intent(in) :: i, j
-    real(real64) :: rst
-    rst = this%m_a(i, j)
-end function
-
-! ------------------------------------------------------------------------------
-pure module function dprk45_get_quad_weights(this, i) result(rst)
-    class(dprk45_integrator), intent(in) :: this
-    integer(int32), intent(in) :: i
-    real(real64) :: rst
-    rst = this%m_b(i)
-end function
-
-! ------------------------------------------------------------------------------
-pure module function dprk45_get_error_factor(this, i) result(rst)
-    class(dprk45_integrator), intent(in) :: this
-    integer(int32), intent(in) :: i
-    real(real64) :: rst
-    rst = this%m_e(i)
-end function
-
-! ------------------------------------------------------------------------------
-pure module function dprk45_get_position_factor(this, i) result(rst)
-    class(dprk45_integrator), intent(in) :: this
-    integer(int32), intent(in) :: i
-    real(real64) :: rst
-    rst = this%m_c(i)
-end function
 
 ! ------------------------------------------------------------------------------
 pure module function dprk45_is_fsal(this) result(rst)
