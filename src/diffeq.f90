@@ -1766,7 +1766,9 @@ module diffeq
     type, abstract, extends(variable_singlestep_integrator) :: &
         rk_variable_integrator
         ! Workspace matrix (NEQN -by- STAGE COUNT)
-        real(real64), private, allocatable, dimension(:,:) :: m_work
+        !> @brief An NEQN-by-NSTAGE matrix containing the function evaluations
+        !! (derivatives) at each of the stages of evaluation.
+        real(real64), public, allocatable, dimension(:,:) :: f
         ! Workspace array (NEQN)
         real(real64), private, allocatable, dimension(:) :: m_ywork
         ! A flag determining if this is the first accepted step (use for FSAL)
@@ -2836,7 +2838,7 @@ module diffeq
         ! Allowable number of Newton iterations
         integer(int32), private :: m_maxNewtonIter = 7
         ! Newton iteration tolerance
-        real(real64), private :: m_newtontol = 1.0d-4
+        real(real64), private :: m_newtontol = 1.0d-6
     contains
         !> @brief Initializes the integrator.
         !!

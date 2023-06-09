@@ -285,13 +285,13 @@ module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
         ! as the integrator uses the last evaluation from the previous step
         ! as this step.  On non-FSAL integrators we always need to compute an
         ! updated first step.
-        call sys%ode(x, y, this%m_work(:,1))
+        call sys%ode(x, y, this%f(:,1))
     end if
     outer : do i = 1, nstages
         ! Compute A(i,1:i-1) * F(1:i-1,:) where F is NSTAGES-by-NEQN
-        this%m_w = y + h * matmul(this%m_work(:,1:i-1), this%a(i,1:i-1))
+        this%m_w = y + h * matmul(this%f(:,1:i-1), this%a(i,1:i-1))
         z = x + this%c(i) * h
-        call sys%ode(z, y, this%m_work(:,i))
+        call sys%ode(z, y, this%f(:,i))
 
         ! Newton Iteration Process
         niter = 0
@@ -299,14 +299,14 @@ module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
         accept = .false.
         newton: do
             ! Define the right-hand-side
-            this%m_dy = this%m_w + h * this%a(i,i) * this%m_work(:,i) - yn
+            this%m_dy = this%m_w + h * this%a(i,i) * this%f(:,i) - yn
             
             ! Compute the solution
             call solve_lu(this%m_mtx, this%m_pvt, this%m_dy)
             yn = yn + this%m_dy
 
             ! Update the function evaluation
-            call sys%ode(z, yn, this%m_work(:,i))
+            call sys%ode(z, yn, this%f(:,i))
 
             ! Check for convergence
             disp = norm2(this%m_dy)
@@ -322,8 +322,8 @@ module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
     end do outer
 
     ! Update the solution estimate and error estimate
-    yn = y + h * matmul(this%m_work, this%b)
-    en = h * matmul(this%m_work, this%e)
+    yn = y + h * matmul(this%f, this%b)
+    en = h * matmul(this%f, this%e)
 
     ! Do we need to update the Jacobian?
     if (.not.accept) then
