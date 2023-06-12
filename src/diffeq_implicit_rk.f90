@@ -53,11 +53,6 @@ module function irk_compute_next_step_size(this, hn, en, enm1) result(rst)
             this%m_enormPrev = max(1.0d-2, en)
         end if
         if (abs(rst) > abs(hmax)) rst = sign(hmax, rst)
-
-        ! Update the Jacobian matrix if the step size has changed
-        if (abs(rst - hn) > 2.0d0 * epsilon(hn)) then
-            call this%set_is_jacobian_current(.false.)
-        end if
     end if
 end function
 

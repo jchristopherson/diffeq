@@ -255,7 +255,7 @@ module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
 
     ! Local Variables
     logical :: accept
-    integer(int32) :: i, neqn, nstages, niter, maxiter
+    integer(int32) :: i, j, neqn, nstages, niter, maxiter, itertracking
     real(real64) :: z, tol, disp, val, eval
     class(errors), pointer :: errmgr
     type(errors), target :: deferr
@@ -271,7 +271,7 @@ module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
     maxiter = this%get_max_newton_iteration_count()
     accept = .false.
     tol = this%get_newton_tolerance()
-    call this%define_model()
+    itertracking = 0
 
     ! Ensure the Jacobian is up to date prior to the step
     if (.not.this%get_is_jacobian_current()) then
@@ -287,43 +287,95 @@ module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
         ! updated first step.
         call sys%ode(x, y, this%f(:,1))
     end if
-    outer : do i = 1, nstages
-        ! Compute A(i,1:i-1) * F(1:i-1,:) where F is NSTAGES-by-NEQN
-        this%m_w = y + h * matmul(this%f(:,1:i-1), this%a(i,1:i-1))
-        z = x + this%c(i) * h
-        call sys%ode(z, y, this%f(:,i))
 
-        ! Newton Iteration Process
+    outer: do i = 2, nstages
+        this%m_w = 0.0d0
+        z = x + this%c(i) * h
+        do j = 1, i - 1
+            this%m_w = this%m_w + this%a(i,j) * this%f(:,j)
+        end do
+        this%m_w = y + h * this%m_w
+        call sys%ode(z, this%m_w, this%f(:,i))
+
+        ! Newton iteration process
         niter = 0
         yn = y
         accept = .false.
         newton: do
+            ! Update the iteration counter
+            niter = niter + 1
+
             ! Define the right-hand-side
             this%m_dy = this%m_w + h * this%a(i,i) * this%f(:,i) - yn
-            
+
             ! Compute the solution
             call solve_lu(this%m_mtx, this%m_pvt, this%m_dy)
+
+            ! Update the solution
             yn = yn + this%m_dy
 
             ! Update the function evaluation
             call sys%ode(z, yn, this%f(:,i))
 
-            ! Check for convergence
+            ! Convergence check
             disp = norm2(this%m_dy)
             if (disp < tol) then
                 accept = .true.
+                itertracking = max(itertracking, niter)
                 exit newton
             end if
 
             ! Check the iteration counter
-            niter = niter + 1
             if (niter > maxiter) exit outer
         end do newton
     end do outer
 
+    ! outer : do i = 2, nstages
+    !     ! Compute A(i,1:i-1) * F(1:i-1,:) where F is NSTAGES-by-NEQN
+    !     this%m_w = y + h * matmul(this%f(:,1:i-1), this%a(i,1:i-1))
+    !     z = x + this%c(i) * h
+    !     call sys%ode(z, y, this%f(:,i))
+
+    !     ! Newton Iteration Process
+    !     niter = 0
+    !     yn = y
+    !     accept = .false.
+    !     newton: do
+    !         ! Define the right-hand-side
+    !         this%m_dy = this%m_w + h * this%a(i,i) * this%f(:,i) - yn
+            
+    !         ! Compute the solution
+    !         call solve_lu(this%m_mtx, this%m_pvt, this%m_dy)
+    !         yn = yn + this%m_dy
+
+    !         ! Update the function evaluation
+    !         call sys%ode(z, yn, this%f(:,i))
+
+    !         ! Check for convergence
+    !         disp = norm2(this%m_dy)
+    !         if (disp < tol) then
+    !             accept = .true.
+    !             exit newton
+    !         end if
+
+    !         ! Check the iteration counter
+    !         niter = niter + 1
+    !         if (niter > maxiter) exit outer
+    !     end do newton
+    ! end do outer
+
     ! Update the solution estimate and error estimate
-    yn = y + h * matmul(this%f, this%b)
-    en = h * matmul(this%f, this%e)
+    do i = 1, nstages
+        if (i == 1) then
+            yn = this%b(i) * this%f(:,i)
+            en = this%e(i) * this%f(:,i)
+        else
+            yn = yn + this%b(i) * this%f(:,i)
+            en = en + this%e(i) * this%f(:,i)
+        end if
+    end do
+    yn = y + h * yn
+    en = h * en
 
     ! Do we need to update the Jacobian?
     if (.not.accept) then
@@ -331,7 +383,10 @@ module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
         call this%set_is_jacobian_current(.false.)
     end if
 
-    ! TO DO: Base a Jacobian update on # of iterations
+    ! Base a Jacobian update on # of iterations
+    if (itertracking > maxiter / 2) then
+        call this%set_is_jacobian_current(.false.)
+    end if
 
     ! End
     return

@@ -2838,7 +2838,7 @@ module diffeq
         ! Allowable number of Newton iterations
         integer(int32), private :: m_maxNewtonIter = 7
         ! Newton iteration tolerance
-        real(real64), private :: m_newtontol = 1.0d-6
+        real(real64), private :: m_newtontol = 1.0d-4
     contains
         !> @brief Initializes the integrator.
         !!

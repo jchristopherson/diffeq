@@ -31,3 +31,4 @@ The documentation can be found [here](https://jchristopherson.github.io/diffeq/)
 
 
 https://ntrs.nasa.gov/api/citations/20160005923/downloads/20160005923.pdf
+https://core.ac.uk/download/pdf/289938621.pdf
