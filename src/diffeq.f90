@@ -23,7 +23,7 @@ module diffeq
     public :: dprk45_integrator
     public :: bsrk32_integrator
     public :: implicit_rk_variable_integrator
-    public :: dirk_integrator
+    public :: sdirk_integrator
     public :: sdirk4_integrator
     public :: DIFFEQ_MEMORY_ALLOCATION_ERROR
     public :: DIFFEQ_NULL_POINTER_ERROR
@@ -2820,9 +2820,9 @@ module diffeq
     end interface
 
 ! ------------------------------------------------------------------------------
-    !> @brief Defines a base structure for diagonally implicit Runge-Kutta 
-    !! integrators.
-    type, abstract, extends(implicit_rk_variable_integrator) :: dirk_integrator
+    !> @brief Defines a base structure for singly diagonally implicit 
+    !! Runge-Kutta integrators.
+    type, abstract, extends(implicit_rk_variable_integrator) :: sdirk_integrator
         ! Jacobian matrix workspace
         real(real64), private, allocatable, dimension(:,:) :: m_jac
         ! Mass matrix workspace
@@ -2845,13 +2845,13 @@ module diffeq
         !! @par Syntax
         !! @code{.f90}
         !! subroutine initialize( &
-        !!  class(dirk_integrator) this, &
+        !!  class(sdirk_integrator) this, &
         !!  integer(int32) neqn, &
         !!  optional class(errors) err &
         !! )
         !! @endcode
         !!
-        !! @param[in,out] this The @ref dirk_integrator object.
+        !! @param[in,out] this The @ref sdirk_integrator object.
         !! @param[in] neqn The number of equations being integrated.
         !! @param[in,out] err An optional errors-based object that if provided 
         !!  can be used to retrieve information relating to any errors 
@@ -2861,14 +2861,14 @@ module diffeq
         !!  encountered are as follows.
         !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
         !!      allocation issue.
-        procedure, public :: initialize => dirk_alloc_workspace
+        procedure, public :: initialize => sdirk_alloc_workspace
         !> @brief Builds the system matrix of the form \f$ X = f I - J \f$,
         !! or \f$ X = f M - J \f$ if a mass matrix is defined.
         !!
         !! @par Syntax
         !! @code{.f90}
         !! subroutine build_matrix( &
-        !!  class(dirk_integrator) this, &
+        !!  class(sdirk_integrator) this, &
         !!  real(real64) h, &
         !!  real(real64) jac(:,:), &
         !!  real(real64) x(:,:), &
@@ -2877,7 +2877,7 @@ module diffeq
         !! )
         !! @endcode
         !!
-        !! @param[in] this The @ref dirk_integrator object.
+        !! @param[in] this The @ref sdirk_integrator object.
         !! @param[in] h The current step size.
         !! @param[in] jac The current NEQN-by-NEQN Jacobian matrix.
         !! @param[out] x An NEQN-by-NEQN matrix where the output will be 
@@ -2891,7 +2891,7 @@ module diffeq
         !!  encountered are as follows.
         !!  - DIFFEQ_MATRIX_SIZE_ERROR: Occurs if any of the matrices are not
         !!      sized correctly.
-        procedure, public :: build_newton_matrix => dirk_build_matrix
+        procedure, public :: build_newton_matrix => sdirk_build_matrix
         !> @brief Builds the matrix of the form \f$ X = f I - J \f$,
         !! or \f$ X = f M - J \f$ if a mass matrix is defined, and then computes
         !! its LU factorization.  The Jacobian and mass matrices are evaluated
@@ -2900,7 +2900,7 @@ module diffeq
         !! @par Syntax
         !! @code{.f90}
         !! subroutine build_factored_matrix( &
-        !!  class(dirk_integrator) this, &
+        !!  class(sdirk_integrator) this, &
         !!  class(ode_container) sys, &
         !!  real(real64) h, &
         !!  real(real64) x, &
@@ -2909,7 +2909,7 @@ module diffeq
         !! )
         !! @endcode
         !!
-        !! @param[in,out] this The @ref dirk_integrator object.
+        !! @param[in,out] this The @ref sdirk_integrator object.
         !! @param[in,out] sys The @ref ode_container object containing the
         !!  equations to integrate.
         !! @param[in] h The current step size.
@@ -2922,67 +2922,67 @@ module diffeq
         !!  implementation of the errors class is used internally to provide 
         !!  error handling.
         procedure, public :: build_factored_newton_matrix => &
-            dirk_build_factored_matrix
+            sdirk_build_factored_matrix
         !> @brief Gets the maximum allowed number of Newton iterations.
         !!
         !! @par Syntax
         !! @code{.f90}
         !! integer(int32) pure function get_max_newton_iteration_count( &
-        !!  class(dirk_integrator) this &
+        !!  class(sdirk_integrator) this &
         !! )
         !! @endcode
         !!
-        !! @param[in] this The @ref dirk_integrator object.
+        !! @param[in] this The @ref sdirk_integrator object.
         !! @return The iteration limit.
         procedure, public :: get_max_newton_iteration_count => &
-            dirk_get_max_newton_iter
+            sdirk_get_max_newton_iter
         !> @brief Sets the maximum allowed number of Newton iterations.
         !!
         !! @par Syntax
         !! @code{.f90}
         !! subroutine set_max_newton_iteration_count( &
-        !!  class(dirk_integrator) this, &
+        !!  class(sdirk_integrator) this, &
         !!  integer(int32) x &
         !! )
         !! @endcode
         !!
-        !! @param[in,out] this The @ref dirk_integrator object.
+        !! @param[in,out] this The @ref sdirk_integrator object.
         !! @param[in] x The iteration limit.
         procedure, public :: set_max_newton_iteration_count => &
-            dirk_set_max_newton_iter
+            sdirk_set_max_newton_iter
         !> @brief Gets the tolerance used to check for convergence of the
         !! Newton iterations.
         !!
         !! @par Syntax
         !! @code{.f90}
         !! real(real64) pure function get_newton_tolerance( &
-        !!  class(dirk_integrator) this &
+        !!  class(sdirk_integrator) this &
         !! )
         !! @endcode
         !!
-        !! @param[in] this The @ref dirk_integrator object.
+        !! @param[in] this The @ref sdirk_integrator object.
         !! @return The tolerance.
-        procedure, public :: get_newton_tolerance => dirk_get_newton_tol
+        procedure, public :: get_newton_tolerance => sdirk_get_newton_tol
         !> @brief Sets the tolerance used to check for convergence of the
         !! Newton iterations.
         !!
         !! @par Syntax
         !! @code{.f90}
         !! subroutine set_newton_tolerance( &
-        !!  class(dirk_integrator) this, &
+        !!  class(sdirk_integrator) this, &
         !!  real(real64) x &
         !! )
         !! @endcode
         !!
-        !! @param[in,out] this The @ref dirk_integrator object.
+        !! @param[in,out] this The @ref sdirk_integrator object.
         !! @param[in] x The tolerance.
-        procedure, public :: set_newton_tolerance => dirk_set_newton_tol
+        procedure, public :: set_newton_tolerance => sdirk_set_newton_tol
         !> @brief Attempts a single integration step.
         !!
         !! @par Syntax
         !! @code{.f90}
         !! subroutine attempt_step( &
-        !!  class(dirk_integrator) this, &
+        !!  class(sdirk_integrator) this, &
         !!  class(ode_container) sys, &
         !!  real(real64) h, &
         !!  real(real64) x, &
@@ -2996,7 +2996,7 @@ module diffeq
         !! )
         !! @endcode
         !!
-        !! @param[in,out] this The @ref dirk_integrator object.
+        !! @param[in,out] this The @ref sdirk_integrator object.
         !! @param[in] sys The @ref ode_container object containing the ODEs
         !!  to integrate.
         !! @param[in] h The current step size.
@@ -3024,19 +3024,50 @@ module diffeq
         !!  encountered during execution. If not provided, a default 
         !!  implementation of the errors class is used internally to provide 
         !!  error handling.
-        procedure, public :: attempt_step => dirk_attempt_step
+        procedure, public :: attempt_step => sdirk_attempt_step
+        !> @brief Solves the Newton iteration problem for the i-th stage.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine solve_newton_stage( &
+        !!  class(sdirk_integrator) this, &
+        !!  class(ode_container) sys, &
+        !!  integer(int32) i, &
+        !!  real(real64) h, &
+        !!  real(real64) x, &
+        !!  real(real64) y(:), &
+        !!  real(real64) yw(:), &
+        !!  logical accept, &
+        !!  integer(int32) niter &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref sdirk_integrator object.
+        !! @param[in,out] sys
+        !! The @ref ode_container object containing the ODEs
+        !!  to integrate.
+        !! @param[in] i The current stage number.
+        !! @param[in] h The current step size.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] y An N-element array containing the current values of
+        !!  the dependent variables. 
+        !! @param[in] yw An N-element workspace array.
+        !! @param[out] accept Returns true if the Newton iteration reached
+        !!  convergence; else, false if the iteration did not converge.
+        !! @param[out] niter The number of iterations performed.
+        procedure, public :: solve_newton_stage => sdirk_solve_newton
     end type
 
-    ! diffeq_dirk.f90
+    ! diffeq_sdirk.f90
     interface
-        module subroutine dirk_alloc_workspace(this, neqn, err)
-            class(dirk_integrator), intent(inout) :: this
+        module subroutine sdirk_alloc_workspace(this, neqn, err)
+            class(sdirk_integrator), intent(inout) :: this
             integer(int32), intent(in) :: neqn
             class(errors), intent(inout), optional, target :: err
         end subroutine
 
-        module subroutine dirk_build_matrix(this, h, jac, x, m, err)
-            class(dirk_integrator), intent(in) :: this
+        module subroutine sdirk_build_matrix(this, h, jac, x, m, err)
+            class(sdirk_integrator), intent(in) :: this
             real(real64), intent(in) :: h
             real(real64), intent(in), dimension(:,:) :: jac
             real(real64), intent(out), dimension(:,:) :: x
@@ -3044,37 +3075,37 @@ module diffeq
             class(errors), intent(inout), optional, target :: err
         end subroutine
 
-        module subroutine dirk_build_factored_matrix(this, sys, h, x, y, err)
-            class(dirk_integrator), intent(inout) :: this
+        module subroutine sdirk_build_factored_matrix(this, sys, h, x, y, err)
+            class(sdirk_integrator), intent(inout) :: this
             class(ode_container), intent(inout) :: sys
             real(real64), intent(in) :: h, x
             real(real64), intent(in), dimension(:) :: y
             class(errors), intent(inout), optional, target :: err
         end subroutine
 
-        pure module function dirk_get_max_newton_iter(this) result(rst)
-            class(dirk_integrator), intent(in) :: this
+        pure module function sdirk_get_max_newton_iter(this) result(rst)
+            class(sdirk_integrator), intent(in) :: this
             integer(int32) :: rst
         end function
 
-        module subroutine dirk_set_max_newton_iter(this, x)
-            class(dirk_integrator), intent(inout) :: this
+        module subroutine sdirk_set_max_newton_iter(this, x)
+            class(sdirk_integrator), intent(inout) :: this
             integer(int32), intent(in) :: x
         end subroutine
 
-        pure module function dirk_get_newton_tol(this) result(rst)
-            class(dirk_integrator), intent(in) :: this
+        pure module function sdirk_get_newton_tol(this) result(rst)
+            class(sdirk_integrator), intent(in) :: this
             real(real64) :: rst
         end function
 
-        module subroutine dirk_set_newton_tol(this, x)
-            class(dirk_integrator), intent(inout) :: this
+        module subroutine sdirk_set_newton_tol(this, x)
+            class(sdirk_integrator), intent(inout) :: this
             real(real64), intent(in) :: x
         end subroutine
 
-        module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, &
+        module subroutine sdirk_attempt_step(this, sys, h, x, y, yn, en, &
             xprev, yprev, fprev, err)
-            class(dirk_integrator), intent(inout) :: this
+            class(sdirk_integrator), intent(inout) :: this
             class(ode_container), intent(inout) :: sys
             real(real64), intent(in) :: h, x
             real(real64), intent(in), dimension(:) :: y
@@ -3084,12 +3115,25 @@ module diffeq
             real(real64), intent(inout), optional, dimension(:,:) :: fprev
             class(errors), intent(inout), optional, target :: err
         end subroutine
+
+        module subroutine sdirk_solve_newton(this, sys, i, h, x, y, yw, &
+            accept, niter)
+            class(sdirk_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            integer(int32), intent(in) :: i
+            real(real64), intent(in) :: h, x
+            real(real64), intent(in), dimension(:) :: y
+            real(real64), intent(out), dimension(:) :: yw
+            logical, intent(out) :: accept
+            integer(int32), intent(out) :: niter
+        end subroutine
     end interface
 
 ! ------------------------------------------------------------------------------
-    !> @brief Defines a diagonally implicit 4th order Runge-Kutta integrator
-    !! suitable for integrating stiff systems of differential equations.
-    type, extends(dirk_integrator) :: sdirk4_integrator
+    !> @brief Defines a singly diagonally implicit 4th order Runge-Kutta 
+    !! integrator suitable for integrating stiff systems of differential 
+    !! equations.
+    type, extends(sdirk_integrator) :: sdirk4_integrator
         logical, private :: m_modelDefined = .false.
     contains
         !> @brief Returns the order of the integrator.

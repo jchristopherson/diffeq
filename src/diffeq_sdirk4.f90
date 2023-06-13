@@ -65,8 +65,6 @@ module subroutine sd4_define_model(this)
 
     ! A
     this%a = 0.0d0
-    
-    this%a(1,1) = a22
 
     this%a(2,1) = a21
     this%a(2,2) = a22

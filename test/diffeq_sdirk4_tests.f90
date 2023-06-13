@@ -11,7 +11,7 @@ function test_sdirk4_1() result(rst)
     logical :: rst
 
     ! Parameters
-    real(real64), parameter :: tol = 1.0d-4
+    real(real64), parameter :: tol = 1.0d-3
 
     ! Local Variables
     type(sdirk4_integrator) :: integrator

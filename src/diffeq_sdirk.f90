@@ -1,10 +1,10 @@
-submodule (diffeq) diffeq_dirk
+submodule (diffeq) diffeq_sdirk
     use linalg
 contains
 ! ------------------------------------------------------------------------------
-module subroutine dirk_alloc_workspace(this, neqn, err)
+module subroutine sdirk_alloc_workspace(this, neqn, err)
     ! Arguments
-    class(dirk_integrator), intent(inout) :: this
+    class(sdirk_integrator), intent(inout) :: this
     integer(int32), intent(in) :: neqn
     class(errors), intent(inout), optional, target :: err
 
@@ -98,7 +98,7 @@ module subroutine dirk_alloc_workspace(this, neqn, err)
 10  continue
     allocate(character(len = 256) :: errmsg)
     write(errmsg, 100) "Memory allocation error flag ", flag, "."
-    call err%report_error("dirk_alloc_workspace", trim(errmsg), &
+    call err%report_error("sdirk_alloc_workspace", trim(errmsg), &
         DIFFEQ_MEMORY_ALLOCATION_ERROR)
     return
 
@@ -107,9 +107,9 @@ module subroutine dirk_alloc_workspace(this, neqn, err)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-module subroutine dirk_build_factored_matrix(this, sys, h, x, y, err)
+module subroutine sdirk_build_factored_matrix(this, sys, h, x, y, err)
     ! Arguments
-    class(dirk_integrator), intent(inout) :: this
+    class(sdirk_integrator), intent(inout) :: this
     class(ode_container), intent(inout) :: sys
     real(real64), intent(in) :: h, x
     real(real64), intent(in), dimension(:) :: y
@@ -160,9 +160,9 @@ module subroutine dirk_build_factored_matrix(this, sys, h, x, y, err)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-module subroutine dirk_build_matrix(this, h, jac, x, m, err)
+module subroutine sdirk_build_matrix(this, h, jac, x, m, err)
     ! Arguments
-    class(dirk_integrator), intent(in) :: this
+    class(sdirk_integrator), intent(in) :: this
     real(real64), intent(in) :: h
     real(real64), intent(in), dimension(:,:) :: jac
     real(real64), intent(out), dimension(:,:) :: x
@@ -170,7 +170,7 @@ module subroutine dirk_build_matrix(this, h, jac, x, m, err)
     class(errors), intent(inout), optional, target :: err
 
     ! Local Variables
-    integer(int32) :: i, neqn
+    integer(int32) :: i, neqn, ns
     real(real64) :: fac
     class(errors), pointer :: errmgr
     type(errors), target :: deferr
@@ -178,6 +178,7 @@ module subroutine dirk_build_matrix(this, h, jac, x, m, err)
 
     ! Initialization
     neqn = size(this%m_jac, 1)
+    ns = this%get_stage_count()
     if (present(err)) then
         errmgr => err
     else
@@ -192,13 +193,13 @@ module subroutine dirk_build_matrix(this, h, jac, x, m, err)
     end if
 
     ! Process
-    fac = 1.0d0 / (this%a(2,2) * h)
+    fac = this%a(ns, ns) * h
     if (present(m)) then
-        x = m * fac - jac
+        x = m - fac * jac
     else
-        x = -jac
+        x = -fac * jac
         do i = 1, neqn
-            x(i,i) = x(i,i) + fac
+            x(i,i) = x(i,i) + 1.0d0
         end do
     end if
 
@@ -211,7 +212,7 @@ module subroutine dirk_build_matrix(this, h, jac, x, m, err)
     write(errmsg, 100) "The Jacobian matrix was expected to be ", neqn, &
         "-by-", neqn, ", but was found to be ", size(jac, 1), "-by-", &
         size(jac, 2), "."
-    call errmgr%report_error("dirk_build_matrix", trim(errmsg), &
+    call errmgr%report_error("sdirk_build_matrix", trim(errmsg), &
         DIFFEQ_MATRIX_SIZE_ERROR)
     return
 
@@ -221,7 +222,7 @@ module subroutine dirk_build_matrix(this, h, jac, x, m, err)
     write(errmsg, 100) "The output matrix was expected to be ", neqn, &
         "-by-", neqn, ", but was found to be ", size(x, 1), "-by-", &
         size(x, 2), "."
-    call errmgr%report_error("dirk_build_matrix", trim(errmsg), &
+    call errmgr%report_error("sdirk_build_matrix", trim(errmsg), &
         DIFFEQ_MATRIX_SIZE_ERROR)
     return
 
@@ -231,7 +232,7 @@ module subroutine dirk_build_matrix(this, h, jac, x, m, err)
     write(errmsg, 100) "The mass matrix was expected to be ", neqn, &
         "-by-", neqn, ", but was found to be ", size(m, 1), "-by-", &
         size(m, 2), "."
-    call errmgr%report_error("dirk_build_matrix", trim(errmsg), &
+    call errmgr%report_error("sdirk_build_matrix", trim(errmsg), &
         DIFFEQ_MATRIX_SIZE_ERROR)
     return
 
@@ -240,10 +241,10 @@ module subroutine dirk_build_matrix(this, h, jac, x, m, err)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
+module subroutine sdirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
     fprev, err)
     ! Arguments
-    class(dirk_integrator), intent(inout) :: this
+    class(sdirk_integrator), intent(inout) :: this
     class(ode_container), intent(inout) :: sys
     real(real64), intent(in) :: h, x
     real(real64), intent(in), dimension(:) :: y
@@ -288,81 +289,13 @@ module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
         call sys%ode(x, y, this%f(:,1))
     end if
 
-    outer: do i = 2, nstages
-        this%m_w = 0.0d0
-        z = x + this%c(i) * h
-        do j = 1, i - 1
-            this%m_w = this%m_w + this%a(i,j) * this%f(:,j)
-        end do
-        this%m_w = y + h * this%m_w
-        call sys%ode(z, this%m_w, this%f(:,i))
-
-        ! Newton iteration process
-        niter = 0
-        yn = y
-        accept = .false.
-        newton: do
-            ! Update the iteration counter
-            niter = niter + 1
-
-            ! Define the right-hand-side
-            this%m_dy = this%m_w + h * this%a(i,i) * this%f(:,i) - yn
-
-            ! Compute the solution
-            call solve_lu(this%m_mtx, this%m_pvt, this%m_dy)
-
-            ! Update the solution
-            yn = yn + this%m_dy
-
-            ! Update the function evaluation
-            call sys%ode(z, yn, this%f(:,i))
-
-            ! Convergence check
-            disp = norm2(this%m_dy)
-            if (disp < tol) then
-                accept = .true.
-                itertracking = max(itertracking, niter)
-                exit newton
-            end if
-
-            ! Check the iteration counter
-            if (niter > maxiter) exit outer
-        end do newton
-    end do outer
-
-    ! outer : do i = 2, nstages
-    !     ! Compute A(i,1:i-1) * F(1:i-1,:) where F is NSTAGES-by-NEQN
-    !     this%m_w = y + h * matmul(this%f(:,1:i-1), this%a(i,1:i-1))
-    !     z = x + this%c(i) * h
-    !     call sys%ode(z, y, this%f(:,i))
-
-    !     ! Newton Iteration Process
-    !     niter = 0
-    !     yn = y
-    !     accept = .false.
-    !     newton: do
-    !         ! Define the right-hand-side
-    !         this%m_dy = this%m_w + h * this%a(i,i) * this%f(:,i) - yn
-            
-    !         ! Compute the solution
-    !         call solve_lu(this%m_mtx, this%m_pvt, this%m_dy)
-    !         yn = yn + this%m_dy
-
-    !         ! Update the function evaluation
-    !         call sys%ode(z, yn, this%f(:,i))
-
-    !         ! Check for convergence
-    !         disp = norm2(this%m_dy)
-    !         if (disp < tol) then
-    !             accept = .true.
-    !             exit newton
-    !         end if
-
-    !         ! Check the iteration counter
-    !         niter = niter + 1
-    !         if (niter > maxiter) exit outer
-    !     end do newton
-    ! end do outer
+    ! Cycle over each stage and solve the Newton problem
+    do i = 1, nstages
+        ! Attempt to solve the Newton problem
+        call this%solve_newton_stage(sys, i, h, x, y, yn, accept, niter)
+        itertracking = max(niter, itertracking)
+        if (.not.accept) exit ! TO DO: Force a way to update the step size
+    end do
 
     ! Update the solution estimate and error estimate
     do i = 1, nstages
@@ -393,36 +326,86 @@ module subroutine dirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
 end subroutine
 
 ! ------------------------------------------------------------------------------
-pure module function dirk_get_max_newton_iter(this) result(rst)
-    class(dirk_integrator), intent(in) :: this
+pure module function sdirk_get_max_newton_iter(this) result(rst)
+    class(sdirk_integrator), intent(in) :: this
     integer(int32) :: rst
     rst = this%m_maxNewtonIter
 end function
 
 ! --------------------
-module subroutine dirk_set_max_newton_iter(this, x)
-    class(dirk_integrator), intent(inout) :: this
+module subroutine sdirk_set_max_newton_iter(this, x)
+    class(sdirk_integrator), intent(inout) :: this
     integer(int32), intent(in) :: x
     this%m_maxNewtonIter = x
 end subroutine
 
 ! ------------------------------------------------------------------------------
-pure module function dirk_get_newton_tol(this) result(rst)
-    class(dirk_integrator), intent(in) :: this
+pure module function sdirk_get_newton_tol(this) result(rst)
+    class(sdirk_integrator), intent(in) :: this
     real(real64) :: rst
     rst = this%m_newtontol
 end function
 
 ! --------------------
-module subroutine dirk_set_newton_tol(this, x)
-    class(dirk_integrator), intent(inout) :: this
+module subroutine sdirk_set_newton_tol(this, x)
+    class(sdirk_integrator), intent(inout) :: this
     real(real64), intent(in) :: x
     this%m_newtontol = x
 end subroutine
 
 ! ------------------------------------------------------------------------------
+module subroutine sdirk_solve_newton(this, sys, i, h, x, y, yw, accept, niter)
+    ! Arguments
+    class(sdirk_integrator), intent(inout) :: this
+    class(ode_container), intent(inout) :: sys
+    integer(int32), intent(in) :: i
+    real(real64), intent(in) :: h, x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:) :: yw
+    logical, intent(out) :: accept
+    integer(int32), intent(out) :: niter
 
-! ------------------------------------------------------------------------------
+    ! Local Variables
+    integer(int32) :: j, maxiter
+    real(real64) :: z, disp, tol, alpha
+
+    ! Initialization
+    accept = .false.
+    z = x + this%c(i) * h
+    tol = this%get_newton_tolerance()
+    maxiter = this%get_max_newton_iteration_count()
+    yw = y
+
+    ! Process
+    this%m_w = 0.0d0
+    do j = 1, i - 1
+        alpha = this%a(i,j)
+        this%m_w = this%m_w + this%a(i,j) * this%f(:,i)
+    end do
+    this%m_w = y + h * this%m_w
+    call sys%ode(z, this%m_w, this%f(:,i))
+
+    do niter = 1, maxiter
+        ! Compute the right-hand-side
+        this%m_dy = this%m_w + h * this%a(i,i) * this%f(:,i) - yw
+
+        ! Solve the system
+        call solve_lu(this%m_mtx, this%m_pvt, this%m_dy)
+
+        ! Update the solution
+        yw = yw + this%m_dy
+
+        ! Update the function evaluation
+        call sys%ode(z, yw, this%f(:,i))
+
+        ! Check for convergence
+        disp = norm2(this%m_dy)
+        if (disp < tol) then
+            accept = .true.
+            exit
+        end if
+    end do
+end subroutine
 
 ! ------------------------------------------------------------------------------
 
