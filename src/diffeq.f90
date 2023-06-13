@@ -2763,8 +2763,29 @@ module diffeq
         !! @param[in] x True to use a PI controller; else, false to use a
         !!  Gustafsson controller.
         procedure, public :: set_use_pi_controller => irk_set_use_pi_controller
-
-        ! TO DO: Compute initial step size
+        !> @brief Computes an estimate to the first step size based upon the
+        !! initial function values.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function estimate_first_step_size( &
+        !!  class(implicit_rk_variable_integrator) this, &
+        !!  real(real64) xo, &
+        !!  real(real64) xf, &
+        !!  real(real64) yo(:), &
+        !!  real(real64) fo(:) &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The implicit_rk_variable_integrator object.
+        !! @param[in] xo The initial value of the independent variable.
+        !! @param[in] xf The final value of the independent variable.
+        !! @param[in] yo An N-element array containing the initial values.
+        !! @param[in] fo An N-element array containing the initial function 
+        !!  values.
+        !!
+        !! @return An estimate on the initial step size.
+        procedure, public :: estimate_first_step_size => irk_estimate_first_step
     end type
 
     ! diffeq_implicit_rk.f90
@@ -2817,6 +2838,14 @@ module diffeq
             class(implicit_rk_variable_integrator), intent(inout) :: this
             logical, intent(in) :: x
         end subroutine
+
+        pure module function irk_estimate_first_step(this, xo, xf, yo, fo) &
+            result(rst)
+            class(implicit_rk_variable_integrator), intent(in) :: this
+            real(real64), intent(in) :: xo, xf
+            real(real64), intent(in), dimension(:) :: yo, fo
+            real(real64) :: rst
+        end function
     end interface
 
 ! ------------------------------------------------------------------------------
@@ -2838,7 +2867,7 @@ module diffeq
         ! Allowable number of Newton iterations
         integer(int32), private :: m_maxNewtonIter = 7
         ! Newton iteration tolerance
-        real(real64), private :: m_newtontol = 1.0d-4
+        real(real64), private :: m_newtontol = 1.0d-6
     contains
         !> @brief Initializes the integrator.
         !!

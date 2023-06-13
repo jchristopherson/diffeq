@@ -23,8 +23,10 @@ program example
     ! Define the model
     mdl%fcn => vanderpol
 
-    ! Compute the solution
+    ! A Gustafsson controller performs better for this problem
     call integrator%set_use_pi_controller(.false.)
+
+    ! Compute the solution
     sol = integrator%solve(mdl, [0.0d0, xmax], [2.0d0, 0.0d0])
     ref = ref_integrator%solve(mdl, [0.0d0, xmax], [2.0d0, 0.0d0])
 

@@ -302,12 +302,8 @@ module subroutine sdirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
         ! We couldn't converge - force a Jacobian update
         call this%set_is_jacobian_current(.false.)
 
-        ! Also, ensure the error is set to force a recalculation of the step
-        en = 1.0d1 * this%m_atol
-
-        ! Exit as we don't need to update the solution since the Newton 
-        ! iteration didn't converge
-        return
+        ! TO DO: 
+        ! Figure out a way to estimate a new step size 
     end if
 
     ! Update the solution estimate and error estimate

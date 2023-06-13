@@ -85,4 +85,21 @@ module subroutine irk_set_use_pi_controller(this, x)
 end subroutine
 
 ! ------------------------------------------------------------------------------
+pure module function irk_estimate_first_step(this, xo, xf, yo, fo) result(rst)
+    ! Arguments
+    class(implicit_rk_variable_integrator), intent(in) :: this
+    real(real64), intent(in) :: xo, xf
+    real(real64), intent(in), dimension(:) :: yo, fo
+    real(real64) :: rst
+
+    ! Local Variables
+    real(real64) :: h1, h2
+
+    ! Process
+    h1 = 1.0d-5 * (xf - xo)
+    h2 = this%get_max_step_size()
+    rst = sign(min(abs(h1), abs(h2)), h1)
+end function
+
+! ------------------------------------------------------------------------------
 end submodule

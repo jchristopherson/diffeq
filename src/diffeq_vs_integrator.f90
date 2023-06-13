@@ -404,7 +404,7 @@ pure module function vsi_estimate_first_step(this, xo, xf, yo, fo) &
     ! Process
     h1 = 0.5d0 * (xf - xo)
     h2 = this%get_max_step_size()
-    rst = min(h1, h2)
+    rst = sign(min(abs(h1), abs(h2)), h1)
 end function
 
 ! ------------------------------------------------------------------------------
