@@ -294,8 +294,21 @@ module subroutine sdirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
         ! Attempt to solve the Newton problem
         call this%solve_newton_stage(sys, i, h, x, y, yn, accept, niter)
         itertracking = max(niter, itertracking)
-        if (.not.accept) exit ! TO DO: Force a way to update the step size
+        if (.not.accept) exit
     end do
+
+    ! Do we need to update the Jacobian?
+    if (.not.accept) then
+        ! We couldn't converge - force a Jacobian update
+        call this%set_is_jacobian_current(.false.)
+
+        ! Also, ensure the error is set to force a recalculation of the step
+        en = 1.0d1 * this%m_atol
+
+        ! Exit as we don't need to update the solution since the Newton 
+        ! iteration didn't converge
+        return
+    end if
 
     ! Update the solution estimate and error estimate
     do i = 1, nstages
@@ -310,13 +323,7 @@ module subroutine sdirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
     yn = y + h * yn
     en = h * en
 
-    ! Do we need to update the Jacobian?
-    if (.not.accept) then
-        ! We couldn't converge - force a Jacobian update
-        call this%set_is_jacobian_current(.false.)
-    end if
-
-    ! Base a Jacobian update on # of iterations
+    ! Only update the Jacobian if the Newton iteration encountered difficulty
     if (itertracking > maxiter / 2) then
         call this%set_is_jacobian_current(.false.)
     end if
