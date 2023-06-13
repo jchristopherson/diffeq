@@ -40,6 +40,23 @@ submodule (diffeq) diffeq_sdirk4
     real(real64), parameter :: b6a = 2.077005547802d12 / 8.945017530137d12
     real(real64), parameter :: b1a = 1.0d0 - b2a - b3a - b4a - b5a - b6a
 
+    ! Dense Output Coefficients
+    real(real64), parameter :: bs11 = 2.448612054971d12 / 7.422989170266d12
+    real(real64), parameter :: bs12 = -1.3064527274769d13 / 7.807639895795d12
+    real(real64), parameter :: bs13 = 4.7230902818071d13 / 9.856057303060d12
+    real(real64), parameter :: bs14 = -6.0230645086332d13 / 7.645076548727d12
+    real(real64), parameter :: bs15 = 2.4545915595281d13 / 4.520659176942d12
+    real(real64), parameter :: bs21 = -5.143529307061d12 / 7.773953874698d12
+    real(real64), parameter :: bs22 = 6.553122583263d12 / 7.765607547020d12
+    real(real64), parameter :: bs23 = -8.6580884391876d13 / 2.5322350989535d13
+    real(real64), parameter :: bs24 = 3.3418521236339d13 / 4.189665475741d12
+    real(real64), parameter :: bs25 = -5.2206835153223d13 / 1.1015268282971d13
+    real(real64), parameter :: bs31 = 3.905567800954d12 / 9.892491358055d13
+    real(real64), parameter :: bs32 = 1.415022863286d12 / 5.136633758329d13
+    real(real64), parameter :: bs33 = 4.28256012956d11 / 2.506140349505d12
+    real(real64), parameter :: bs34 = -6.808403415194d12 / 3.867318289197d12
+    real(real64), parameter :: bs35 = 5.422818762715d12 / 5.898621095633d12
+
 contains
 ! ------------------------------------------------------------------------------
 pure module function sd4_get_order(this) result(rst)
