@@ -41,23 +41,116 @@ submodule (diffeq) diffeq_sdirk4
     real(real64), parameter :: b1a = 1.0d0 - b2a - b3a - b4a - b5a - b6a
 
     ! Dense Output Coefficients
-    real(real64), parameter :: bs11 = 2.448612054971d12 / 7.422989170266d12
-    real(real64), parameter :: bs12 = -1.3064527274769d13 / 7.807639895795d12
-    real(real64), parameter :: bs13 = 4.7230902818071d13 / 9.856057303060d12
-    real(real64), parameter :: bs14 = -6.0230645086332d13 / 7.645076548727d12
-    real(real64), parameter :: bs15 = 2.4545915595281d13 / 4.520659176942d12
-    real(real64), parameter :: bs21 = -5.143529307061d12 / 7.773953874698d12
-    real(real64), parameter :: bs22 = 6.553122583263d12 / 7.765607547020d12
-    real(real64), parameter :: bs23 = -8.6580884391876d13 / 2.5322350989535d13
-    real(real64), parameter :: bs24 = 3.3418521236339d13 / 4.189665475741d12
-    real(real64), parameter :: bs25 = -5.2206835153223d13 / 1.1015268282971d13
-    real(real64), parameter :: bs31 = 3.905567800954d12 / 9.892491358055d13
-    real(real64), parameter :: bs32 = 1.415022863286d12 / 5.136633758329d13
-    real(real64), parameter :: bs33 = 4.28256012956d11 / 2.506140349505d12
-    real(real64), parameter :: bs34 = -6.808403415194d12 / 3.867318289197d12
-    real(real64), parameter :: bs35 = 5.422818762715d12 / 5.898621095633d12
+    real(real64), parameter :: bs11 = 11963910384665.0d0 / 12483345430363.0d0
+    real(real64), parameter :: bs12 = 11963910384665.0d0 / 12483345430363.0d0
+    real(real64), parameter :: bs13 = -28603264624.0d0 / 1970169629981.0d0
+    real(real64), parameter :: bs14 = -3524425447183.0d0 / 2683177070205.0d0
+    real(real64), parameter :: bs15 = -17173522440186.0d0 / 10195024317061.0d0
+    real(real64), parameter :: bs16 = 27308879169709.0d0 / 13030500014233.0d0
+    real(real64), parameter :: bs21 = -69996760330788.0d0 / 18526599551455.0d0
+    real(real64), parameter :: bs22 = -69996760330788.0d0 / 18526599551455.0d0
+    real(real64), parameter :: bs23 = 102610171905103.0d0 / 26266659717953.0d0
+    real(real64), parameter :: bs24 = 74957623907620.0d0 / 12279805097313.0d0
+    real(real64), parameter :: bs25 = 113853199235633.0d0 / 9983266320290.0d0
+    real(real64), parameter :: bs26 = -84229392543950.0d0 / 6077740599399.0d0
+    real(real64), parameter :: bs31 = 32473635429419.0d0 / 7030701510665.0d0
+    real(real64), parameter :: bs32 = 32473635429419.0d0 / 7030701510665.0d0
+    real(real64), parameter :: bs33 = -38866317253841.0d0 / 6249835826165.0d0
+    real(real64), parameter :: bs34 = -26705717223886.0d0 / 4265677133337.0d0
+    real(real64), parameter :: bs35 = -121105382143155.0d0 / 6658412667527.0d0
+    real(real64), parameter :: bs36 = 1102028547503824.0d0 / 51424476870755.0d0
+    real(real64), parameter :: bs41 = -14668528638623.0d0 / 8083464301755.0d0
+    real(real64), parameter :: bs42 = -14668528638623.0d0 / 8083464301755.0d0
+    real(real64), parameter :: bs43 = 21103455885091.0d0 / 7774428730952.0d0
+    real(real64), parameter :: bs44 = 30155591475533.0d0 / 15293695940061.0d0
+    real(real64), parameter :: bs45 = 119853375102088.0d0 / 14336240079991.0d0
+    real(real64), parameter :: bs46 = -63602213973224.0d0 / 6753880425717.0d0
 
 contains
+! ------------------------------------------------------------------------------
+module subroutine sd4_alloc_workspace(this, neqn, err)
+    ! Arguments
+    class(sdirk4_integrator), intent(inout) :: this
+    integer(int32), intent(in) :: neqn
+    class(errors), intent(inout), optional, target :: err
+
+    ! Local Variables
+    integer(int32) :: norder, nstages, flag
+    class(errors), pointer :: errmgr
+    type(errors), target :: deferr
+    character(len = :), allocatable :: errmsg
+    
+    ! Initialization
+    if (present(err)) then
+        errmgr => err
+    else
+        errmgr => deferr
+    end if
+    norder = this%get_order()
+    nstages = this%get_stage_count()
+
+    ! Process
+    if (allocated(this%m_dc)) then
+        if (size(this%m_dc, 1) /= norder .or. size(this%m_dc, 2) /= nstages) &
+        then
+            deallocate(this%m_dc)
+            allocate(this%m_dc(norder, nstages), stat = flag, source = 0.0d0)
+            if (flag /= 0) go to 10
+        end if
+    else
+        allocate(this%m_dc(norder, nstages), stat = flag, source = 0.0d0)
+        if (flag /= 0) go to 10
+    end if
+
+    ! Populate the coefficient matrix
+    this%m_dc(1,1) = bs11
+    this%m_dc(2,1) = bs21
+    this%m_dc(3,1) = bs31
+    this%m_dc(4,1) = bs41
+
+    this%m_dc(1,2) = bs12
+    this%m_dc(2,2) = bs22
+    this%m_dc(3,2) = bs32
+    this%m_dc(4,2) = bs42
+
+    this%m_dc(1,3) = bs13
+    this%m_dc(2,3) = bs23
+    this%m_dc(3,3) = bs33
+    this%m_dc(4,3) = bs43
+
+    this%m_dc(1,4) = bs14
+    this%m_dc(2,4) = bs24
+    this%m_dc(3,4) = bs34
+    this%m_dc(4,4) = bs44
+
+    this%m_dc(1,5) = bs15
+    this%m_dc(2,5) = bs25
+    this%m_dc(3,5) = bs35
+    this%m_dc(4,5) = bs45
+
+    this%m_dc(1,6) = bs16
+    this%m_dc(2,6) = bs26
+    this%m_dc(3,6) = bs36
+    this%m_dc(4,6) = bs46
+
+    ! Call the base routine
+    call sdirk_alloc_workspace(this, neqn, errmgr)
+
+    ! End
+    return
+
+    ! Memory Error Handling
+10  continue
+    allocate(character(len = 256) :: errmsg)
+    write(errmsg, 100) "Memory allocation error flag ", flag, "."
+    call err%report_error("sd4_alloc_workspace", trim(errmsg), &
+        DIFFEQ_MEMORY_ALLOCATION_ERROR)
+    return
+
+    ! Formatting
+100 format(A, I0, A)
+end subroutine
+
 ! ------------------------------------------------------------------------------
 pure module function sd4_get_order(this) result(rst)
     class(sdirk4_integrator), intent(in) :: this
@@ -151,18 +244,41 @@ module subroutine sd4_set_up_interp(this, x, xn, y, yn, k)
     real(real64), intent(in), dimension(:) :: y, yn
     real(real64), intent(in), dimension(:,:) :: k
 
-    ! Local Variables
+    ! No set-up actions required
 end subroutine
 
 ! ------------------------------------------------------------------------------
-module subroutine sd4_interp(this, xprev, xnew, x, y, err)
+module subroutine sd4_interp(this, xprev, yprev, xnew, x, y, err)
     ! Arguments
     class(sdirk4_integrator), intent(in) :: this
     real(real64), intent(in) :: xprev, xnew, x
+    real(real64), intent(in), dimension(:) :: yprev
     real(real64), intent(out), dimension(:) :: y
     class(errors), intent(inout), optional, target :: err
 
     ! Local Variables
+    integer(int32) :: i, j, norder, nstages, neqn
+    real(real64) :: h, theta, bi
+    real(real64), allocatable, dimension(:) :: yn
+
+    ! Initialization
+    neqn = size(yprev)
+    norder = this%get_order()
+    nstages = this%get_stage_count()
+    h = xnew - xprev
+    theta = (x - xprev) / h
+
+    ! Process
+    allocate(yn(neqn), source = 0.0d0)
+    do i = 1, nstages
+        bi = 0.0d0
+        do j = 1, norder
+            bi = bi + this%m_dc(j,i) * theta**j
+        end do
+
+        yn = yn + bi * this%f(:,i)
+    end do
+    y = yprev + h * yn
 end subroutine
 
 ! ------------------------------------------------------------------------------

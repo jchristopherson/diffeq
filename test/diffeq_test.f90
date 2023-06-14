@@ -77,8 +77,8 @@ program test
     rst = test_sdirk4_2()
     if (.not.rst) flag = 20
 
-    ! rst = test_sdirk4_3()
-    ! if (.not.rst) flag = 21
+    rst = test_sdirk4_3()
+    if (.not.rst) flag = 21
 
     ! Output
     stop flag

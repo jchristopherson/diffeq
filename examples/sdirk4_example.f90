@@ -6,7 +6,7 @@ program example
     implicit none
 
     ! Parameters
-    real(real64), parameter :: xmax = 2.5d1
+    real(real64), parameter :: xmax = 6.0d1
 
     ! Local Variables
     type(sdirk4_integrator) :: integrator
@@ -21,18 +21,14 @@ program example
     class(legend), pointer :: lgnd
 
     ! Define the model
-    mdl%fcn => vanderpol
+    mdl%fcn => duffing
 
     ! A Gustafsson controller performs better for this problem
     call integrator%set_use_pi_controller(.false.)
 
     ! Compute the solution
-    sol = integrator%solve(mdl, [0.0d0, xmax], [2.0d0, 0.0d0])
-    ref = ref_integrator%solve(mdl, [0.0d0, xmax], [2.0d0, 0.0d0])
-
-    ! Compare the number of solution points for each integrator
-    print *, "SDIRK: ", size(sol, 1)
-    print *, "DPRK45: ", size(ref, 1)
+    sol = integrator%solve(mdl, [0.0d0, xmax], [0.0d0, 0.0d0])
+    ref = ref_integrator%solve(mdl, [0.0d0, xmax], [0.0d0, 0.0d0])
 
     ! Plot the results
     call plt%initialize()

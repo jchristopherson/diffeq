@@ -205,7 +205,7 @@ module function vssi_dense_solve_driver(this, sys, x, iv, err) result(rst)
         ! Interpolate as needed to achieve any intermediary solution points
         do while (abs(xi) <= abs(xn1))
             j = j + 1
-            call this%interpolate(xn, xn1, xi, rst(j,2:), err)
+            call this%interpolate(xn, yn, xn1, xi, rst(j,2:), err)
             if (err%has_error_occurred()) return
             rst(j,1) = xi
             if (j >= npts) exit outer

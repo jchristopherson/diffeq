@@ -120,10 +120,11 @@ module subroutine bsrk32_set_up_interp(this, x, xn, y, yn, k)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-module subroutine bsrk32_interp(this, xprev, xnew, x, y, err)
+module subroutine bsrk32_interp(this, xprev, yprev, xnew, x, y, err)
     ! Arguments
     class(bsrk32_integrator), intent(in) :: this
     real(real64), intent(in) :: xprev, xnew, x
+    real(real64), intent(in), dimension(:) :: yprev
     real(real64), intent(out), dimension(:) :: y
     class(errors), intent(inout), optional, target :: err
 

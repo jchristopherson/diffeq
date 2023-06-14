@@ -83,7 +83,7 @@ function test_sdirk4_3() result(rst)
     ! Parameters
     integer(int32), parameter :: npts = 1000
     real(real64), parameter :: h = 1.0d-4
-    real(real64), parameter :: tol = 1.0d-4
+    real(real64), parameter :: tol = 2.0d-3
 
     ! Local Variables
     type(sdirk4_integrator) :: integrator

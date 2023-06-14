@@ -181,10 +181,11 @@ module subroutine dprk45_set_up_interp(this, x, xn, y, yn, k)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-module subroutine dprk45_interp(this, xprev, xnew, x, y, err)
+module subroutine dprk45_interp(this, xprev, yprev, xnew, x, y, err)
     ! Arguments
     class(dprk45_integrator), intent(in) :: this
     real(real64), intent(in) :: xprev, xnew, x
+    real(real64), intent(in), dimension(:) :: yprev
     real(real64), intent(out), dimension(:) :: y
     class(errors), intent(inout), optional, target :: err
 

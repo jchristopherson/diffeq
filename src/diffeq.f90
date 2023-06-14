@@ -1444,6 +1444,7 @@ module diffeq
         !! subroutine interpolate( &
         !!  class(variable_step_integrator) this, &
         !!  real(real64) xprev, &
+        !!  real(real64) yprev(:), &
         !!  real(real64) xnew, &
         !!  real(real64) x, &
         !!  real(real64) y(:),
@@ -1453,6 +1454,8 @@ module diffeq
         !!
         !! @param[in] this The variable_step_integrator object.
         !! @param[in] xprev The previous value of the independent variable.
+        !! @param[in] yprev An N-element array containing the values of the
+        !!  dependent variables at @p xprev.
         !! @param[in] xnew The updated value of the independent variable.
         !! @param[in] x The value at which to perform the interpolation.
         !! @param[out] y An N-element array containing the interpolated 
@@ -1518,12 +1521,14 @@ module diffeq
             real(real64), intent(in), dimension(:) :: y, yn
         end subroutine
 
-        subroutine variable_step_interpolation(this, xprev, xnew, x, y, err)
+        subroutine variable_step_interpolation(this, xprev, yprev, xnew, x, y, &
+            err)
             use iso_fortran_env
             use ferror
             import variable_step_integrator
             class(variable_step_integrator), intent(in) :: this
             real(real64), intent(in) :: xprev, xnew, x
+            real(real64), intent(in), dimension(:) :: yprev
             real(real64), intent(out), dimension(:) :: y
             class(errors), intent(inout), optional, target :: err
         end subroutine
@@ -2333,6 +2338,7 @@ module diffeq
         !! subroutine interpolate( &
         !!  class(dprk45_integrator) this, &
         !!  real(real64) xprev, &
+        !!  real(real64) yprev(:), &
         !!  real(real64) xnew, &
         !!  real(real64) x, &
         !!  real(real64) y(:),
@@ -2342,6 +2348,8 @@ module diffeq
         !!
         !! @param[in] this The dprk45_integrator object.
         !! @param[in] xprev The previous value of the independent variable.
+        !! @param[in] yprev An N-element array containing the values of the
+        !!  dependent variables at @p xprev.
         !! @param[in] xnew The updated value of the independent variable.
         !! @param[in] x The value at which to perform the interpolation.
         !! @param[out] y An N-element array containing the interpolated 
@@ -2399,9 +2407,10 @@ module diffeq
             integer(int32) :: rst
         end function
 
-        module subroutine dprk45_interp(this, xprev, xnew, x, y, err)
+        module subroutine dprk45_interp(this, xprev, yprev, xnew, x, y, err)
             class(dprk45_integrator), intent(in) :: this
             real(real64), intent(in) :: xprev, xnew, x
+            real(real64), intent(in), dimension(:) :: yprev
             real(real64), intent(out), dimension(:) :: y
             class(errors), intent(inout), optional, target :: err
         end subroutine
@@ -2537,6 +2546,7 @@ module diffeq
         !! subroutine interpolate( &
         !!  class(bsrk32_integrator) this, &
         !!  real(real64) xprev, &
+        !!  real(real64) yprev(:), &
         !!  real(real64) xnew, &
         !!  real(real64) x, &
         !!  real(real64) y(:),
@@ -2546,6 +2556,8 @@ module diffeq
         !!
         !! @param[in] this The bsrk32_integrator object.
         !! @param[in] xprev The previous value of the independent variable.
+        !! @param[in] yprev An N-element array containing the values of the
+        !!  dependent variables at @p xprev.
         !! @param[in] xnew The updated value of the independent variable.
         !! @param[in] x The value at which to perform the interpolation.
         !! @param[out] y An N-element array containing the interpolated 
@@ -2610,9 +2622,10 @@ module diffeq
             real(real64), intent(in), dimension(:,:) :: k
         end subroutine
 
-        module subroutine bsrk32_interp(this, xprev, xnew, x, y, err)
+        module subroutine bsrk32_interp(this, xprev, yprev, xnew, x, y, err)
             class(bsrk32_integrator), intent(in) :: this
             real(real64), intent(in) :: xprev, xnew, x
+            real(real64), intent(in), dimension(:) :: yprev
             real(real64), intent(out), dimension(:) :: y
             class(errors), intent(inout), optional, target :: err
         end subroutine
@@ -3162,8 +3175,96 @@ module diffeq
     !> @brief Defines a singly diagonally implicit 4th order Runge-Kutta 
     !! integrator suitable for integrating stiff systems of differential 
     !! equations.
+    !!
+    !! @par Example
+    !! The following example illustrates how to use this integrator to solve the
+    !! forced Duffing model.  A comparison with the Dormand-Prince explicit
+    !! integrator is also made.
+    !! @code{.f90}
+    !! program example
+    !!     use iso_fortran_env
+    !!     use diffeq
+    !!     use diffeq_models
+    !!     use fplot_core
+    !!     implicit none
+    !!
+    !!     ! Parameters
+    !!     real(real64), parameter :: xmax = 6.0d1
+    !!
+    !!     ! Local Variables
+    !!     type(sdirk4_integrator) :: integrator
+    !!     type(dprk45_integrator) :: ref_integrator
+    !!     type(ode_container) :: mdl
+    !!     real(real64), allocatable :: sol(:,:), ref(:,:)
+    !!
+    !!     ! Plot Variables
+    !!     type(plot_2d) :: plt
+    !!     type(plot_data_2d) :: pd
+    !!     class(plot_axis), pointer :: xAxis, yAxis
+    !!     class(legend), pointer :: lgnd
+    !!
+    !!     ! Define the model
+    !!     mdl%fcn => duffing
+    !!
+    !!     ! A Gustafsson controller performs better for this problem
+    !!     call integrator%set_use_pi_controller(.false.)
+    !!
+    !!     ! Compute the solution
+    !!     sol = integrator%solve(mdl, [0.0d0, xmax], [0.0d0, 0.0d0])
+    !!     ref = ref_integrator%solve(mdl, [0.0d0, xmax], [0.0d0, 0.0d0])
+    !!
+    !!     ! Plot the results
+    !!     call plt%initialize()
+    !!     xAxis => plt%get_x_axis()
+    !!     yAxis => plt%get_y_axis()
+    !!     lgnd => plt%get_legend()
+    !!     call xAxis%set_title("x")
+    !!     call yAxis%set_title("y(x)")
+    !!     call xAxis%set_autoscale(.false.)
+    !!     call xAxis%set_limits(0.0d0, xmax)
+    !!     call lgnd%set_is_visible(.true.)
+    !!
+    !!     call pd%define_data(sol(:,1), sol(:,2))
+    !!     call pd%set_name("SDIRK4")
+    !!     call pd%set_line_width(2.0)
+    !!     call plt%push(pd)
+    !!
+    !!     call pd%define_data(ref(:,1), ref(:,2))
+    !!     call pd%set_name("DPRK45")
+    !!     call pd%set_line_width(2.0)
+    !!     call pd%set_line_style(LINE_DASHED)
+    !!     call plt%push(pd)
+    !!
+    !!     call plt%draw()
+    !! end program
+    !! @endcode
+    !! The ODE routine was stored in a seperate module; however, here is the
+    !! code for the ODE routine.
+    !! @code{.f90}
+    !! subroutine duffing(x, y, dydx)
+    !!     ! Arguments
+    !!     real(real64), intent(in) :: x, y(:)
+    !!     real(real64), intent(out) :: dydx(:)
+    !!
+    !!     ! Model Constants
+    !!     real(real64), parameter :: alpha = 1.0d0
+    !!     real(real64), parameter :: beta = 5.0d0
+    !!     real(real64), parameter :: delta = 2.0d-2
+    !!     real(real64), parameter :: gamma = 8.0d0
+    !!     real(real64), parameter :: w = 0.5d0
+    !!
+    !!     ! Equations
+    !!     dydx(1) = y(2)
+    !!     dydx(2) = gamma * cos(w * x) - delta * y(2) - alpha * y(1) - beta * y(1)**3
+    !! end subroutine
+    !! @endcode
+    !! The above program produces the following plot using the 
+    !! [FPLOT](https://github.com/jchristopherson/fplot) library.
+    !! @image html sdirk4_duffing_example_1.png
     type, extends(sdirk_integrator) :: sdirk4_integrator
         logical, private :: m_modelDefined = .false.
+        ! Interpolation coefficients for dense output
+        real(real64), allocatable, dimension(:,:) :: m_dc
     contains
         !> @brief Returns the order of the integrator.
         !!
@@ -3218,6 +3319,7 @@ module diffeq
         !! subroutine interpolate( &
         !!  class(sdirk4_integrator) this, &
         !!  real(real64) xprev, &
+        !!  real(real64) yprev(:), &
         !!  real(real64) xnew, &
         !!  real(real64) x, &
         !!  real(real64) y(:),
@@ -3227,6 +3329,8 @@ module diffeq
         !!
         !! @param[in] this The sdirk4_integrator object.
         !! @param[in] xprev The previous value of the independent variable.
+        !! @param[in] yprev An N-element array containing the values of the
+        !!  dependent variables at @p xprev.
         !! @param[in] xnew The updated value of the independent variable.
         !! @param[in] x The value at which to perform the interpolation.
         !! @param[out] y An N-element array containing the interpolated 
@@ -3261,6 +3365,28 @@ module diffeq
         !! @param[in] k An N-by-M matrix containing the intermediate step
         !!  function outputs where M is the number of stages of the integrator.
         procedure, public :: set_up_interpolation => sd4_set_up_interp
+        !> @brief Initializes the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine initialize( &
+        !!  class(sdirk4_integrator) this, &
+        !!  integer(int32) neqn, &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref sdirk4_integrator object.
+        !! @param[in] neqn The number of equations being integrated.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.  Possible errors and warning messages that may be 
+        !!  encountered are as follows.
+        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
+        !!      allocation issue.
+        procedure, public :: initialize => sd4_alloc_workspace
     end type
 
     ! diffeq_sdirk4.f90
@@ -3291,10 +3417,17 @@ module diffeq
             real(real64), intent(in), dimension(:,:) :: k
         end subroutine
 
-        module subroutine sd4_interp(this, xprev, xnew, x, y, err)
+        module subroutine sd4_interp(this, xprev, yprev, xnew, x, y, err)
             class(sdirk4_integrator), intent(in) :: this
             real(real64), intent(in) :: xprev, xnew, x
+            real(real64), intent(in), dimension(:) :: yprev
             real(real64), intent(out), dimension(:) :: y
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+
+        module subroutine sd4_alloc_workspace(this, neqn, err)
+            class(sdirk4_integrator), intent(inout) :: this
+            integer(int32), intent(in) :: neqn
             class(errors), intent(inout), optional, target :: err
         end subroutine
     end interface
