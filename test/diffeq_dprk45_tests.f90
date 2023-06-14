@@ -66,6 +66,7 @@ function test_dprk45_attempt_step() result(rst)
     call random_number(x)
     call random_number(y)
     call mdl%fcn(x, y, dydx)
+    call integrator%initialize(1)
 
     ! Perform the actual steps manually
     yt = y + h * a21 * dydx
@@ -129,6 +130,7 @@ function test_dprk45_step() result(rst)
 
     ! Initialization
     rst = .true.
+    call integrator%initialize(1)
 
     ! Take one step using the dprk45 integrator
     call integrator%set_step_size(xmax)

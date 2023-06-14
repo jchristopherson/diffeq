@@ -22,6 +22,9 @@ module diffeq
     public :: rk_variable_integrator
     public :: dprk45_integrator
     public :: bsrk32_integrator
+    public :: implicit_rk_variable_integrator
+    public :: sdirk_integrator
+    public :: sdirk4_integrator
     public :: DIFFEQ_MEMORY_ALLOCATION_ERROR
     public :: DIFFEQ_NULL_POINTER_ERROR
     public :: DIFFEQ_MATRIX_SIZE_ERROR
@@ -141,7 +144,6 @@ module diffeq
         !!  class(ode_container) this, &
         !!  real(real64) x, &
         !!  real(real64) y(:), &
-        !!  real(real64) dydx(:), &
         !!  real(real64) jac(:,:), &
         !!  optional class(errors) err &
         !! )
@@ -151,8 +153,6 @@ module diffeq
         !! @param[in] x The current independent variable value.
         !! @param[in] y An N-element array containing the current dependent
         !!  variable values.
-        !! @param[in] dydx An N-element array containing the current derivative
-        !!  values.
         !! @param[out] jac An N-by-N matrix where the Jacobian will be written.
         !! @param[in,out] err An optional errors-based object that if provided 
         !!  can be used to retrieve information relating to any errors 
@@ -197,17 +197,17 @@ module diffeq
             real(real64), intent(out), dimension(:) :: dydx
         end subroutine
 
-        subroutine ode_jacobian(x, y, dydx, jac)
+        subroutine ode_jacobian(x, y, jac)
             use iso_fortran_env
             real(real64), intent(in) :: x
-            real(real64), intent(in), dimension(:) :: y, dydx
+            real(real64), intent(in), dimension(:) :: y
             real(real64), intent(out), dimension(:,:) :: jac
         end subroutine
 
-        subroutine ode_mass_matrix(x, y, dydx, m)
+        subroutine ode_mass_matrix(x, y, m)
             use iso_fortran_env
             real(real64), intent(in) :: x
-            real(real64), intent(in), dimension(:) :: y, dydx
+            real(real64), intent(in), dimension(:) :: y
             real(real64), intent(out), dimension(:,:) :: m
         end subroutine
 
@@ -237,10 +237,10 @@ module diffeq
             class(errors), intent(inout) :: err
         end subroutine
 
-        module subroutine oc_jacobian(this, x, y, dydx, jac, err)
+        module subroutine oc_jacobian(this, x, y, jac, err)
             class(ode_container), intent(inout) :: this
             real(real64), intent(in) :: x
-            real(real64), intent(in), dimension(:) :: y, dydx
+            real(real64), intent(in), dimension(:) :: y
             real(real64), intent(out), dimension(:,:) :: jac
             class(errors), intent(inout), optional, target :: err
         end subroutine
@@ -996,9 +996,28 @@ module diffeq
         real(real64), allocatable, dimension(:) :: m_rtol       ! NEQN element
         real(real64), allocatable, dimension(:) :: m_atol       ! NEQN element
     contains
-        ! Use to allocate internal workspaces.  This routine only takes action
-        ! if the workspace array(s) are not sized properly for the application.
-        procedure, private :: allocate_vsi_workspace => vsi_alloc_workspace
+        !> @brief Initializes the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine initialize( &
+        !!  class(variable_step_integrator) this, &
+        !!  integer(int32) neqn, &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref variable_step_integrator object.
+        !! @param[in] neqn The number of equations being integrated.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.  Possible errors and warning messages that may be 
+        !!  encountered are as follows.
+        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
+        !!      allocation issue.
+        procedure, public :: initialize => vsi_alloc_workspace
         !> @brief Attempts a single integration step.
         !!
         !! @par Syntax
@@ -1393,7 +1412,6 @@ module diffeq
         !!      too small.
         !!  - DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR: Occurs if the iteration
         !!      count is exceeded for a single step.
-        !!  - DIFFEQ_NULL_POINTER_ERROR: Occurs if no ODE routine is defined.
         procedure, public :: step => vsi_step
         !> @brief Computes an estimate to the first step size based upon the
         !! initial function values.
@@ -1426,6 +1444,7 @@ module diffeq
         !! subroutine interpolate( &
         !!  class(variable_step_integrator) this, &
         !!  real(real64) xprev, &
+        !!  real(real64) yprev(:), &
         !!  real(real64) xnew, &
         !!  real(real64) x, &
         !!  real(real64) y(:),
@@ -1435,6 +1454,8 @@ module diffeq
         !!
         !! @param[in] this The variable_step_integrator object.
         !! @param[in] xprev The previous value of the independent variable.
+        !! @param[in] yprev An N-element array containing the values of the
+        !!  dependent variables at @p xprev.
         !! @param[in] xnew The updated value of the independent variable.
         !! @param[in] x The value at which to perform the interpolation.
         !! @param[out] y An N-element array containing the interpolated 
@@ -1500,12 +1521,14 @@ module diffeq
             real(real64), intent(in), dimension(:) :: y, yn
         end subroutine
 
-        subroutine variable_step_interpolation(this, xprev, xnew, x, y, err)
+        subroutine variable_step_interpolation(this, xprev, yprev, xnew, x, y, &
+            err)
             use iso_fortran_env
             use ferror
             import variable_step_integrator
             class(variable_step_integrator), intent(in) :: this
             real(real64), intent(in) :: xprev, xnew, x
+            real(real64), intent(in), dimension(:) :: yprev
             real(real64), intent(out), dimension(:) :: y
             class(errors), intent(inout), optional, target :: err
         end subroutine
@@ -1618,7 +1641,7 @@ module diffeq
         module subroutine vsi_alloc_workspace(this, neqn, err)
             class(variable_step_integrator), intent(inout) :: this
             integer(int32), intent(in) :: neqn
-            class(errors), intent(inout) :: err
+            class(errors), intent(inout), optional, target :: err
         end subroutine
 
         pure module function vsi_get_respect_xmax(this) result(rst)
@@ -1693,13 +1716,7 @@ module diffeq
         !!  can be used to retrieve information relating to any errors 
         !!  encountered during execution. If not provided, a default 
         !!  implementation of the errors class is used internally to provide 
-        !!  error handling.
-        !!
-        !! @return An M-by-N matrix where M is the number of solution points, 
-        !!  and N is the number of ODEs plus 1.  The first column contains
-        !!  the values of the independent variable at which the results were
-        !!  computed.  The remaining columns contain the integration results
-        !!  for each ODE.  Possible errors and warning messages that may be 
+        !!  error handling.  Possible errors and warning messages that may be 
         !!  encountered are as follows.
         !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
         !!      allocation issue.
@@ -1710,6 +1727,12 @@ module diffeq
         !!      count is exceeded for a single step.
         !!  - DIFFEQ_NULL_POINTER_ERROR: Occurs if no ODE routine is defined.
         !!  - DIFFEQ_INVALID_INPUT_ERROR: Occurs if max(@p x) - min(@p x) = 0.
+        !!
+        !! @return An M-by-N matrix where M is the number of solution points, 
+        !!  and N is the number of ODEs plus 1.  The first column contains
+        !!  the values of the independent variable at which the results were
+        !!  computed.  The remaining columns contain the integration results
+        !!  for each ODE.
         procedure, public :: solve => vssi_solve
         procedure, private :: solve_driver => vssi_solve_driver
         procedure, private :: dense_solve_driver => vssi_dense_solve_driver
@@ -1748,7 +1771,9 @@ module diffeq
     type, abstract, extends(variable_singlestep_integrator) :: &
         rk_variable_integrator
         ! Workspace matrix (NEQN -by- STAGE COUNT)
-        real(real64), private, allocatable, dimension(:,:) :: m_work
+        !> @brief An NEQN-by-NSTAGE matrix containing the function evaluations
+        !! (derivatives) at each of the stages of evaluation.
+        real(real64), public, allocatable, dimension(:,:) :: f
         ! Workspace array (NEQN)
         real(real64), private, allocatable, dimension(:) :: m_ywork
         ! A flag determining if this is the first accepted step (use for FSAL)
@@ -1756,73 +1781,100 @@ module diffeq
         ! Step-size PI control parameters
         real(real64), private :: m_alpha = 0.7d0
         real(real64), private :: m_beta = 0.4d-1
+        !> @brief The NSTAGE-by-NSTAGE method factor matrix A.
+        real(real64), public, allocatable, dimension(:,:) :: a
+        !> @brief The NSTAGE-element quadrature weight array B.
+        real(real64), public, allocatable, dimension(:) :: b
+        !> @brief The NSTAGE-element position factor array C.
+        real(real64), public, allocatable, dimension(:) :: c
+        !> @brief The NSTAGE-element error estimate factor array E.
+        real(real64), public, allocatable, dimension(:) :: e
     contains
-        ! Use to allocate internal workspaces.  This routine only takes action
-        ! if the workspace array(s) are not sized properly for the application.
-        procedure, private :: allocate_rkv_workspace => rkv_alloc_workspace
-        !> @brief Gets the requested method factor from the Butcher tableau.
+        !> @brief Initializes the integrator.
         !!
         !! @par Syntax
         !! @code{.f90}
-        !! real(real64) pure function get_method_factor( &
+        !! subroutine initialize( &
         !!  class(rk_variable_integrator) this, &
-        !!  integer(int32), intent(in) i, &
-        !!  integer(int32), intent(in) j &
+        !!  integer(int32) neqn, &
+        !!  optional class(errors) err &
         !! )
         !! @endcode
         !!
-        !! @param[in] this The @ref rk_variable_integrator object.
-        !! @param[in] i The row index of the parameter from the Butcher tableau.
-        !! @param[in] j The column index of the parameter from the Butcher 
-        !!  tableau.
-        !! @return The requested parameter.
-        procedure(rkv_get_matrix_parameter), deferred, public :: &
-            get_method_factor
-        !> @brief Gets the requested quadrature weight from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_quadrature_weight( &
-        !!  class(rk_variable_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref rk_variable_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure(rkv_get_array_parameter), deferred, public :: &
-            get_quadrature_weight
-        !> @brief Gets the requested error coefficient from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_error_factor( &
-        !!  class(rk_variable_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref rk_variable_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure(rkv_get_array_parameter), deferred, public :: &
-            get_error_factor
-        !> @brief Gets the requested position factor from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_position_factor( &
-        !!  class(rk_variable_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref rk_variable_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure(rkv_get_array_parameter), deferred, public :: &
-            get_position_factor
+        !! @param[in,out] this The @ref rk_variable_integrator object.
+        !! @param[in] neqn The number of equations being integrated.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.  Possible errors and warning messages that may be 
+        !!  encountered are as follows.
+        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
+        !!      allocation issue.
+        procedure, public :: initialize => rkv_alloc_workspace
+        ! !> @brief Gets the requested method factor from the Butcher tableau.
+        ! !!
+        ! !! @par Syntax
+        ! !! @code{.f90}
+        ! !! real(real64) pure function get_method_factor( &
+        ! !!  class(rk_variable_integrator) this, &
+        ! !!  integer(int32), intent(in) i, &
+        ! !!  integer(int32), intent(in) j &
+        ! !! )
+        ! !! @endcode
+        ! !!
+        ! !! @param[in] this The @ref rk_variable_integrator object.
+        ! !! @param[in] i The row index of the parameter from the Butcher tableau.
+        ! !! @param[in] j The column index of the parameter from the Butcher 
+        ! !!  tableau.
+        ! !! @return The requested parameter.
+        ! procedure(rkv_get_matrix_parameter), deferred, public :: &
+        !     get_method_factor
+        ! !> @brief Gets the requested quadrature weight from the Butcher tableau.
+        ! !!
+        ! !! @par Syntax
+        ! !! @code{.f90}
+        ! !! real(real64) pure function get_quadrature_weight( &
+        ! !!  class(rk_variable_integrator) this, &
+        ! !!  integer(int32), intent(in) i &
+        ! !! )
+        ! !! @endcode
+        ! !!
+        ! !! @param[in] this The @ref rk_variable_integrator object.
+        ! !! @param[in] i The index of the parameter from the Butcher tableau.
+        ! !! @return The requested parameter.
+        ! procedure(rkv_get_array_parameter), deferred, public :: &
+        !     get_quadrature_weight
+        ! !> @brief Gets the requested error coefficient from the Butcher tableau.
+        ! !!
+        ! !! @par Syntax
+        ! !! @code{.f90}
+        ! !! real(real64) pure function get_error_factor( &
+        ! !!  class(rk_variable_integrator) this, &
+        ! !!  integer(int32), intent(in) i &
+        ! !! )
+        ! !! @endcode
+        ! !!
+        ! !! @param[in] this The @ref rk_variable_integrator object.
+        ! !! @param[in] i The index of the parameter from the Butcher tableau.
+        ! !! @return The requested parameter.
+        ! procedure(rkv_get_array_parameter), deferred, public :: &
+        !     get_error_factor
+        ! !> @brief Gets the requested position factor from the Butcher tableau.
+        ! !!
+        ! !! @par Syntax
+        ! !! @code{.f90}
+        ! !! real(real64) pure function get_position_factor( &
+        ! !!  class(rk_variable_integrator) this, &
+        ! !!  integer(int32), intent(in) i &
+        ! !! )
+        ! !! @endcode
+        ! !!
+        ! !! @param[in] this The @ref rk_variable_integrator object.
+        ! !! @param[in] i The index of the parameter from the Butcher tableau.
+        ! !! @return The requested parameter.
+        ! procedure(rkv_get_array_parameter), deferred, public :: &
+        !     get_position_factor
         !> @brief Determines if the integrator is an FSAL (first same as last)
         !! integrator (e.g. the 4th/5th order Dormand-Prince integrator).
         !!
@@ -2095,7 +2147,7 @@ module diffeq
         module subroutine rkv_alloc_workspace(this, neqn, err)
             class(rk_variable_integrator), intent(inout) :: this
             integer(int32), intent(in) :: neqn
-            class(errors), intent(inout) :: err
+            class(errors), intent(inout), optional, target :: err
         end subroutine
 
         module subroutine rkv_reset(this)
@@ -2233,10 +2285,6 @@ module diffeq
     !! @image html dprk45_diffing_example_1.png
     type, extends(rk_variable_integrator) :: dprk45_integrator
         logical, private :: m_modelDefined = .false.
-        real(real64), private, dimension(7,7) :: m_a
-        real(real64), private, dimension(7) :: m_b
-        real(real64), private, dimension(7) :: m_c
-        real(real64), private, dimension(7) :: m_e
         real(real64), private, allocatable, dimension(:,:) :: m_dprk45work
     contains
         !> @brief Defines (initializes) the model parameters.
@@ -2248,65 +2296,6 @@ module diffeq
         !!
         !! @param[in] this The @ref dprk45_integrator object.
         procedure, public :: define_model => dprk45_define_model
-        !> @brief Gets the requested method factor from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_method_factor( &
-        !!  class(dprk45_integrator) this, &
-        !!  integer(int32), intent(in) i, &
-        !!  integer(int32), intent(in) j &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref dprk45_integrator object.
-        !! @param[in] i The row index of the parameter from the Butcher tableau.
-        !! @param[in] j The column index of the parameter from the Butcher 
-        !!  tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_method_factor => dprk45_get_method_factor
-        !> @brief Gets the requested quadrature weight from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_quadrature_weight( &
-        !!  class(dprk45_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref dprk45_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_quadrature_weight => dprk45_get_quad_weights
-        !> @brief Gets the requested error coefficient from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_error_factor( &
-        !!  class(dprk45_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref dprk45_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_error_factor => dprk45_get_error_factor
-        !> @brief Gets the requested position factor from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_position_factor( &
-        !!  class(dprk45_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref dprk45_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_position_factor => dprk45_get_position_factor
         !> @brief Determines if the integrator is an FSAL (first same as last)
         !! integrator (e.g. the 4th/5th order Dormand-Prince integrator).
         !!
@@ -2349,6 +2338,7 @@ module diffeq
         !! subroutine interpolate( &
         !!  class(dprk45_integrator) this, &
         !!  real(real64) xprev, &
+        !!  real(real64) yprev(:), &
         !!  real(real64) xnew, &
         !!  real(real64) x, &
         !!  real(real64) y(:),
@@ -2358,6 +2348,8 @@ module diffeq
         !!
         !! @param[in] this The dprk45_integrator object.
         !! @param[in] xprev The previous value of the independent variable.
+        !! @param[in] yprev An N-element array containing the values of the
+        !!  dependent variables at @p xprev.
         !! @param[in] xnew The updated value of the independent variable.
         !! @param[in] x The value at which to perform the interpolation.
         !! @param[out] y An N-element array containing the interpolated 
@@ -2400,30 +2392,6 @@ module diffeq
             class(dprk45_integrator), intent(inout) :: this
         end subroutine
 
-        pure module function dprk45_get_method_factor(this, i, j) result(rst)
-            class(dprk45_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i, j
-            real(real64) :: rst
-        end function
-
-        pure module function dprk45_get_quad_weights(this, i) result(rst)
-            class(dprk45_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i
-            real(real64) :: rst
-        end function
-
-        pure module function dprk45_get_error_factor(this, i) result(rst)
-            class(dprk45_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i
-            real(real64) :: rst
-        end function
-
-        pure module function dprk45_get_position_factor(this, i) result(rst)
-            class(dprk45_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i
-            real(real64) :: rst
-        end function
-
         pure module function dprk45_is_fsal(this) result(rst)
             class(dprk45_integrator), intent(in) :: this
             logical :: rst
@@ -2439,14 +2407,10 @@ module diffeq
             integer(int32) :: rst
         end function
 
-        ! pure module function dprk45_is_single_step(this) result(rst)
-        !     class(dprk45_integrator), intent(in) :: this
-        !     logical :: rst
-        ! end function
-
-        module subroutine dprk45_interp(this, xprev, xnew, x, y, err)
+        module subroutine dprk45_interp(this, xprev, yprev, xnew, x, y, err)
             class(dprk45_integrator), intent(in) :: this
             real(real64), intent(in) :: xprev, xnew, x
+            real(real64), intent(in), dimension(:) :: yprev
             real(real64), intent(out), dimension(:) :: y
             class(errors), intent(inout), optional, target :: err
         end subroutine
@@ -2529,10 +2493,6 @@ module diffeq
     !! @image html bsrk32_vanderpol_example_1.png
     type, extends(rk_variable_integrator) :: bsrk32_integrator
         logical, private :: m_modelDefined = .false.
-        real(real64), private, dimension(4,4) :: m_a
-        real(real64), private, dimension(4) :: m_b
-        real(real64), private, dimension(4) :: m_c
-        real(real64), private, dimension(4) :: m_e
         real(real64), private, allocatable, dimension(:,:) :: m_bsrk23work
     contains
         !> @brief Defines (initializes) the model parameters.
@@ -2544,65 +2504,6 @@ module diffeq
         !!
         !! @param[in] this The @ref bsrk32_integrator object.
         procedure, public :: define_model => bsrk32_define_model
-        !> @brief Gets the requested method factor from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_method_factor( &
-        !!  class(bsrk32_integrator) this, &
-        !!  integer(int32), intent(in) i, &
-        !!  integer(int32), intent(in) j &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref bsrk32_integrator object.
-        !! @param[in] i The row index of the parameter from the Butcher tableau.
-        !! @param[in] j The column index of the parameter from the Butcher 
-        !!  tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_method_factor => bsrk32_get_method_factor
-        !> @brief Gets the requested quadrature weight from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_quadrature_weight( &
-        !!  class(bsrk32_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref bsrk32_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_quadrature_weight => bsrk32_get_quad_weights
-        !> @brief Gets the requested error coefficient from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_error_factor( &
-        !!  class(bsrk32_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref bsrk32_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_error_factor => bsrk32_get_error_factor
-        !> @brief Gets the requested position factor from the Butcher tableau.
-        !!
-        !! @par Syntax
-        !! @code{.f90}
-        !! real(real64) pure function get_position_factor( &
-        !!  class(bsrk32_integrator) this, &
-        !!  integer(int32), intent(in) i &
-        !! )
-        !! @endcode
-        !!
-        !! @param[in] this The @ref bsrk32_integrator object.
-        !! @param[in] i The index of the parameter from the Butcher tableau.
-        !! @return The requested parameter.
-        procedure, public :: get_position_factor => bsrk32_get_position_factor
         !> @brief Determines if the integrator is an FSAL (first same as last)
         !! integrator (e.g. the 4th/5th order Dormand-Prince integrator).
         !!
@@ -2645,6 +2546,7 @@ module diffeq
         !! subroutine interpolate( &
         !!  class(bsrk32_integrator) this, &
         !!  real(real64) xprev, &
+        !!  real(real64) yprev(:), &
         !!  real(real64) xnew, &
         !!  real(real64) x, &
         !!  real(real64) y(:),
@@ -2654,6 +2556,8 @@ module diffeq
         !!
         !! @param[in] this The bsrk32_integrator object.
         !! @param[in] xprev The previous value of the independent variable.
+        !! @param[in] yprev An N-element array containing the values of the
+        !!  dependent variables at @p xprev.
         !! @param[in] xnew The updated value of the independent variable.
         !! @param[in] x The value at which to perform the interpolation.
         !! @param[out] y An N-element array containing the interpolated 
@@ -2696,30 +2600,6 @@ module diffeq
             class(bsrk32_integrator), intent(inout) :: this
         end subroutine
 
-        pure module function bsrk32_get_method_factor(this, i, j) result(rst)
-            class(bsrk32_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i, j
-            real(real64) :: rst
-        end function
-
-        pure module function bsrk32_get_quad_weights(this, i) result(rst)
-            class(bsrk32_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i
-            real(real64) :: rst
-        end function
-
-        pure module function bsrk32_get_error_factor(this, i) result(rst)
-            class(bsrk32_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i
-            real(real64) :: rst
-        end function
-
-        pure module function bsrk32_get_position_factor(this, i) result(rst)
-            class(bsrk32_integrator), intent(in) :: this
-            integer(int32), intent(in) :: i
-            real(real64) :: rst
-        end function
-
         pure module function bsrk32_is_fsal(this) result(rst)
             class(bsrk32_integrator), intent(in) :: this
             logical :: rst
@@ -2742,17 +2622,815 @@ module diffeq
             real(real64), intent(in), dimension(:,:) :: k
         end subroutine
 
-        module subroutine bsrk32_interp(this, xprev, xnew, x, y, err)
+        module subroutine bsrk32_interp(this, xprev, yprev, xnew, x, y, err)
             class(bsrk32_integrator), intent(in) :: this
             real(real64), intent(in) :: xprev, xnew, x
+            real(real64), intent(in), dimension(:) :: yprev
             real(real64), intent(out), dimension(:) :: y
             class(errors), intent(inout), optional, target :: err
         end subroutine
     end interface
 
 ! ------------------------------------------------------------------------------
-    
+    !> @brief Defines an implicit Runge-Kutta variable-step integrator.
+    type, abstract, extends(rk_variable_integrator) :: &
+    implicit_rk_variable_integrator
+        ! The most recent successful step size
+        real(real64), private :: m_hold = 0.0d0
+        ! Is the Jacobian current?
+        logical, private :: m_isJacCurrent = .false.
+        ! Use a PI step size (true) or a Gustafsson controller (false)
+        logical, private :: m_usePI = .true.
+    contains
+        !> @brief Gets the most recent successful step size.
+        !!
+        !! @par Synatx
+        !! @code{.f90}
+        !! real(real64) pure function get_previous_step_size( &
+        !!  class(implicit_rk_variable_integrator) this &
+        !! )
+        !! @endcode
+        !! 
+        !! @param[in] this The @ref implicit_rk_variable_integrator object.
+        !! @return The step size.
+        procedure, public :: get_previous_step_size => irk_get_old_step
+        !> @brief Sets the most recent successful step size.
+        !!
+        !! @par Synatx
+        !! @code{.f90}
+        !! subroutine set_previous_step_size( &
+        !!  class(implicit_rk_variable_integrator) this, &
+        !!  real(real64) x &
+        !! )
+        !! @endcode
+        !! 
+        !! @param[in,out] this The @ref implicit_rk_variable_integrator object.
+        !! @param[in] x The step size.
+        procedure, public :: set_previous_step_size => irk_set_old_step
+        !> @brief Computes the next step size.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) function compute_next_step_size( &
+        !!  class(implicit_rk_variable_integrator) this, &
+        !!  real(real64) hn, &
+        !!  real(real64) en, &
+        !!  real(real64) enm1 &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref implicit_rk_variable_integrator object.
+        !! @param[in] hn The current step size.
+        !! @param[in] en The norm of the error for the current step size.
+        !! @param[in] enm1 The norm of the error from the previous step size.
+        !!
+        !! @return The new step size.
+        procedure, public :: compute_next_step_size => &
+            irk_compute_next_step_size
+        !> @brief Gets a value determining if the Jacobian matrix estimate is
+        !! current such that it does not need to be recomputed at this time.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! logical pure function get_is_jacobian_current( &
+        !!  class(implicit_rk_variable_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref implicit_rk_variable_integrator object.
+        !! @return True if the Jacobian matrix is current; else, false.
+        procedure, public :: get_is_jacobian_current => irk_get_is_jac_current
+        !> @brief Sets a value determining if the Jacobian matrix estimate is
+        !! current such that it does not need to be recomputed at this time.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_is_jacobian_current( &
+        !!  class(implicit_rk_variable_integrator) this, &
+        !!  logical x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref implicit_rk_variable_integrator object.
+        !! @param[in] x True if the Jacobian matrix is current; else, false.
+        procedure, public :: set_is_jacobian_current => irk_set_is_jac_current
+        !> @brief Builds the matrix of the form \f$ X = f I - J \f$,
+        !! or \f$ X = f M - J \f$ if a mass matrix is defined, and then computes
+        !! its LU factorization.  The Jacobian and mass matrices are evaluated
+        !! as part of this process, if necessary.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine build_factored_matrix( &
+        !!  class(implicit_rk_variable_integrator) this, &
+        !!  class(ode_container) sys, &
+        !!  real(real64) h, &
+        !!  real(real64) x, &
+        !!  real(real64) y(:), &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref implicit_rk_variable_integrator object.
+        !! @param[in,out] sys The @ref ode_container object containing the
+        !!  equations to integrate.
+        !! @param[in] h The current step size.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] y An N-element array containing the current values of
+        !!  the dependent variables.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.
+        procedure(build_factored_newton_matrix_routine), public, deferred :: &
+            build_factored_newton_matrix
+        !> @brief Gets a parameter determining if a PI step size controller
+        !! or a Gustafsson step size controller should be used. The default is
+        !! to use a PI step size controller.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! logical pure function get_use_pi_controller(
+        !!  class(implicit_rk_variable_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref implicit_rk_variable_integrator object.
+        !! @return True to use a PI controller; else, false to use a
+        !!  Gustafsson controller.
+        procedure, public :: get_use_pi_controller => irk_get_use_pi_controller
+        !> @brief Sets a parameter determining if a PI step size controller
+        !! or a Gustafsson step size controller should be used. The default is
+        !! to use a PI step size controller.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_use_pi_controller(
+        !!  class(implicit_rk_variable_integrator) this, &
+        !!  logical x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref implicit_rk_variable_integrator object.
+        !! @param[in] x True to use a PI controller; else, false to use a
+        !!  Gustafsson controller.
+        procedure, public :: set_use_pi_controller => irk_set_use_pi_controller
+        !> @brief Computes an estimate to the first step size based upon the
+        !! initial function values.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function estimate_first_step_size( &
+        !!  class(implicit_rk_variable_integrator) this, &
+        !!  real(real64) xo, &
+        !!  real(real64) xf, &
+        !!  real(real64) yo(:), &
+        !!  real(real64) fo(:) &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The implicit_rk_variable_integrator object.
+        !! @param[in] xo The initial value of the independent variable.
+        !! @param[in] xf The final value of the independent variable.
+        !! @param[in] yo An N-element array containing the initial values.
+        !! @param[in] fo An N-element array containing the initial function 
+        !!  values.
+        !!
+        !! @return An estimate on the initial step size.
+        procedure, public :: estimate_first_step_size => irk_estimate_first_step
+    end type
+
+    ! diffeq_implicit_rk.f90
+    interface
+        subroutine build_factored_newton_matrix_routine(this, sys, h, x, y, err)
+            use iso_fortran_env, only : real64
+            use ferror, only : errors
+            import implicit_rk_variable_integrator
+            import ode_container
+            class(implicit_rk_variable_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(in) :: h, x
+            real(real64), intent(in), dimension(:) :: y
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+
+        pure module function irk_get_old_step(this) result(rst)
+            class(implicit_rk_variable_integrator), intent(in) :: this
+            real(real64) :: rst
+        end function
+
+        module subroutine irk_set_old_step(this, x)
+            class(implicit_rk_variable_integrator), intent(inout) :: this
+            real(real64), intent(in) :: x
+        end subroutine
+
+        module function irk_compute_next_step_size(this, hn, en, enm1) &
+            result(rst)
+            class(implicit_rk_variable_integrator), intent(inout) :: this
+            real(real64), intent(in) :: hn, en, enm1
+            real(real64) :: rst
+        end function
+
+        pure module function irk_get_is_jac_current(this) result(rst)
+            class(implicit_rk_variable_integrator), intent(in) :: this
+            logical :: rst
+        end function
+
+        module subroutine irk_set_is_jac_current(this, x)
+            class(implicit_rk_variable_integrator), intent(inout) :: this
+            logical, intent(in) :: x
+        end subroutine
+
+        pure module function irk_get_use_pi_controller(this) result(rst)
+            class(implicit_rk_variable_integrator), intent(in) :: this
+            logical :: rst
+        end function
+
+        module subroutine irk_set_use_pi_controller(this, x)
+            class(implicit_rk_variable_integrator), intent(inout) :: this
+            logical, intent(in) :: x
+        end subroutine
+
+        pure module function irk_estimate_first_step(this, xo, xf, yo, fo) &
+            result(rst)
+            class(implicit_rk_variable_integrator), intent(in) :: this
+            real(real64), intent(in) :: xo, xf
+            real(real64), intent(in), dimension(:) :: yo, fo
+            real(real64) :: rst
+        end function
+    end interface
+
 ! ------------------------------------------------------------------------------
+    !> @brief Defines a base structure for singly diagonally implicit 
+    !! Runge-Kutta integrators.
+    type, abstract, extends(implicit_rk_variable_integrator) :: sdirk_integrator
+        ! Jacobian matrix workspace
+        real(real64), private, allocatable, dimension(:,:) :: m_jac
+        ! Mass matrix workspace
+        real(real64), private, allocatable, dimension(:,:) :: m_mass
+        ! System matrix workspace
+        real(real64), private, allocatable, dimension(:,:) :: m_mtx
+        ! LU pivot tracking workspace
+        integer(int32), private, allocatable, dimension(:) :: m_pvt
+        ! NEQN-element workspace array
+        real(real64), private, allocatable, dimension(:) :: m_w
+        ! NEQN-element workspace array
+        real(real64), private, allocatable, dimension(:) :: m_dy
+        ! Allowable number of Newton iterations
+        integer(int32), private :: m_maxNewtonIter = 7
+        ! Newton iteration tolerance
+        real(real64), private :: m_newtontol = 1.0d-6
+    contains
+        !> @brief Initializes the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine initialize( &
+        !!  class(sdirk_integrator) this, &
+        !!  integer(int32) neqn, &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref sdirk_integrator object.
+        !! @param[in] neqn The number of equations being integrated.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.  Possible errors and warning messages that may be 
+        !!  encountered are as follows.
+        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
+        !!      allocation issue.
+        procedure, public :: initialize => sdirk_alloc_workspace
+        !> @brief Builds the system matrix of the form \f$ X = f I - J \f$,
+        !! or \f$ X = f M - J \f$ if a mass matrix is defined.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine build_matrix( &
+        !!  class(sdirk_integrator) this, &
+        !!  real(real64) h, &
+        !!  real(real64) jac(:,:), &
+        !!  real(real64) x(:,:), &
+        !!  optional real(real64) m(:,:), &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref sdirk_integrator object.
+        !! @param[in] h The current step size.
+        !! @param[in] jac The current NEQN-by-NEQN Jacobian matrix.
+        !! @param[out] x An NEQN-by-NEQN matrix where the output will be 
+        !!  written.
+        !! @param[in] m An optional NEQN-by-NEQN mass matrix.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.  Possible errors and warning messages that may be 
+        !!  encountered are as follows.
+        !!  - DIFFEQ_MATRIX_SIZE_ERROR: Occurs if any of the matrices are not
+        !!      sized correctly.
+        procedure, public :: build_newton_matrix => sdirk_build_matrix
+        !> @brief Builds the matrix of the form \f$ X = f I - J \f$,
+        !! or \f$ X = f M - J \f$ if a mass matrix is defined, and then computes
+        !! its LU factorization.  The Jacobian and mass matrices are evaluated
+        !! as part of this process, if necessary.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine build_factored_matrix( &
+        !!  class(sdirk_integrator) this, &
+        !!  class(ode_container) sys, &
+        !!  real(real64) h, &
+        !!  real(real64) x, &
+        !!  real(real64) y(:), &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref sdirk_integrator object.
+        !! @param[in,out] sys The @ref ode_container object containing the
+        !!  equations to integrate.
+        !! @param[in] h The current step size.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] y An N-element array containing the current values of
+        !!  the dependent variables.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.
+        procedure, public :: build_factored_newton_matrix => &
+            sdirk_build_factored_matrix
+        !> @brief Gets the maximum allowed number of Newton iterations.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! integer(int32) pure function get_max_newton_iteration_count( &
+        !!  class(sdirk_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref sdirk_integrator object.
+        !! @return The iteration limit.
+        procedure, public :: get_max_newton_iteration_count => &
+            sdirk_get_max_newton_iter
+        !> @brief Sets the maximum allowed number of Newton iterations.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_max_newton_iteration_count( &
+        !!  class(sdirk_integrator) this, &
+        !!  integer(int32) x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref sdirk_integrator object.
+        !! @param[in] x The iteration limit.
+        procedure, public :: set_max_newton_iteration_count => &
+            sdirk_set_max_newton_iter
+        !> @brief Gets the tolerance used to check for convergence of the
+        !! Newton iterations.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! real(real64) pure function get_newton_tolerance( &
+        !!  class(sdirk_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref sdirk_integrator object.
+        !! @return The tolerance.
+        procedure, public :: get_newton_tolerance => sdirk_get_newton_tol
+        !> @brief Sets the tolerance used to check for convergence of the
+        !! Newton iterations.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_newton_tolerance( &
+        !!  class(sdirk_integrator) this, &
+        !!  real(real64) x &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref sdirk_integrator object.
+        !! @param[in] x The tolerance.
+        procedure, public :: set_newton_tolerance => sdirk_set_newton_tol
+        !> @brief Attempts a single integration step.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine attempt_step( &
+        !!  class(sdirk_integrator) this, &
+        !!  class(ode_container) sys, &
+        !!  real(real64) h, &
+        !!  real(real64) x, &
+        !!  real(real64) y(:), &
+        !!  real(real64) yn(:), &
+        !!  real(real64) en(:), &
+        !!  optional real(real64) xprev(:), &
+        !!  optional real(real64) yprev(:,:), &
+        !!  optional real(real64) fprev(:,:), &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref sdirk_integrator object.
+        !! @param[in] sys The @ref ode_container object containing the ODEs
+        !!  to integrate.
+        !! @param[in] h The current step size.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] y An N-element array containing the current values of
+        !!  the dependent variables.
+        !! @param[out] yn An N-element array where the values of the dependent
+        !!  variables at @p x + @p h will be written.
+        !! @param[out] en An N-element array where the values of the error
+        !!  estimates will be written.
+        !! @param[in] xprev An M-element array containing the previous M values
+        !!  of the independent variable where M is the order of the method.
+        !!  This is typically useful for multi-step methods.  In single-step
+        !!  methods this parameter is not used.
+        !! @param[in] yprev An M-by-NEQN array containing the previous M arrays
+        !!  of dependent variable values where M is the order of the method.
+        !!  This is typically useful for multi-step methods.  In single-step
+        !!  methods this parameter is not used.
+        !! @param[in] fprev An M-by-NEQN array containing the previous M arrays
+        !!  of function (derivative) values where M is the order of the method.
+        !!  This is typically useful for multi-step methods.  In single-step
+        !!  methods this parameter is not used.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.
+        procedure, public :: attempt_step => sdirk_attempt_step
+        !> @brief Solves the Newton iteration problem for the i-th stage.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine solve_newton_stage( &
+        !!  class(sdirk_integrator) this, &
+        !!  class(ode_container) sys, &
+        !!  integer(int32) i, &
+        !!  real(real64) h, &
+        !!  real(real64) x, &
+        !!  real(real64) y(:), &
+        !!  real(real64) yw(:), &
+        !!  logical accept, &
+        !!  integer(int32) niter &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref sdirk_integrator object.
+        !! @param[in,out] sys
+        !! The @ref ode_container object containing the ODEs
+        !!  to integrate.
+        !! @param[in] i The current stage number.
+        !! @param[in] h The current step size.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] y An N-element array containing the current values of
+        !!  the dependent variables. 
+        !! @param[in] yw An N-element workspace array.
+        !! @param[out] accept Returns true if the Newton iteration reached
+        !!  convergence; else, false if the iteration did not converge.
+        !! @param[out] niter The number of iterations performed.
+        procedure, public :: solve_newton_stage => sdirk_solve_newton
+    end type
+
+    ! diffeq_sdirk.f90
+    interface
+        module subroutine sdirk_alloc_workspace(this, neqn, err)
+            class(sdirk_integrator), intent(inout) :: this
+            integer(int32), intent(in) :: neqn
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+
+        module subroutine sdirk_build_matrix(this, h, jac, x, m, err)
+            class(sdirk_integrator), intent(in) :: this
+            real(real64), intent(in) :: h
+            real(real64), intent(in), dimension(:,:) :: jac
+            real(real64), intent(out), dimension(:,:) :: x
+            real(real64), intent(in), dimension(:,:), optional :: m
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+
+        module subroutine sdirk_build_factored_matrix(this, sys, h, x, y, err)
+            class(sdirk_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(in) :: h, x
+            real(real64), intent(in), dimension(:) :: y
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+
+        pure module function sdirk_get_max_newton_iter(this) result(rst)
+            class(sdirk_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+
+        module subroutine sdirk_set_max_newton_iter(this, x)
+            class(sdirk_integrator), intent(inout) :: this
+            integer(int32), intent(in) :: x
+        end subroutine
+
+        pure module function sdirk_get_newton_tol(this) result(rst)
+            class(sdirk_integrator), intent(in) :: this
+            real(real64) :: rst
+        end function
+
+        module subroutine sdirk_set_newton_tol(this, x)
+            class(sdirk_integrator), intent(inout) :: this
+            real(real64), intent(in) :: x
+        end subroutine
+
+        module subroutine sdirk_attempt_step(this, sys, h, x, y, yn, en, &
+            xprev, yprev, fprev, err)
+            class(sdirk_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            real(real64), intent(in) :: h, x
+            real(real64), intent(in), dimension(:) :: y
+            real(real64), intent(out), dimension(:) :: yn, en
+            real(real64), intent(in), optional, dimension(:) :: xprev
+            real(real64), intent(in), optional, dimension(:,:) :: yprev
+            real(real64), intent(inout), optional, dimension(:,:) :: fprev
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+
+        module subroutine sdirk_solve_newton(this, sys, i, h, x, y, yw, &
+            accept, niter)
+            class(sdirk_integrator), intent(inout) :: this
+            class(ode_container), intent(inout) :: sys
+            integer(int32), intent(in) :: i
+            real(real64), intent(in) :: h, x
+            real(real64), intent(in), dimension(:) :: y
+            real(real64), intent(out), dimension(:) :: yw
+            logical, intent(out) :: accept
+            integer(int32), intent(out) :: niter
+        end subroutine
+    end interface
+
+! ------------------------------------------------------------------------------
+    !> @brief Defines a singly diagonally implicit 4th order Runge-Kutta 
+    !! integrator suitable for integrating stiff systems of differential 
+    !! equations.
+    !!
+    !! @par Example
+    !! The following example illustrates how to use this integrator to solve the
+    !! forced Duffing model.  A comparison with the Dormand-Prince explicit
+    !! integrator is also made.
+    !! @code{.f90}
+    !! program example
+    !!     use iso_fortran_env
+    !!     use diffeq
+    !!     use diffeq_models
+    !!     use fplot_core
+    !!     implicit none
+    !!
+    !!     ! Parameters
+    !!     real(real64), parameter :: xmax = 6.0d1
+    !!
+    !!     ! Local Variables
+    !!     type(sdirk4_integrator) :: integrator
+    !!     type(dprk45_integrator) :: ref_integrator
+    !!     type(ode_container) :: mdl
+    !!     real(real64), allocatable :: sol(:,:), ref(:,:)
+    !!
+    !!     ! Plot Variables
+    !!     type(plot_2d) :: plt
+    !!     type(plot_data_2d) :: pd
+    !!     class(plot_axis), pointer :: xAxis, yAxis
+    !!     class(legend), pointer :: lgnd
+    !!
+    !!     ! Define the model
+    !!     mdl%fcn => duffing
+    !!
+    !!     ! A Gustafsson controller performs better for this problem
+    !!     call integrator%set_use_pi_controller(.false.)
+    !!
+    !!     ! Compute the solution
+    !!     sol = integrator%solve(mdl, [0.0d0, xmax], [0.0d0, 0.0d0])
+    !!     ref = ref_integrator%solve(mdl, [0.0d0, xmax], [0.0d0, 0.0d0])
+    !!
+    !!     ! Plot the results
+    !!     call plt%initialize()
+    !!     xAxis => plt%get_x_axis()
+    !!     yAxis => plt%get_y_axis()
+    !!     lgnd => plt%get_legend()
+    !!     call xAxis%set_title("x")
+    !!     call yAxis%set_title("y(x)")
+    !!     call xAxis%set_autoscale(.false.)
+    !!     call xAxis%set_limits(0.0d0, xmax)
+    !!     call lgnd%set_is_visible(.true.)
+    !!
+    !!     call pd%define_data(sol(:,1), sol(:,2))
+    !!     call pd%set_name("SDIRK4")
+    !!     call pd%set_line_width(2.0)
+    !!     call plt%push(pd)
+    !!
+    !!     call pd%define_data(ref(:,1), ref(:,2))
+    !!     call pd%set_name("DPRK45")
+    !!     call pd%set_line_width(2.0)
+    !!     call pd%set_line_style(LINE_DASHED)
+    !!     call plt%push(pd)
+    !!
+    !!     call plt%draw()
+    !! end program
+    !! @endcode
+    !! The ODE routine was stored in a seperate module; however, here is the
+    !! code for the ODE routine.
+    !! @code{.f90}
+    !! subroutine duffing(x, y, dydx)
+    !!     ! Arguments
+    !!     real(real64), intent(in) :: x, y(:)
+    !!     real(real64), intent(out) :: dydx(:)
+    !!
+    !!     ! Model Constants
+    !!     real(real64), parameter :: alpha = 1.0d0
+    !!     real(real64), parameter :: beta = 5.0d0
+    !!     real(real64), parameter :: delta = 2.0d-2
+    !!     real(real64), parameter :: gamma = 8.0d0
+    !!     real(real64), parameter :: w = 0.5d0
+    !!
+    !!     ! Equations
+    !!     dydx(1) = y(2)
+    !!     dydx(2) = gamma * cos(w * x) - delta * y(2) - alpha * y(1) - beta * y(1)**3
+    !! end subroutine
+    !! @endcode
+    !! The above program produces the following plot using the 
+    !! [FPLOT](https://github.com/jchristopherson/fplot) library.
+    !! @image html sdirk4_duffing_example_1.png
+    type, extends(sdirk_integrator) :: sdirk4_integrator
+        logical, private :: m_modelDefined = .false.
+        ! Interpolation coefficients for dense output
+        real(real64), allocatable, dimension(:,:) :: m_dc
+    contains
+        !> @brief Returns the order of the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! pure integer(int32) function get_order( &
+        !!  class(sdirk4_integrator) this &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The @ref sdirk4_integrator object.
+        !! @return The order of the integrator.
+        procedure, public :: get_order => sd4_get_order
+        !> @brief Gets the number of stages used by the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! integer(int32) pure function get_stage_count( &
+        !!  class(sdirk4_integrator) this &
+        !! )
+        !! @endcode
+        !! 
+        !! @param[in] this The @ref sdirk4_integrator object.
+        !! @return The number of stages.
+        procedure, public :: get_stage_count => sd4_get_stage_count
+        !> @brief Defines (initializes) the model parameters.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine define_model(class(sdirk4_integrator) this)
+        !! @endcode
+        !!
+        !! @param[in] this The @ref sdirk4_integrator object.
+        procedure, public :: define_model => sd4_define_model
+        !> @brief Determines if the integrator is an FSAL (first same as last)
+        !! integrator (e.g. the 4th/5th order Dormand-Prince integrator).
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! logical pure function is_fsal(class(sdirk4_integrator) this)
+        !! @endcode
+        !! 
+        !! @param[in] this The @ref sdirk4_integrator object.
+        !! @return Returns true if the integrator is an FSAL type; else,
+        !!  returns false.
+        procedure, public :: is_fsal => sd4_is_fsal
+        !> @brief Provides interpolation between integration points allowing
+        !! for dense output.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine interpolate( &
+        !!  class(sdirk4_integrator) this, &
+        !!  real(real64) xprev, &
+        !!  real(real64) yprev(:), &
+        !!  real(real64) xnew, &
+        !!  real(real64) x, &
+        !!  real(real64) y(:),
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in] this The sdirk4_integrator object.
+        !! @param[in] xprev The previous value of the independent variable.
+        !! @param[in] yprev An N-element array containing the values of the
+        !!  dependent variables at @p xprev.
+        !! @param[in] xnew The updated value of the independent variable.
+        !! @param[in] x The value at which to perform the interpolation.
+        !! @param[out] y An N-element array containing the interpolated 
+        !!  values for each equation.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.
+        procedure, public :: interpolate => sd4_interp
+        !> @brief Sets up the interpolation polynomial.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine set_up_interpolation( &
+        !!  class(sdirk4_integrator) this, &
+        !!  real(real64) x, &
+        !!  real(real64) xn, &
+        !!  real(real64) y(:), &
+        !!  real(real64) yn(:), &
+        !!  real(real64) k(:,:) &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The sdirk4_integrator object.
+        !! @param[in] x The current value of the independent variable.
+        !! @param[in] xn The value of the independent variable at the next step.
+        !! @param[in] y An N-element array containing the current solution
+        !!  values.
+        !! @param[in] yn An N-element array containing the solution values at
+        !!  the next step.
+        !! @param[in] k An N-by-M matrix containing the intermediate step
+        !!  function outputs where M is the number of stages of the integrator.
+        procedure, public :: set_up_interpolation => sd4_set_up_interp
+        !> @brief Initializes the integrator.
+        !!
+        !! @par Syntax
+        !! @code{.f90}
+        !! subroutine initialize( &
+        !!  class(sdirk4_integrator) this, &
+        !!  integer(int32) neqn, &
+        !!  optional class(errors) err &
+        !! )
+        !! @endcode
+        !!
+        !! @param[in,out] this The @ref sdirk4_integrator object.
+        !! @param[in] neqn The number of equations being integrated.
+        !! @param[in,out] err An optional errors-based object that if provided 
+        !!  can be used to retrieve information relating to any errors 
+        !!  encountered during execution. If not provided, a default 
+        !!  implementation of the errors class is used internally to provide 
+        !!  error handling.  Possible errors and warning messages that may be 
+        !!  encountered are as follows.
+        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
+        !!      allocation issue.
+        procedure, public :: initialize => sd4_alloc_workspace
+    end type
+
+    ! diffeq_sdirk4.f90
+    interface
+        pure module function sd4_get_order(this) result(rst)
+            class(sdirk4_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+
+        pure module function sd4_get_stage_count(this) result(rst)
+            class(sdirk4_integrator), intent(in) :: this
+            integer(int32) :: rst
+        end function
+
+        module subroutine sd4_define_model(this)
+            class(sdirk4_integrator), intent(inout) :: this
+        end subroutine
+
+        pure module function sd4_is_fsal(this) result(rst)
+            class(sdirk4_integrator), intent(in) :: this
+            logical :: rst
+        end function
+
+        module subroutine sd4_set_up_interp(this, x, xn, y, yn, k)
+            class(sdirk4_integrator), intent(inout) :: this
+            real(real64), intent(in) :: x, xn
+            real(real64), intent(in), dimension(:) :: y, yn
+            real(real64), intent(in), dimension(:,:) :: k
+        end subroutine
+
+        module subroutine sd4_interp(this, xprev, yprev, xnew, x, y, err)
+            class(sdirk4_integrator), intent(in) :: this
+            real(real64), intent(in) :: xprev, xnew, x
+            real(real64), intent(in), dimension(:) :: yprev
+            real(real64), intent(out), dimension(:) :: y
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+
+        module subroutine sd4_alloc_workspace(this, neqn, err)
+            class(sdirk4_integrator), intent(inout) :: this
+            integer(int32), intent(in) :: neqn
+            class(errors), intent(inout), optional, target :: err
+        end subroutine
+    end interface
 
 ! ------------------------------------------------------------------------------
 end module

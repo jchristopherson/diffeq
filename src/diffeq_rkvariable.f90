@@ -5,23 +5,32 @@ module subroutine rkv_alloc_workspace(this, neqn, err)
     ! Arguments
     class(rk_variable_integrator), intent(inout) :: this
     integer(int32), intent(in) :: neqn
-    class(errors), intent(inout) :: err
+    class(errors), intent(inout), optional, target :: err
 
     ! Local Variables
     integer(int32) :: m, n, flag
     character(len = :), allocatable :: errmsg
+    class(errors), pointer :: errmgr
+    type(errors), target :: deferr
+    
+    ! Initialization
+    if (present(err)) then
+        errmgr => err
+    else
+        errmgr => deferr
+    end if
 
     ! Process
     m = neqn
     n = this%get_stage_count()
-    if (allocated(this%m_work)) then
-        if (size(this%m_work, 1) /= m .or. size(this%m_work, 2) /= n) then
-            deallocate(this%m_work)
-            allocate(this%m_work(m, n), stat = flag, source = 0.0d0)
+    if (allocated(this%f)) then
+        if (size(this%f, 1) /= m .or. size(this%f, 2) /= n) then
+            deallocate(this%f)
+            allocate(this%f(m, n), stat = flag, source = 0.0d0)
             if (flag /= 0) go to 10
         end if
     else
-        allocate(this%m_work(m, n), stat = flag, source = 0.0d0)
+        allocate(this%f(m, n), stat = flag, source = 0.0d0)
         if (flag /= 0) go to 10
     end if
 
@@ -36,6 +45,56 @@ module subroutine rkv_alloc_workspace(this, neqn, err)
         if (flag /= 0) go to 10
     end if
 
+    if (allocated(this%a)) then
+        if (size(this%a, 1) /= n .or. size(this%a, 2) /= n) then
+            deallocate(this%a)
+            allocate(this%a(n, n), stat = flag, source = 0.0d0)
+            if (flag /= 0) go to 10
+        end if
+    else
+        allocate(this%a(n, n), stat = flag, source = 0.0d0)
+        if (flag /= 0) go to 10
+    end if
+
+    if (allocated(this%b)) then
+        if (size(this%b) /= n) then
+            deallocate(this%b)
+            allocate(this%b(n), stat = flag, source = 0.0d0)
+            if (flag /= 0) go to 10
+        end if
+    else
+        allocate(this%b(n), stat = flag, source = 0.0d0)
+        if (flag /= 0) go to 10
+    end if
+
+    if (allocated(this%c)) then
+        if (size(this%c) /= n) then
+            deallocate(this%c)
+            allocate(this%c(n), stat = flag, source = 0.0d0)
+            if (flag /= 0) go to 10
+        end if
+    else
+        allocate(this%c(n), stat = flag, source = 0.0d0)
+        if (flag /= 0) go to 10
+    end if
+
+    if (allocated(this%e)) then
+        if (size(this%e) /= n) then
+            deallocate(this%e)
+            allocate(this%e(n), stat = flag, source = 0.0d0)
+            if (flag /= 0) go to 10
+        end if
+    else
+        allocate(this%e(n), stat = flag, source = 0.0d0)
+        if (flag /= 0) go to 10
+    end if
+
+    ! Define the model parameters
+    call this%define_model()
+
+    ! Call the base method
+    call vsi_alloc_workspace(this, neqn, errmgr)
+
     ! End
     return
 
@@ -43,7 +102,7 @@ module subroutine rkv_alloc_workspace(this, neqn, err)
 10  continue
     allocate(character(len = 256) :: errmsg)
     write(errmsg, 100) "Memory allocation error flag ", flag, "."
-    call err%report_error("rkv_alloc_workspace", trim(errmsg), &
+    call errmgr%report_error("rkv_alloc_workspace", trim(errmsg), &
         DIFFEQ_MEMORY_ALLOCATION_ERROR)
     return
 
@@ -84,11 +143,6 @@ module subroutine rkv_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
     end if
     n = this%get_stage_count()
     neqn = size(y)
-    call this%define_model()
-
-    ! Ensure the workspace arrays are allocated
-    call this%allocate_rkv_workspace(neqn, errmgr)
-    if (errmgr%has_error_occurred()) return
 
     ! The Butcher tableau is lower triangular as this is an explicit integrator
     if (.not.this%is_fsal() .or. this%m_firstStep) then
@@ -96,39 +150,39 @@ module subroutine rkv_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
         ! as the integrator uses the last evaluation from the previous step
         ! as this step.  On non-FSAL integrators we always need to compute an
         ! updated first step.
-        call sys%ode(x, y, this%m_work(:,1))
+        call sys%ode(x, y, this%f(:,1))
     end if
     do i = 2, n
         this%m_ywork = 0.0d0
         do j = 1, i - 1 ! only reference the sub-diagonal components
-            this%m_ywork = this%m_ywork + this%get_method_factor(i, j) * &
-                this%m_work(:,j)
+            this%m_ywork = this%m_ywork + this%a(i, j) * &
+                this%f(:,j)
         end do
 
         call sys%ode( &
-            x + h * this%get_position_factor(i), &
+            x + h * this%c(i), &
             y + h * this%m_ywork, &
-            this%m_work(:,i) &  ! output
+            this%f(:,i) &  ! output
         )
     end do
 
     ! Compute the two solution estimates, and the resulting error estimate
     do i = 1, n
         if (i == 1) then
-            this%m_ywork = this%get_quadrature_weight(i) * this%m_work(:,i)
+            this%m_ywork = this%b(i) * this%f(:,i)
         else
-            this%m_ywork = this%m_ywork + this%get_quadrature_weight(i) * &
-                this%m_work(:,i)
+            this%m_ywork = this%m_ywork + this%b(i) * &
+                this%f(:,i)
         end if
     end do
     yn = y + h * this%m_ywork
 
     do i = 1, n
         if (i == 1) then
-            this%m_ywork = this%get_error_factor(i) * this%m_work(:,i)
+            this%m_ywork = this%e(i) * this%f(:,i)
         else
-            this%m_ywork = this%m_ywork + this%get_error_factor(i) * &
-                this%m_work(:,i)
+            this%m_ywork = this%m_ywork + this%e(i) * &
+                this%f(:,i)
         end if
     end do
     en = h * this%m_ywork
@@ -145,13 +199,13 @@ module subroutine rkv_on_successful_step(this, x, xn, y, yn)
     integer(int32) :: n
 
     ! Set up the interpolation polynomial - TO DO check for dense output first
-    call this%set_up_interpolation(x, xn, y, yn, this%m_work)
+    call this%set_up_interpolation(x, xn, y, yn, this%f)
 
     ! Store the last result as the first, if this is FSAL
     if (this%is_fsal()) then
         this%m_firstStep = .false.
         n = this%get_stage_count()
-        this%m_work(:,1) = this%m_work(:,n)
+        this%f(:,1) = this%f(:,n)
     end if
 end subroutine
 

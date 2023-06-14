@@ -65,3 +65,12 @@ add_executable(
 )
 link_library(frf_sweep_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
 link_library(frf_sweep_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
+
+# SDIRK4 Example
+add_executable(
+    sdirk4_example
+    sdirk4_example.f90
+    ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
+)
+link_library(sdirk4_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
+link_library(sdirk4_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})

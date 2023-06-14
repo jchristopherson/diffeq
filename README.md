@@ -18,6 +18,7 @@ The documentation can be found [here](https://jchristopherson.github.io/diffeq/)
 ### Variable Step
 - Dormand-Prince Runge-Kutta 5th/4th Order
 - Bogacki-Shampine Runge-Kutta 3rd/2nd Order
+- 4th Order Singly Diagonally Implicit Runge-Kutta
 
 ## Additional Operations
 - FFT-Based Frequency Response Function Estimation
@@ -28,3 +29,6 @@ The documentation can be found [here](https://jchristopherson.github.io/diffeq/)
 2. Shampine, L. F., & Reichelt, M. W., (1997). The MATLAB ODE suite. SIAM Journal on Scientific Computing. 18. 10.1137/S1064827594276424. 
 3. J.R. Dormand, P.J. Prince (1980). A family of embedded Runge-Kutta formulae, Journal of Computational and Applied Mathematics, Volume 6, Issue 1, Pages 19-26, ISSN 0377-0427, https://doi.org/10.1016/0771-050X(80)90013-3.
 4. P. Bogacki, L.F. Shampine (1989). A 3(2) pair of Runge - Kutta formulas, Applied Mathematics Letters, Volume 2, Issue 4, Pages 321-325, ISSN 0893-9659, https://doi.org/10.1016/0893-9659(89)90079-7.
+5. Dormand, J. R. (1996). Numerical methods for differential equations a computational approach. CRC Press. 
+6. Kennedy, C. A., Carpenter, M. H. (2016, March). Diagonally Implicit Runge-Kutta Methods for Ordinary Differential Equations. A Review. https://ntrs.nasa.gov/api/citations/20160005923/downloads/20160005923.pdf 
+7. Stal, J. (2015). Implementation of Singly Diagonally Implicit Runge-Kutta Methods with Constant Step Sizes. https://core.ac.uk/download/pdf/289938621.pdf 

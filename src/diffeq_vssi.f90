@@ -23,6 +23,10 @@ module function vssi_solve(this, sys, x, iv, err) result(rst)
     end if
     nx = size(x)
 
+    ! Initialize the integrator
+    call this%initialize(size(iv), errmgr)
+    if (errmgr%has_error_occurred()) return
+
     ! Input Checking
     if (nx < 2) go to 10
     if (abs(maxval(x) - minval(x)) < epsilon(1.0d0)) go to 30
@@ -201,7 +205,7 @@ module function vssi_dense_solve_driver(this, sys, x, iv, err) result(rst)
         ! Interpolate as needed to achieve any intermediary solution points
         do while (abs(xi) <= abs(xn1))
             j = j + 1
-            call this%interpolate(xn, xn1, xi, rst(j,2:), err)
+            call this%interpolate(xn, yn, xn1, xi, rst(j,2:), err)
             if (err%has_error_occurred()) return
             rst(j,1) = xi
             if (j >= npts) exit outer
