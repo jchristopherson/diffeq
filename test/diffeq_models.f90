@@ -188,4 +188,29 @@ subroutine example_2nd_order(t, x, dxdt)
     dxdt(2) = f - (2.0d0 * z * wn * x(2) + wn**2 * x(1))
 end subroutine
 
+! ------------------------------------------------------------------------------
+! Roots: -2, 3
+subroutine first_order_1(x, y, dydx)
+    ! Arguments
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:) :: dydx
+
+    ! Process
+    dydx(1) = y(1)**2 - y(1) - 6.0d0
+end subroutine
+
+! ------------------------------------------------------------------------------
+! Roots: -2, 2, -1
+subroutine first_order_2(x, y, dydx)
+    ! Arguments
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:) :: dydx
+
+    ! Process
+    dydx(1) = (y(1)**2 - 4.0d0) * (y(1) + 1.0d0)**2
+end subroutine
+
+! ------------------------------------------------------------------------------
 end module
