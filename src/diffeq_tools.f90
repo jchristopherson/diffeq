@@ -39,7 +39,7 @@ contains
 !! @return The routine returns an NEQN-by-2 matrix with the first column 
 !!  containing the root values, and the second column containing the values
 !!  of the differential equations at the root values.
-module function find_equilibrium_points(sys, xi, solver, err) result(rst)
+function find_equilibrium_points(sys, xi, solver, err) result(rst)
     ! Arguments
     class(ode_container), intent(inout) :: sys
     real(real64), intent(in), dimension(:) :: xi
@@ -108,6 +108,18 @@ contains
         call sys%ode(0.0d0, x_, f_)
     end subroutine
 end function
+
+! ------------------------------------------------------------------------------
+! TO DO: Test for stability of equilibrium points.
+!
+! Assume: dy/dx = f(x), and x* is the equilibrium point
+! f'(x*) < 0 then x* is a stable equilibrium point
+! f'(x*) > 0 then x* is an unstable equilibrium point
+!
+! For systems of equations, compute the Jacobian matrix and consider the
+! eigenvalues.  If all eigenvalues are negative, the equilibrium point is
+! stable.  If all eigenvalues are positive, the equilibrium point is unstable.
+! If the eigenvalues are mixed, it is an unstable saddle point
 
 ! ------------------------------------------------------------------------------
 end module
