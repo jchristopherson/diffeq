@@ -5,9 +5,11 @@ module diffeq_tools
     use ferror
     use nonlin_core
     use nonlin_solve
+    use linalg
     implicit none
     private
     public :: find_equilibrium_points
+    public :: is_stable_equilibrium
 
 contains
 ! ------------------------------------------------------------------------------
@@ -78,7 +80,7 @@ function find_equilibrium_points(sys, xi, solver, err) result(rst)
 
     ! Solve the system of equations
     rst(:,1) = xi   ! <- initial guess
-    call solverptr%solve(container, rst(:,1), rst(:,2))
+    call solverptr%solve(container, rst(:,1), rst(:,2), err = errmgr)
 
     ! End
     return
@@ -118,8 +120,111 @@ end function
 !
 ! For systems of equations, compute the Jacobian matrix and consider the
 ! eigenvalues.  If all eigenvalues are negative, the equilibrium point is
-! stable.  If all eigenvalues are positive, the equilibrium point is unstable.
-! If the eigenvalues are mixed, it is an unstable saddle point
+! stable.  If any of the eigenvalues are positive, the equilibrium point is 
+! unstable.
+
+!> @brief Tests to see if the supplied equilibrium point is stable. 
+!!
+!! @par Remarks
+!! An equilibrium point is considered stable if all of it's eigenvalues have
+!! a negative-valued real component.  If any of the eigenvalues have a 
+!! positive-valued real component the equilibrium point is unstable.  If all
+!! eigenvalues have a positive-valued real component the equilibrium point is
+!! referred to as a source, or an unstable focus in the event of complex-valued
+!! eigenvalues.  If only some of the eigenvalues have positive-valued real
+!! components, the equilibrium point is a saddle point.
+!!
+!! @param[in,out] sys The system of differential equations to analyze.
+!! @param[in] xeq An NEQN-element array containing the equilibrium point to 
+!!  analyze.
+!! @param[out] lambda An optional NEQN-element array that, if supplied, can be
+!!  used to retrieve the eigenvalues of the system Jacobian about the 
+!!  equilibrium point @p xeq.
+!! @param[in,out] err An optional errors-based object that if provided 
+!!  can be used to retrieve information relating to any errors 
+!!  encountered during execution. If not provided, a default 
+!!  implementation of the errors class is used internally to provide 
+!!  error handling.
+!!
+!! @return Returns true if the equilibrium point is stable; else, returns false.
+function is_stable_equilibrium(sys, xeq, lambda, err) result(rst)
+    ! Arguments
+    class(ode_container), intent(inout) :: sys
+    real(real64), intent(in), dimension(:) :: xeq
+    complex(real64), intent(out), dimension(:), target, optional :: lambda
+    class(errors), intent(inout), optional, target :: err
+    logical :: rst
+
+    ! Local Variables
+    integer(int32) :: i, neqn, flag
+    real(real64), allocatable, dimension(:,:) :: jac
+    complex(real64), allocatable, dimension(:), target :: defvals
+    complex(real64), pointer, dimension(:) :: vals
+    class(errors), pointer :: errmgr
+    type(errors), target :: deferr
+    character(len = :), allocatable :: errmsg
+    
+    ! Initialization
+    rst = .false.
+    if (present(err)) then
+        errmgr => err
+    else
+        errmgr => deferr
+    end if
+    neqn = size(xeq)
+    if (present(lambda)) then
+        if (size(lambda) /= neqn) go to 20
+        vals(1:neqn) => lambda
+    else
+        allocate(defvals(neqn), stat = flag)
+        if (flag /= 0) go to 10
+        vals(1:neqn) => defvals
+    end if
+
+    ! Memory Allocation
+    allocate(jac(neqn, neqn), stat = flag, source = 0.0d0)
+    if (flag /= 0) go to 10
+
+    ! Determine the Jacobian, and it's eigenvalues
+    call sys%compute_jacobian(0.0d0, xeq, jac, errmgr)
+    if (errmgr%has_error_occurred()) return
+
+    call eigen(jac, vals, err = errmgr)
+    if (errmgr%has_error_occurred()) return
+
+    ! Test for stability
+    rst = .true.
+    do i = 1, neqn
+        if (real(vals(i)) > 0.0d0) then
+            rst = .false.
+            return
+        end if
+    end do
+
+    ! End
+    return
+
+    ! Memory Error Handling
+10  continue
+    allocate(character(len = 256) :: errmsg)
+    write(errmsg, 100) "Memory allocation error flag ", flag, "."
+    call errmgr%report_error("is_stable_equilibrium", trim(errmsg), &
+        DIFFEQ_MEMORY_ALLOCATION_ERROR)
+    return
+
+    ! Eigenvalue Array Size Error
+20  continue
+    allocate(character(len = 256) :: errmsg)
+    write(errmsg, 101) "The eigenvalue array was expected to be of size ", &
+        neqn, ", but was found to be of size ", size(lambda), "."
+    call errmgr%report_error("is_stable_equilibrium", trim(errmsg), &
+        DIFFEQ_ARRAY_SIZE_ERROR)
+    return
+
+    ! Formatting
+100 format(A, I0, A)
+101 format(A, I0, A, I0, A)
+end function
 
 ! ------------------------------------------------------------------------------
 end module

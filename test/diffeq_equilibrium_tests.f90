@@ -17,6 +17,7 @@ function test_equilibrium_1() result(rst)
     real(real64), parameter :: ans2 = 3.0d0
 
     ! Local Variables
+    logical :: stable
     type(ode_container) :: mdl
     real(real64) :: sol(1,2)
 
@@ -30,7 +31,14 @@ function test_equilibrium_1() result(rst)
         .not.assert(sol(1,1), ans2, tol)) &
     then
         rst = .false.
-        print 100, "TEST FAILED: test_equilibrium_1"
+        print 100, "TEST FAILED: test_equilibrium_1-1"
+    end if
+
+    ! Check the stability
+    stable = is_stable_equilibrium(mdl, sol(:,1))
+    if (.not.stable) then
+        rst = .false.
+        print 100, "TEST FAILED: test_equilibrium_1-2"
     end if
 
     ! Formatting
@@ -49,13 +57,14 @@ function test_equilibrium_2() result(rst)
     real(real64), parameter :: ans3 = 2.0d0
 
     ! Local Variables
+    logical :: stable
     type(ode_container) :: mdl
     real(real64) :: sol(1,2)
 
     ! Test
     rst = .true.
     mdl%fcn => first_order_2
-    sol = find_equilibrium_points(mdl, [-5.0d0])
+    sol = find_equilibrium_points(mdl, [5.0d0])
 
     ! Results
     if (.not.assert(sol(1,1), ans1, tol) .and. &
@@ -64,6 +73,13 @@ function test_equilibrium_2() result(rst)
     then
         rst = .false.
         print 100, "TEST FAILED: test_equilibrium_2"
+    end if
+
+    ! Check the stability - The +2 root is unstable
+    stable = is_stable_equilibrium(mdl, sol(:,1))
+    if (stable) then
+        rst = .false.
+        print 100, "TEST FAILED: test_equilibrium_2-2"
     end if
 
     ! Formatting
