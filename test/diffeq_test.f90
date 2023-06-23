@@ -7,6 +7,7 @@ program test
     use diffeq_bsrk32_tests
     use diffeq_frf_tests
     use diffeq_sdirk4_tests
+    use diffeq_equilibrium_tests
     implicit none
 
     ! Local Variables
@@ -79,6 +80,12 @@ program test
 
     rst = test_sdirk4_3()
     if (.not.rst) flag = 21
+
+    rst = test_equilibrium_1()
+    if (.not.rst) flag = 22
+
+    rst = test_equilibrium_2()
+    if (.not.rst) flag = 23
 
     ! Output
     stop flag

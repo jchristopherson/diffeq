@@ -12,6 +12,7 @@ set(diffeq_test_sources
     diffeq_bsrk32_tests.f90
     diffeq_frf_tests.f90
     diffeq_sdirk4_tests.f90
+    diffeq_equilibrium_tests.f90
 )
 
 add_executable(diffeq_tests ${diffeq_test_sources})

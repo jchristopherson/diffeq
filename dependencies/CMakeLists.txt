@@ -17,3 +17,8 @@ set(spectrum_INCLUDE_DIR ${spectrum_INCLUDE_DIR} PARENT_SCOPE)
 add_subdirectory(fftpack)
 set(fftpack_LIBRARY ${fftpack_LIBRARY} PARENT_SCOPE)
 set(fftpack_INCLUDE_DIR ${fftpack_INCLUDE_DIR} PARENT_SCOPE)
+
+# Get NONLIN
+add_subdirectory(nonlin)
+set(nonlin_LIBRARY ${nonlin_LIBRARY} PARENT_SCOPE)
+set(nonlin_INCLUDE_DIR ${nonlin_INCLUDE_DIR} PARENT_SCOPE)
