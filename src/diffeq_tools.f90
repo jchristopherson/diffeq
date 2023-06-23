@@ -112,17 +112,6 @@ contains
 end function
 
 ! ------------------------------------------------------------------------------
-! TO DO: Test for stability of equilibrium points.
-!
-! Assume: dy/dx = f(x), and x* is the equilibrium point
-! f'(x*) < 0 then x* is a stable equilibrium point
-! f'(x*) > 0 then x* is an unstable equilibrium point
-!
-! For systems of equations, compute the Jacobian matrix and consider the
-! eigenvalues.  If all eigenvalues are negative, the equilibrium point is
-! stable.  If any of the eigenvalues are positive, the equilibrium point is 
-! unstable.
-
 !> @brief Tests to see if the supplied equilibrium point is stable. 
 !!
 !! @par Remarks
