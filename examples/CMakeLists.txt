@@ -48,24 +48,6 @@ add_executable(
 link_library(bsrk32_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
 link_library(bsrk32_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
 
-# FRF Example
-add_executable(
-    frf_example
-    frf_example.f90
-    ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
-)
-link_library(frf_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
-link_library(frf_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
-link_library(frf_example ${spectrum_LIBRARY} ${spectrum_INCLUDE_DIR})
-
-# FRF Sweep Example
-add_executable(
-    frf_sweep_example
-    frf_sweep_example.f90
-)
-link_library(frf_sweep_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
-link_library(frf_sweep_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
-
 # SDIRK4 Example
 add_executable(
     sdirk4_example
