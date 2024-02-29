@@ -1,3 +1,0 @@
-if (NOT TARGET diffeq)
-    include("${CMAKE_CURRENT_LIST_DIR}/diffeqTargets.cmake")
-endif()

@@ -31,17 +31,6 @@ link_library(${PROJECT_NAME} ${spectrum_LIBRARY} ${spectrum_INCLUDE_DIR})
 link_library(${PROJECT_NAME} ${fftpack_LIBRARY} ${fftpack_INCLUDE_DIR})
 link_library(${PROJECT_NAME} ${nonlin_LIBRARY} ${nonlin_INCLUDE_DIR})
 
-# Use OpenMP
-#
-# TO DO:
-# Detect Fortran compiler. 
-# - gfortran uses -fopenmp
-# - ifort uses -qopenmp
-# target_compile_definitions(${PROJECT_NAME} PUBLIC "-fopenmp")
-
-# Installation
-add_subdirectory(install)
-
 # Testing
 option(BUILD_TESTING "Build tests")
 include(CTest)
