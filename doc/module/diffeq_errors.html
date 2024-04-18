@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="DIFFEQ is a modern Fortran library providing an object-oriented approach to solving ordinary differential equations.">
+    <meta name="author" content="Jason Christopherson" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>diffeq_errors &ndash; DIFFEQ</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+         <script src="../js/jquery-2.1.3.min.js"></script>
+         <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">DIFFEQ </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+                 data-toggle="dropdown" role="button"
+                 aria-haspopup="true"
+                 aria-expanded="false">
+                 Contents <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                    <li><a href="../lists/files.html">Source Files</a></li>
+                  <li><a href="../lists/modules.html">Modules</a></li>
+                  <li><a href="../lists/procedures.html">Procedures</a></li>
+                  <li><a href="../lists/types.html">Derived Types</a></li>
+              </ul>
+            </li>
+                <li class="visible-xs hidden-sm visible-lg">
+                  <a href="../lists/files.html">Source Files</a>
+                </li>
+              <li class="visible-xs hidden-sm visible-lg">
+                <a href="../lists/modules.html">Modules</a>
+              </li>
+              <li class="visible-xs hidden-sm visible-lg">
+                <a href="../lists/procedures.html">Procedures</a>
+              </li>
+              <li class="visible-xs hidden-sm visible-lg">
+                <a href="../lists/types.html">Derived Types</a>
+              </li>
+          </ul>
+            <form action="../search.html" class="navbar-form navbar-right" role="search">
+              <div class="form-group">
+                <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+              </div>
+              <!--
+                  <button type="submit" class="btn btn-default">Submit</button>
+                  -->
+            </form>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+  <div class="row">
+    <h1>diffeq_errors
+      <small>Module</small>
+      
+    </h1>
+      <div class="row" id="info-bar">
+    <div class="col-lg-12">
+      <div class="well well-sm">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+
+          <li id="statements"><i class="fa fa-list-ol"></i>
+            <a data-toggle="tooltip"
+               data-placement="bottom" data-html="true"
+               title=" 4.0% of total for modules and submodules.">100 statements</a>
+          </li>
+
+            <li id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/diffeq_errors.f90"> Source File</a>
+            </li>
+        </ul>
+        <ol class="breadcrumb in-well text-right">
+              <li><a href='../sourcefile/diffeq_errors.f90.html'>diffeq_errors.f90</a></li>
+          <li class="active">diffeq_errors</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+    })
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+      <div class="panel panel-primary">
+      <div class="panel-heading text-left">
+        <h3 class="panel-title">
+          <a data-toggle="collapse" href="#vars-0">Variables</a>
+        </h3>
+      </div>
+      <div id="vars-0" class="panel-collapse collapse">
+        <div class="list-group">
+            <a class="list-group-item" href="../module/diffeq_errors.html#variable-diffeq_array_size_error">DIFFEQ_ARRAY_SIZE_ERROR</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#variable-diffeq_invalid_input_error">DIFFEQ_INVALID_INPUT_ERROR</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#variable-diffeq_invalid_operation_error">DIFFEQ_INVALID_OPERATION_ERROR</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#variable-diffeq_iteration_count_exceeded_error">DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#variable-diffeq_matrix_size_error">DIFFEQ_MATRIX_SIZE_ERROR</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#variable-diffeq_memory_allocation_error">DIFFEQ_MEMORY_ALLOCATION_ERROR</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#variable-diffeq_missing_argument_error">DIFFEQ_MISSING_ARGUMENT_ERROR</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#variable-diffeq_null_pointer_error">DIFFEQ_NULL_POINTER_ERROR</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#variable-diffeq_step_size_too_small_error">DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="panel panel-primary">
+      <div class="panel-heading text-left">
+        <h3 class="panel-title">
+          <a data-toggle="collapse" href="#subs-0">Subroutines</a>
+        </h3>
+      </div>
+      <div id="subs-0" class="panel-collapse collapse">
+        <div class="list-group">
+            <a class="list-group-item" href="../module/diffeq_errors.html#proc-report_array_size_error">report_array_size_error</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#proc-report_excessive_integration_steps">report_excessive_integration_steps</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#proc-report_excessive_iterations">report_excessive_iterations</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#proc-report_matrix_size_error">report_matrix_size_error</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#proc-report_memory_error">report_memory_error</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#proc-report_min_array_size_not_met">report_min_array_size_not_met</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#proc-report_missing_argument">report_missing_argument</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#proc-report_missing_ode">report_missing_ode</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#proc-report_step_size_too_small">report_step_size_too_small</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>A collection of routines for handling errors in the DIFFEQ library.</p>
+<br>          <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Uses</h3>
+      </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+            <ul class="list-inline">
+                <li>ferror</li>
+                <li><a href='<a href="http://fortranwiki.org/fortran/show/iso_fortran_env">iso_fortran_env</a>'>iso_fortran_env</a></li>
+            </ul>
+          </li>
+      </ul>
+    </div>
+
+      
+      <br>
+
+      <section class="visible-xs visible-sm hidden-md">
+          <h3>Contents</h3>
+  
+      <div class="panel panel-primary">
+      <div class="panel-heading text-left">
+        <h3 class="panel-title">
+          <a data-toggle="collapse" href="#vars-1">Variables</a>
+        </h3>
+      </div>
+      <div id="vars-1" class="panel-collapse collapse">
+        <div class="list-group">
+            <a class="list-group-item" href="../module/diffeq_errors.html#variable-diffeq_array_size_error">DIFFEQ_ARRAY_SIZE_ERROR</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#variable-diffeq_invalid_input_error">DIFFEQ_INVALID_INPUT_ERROR</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#variable-diffeq_invalid_operation_error">DIFFEQ_INVALID_OPERATION_ERROR</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#variable-diffeq_iteration_count_exceeded_error">DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#variable-diffeq_matrix_size_error">DIFFEQ_MATRIX_SIZE_ERROR</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#variable-diffeq_memory_allocation_error">DIFFEQ_MEMORY_ALLOCATION_ERROR</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#variable-diffeq_missing_argument_error">DIFFEQ_MISSING_ARGUMENT_ERROR</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#variable-diffeq_null_pointer_error">DIFFEQ_NULL_POINTER_ERROR</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#variable-diffeq_step_size_too_small_error">DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="panel panel-primary">
+      <div class="panel-heading text-left">
+        <h3 class="panel-title">
+          <a data-toggle="collapse" href="#subs-1">Subroutines</a>
+        </h3>
+      </div>
+      <div id="subs-1" class="panel-collapse collapse">
+        <div class="list-group">
+            <a class="list-group-item" href="../module/diffeq_errors.html#proc-report_array_size_error">report_array_size_error</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#proc-report_excessive_integration_steps">report_excessive_integration_steps</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#proc-report_excessive_iterations">report_excessive_iterations</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#proc-report_matrix_size_error">report_matrix_size_error</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#proc-report_memory_error">report_memory_error</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#proc-report_min_array_size_not_met">report_min_array_size_not_met</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#proc-report_missing_argument">report_missing_argument</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#proc-report_missing_ode">report_missing_ode</a>
+            <a class="list-group-item" href="../module/diffeq_errors.html#proc-report_step_size_too_small">report_step_size_too_small</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+
+
+      </section>
+      <br class="visible-xs visible-sm hidden-md">
+
+
+        <section>
+          <h2>Variables</h2>
+            <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Visibility</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+<th></th><th>Initial</th>        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-diffeq_array_size_error"></span>
+              integer(kind=int32),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>DIFFEQ_ARRAY_SIZE_ERROR</strong></td>
+<td> =</td>
+                <td>10003</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-diffeq_invalid_input_error"></span>
+              integer(kind=int32),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>DIFFEQ_INVALID_INPUT_ERROR</strong></td>
+<td> =</td>
+                <td>10004</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-diffeq_invalid_operation_error"></span>
+              integer(kind=int32),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>DIFFEQ_INVALID_OPERATION_ERROR</strong></td>
+<td> =</td>
+                <td>10008</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-diffeq_iteration_count_exceeded_error"></span>
+              integer(kind=int32),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR</strong></td>
+<td> =</td>
+                <td>10007</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-diffeq_matrix_size_error"></span>
+              integer(kind=int32),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>DIFFEQ_MATRIX_SIZE_ERROR</strong></td>
+<td> =</td>
+                <td>10002</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-diffeq_memory_allocation_error"></span>
+              integer(kind=int32),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>DIFFEQ_MEMORY_ALLOCATION_ERROR</strong></td>
+<td> =</td>
+                <td>10000</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-diffeq_missing_argument_error"></span>
+              integer(kind=int32),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>DIFFEQ_MISSING_ARGUMENT_ERROR</strong></td>
+<td> =</td>
+                <td>10005</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-diffeq_null_pointer_error"></span>
+              integer(kind=int32),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>DIFFEQ_NULL_POINTER_ERROR</strong></td>
+<td> =</td>
+                <td>10001</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-diffeq_step_size_too_small_error"></span>
+              integer(kind=int32),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR</strong></td>
+<td> =</td>
+                <td>10006</td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+        </section>
+        <br>
+
+
+
+
+
+
+        <section>
+          <h2>Subroutines</h2>
+              <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-report_array_size_error"></span><h3>public  subroutine <a href='../proc/report_array_size_error.html'>report_array_size_error</a>(err, fcn, varname, expsize, actsize)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Reports an array size error.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(errors),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>err</strong></td>
+            <td>
+<p>The error handling object.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+            <td>
+<p>The name of the function or subroutine in which the error occurred.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>varname</strong></td>
+            <td>
+<p>The offending variable name.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer(kind=int32),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>expsize</strong></td>
+            <td>
+<p>The expected size of the array.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer(kind=int32),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>actsize</strong></td>
+            <td>
+<p>The actual size of the array.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-report_excessive_integration_steps"></span><h3>public  subroutine <a href='../proc/report_excessive_integration_steps.html'>report_excessive_integration_steps</a>(err, fcn, n, x)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Reports an error when an excessive  amount integration steps have been 
+taken.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(errors),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>err</strong></td>
+            <td>
+<p>The error handling object.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+            <td>
+<p>The name of the function or subroutine in which the error occurred.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer(kind=int32),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+<p>The number of integration steps.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+            <td>
+<p>The value of the independent variable at which the error occurred.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-report_excessive_iterations"></span><h3>public  subroutine <a href='../proc/report_excessive_iterations.html'>report_excessive_iterations</a>(err, fcn, n, x)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Reports an error when excessive iterations have been made.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(errors),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>err</strong></td>
+            <td>
+<p>The error handling object.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+            <td>
+<p>The name of the function or subroutine in which the error occurred.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer(kind=int32),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+<p>The number of iterations.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+            <td>
+<p>The value of the independent variable at which the error occurred.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-report_matrix_size_error"></span><h3>public  subroutine <a href='../proc/report_matrix_size_error.html'>report_matrix_size_error</a>(err, fcn, varname, exprow, expcol, actrow, actcol)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Reports a matrix size error.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(errors),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>err</strong></td>
+            <td>
+<p>The error handling object.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+            <td>
+<p>The name of the function or subroutine in which the error occurred.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>varname</strong></td>
+            <td>
+<p>The offending variable name.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer(kind=int32),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>exprow</strong></td>
+            <td>
+<p>The expected number of rows.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer(kind=int32),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>expcol</strong></td>
+            <td>
+<p>The expected number of columns.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer(kind=int32),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>actrow</strong></td>
+            <td>
+<p>The actual number of rows.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer(kind=int32),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>actcol</strong></td>
+            <td>
+<p>The actual number of columns.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-report_memory_error"></span><h3>public  subroutine <a href='../proc/report_memory_error.html'>report_memory_error</a>(err, fcn, flag)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Reports a memory error.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(errors),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>err</strong></td>
+            <td>
+<p>The error handling object.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+            <td>
+<p>The name of the function or subroutine in which the error occurred.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer(kind=int32),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>flag</strong></td>
+            <td>
+<p>The memory status flag.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-report_min_array_size_not_met"></span><h3>public  subroutine <a href='../proc/report_min_array_size_not_met.html'>report_min_array_size_not_met</a>(err, fcn, varname, minsize, actsize)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Reports an error where the minimum array size was not met.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(errors),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>err</strong></td>
+            <td>
+<p>The error handling object.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+            <td>
+<p>The name of the function or subroutine in which the error occurred.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>varname</strong></td>
+            <td>
+<p>The offending variable name.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer(kind=int32),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>minsize</strong></td>
+            <td>
+<p>The minimum size of the array.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer(kind=int32),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>actsize</strong></td>
+            <td>
+<p>The actual size of the array.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-report_missing_argument"></span><h3>public  subroutine <a href='../proc/report_missing_argument.html'>report_missing_argument</a>(err, fcn, arg)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Reports a missing argument error.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(errors),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>err</strong></td>
+            <td>
+<p>The error handling object.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+            <td>
+<p>The name of the function or subroutine in which the error occurred.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>arg</strong></td>
+            <td>
+<p>The name of the argument.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-report_missing_ode"></span><h3>public  subroutine <a href='../proc/report_missing_ode.html'>report_missing_ode</a>(err, fcn)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Reports a missing ODE routine.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(errors),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>err</strong></td>
+            <td>
+<p>The error handling object.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+            <td>
+<p>The name of the function or subroutine in which the error occurred.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="panel panel-default">
+    <div class="panel-heading codesum"><span class="anchor" id="proc-report_step_size_too_small"></span><h3>public  subroutine <a href='../proc/report_step_size_too_small.html'>report_step_size_too_small</a>(err, fcn, x, h)  
+</h3></div>
+    <div class="panel-body">
+          
+  <p>Reports an error when the step size becomes too small.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(errors),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>err</strong></td>
+            <td>
+<p>The error handling object.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+            <td>
+<p>The name of the function or subroutine in which the error occurred.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+            <td>
+<p>The value of the independent variable at which the step size error
+occurred.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>h</strong></td>
+            <td>
+<p>The step size value.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class="col-xs-6 col-md-6"><p>DIFFEQ was developed by Jason Christopherson<br>&copy; 2024 
+</p>
+          </div>
+          <div class="col-xs-6 col-md-6">
+            <p class="text-right">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2024-04-18 14:40              </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+         ================================================== -->
+         <!-- Placed at the end of the document so the pages load faster -->
+    <!--
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        -->
+        <script src="../js/bootstrap.min.js"></script>
+        <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+        <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+        <!-- MathJax JavaScript
+             ================================================== -->
+             <!-- Placed at the end of the document so the pages load faster -->
+        <script type="text/x-mathjax-config">
+          MathJax.Hub.Config({
+          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+          });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+          <script src="../tipuesearch/tipuesearch_content.js"></script>
+          <script src="../tipuesearch/tipuesearch_set.js"></script>
+          <script src="../tipuesearch/tipuesearch.js"></script>
+
+  </body>
+</html>

@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="DIFFEQ is a modern Fortran library providing an object-oriented approach to solving ordinary differential equations.">
+    <meta name="author" content="Jason Christopherson" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>diffeq_sdirk4_constants &ndash; DIFFEQ</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+         <script src="../js/jquery-2.1.3.min.js"></script>
+         <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">DIFFEQ </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+                 data-toggle="dropdown" role="button"
+                 aria-haspopup="true"
+                 aria-expanded="false">
+                 Contents <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                    <li><a href="../lists/files.html">Source Files</a></li>
+                  <li><a href="../lists/modules.html">Modules</a></li>
+                  <li><a href="../lists/procedures.html">Procedures</a></li>
+                  <li><a href="../lists/types.html">Derived Types</a></li>
+              </ul>
+            </li>
+                <li class="visible-xs hidden-sm visible-lg">
+                  <a href="../lists/files.html">Source Files</a>
+                </li>
+              <li class="visible-xs hidden-sm visible-lg">
+                <a href="../lists/modules.html">Modules</a>
+              </li>
+              <li class="visible-xs hidden-sm visible-lg">
+                <a href="../lists/procedures.html">Procedures</a>
+              </li>
+              <li class="visible-xs hidden-sm visible-lg">
+                <a href="../lists/types.html">Derived Types</a>
+              </li>
+          </ul>
+            <form action="../search.html" class="navbar-form navbar-right" role="search">
+              <div class="form-group">
+                <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+              </div>
+              <!--
+                  <button type="submit" class="btn btn-default">Submit</button>
+                  -->
+            </form>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+  <div class="row">
+    <h1>diffeq_sdirk4_constants
+      <small>Module</small>
+      
+    </h1>
+      <div class="row" id="info-bar">
+    <div class="col-lg-12">
+      <div class="well well-sm">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+
+          <li id="statements"><i class="fa fa-list-ol"></i>
+            <a data-toggle="tooltip"
+               data-placement="bottom" data-html="true"
+               title=" 2.4% of total for modules and submodules.">60 statements</a>
+          </li>
+
+            <li id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/diffeq_sdirk4_constants.f90"> Source File</a>
+            </li>
+        </ul>
+        <ol class="breadcrumb in-well text-right">
+              <li><a href='../sourcefile/diffeq_sdirk4_constants.f90.html'>diffeq_sdirk4_constants.f90</a></li>
+          <li class="active">diffeq_sdirk4_constants</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+    })
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+      <div class="panel panel-primary">
+      <div class="panel-heading text-left">
+        <h3 class="panel-title">
+          <a data-toggle="collapse" href="#vars-0">Variables</a>
+        </h3>
+      </div>
+      <div id="vars-0" class="panel-collapse collapse">
+        <div class="list-group">
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a21~3">a21</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a22">a22</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a31~3">a31</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a32~3">a32</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a33">a33</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a41~3">a41</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a42~3">a42</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a43~3">a43</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a44">a44</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a51~2">a51</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a52~2">a52</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a53~2">a53</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a54~2">a54</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a55">a55</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b1~2">b1</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b1a~2">b1a</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b2~2">b2</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b2a~2">b2a</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b3~2">b3</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b3a~2">b3a</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b4~2">b4</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b4a~2">b4a</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b5">b5</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b5a">b5a</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b6">b6</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b6a">b6a</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs11">bs11</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs12">bs12</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs13">bs13</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs14">bs14</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs15">bs15</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs16">bs16</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs21">bs21</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs22">bs22</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs23">bs23</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs24">bs24</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs25">bs25</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs26">bs26</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs31">bs31</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs32">bs32</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs33">bs33</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs34">bs34</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs35">bs35</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs36">bs36</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs41">bs41</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs42">bs42</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs43">bs43</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs44">bs44</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs45">bs45</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs46">bs46</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-c2~3">c2</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-c3~3">c3</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-c4~3">c4</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-c5~2">c5</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-c6~2">c6</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-gamma">gamma</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      
+<br>          <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Uses</h3>
+      </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+            <ul class="list-inline">
+                <li><a href='<a href="http://fortranwiki.org/fortran/show/iso_fortran_env">iso_fortran_env</a>'>iso_fortran_env</a></li>
+            </ul>
+          </li>
+      </ul>
+    </div>
+
+      
+      <br>
+
+      <section class="visible-xs visible-sm hidden-md">
+          <h3>Contents</h3>
+  
+      <div class="panel panel-primary">
+      <div class="panel-heading text-left">
+        <h3 class="panel-title">
+          <a data-toggle="collapse" href="#vars-1">Variables</a>
+        </h3>
+      </div>
+      <div id="vars-1" class="panel-collapse collapse">
+        <div class="list-group">
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a21~3">a21</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a22">a22</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a31~3">a31</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a32~3">a32</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a33">a33</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a41~3">a41</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a42~3">a42</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a43~3">a43</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a44">a44</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a51~2">a51</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a52~2">a52</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a53~2">a53</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a54~2">a54</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-a55">a55</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b1~2">b1</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b1a~2">b1a</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b2~2">b2</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b2a~2">b2a</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b3~2">b3</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b3a~2">b3a</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b4~2">b4</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b4a~2">b4a</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b5">b5</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b5a">b5a</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b6">b6</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-b6a">b6a</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs11">bs11</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs12">bs12</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs13">bs13</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs14">bs14</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs15">bs15</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs16">bs16</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs21">bs21</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs22">bs22</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs23">bs23</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs24">bs24</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs25">bs25</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs26">bs26</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs31">bs31</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs32">bs32</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs33">bs33</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs34">bs34</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs35">bs35</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs36">bs36</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs41">bs41</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs42">bs42</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs43">bs43</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs44">bs44</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs45">bs45</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-bs46">bs46</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-c2~3">c2</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-c3~3">c3</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-c4~3">c4</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-c5~2">c5</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-c6~2">c6</a>
+            <a class="list-group-item" href="../module/diffeq_sdirk4_constants.html#variable-gamma">gamma</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+      </section>
+      <br class="visible-xs visible-sm hidden-md">
+
+
+        <section>
+          <h2>Variables</h2>
+            <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Visibility</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+<th></th><th>Initial</th>        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a21~3"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>a21</strong></td>
+<td> =</td>
+                <td>gamma</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a22"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>a22</strong></td>
+<td> =</td>
+                <td>gamma</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a31~3"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>a31</strong></td>
+<td> =</td>
+                <td>(c3-a32-gamma)</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a32~3"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>a32</strong></td>
+<td> =</td>
+                <td>(1.0d0-sqrt(2.0d0))/8.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a33"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>a33</strong></td>
+<td> =</td>
+                <td>gamma</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a41~3"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>a41</strong></td>
+<td> =</td>
+                <td>c4-a42-a43-gamma</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a42~3"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>a42</strong></td>
+<td> =</td>
+                <td>(5.0d0-7.0d0*sqrt(2.0d0))/64.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a43~3"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>a43</strong></td>
+<td> =</td>
+                <td>7.0d0*(1.0d0+sqrt(2.0d0))/32.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a44"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>a44</strong></td>
+<td> =</td>
+                <td>gamma</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a51~2"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>a51</strong></td>
+<td> =</td>
+                <td>c5-a52-a53-a54-gamma</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a52~2"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>a52</strong></td>
+<td> =</td>
+                <td>(-1.3796d4-5.4539d4*sqrt(2.0d0))/1.25d5</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a53~2"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>a53</strong></td>
+<td> =</td>
+                <td>(5.06605d5+1.32109d5*sqrt(2.0d0))/4.375d5</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a54~2"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>a54</strong></td>
+<td> =</td>
+                <td>166.0d0*(-97.0d0+376.0d0*sqrt(2.0d0))/1.09375d5</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a55"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>a55</strong></td>
+<td> =</td>
+                <td>gamma</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b1~2"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>b1</strong></td>
+<td> =</td>
+                <td>1.0d0-b2-b3-b4-b5-gamma</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b1a~2"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>b1a</strong></td>
+<td> =</td>
+                <td>1.0d0-b2a-b3a-b4a-b5a-b6a</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b2~2"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>b2</strong></td>
+<td> =</td>
+                <td>(1.181d3-9.87d2*sqrt(2.0d0))/1.3782d4</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b2a~2"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>b2a</strong></td>
+<td> =</td>
+                <td>-4.80923228411d11/4.982971448372d12</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b3~2"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>b3</strong></td>
+<td> =</td>
+                <td>47.0d0*(-267.0d0+1.783d3*sqrt(2.0d0))/2.73343d5</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b3a~2"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>b3a</strong></td>
+<td> =</td>
+                <td>6.709447293961d12/1.2833189095359d13</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b4~2"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>b4</strong></td>
+<td> =</td>
+                <td>-16.0d0*(-2.2922d4+3.525d3*sqrt(2.0d0))/5.71953d5</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b4a~2"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>b4a</strong></td>
+<td> =</td>
+                <td>3.513175791894d12/6.748737351361d12</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b5"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>b5</strong></td>
+<td> =</td>
+                <td>-15.625d3*(97.0d0+376.0d0*sqrt(2.0d0))/9.0749876d7</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b5a"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>b5a</strong></td>
+<td> =</td>
+                <td>-4.98863281070d11/6.042575550617d12</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b6"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>b6</strong></td>
+<td> =</td>
+                <td>gamma</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b6a"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>b6a</strong></td>
+<td> =</td>
+                <td>2.077005547802d12/8.945017530137d12</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs11"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs11</strong></td>
+<td> =</td>
+                <td>11963910384665.0d0/12483345430363.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs12"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs12</strong></td>
+<td> =</td>
+                <td>11963910384665.0d0/12483345430363.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs13"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs13</strong></td>
+<td> =</td>
+                <td>-28603264624.0d0/1970169629981.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs14"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs14</strong></td>
+<td> =</td>
+                <td>-3524425447183.0d0/2683177070205.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs15"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs15</strong></td>
+<td> =</td>
+                <td>-17173522440186.0d0/10195024317061.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs16"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs16</strong></td>
+<td> =</td>
+                <td>27308879169709.0d0/13030500014233.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs21"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs21</strong></td>
+<td> =</td>
+                <td>-69996760330788.0d0/18526599551455.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs22"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs22</strong></td>
+<td> =</td>
+                <td>-69996760330788.0d0/18526599551455.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs23"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs23</strong></td>
+<td> =</td>
+                <td>102610171905103.0d0/26266659717953.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs24"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs24</strong></td>
+<td> =</td>
+                <td>74957623907620.0d0/12279805097313.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs25"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs25</strong></td>
+<td> =</td>
+                <td>113853199235633.0d0/9983266320290.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs26"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs26</strong></td>
+<td> =</td>
+                <td>-84229392543950.0d0/6077740599399.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs31"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs31</strong></td>
+<td> =</td>
+                <td>32473635429419.0d0/7030701510665.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs32"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs32</strong></td>
+<td> =</td>
+                <td>32473635429419.0d0/7030701510665.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs33"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs33</strong></td>
+<td> =</td>
+                <td>-38866317253841.0d0/6249835826165.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs34"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs34</strong></td>
+<td> =</td>
+                <td>-26705717223886.0d0/4265677133337.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs35"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs35</strong></td>
+<td> =</td>
+                <td>-121105382143155.0d0/6658412667527.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs36"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs36</strong></td>
+<td> =</td>
+                <td>1102028547503824.0d0/51424476870755.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs41"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs41</strong></td>
+<td> =</td>
+                <td>-14668528638623.0d0/8083464301755.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs42"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs42</strong></td>
+<td> =</td>
+                <td>-14668528638623.0d0/8083464301755.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs43"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs43</strong></td>
+<td> =</td>
+                <td>21103455885091.0d0/7774428730952.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs44"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs44</strong></td>
+<td> =</td>
+                <td>30155591475533.0d0/15293695940061.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs45"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs45</strong></td>
+<td> =</td>
+                <td>119853375102088.0d0/14336240079991.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bs46"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>bs46</strong></td>
+<td> =</td>
+                <td>-63602213973224.0d0/6753880425717.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-c2~3"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>c2</strong></td>
+<td> =</td>
+                <td>0.5d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-c3~3"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>c3</strong></td>
+<td> =</td>
+                <td>(2.0d0-sqrt(2.0d0))/4.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-c4~3"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>c4</strong></td>
+<td> =</td>
+                <td>5.0d0/8.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-c5~2"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>c5</strong></td>
+<td> =</td>
+                <td>26.0d0/25.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-c6~2"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>c6</strong></td>
+<td> =</td>
+                <td>1.0d0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-gamma"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>gamma</strong></td>
+<td> =</td>
+                <td>0.25d0</td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+        </section>
+        <br>
+
+
+
+
+
+
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class="col-xs-6 col-md-6"><p>DIFFEQ was developed by Jason Christopherson<br>&copy; 2024 
+</p>
+          </div>
+          <div class="col-xs-6 col-md-6">
+            <p class="text-right">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2024-04-18 14:40              </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+         ================================================== -->
+         <!-- Placed at the end of the document so the pages load faster -->
+    <!--
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        -->
+        <script src="../js/bootstrap.min.js"></script>
+        <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+        <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+        <!-- MathJax JavaScript
+             ================================================== -->
+             <!-- Placed at the end of the document so the pages load faster -->
+        <script type="text/x-mathjax-config">
+          MathJax.Hub.Config({
+          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+          });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+          <script src="../tipuesearch/tipuesearch_content.js"></script>
+          <script src="../tipuesearch/tipuesearch_set.js"></script>
+          <script src="../tipuesearch/tipuesearch.js"></script>
+
+  </body>
+</html>
