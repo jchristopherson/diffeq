@@ -39,9 +39,6 @@ link_library(${PROJECT_NAME} ${nonlin_LIBRARY} ${nonlin_INCLUDE_DIR})
 # - ifort uses -qopenmp
 # target_compile_definitions(${PROJECT_NAME} PUBLIC "-fopenmp")
 
-# Installation
-add_subdirectory(install)
-
 # Testing
 option(BUILD_TESTING "Build tests")
 include(CTest)

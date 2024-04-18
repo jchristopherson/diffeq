@@ -1,15 +1,45 @@
-submodule (diffeq) diffeq_multistep_fixed
+module diffeq_multistep_fixed
+    use iso_fortran_env
+    use diffeq_fixed_step
+    use diffeq_errors
+    use diffeq_rk4
+    use diffeq_base
+    implicit none
+    private
+    public :: fixed_multistep_integrator
+
+    type, abstract, extends(fixed_step_integrator) :: fixed_multistep_integrator
+        !! Defines a fixed step-size, multi-step integrator.
+        real(real64), private, allocatable, dimension(:,:) :: m_buffer
+            ! An NEQN-by-ORDER storage matrix for ODE outputs.
+    contains
+        procedure, private :: allocate_workspace => fms_alloc_workspace
+            !! Allocates workspace variables.
+        procedure, public :: solve => fms_solver
+            !! Solves the supplied system of ODEs.
+    end type
+
 contains
 ! ------------------------------------------------------------------------------
-module subroutine fms_alloc_workspace(this, neqn, err)
-    ! Arguments
+subroutine fms_alloc_workspace(this, neqn, err)
+    !! Allocates workspace variables.
     class(fixed_multistep_integrator), intent(inout) :: this
+        !! The fixed_multistep_integrator object.
     integer(int32), intent(in) :: neqn
+        !! The number of equations to integrate.
     class(errors), intent(inout) :: err
+        !! An optional errors-based object that if provided 
+        !! can be used to retrieve information relating to any errors 
+        !! encountered during execution. If not provided, a default 
+        !! implementation of the errors class is used internally to provide 
+        !! error handling.  Possible errors and warning messages that may be 
+        !! encountered are as follows.
+        !!
+        !! - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
+        !!      allocation issue.
 
     ! Local Variables
     integer(int32) :: n, flag
-    character(len = :), allocatable :: errmsg
 
     ! Process
     n = this%get_order()
@@ -31,24 +61,47 @@ module subroutine fms_alloc_workspace(this, neqn, err)
 
     ! Memory Error Handling
 10  continue
-    allocate(character(len = 256) :: errmsg)
-    write(errmsg, 100) "Memory allocation error flag ", flag, "."
-    call err%report_error("fms_alloc_workspace", trim(errmsg), &
-        DIFFEQ_MEMORY_ALLOCATION_ERROR)
+    call report_memory_error(err, "fms_alloc_workspace", flag)
     return
-
-    ! Formatting
-100 format(A, I0, A)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-module function fms_solver(this, sys, x, iv, err) result(rst)
-    ! Arguments
+function fms_solver(this, sys, x, iv, err) result(rst)
+    !! Solves the supplied system of ODEs.
     class(fixed_multistep_integrator), intent(inout) :: this
+        !! The fixed_multistep_integrator object.
     class(ode_container), intent(inout) :: sys
-    real(real64), intent(in), dimension(:) :: x, iv
+        !! The ode_container object containing the ODE's to integrate.
+    real(real64), intent(in), dimension(:) :: x
+        !! An array, of at least 2 values, defining at a minimum
+        !! the starting and ending values of the independent variable 
+        !! integration range.  If more than two values are specified, 
+        !! the integration results will be returned at the supplied 
+        !! values.
+    real(real64), intent(in), dimension(:) :: iv
+        !! An array containing the initial values for each ODE.
     class(errors), intent(inout), optional, target :: err
+        !! An optional errors-based object that if provided 
+        !! can be used to retrieve information relating to any errors 
+        !! encountered during execution. If not provided, a default 
+        !! implementation of the errors class is used internally to 
+        !! provide error handling.  Possible errors and warning messages
+        !! that may be encountered are as follows.
+        !!
+        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a 
+        !!      memory allocation issue.
+        !!
+        !!  - DIFFEQ_NULL_POINTER_ERROR: Occurs if no ODE function is 
+        !!      defined.
+        !!
+        !!  - DIFFEQ_ARRAY_SIZE_ERROR: Occurs if there are less than 
+        !!      2 values given in the independent variable array x.
     real(real64), allocatable, dimension(:,:) :: rst
+        !! An M-by-N matrix where M is the number of solution points, 
+        !! and N is the number of ODEs plus 1.  The first column 
+        !! contains the values of the independent variable at which the 
+        !! results were computed.  The remaining columns contain the 
+        !! integration results for each ODE.
 
     ! Local Variables
     integer(int32) ::i, j, j1, j2, npts, neqn, order, mn, flag
@@ -70,11 +123,21 @@ module function fms_solver(this, sys, x, iv, err) result(rst)
     mn = min(order, npts)
 
     ! Input Checking
-    if (npts < 2) go to 30
+    if (npts < 2) then
+        call report_min_array_size_not_met(errmgr, "fms_solver", "x", 2, npts)
+        return
+    end if
+    if (.not.sys%get_is_ode_defined()) then
+        call report_missing_ode(errmgr, "fms_solver")
+        return
+    end if
 
     ! Memory Allocation
     allocate(rst(npts, neqn + 1), stat = flag)
-    if (flag /= 0) go to 10
+    if (flag /= 0) then
+        call report_memory_error(errmgr, "fms_solver", flag)
+        return
+    end if
 
     call this%allocate_workspace(neqn, errmgr)
     if (errmgr%has_error_occurred()) return
@@ -107,28 +170,7 @@ module function fms_solver(this, sys, x, iv, err) result(rst)
 
     ! End
     return
-
-    ! Memory Error Handling
-10  continue
-    allocate(character(len = 256) :: errmsg)
-    write(errmsg, 100) "Memory allocation error flag ", flag, "."
-    call errmgr%report_error("fms_solver", trim(errmsg), &
-        DIFFEQ_MEMORY_ALLOCATION_ERROR)
-    return
-
-    ! Independent Variable Array Size Error
-30  continue
-    allocate(character(len = 256) :: errmsg)
-    write(errmsg, 100) &
-        "There must be at least 2 solution points defined, but ", npts, &
-        " were found."
-    call errmgr%report_error("fms_solver", trim(errmsg), &
-        DIFFEQ_INVALID_INPUT_ERROR)
-    return
-
-    ! Formatting
-100 format(A, I0, A)
 end function
 
 ! ------------------------------------------------------------------------------
-end submodule
+end module
