@@ -69,6 +69,42 @@ function test_runge_kutta_45_2() result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
+function test_runge_kutta_45_3() result(rst)
+    ! Arguments
+    logical :: rst
+
+    ! Parameters
+    integer(int32), parameter :: npts = 1000
+    real(real64), parameter :: h = 1.0d-4
+    real(real64), parameter :: tol = 1.0d-4
+
+    ! Local Variables
+    type(runge_kutta_45) :: integrator
+    type(ode_container) :: mdl
+    integer(int32) :: i
+    real(real64) :: x(npts)
+    real(real64), allocatable :: sol(:,:), ans(:)
+
+    ! Initialization
+    rst = .true.
+    mdl%fcn => test_2dof_1
+
+    ! Define the values where to compute the solution
+    x = (/ (i * h, i = 0, npts - 1) /)
+
+    ! Compute the solution
+    call integrator%solve(mdl, x, [1.0d0, 0.5d0])
+    sol = integrator%get_solution()
+
+    ! Compute the actual solution
+    ans = test_2dof_solution_1(sol(:,1))
+
+    ! Test
+    if (.not.assert(ans, sol(:,2), tol)) then
+        rst = .false.
+        print "(A)", "TEST FAILED: test_runge_kutta_45_3 -1"
+    end if
+end function
 
 ! ------------------------------------------------------------------------------
 end module
