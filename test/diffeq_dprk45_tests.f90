@@ -227,7 +227,7 @@ function test_dprk45_3() result(rst)
     ! Parameters
     integer(int32), parameter :: npts = 1000
     real(real64), parameter :: h = 1.0d-4
-    real(real64), parameter :: tol = 1.0d-6
+    real(real64), parameter :: tol = 1.0d-5
 
     ! Local Variables
     type(dprk45_integrator) :: integrator

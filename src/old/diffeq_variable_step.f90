@@ -30,7 +30,7 @@ module diffeq_variable_step
         real(real64), private, allocatable, dimension(:) :: m_rtol ! NEQN element
         real(real64), private, allocatable, dimension(:) :: m_atol ! NEQN element
     contains
-        procedure, private :: initialize => vsi_alloc_workspace
+        procedure, private :: self_initialize => vsi_alloc_workspace
             !! Initializes the integrator.
         procedure(variable_step_attempt), deferred, public :: attempt_step
             !! Attempts a single integration step.
@@ -629,7 +629,7 @@ subroutine vsi_step(this, sys, x, xmax, y, yn, xprev, yprev, fprev, err)
 
     ! Ensure the proper workspaces are allocated
     if (.not.allocated(this%m_ework)) then
-        call this%initialize(neqn, errmgr)
+        call this%self_initialize(neqn, errmgr)
         if (errmgr%has_error_occurred()) return
     end if
 

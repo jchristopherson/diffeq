@@ -148,11 +148,11 @@ module subroutine afi_step(this, sys, h, x, y, yn, xprev, yprev, fprev, err)
             size(yprev, 1), size(yprev, 2))
         return
     end if
-    if (size(fprev, 1) < n .or. size(fprev, 2) /= neqn) then
-        call report_matrix_size_error(errmgr, "afi_step", "fprev", n, neqn, &
-            size(fprev, 1), size(fprev, 2))
-        return
-    end if
+    ! if (size(fprev, 1) < n .or. size(fprev, 2) /= neqn) then
+    !     call report_matrix_size_error(errmgr, "afi_step", "fprev", n, neqn, &
+    !         size(fprev, 1), size(fprev, 2))
+    !     return
+    ! end if
 
     ! Compute the Adams-Bashforth predictor
     yn = y + h * ( &

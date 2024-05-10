@@ -390,6 +390,14 @@ subroutine sdirk_alloc_workspace(this, neqn, err)
         if (flag /= 0) go to 10
     end if
 
+    ! Ensure derivative storage is set up
+    call this%initialize_derivative_storage(neqn, errmgr)
+    if (errmgr%has_error_occurred()) return
+
+    ! Set up the model
+    call this%initialize_model_storage(errmgr)
+    if (errmgr%has_error_occurred()) return
+
     ! End
     return
 
@@ -604,6 +612,12 @@ subroutine sdirk_attempt_step(this, sys, h, x, y, yn, en, xprev, yprev, &
     accept = .false.
     tol = this%get_newton_tolerance()
     itertracking = 0
+
+    ! Initialize, if necessary
+    if (.not.allocated(this%m_jac)) then
+        call this%initialize(neqn, errmgr)
+        if (errmgr%has_error_occurred()) return
+    end if
 
     ! Ensure the Jacobian is up to date prior to the step
     if (.not.this%get_is_jacobian_current()) then

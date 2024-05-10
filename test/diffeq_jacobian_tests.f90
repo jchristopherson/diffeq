@@ -150,7 +150,7 @@ function test_fd_jacobian_3() result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
-subroutine dummy_jacobian_routine(x, y, jac)
+pure subroutine dummy_jacobian_routine(x, y, jac)
     ! Arguments
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: jac(:,:)
