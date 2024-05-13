@@ -28,6 +28,7 @@ module diffeq
     public :: single_step_integrator
     public :: runge_kutta_45
     public :: runge_kutta_23
+    public :: runge_kutta_853
     
     ! public :: ode
     ! public :: ode_jacobian

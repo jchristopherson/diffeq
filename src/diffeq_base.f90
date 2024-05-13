@@ -273,14 +273,17 @@ module diffeq_base
                 !! The parameter.
         end function
 
-        subroutine single_step_post_step_routine(this, dense, x, xn, y, yn, f, &
-            fn)
+        subroutine single_step_post_step_routine(this, sys, dense, x, xn, y, &
+            yn, f, fn)
             !! Provides a routine for performing any actions, such as setting
             !! up interpolation, after successful completion of a step.
             use iso_fortran_env
             import single_step_integrator
+            import ode_container
             class(single_step_integrator), intent(inout) :: this
                 !! The single_step_integrator object.
+            class(ode_container), intent(inout) :: sys
+                !! The ode_container object containing the ODE's to integrate.
             logical, intent(in) :: dense
                 !! Determines if dense output is requested (true); else, false.
             real(real64), intent(in) :: x
@@ -1068,7 +1071,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, err)
 
         ! If we're here, the step has been successful.  Take any post-step
         ! action such as setting up interpolation routines, etc.
-        call this%post_step_action(dense, xo, xn, y, yn, f, fn)
+        call this%post_step_action(sys, dense, xo, xn, y, yn, f, fn)
 
         ! Do we need to interpolate for dense output, or can we just store
         ! values and move on
@@ -1093,7 +1096,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, err)
             ! integration points and the solver oversteps the endpoint.
             if (abs(xn) > abs(xmax)) then
                 ! Interpolate to get the solution at xmax
-                call this%post_step_action(.true., xo, xn, y, yn, f, fn)
+                call this%post_step_action(sys, .true., xo, xn, y, yn, f, fn)
                 call this%interpolate(xmax, xo, y, f, xn, yn, fn, yi)
                 call this%append_to_buffer(xmax, yi, errmgr)
                 if (errmgr%has_error_occurred()) return
