@@ -24,4 +24,9 @@ module diffeq_bsrk32_constants
     real(real64), parameter :: c3 = 0.75d0
     real(real64), parameter :: c4 = 1.0d0
 
+    real(real64), parameter :: e1 = b1a - b1
+    real(real64), parameter :: e2 = b2a - b2
+    real(real64), parameter :: e3 = b3a - b3
+    real(real64), parameter :: e4 = b4a - b4
+
 end module

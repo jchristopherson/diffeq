@@ -38,6 +38,15 @@ program test
     rst = test_runge_kutta_45_3()
     if (.not.rst) flag = 7
 
+    rst = test_runge_kutta_23_1()
+    if (.not.rst) flag = 8
+
+    rst = test_runge_kutta_23_2()
+    if (.not.rst) flag = 9
+
+    rst = test_runge_kutta_23_3()
+    if (.not.rst) flag = 10
+
     ! rst = test_rk4_1()
     ! if (.not.rst) flag = 5
 
