@@ -5,11 +5,8 @@ program example
     use fplot_core
     implicit none
 
-    ! Parameters
-    real(real64), parameter :: xmax = 6.0d1
-
     ! Local Variables
-    type(dprk45_integrator) :: integrator
+    type(runge_kutta_853) :: integrator
     type(ode_container) :: mdl
     real(real64), allocatable :: sol(:,:)
 
@@ -20,10 +17,11 @@ program example
     class(legend), pointer :: lgnd
 
     ! Define the model
-    mdl%fcn => duffing
+    mdl%fcn => vanderpol
 
     ! Compute the solution
-    sol = integrator%solve(mdl, [0.0d0, xmax], [0.0d0, 0.0d0])
+    call integrator%solve(mdl, [0.0d0, 5.0d1], [2.0d0, 0.0d0])
+    sol = integrator%get_solution()
 
     ! Plot the results
     call plt%initialize()
@@ -36,8 +34,6 @@ program example
     call y2Axis%set_title("y'(x)")
     call plt%set_use_y2_axis(.true.)
     call lgnd%set_is_visible(.true.)
-    call xAxis%set_autoscale(.false.)
-    call xAxis%set_limits(0.0d0, xmax)
     
     call pd1%define_data(sol(:,1), sol(:,2))
     call pd1%set_name("y(x)")
