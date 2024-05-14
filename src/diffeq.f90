@@ -16,10 +16,9 @@ module diffeq
     public :: attempt_single_step
     public :: get_single_step_logical_parameter
     public :: single_step_post_step_routine
+    public :: single_step_pre_step_routine
     public :: single_step_interpolate
     public :: single_step_integrator
-    public :: stiff_single_step_integrator
-    public :: form_stiff_single_matrices
     public :: runge_kutta_45
     public :: runge_kutta_23
     public :: runge_kutta_853

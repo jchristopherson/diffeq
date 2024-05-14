@@ -15,10 +15,10 @@ module diffeq_base
     public :: attempt_single_step
     public :: get_single_step_logical_parameter
     public :: single_step_post_step_routine
+    public :: single_step_pre_step_routine
     public :: single_step_interpolate
     public :: single_step_integrator
-    public :: stiff_single_step_integrator
-    public :: form_stiff_single_matrices
+    public :: implicit_single_step_integrator
 
 ! ------------------------------------------------------------------------------
     interface
@@ -232,6 +232,10 @@ module diffeq_base
             interpolate
             !! Performs an interpolation to estimate the solution at the
             !! requested point.
+        procedure(single_step_pre_step_routine), public, pass, deferred :: &
+            pre_step_action
+            !! Provides a routine for performing any actions, such as setting
+            !! up Jacobian calculations.
         procedure, public :: solve => ssi_ode_solver
             !! Solves the supplied system of ODE's.
     end type
@@ -329,30 +333,17 @@ module diffeq_base
                 !! An N-element array where this routine will write the 
                 !! solution values interpolated at x.
         end subroutine
-    end interface
 
-! ------------------------------------------------------------------------------
-    type, abstract, extends(single_step_integrator) :: &
-        stiff_single_step_integrator
-        !! A single-step integrator tailored for the solution of stiff systems
-        !! of ODE's.
-    contains
-        procedure(form_stiff_single_matrices), public, pass, deferred :: &
-            compute_matrices
-            !! Forms the system matrices for solving a stiff system of ODE's.
-        procedure, public :: solve => sssi_ode_solver
-            !! Solves the supplied system of ODE's.
-    end type
-
-    interface
-        subroutine form_stiff_single_matrices(this, prevs, sys, h, x, y, f, err)
-            !! Forms the system matrices for solving a stiff system of ODE's.
+        subroutine single_step_pre_step_routine(this, prevs, sys, h, x, y, f, &
+            err)
+            !! Provides a routine for performing any actions, such as setting
+            !! up Jacobian calculations.
             use iso_fortran_env
             use ferror
-            import stiff_single_step_integrator
+            import single_step_integrator
             import ode_container
-            class(stiff_single_step_integrator), intent(inout) :: this
-                !! The stiff_single_step_integrator object.
+            class(single_step_integrator), intent(inout) :: this
+                !! The single_step_integrator object.
             logical, intent(in) :: prevs
                 !! Defines the status of the previous step.  The value is true 
                 !! if the previous step was successful; else, false if the 
@@ -376,6 +367,27 @@ module diffeq_base
                 !! provide error handling.
         end subroutine
     end interface
+
+! ------------------------------------------------------------------------------
+    type, abstract, extends(single_step_integrator) :: &
+        implicit_single_step_integrator
+        !! Defines an implicit, single-step integrator.
+        integer(int32), private :: m_maxNewtonIter = 20
+            ! Maximum allowable number of Newton iterations.
+        real(real64), private :: m_newtonTol = 1.0d-6
+            ! Newton iteration convergence tolerance.
+    contains
+        procedure, public :: get_max_newton_iteration_count => &
+            issi_get_max_newton_iter
+            !! Gets the maximum number of Newton iterations allowed.
+        procedure, public :: set_max_newton_iteration_count => &
+            issi_set_max_newton_iter
+            !! Sets the maximum number of Newton iterations allowed.
+        procedure, public :: get_newton_tolerance => issi_get_newton_tol
+            !! Gets the convergence tolerance for the Newton iteration.
+        procedure, public :: set_newton_tolerance => issi_set_newton_tol
+            !! Sets the convergence tolerance for the Newton iteration.
+    end type
     
 ! ------------------------------------------------------------------------------
     ! TO DO: multi-step integrator
@@ -1047,7 +1059,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, err)
         !!      2 values given in the independent variable array x.
 
     ! Local Variables
-    logical :: dense
+    logical :: dense, success
     integer(int32) :: i, j, n, neqn, flag, nsteps
     real(real64) :: h, xo, xn, xmax, ei, eold
     real(real64), allocatable, dimension(:) :: f, y, yn, fn, yerr, yi
@@ -1061,6 +1073,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, err)
         errmgr => deferr
     end if
     n = size(x)
+    success = .true.
 
     ! Input Checking
     if (n < 2) then
@@ -1103,180 +1116,8 @@ subroutine ssi_ode_solver(this, sys, x, iv, err)
 
     ! Cycle until integration is complete
     do i = 1, nsteps
-        ! Attempt a step
-        call this%attempt_step(sys, h, xo, y, f, yn, fn, yerr)
-        xn = xo + h
-
-        ! Compute a normalized error value.  A value < 1 indicates success
-        ei = this%compute_error_norm(y, yn, yerr)
-
-        ! Determine the next step size
-        h = this%estimate_next_step_size(ei, eold, h, xo, errmgr)
-        if (errmgr%has_error_occurred()) return
-
-        ! Reject the step?
-        if (ei > 1.0d0) cycle   ! We failed.  Try again with a new step size
-
-        ! If we're here, the step has been successful.  Take any post-step
-        ! action such as setting up interpolation routines, etc.
-        call this%post_step_action(sys, dense, xo, xn, y, yn, f, fn)
-
-        ! Do we need to interpolate for dense output, or can we just store
-        ! values and move on
-        if (dense) then
-            ! Perform the interpolation as needed until a new step is required
-            interp : do while (abs(x(j)) <= abs(xn))
-                call this%interpolate(x(j), xo, y, f, xn, yn, fn, yi)
-                call this%append_to_buffer(x(j), yi, errmgr)
-                if (errmgr%has_error_occurred()) return
-                j = j + 1
-                if (j > n) exit interp
-            end do interp
-        else
-            ! Store the values and move on
-            call this%append_to_buffer(xn, yn, errmgr)
-            if (errmgr%has_error_occurred()) return
-        end if
-
-        ! Are we done?
-        if (abs(xn) >= abs(xmax)) then
-            ! Deal with the case where output is only returned at the
-            ! integration points and the solver oversteps the endpoint.
-            if (abs(xn) > abs(xmax)) then
-                ! Interpolate to get the solution at xmax
-                call this%post_step_action(sys, .true., xo, xn, y, yn, f, fn)
-                call this%interpolate(xmax, xo, y, f, xn, yn, fn, yi)
-                call this%append_to_buffer(xmax, yi, errmgr)
-                if (errmgr%has_error_occurred()) return
-            end if
-            
-            ! We're done
-            go to 100
-        end if
-
-        ! Do we need to limit the step size to not overshoot the terminal value?
-        if (this%get_allow_overshoot() .and. abs(xn + h) > abs(xmax)) then
-            ! Limit the step size
-            h = xmax - xn
-        end if
-
-        ! Update parameters
-        xo = xn
-        y = yn
-
-        ! Is this an FSAL integrator?  If so, we already have the derivative
-        ! values.  If not, we need to recompute the derivative values for the
-        ! next iteration
-        if (this%get_is_fsal()) then
-            ! We have the derivative estimate already
-            f = fn
-        else
-            ! Update the derivative estimates
-            call sys%fcn(xn, yn, f) ! write to f, not fn
-        end if
-    end do
-
-    ! If we're here, the solver has run out of allowable steps
-    call report_excessive_integration_steps(errmgr, "ssi_ode_solver", nsteps, &
-        xn)
-    return
-
-    ! End
-100 continue
-    return
-end subroutine
-
-! ******************************************************************************
-! STIFF SINGLE-STEP INTEGRATOR
-! ------------------------------------------------------------------------------
-subroutine sssi_ode_solver(this, sys, x, iv, err)
-    !! Solves the supplied system of ODE's.
-    class(stiff_single_step_integrator), intent(inout) :: this
-        !! The stiff_single_step_integrator object.
-    class(ode_container), intent(inout) :: sys
-        !! The ode_container object containing the ODE's to integrate.
-    real(real64), intent(in), dimension(:) :: x
-        !! An array of independent variable values at which to return the 
-        !! the solution to the ODE's.
-    real(real64), intent(in), dimension(:) :: iv
-        !! An array containing the initial values for each ODE.
-    class(errors), intent(inout), optional, target :: err
-        !! An optional errors-based object that if provided 
-        !! can be used to retrieve information relating to any errors 
-        !! encountered during execution. If not provided, a default 
-        !! implementation of the errors class is used internally to 
-        !! provide error handling.  Possible errors and warning messages
-        !! that may be encountered are as follows.
-        !!
-        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a 
-        !!      memory allocation issue.
-        !!
-        !!  - DIFFEQ_NULL_POINTER_ERROR: Occurs if no ODE function is 
-        !!      defined.
-        !!
-        !!  - DIFFEQ_ARRAY_SIZE_ERROR: Occurs if there are less than 
-        !!      2 values given in the independent variable array x.
-
-    ! Local Variables
-    logical :: dense, success
-    integer(int32) :: i, j, n, neqn, flag, nsteps
-    real(real64) :: h, xo, xn, xmax, ei, eold
-    real(real64), allocatable, dimension(:) :: f, y, yn, fn, yerr, yi
-    class(errors), pointer :: errmgr
-    type(errors), target :: deferr
-    
-    ! Initialization
-    if (present(err)) then
-        errmgr => err
-    else
-        errmgr => deferr
-    end if
-    n = size(x)
-    success = .true.
-
-    ! Input Checking
-    if (n < 2) then
-        call report_array_size_error(errmgr, "sssi_ode_solver", "x", 2, n)
-        return
-    end if
-    if (.not.sys%get_is_ode_defined()) then
-        call report_missing_ode(errmgr, "sssi_ode_solver")
-        return
-    end if
-
-    ! Additional Initialization
-    neqn = size(iv)
-    xo = x(1)
-    xmax = x(n)
-    j = 2
-    eold = 1.0d-4
-    dense = (n > 2)
-    nsteps = this%get_step_limit()
-    
-    ! Memory Allocations
-    allocate(f(neqn), y(neqn), yn(neqn), fn(neqn), yerr(neqn), stat = flag)
-    if (flag == 0 .and. dense) allocate(yi(neqn), stat = flag)
-    if (flag /= 0) then
-        call report_memory_error(errmgr, "sssi_ode_solver", flag)
-        return
-    end if
-
-    ! Estimate an initial step size
-    !
-    ! Outputs:
-    ! - f: Value of the derivatives at xo
-    ! - h: Initial step size estimate
-    call this%estimate_inital_step_size(sys, xo, xmax, iv, f, h)
-    
-    ! Store the initial conditions
-    call this%append_to_buffer(x(1), iv, errmgr)
-    if (errmgr%has_error_occurred()) return
-    y = iv
-
-    ! Cycle until integration is complete
-    do i = 1, nsteps
-        ! Form the system matrices
-        call this%compute_matrices(success, sys, h, xo, y, f, errmgr)
+        ! Perform any pre-step actions
+        call this%pre_step_action(success, sys, h, xo, y, f, errmgr)
         if (errmgr%has_error_occurred()) return
         
         ! Attempt a step
@@ -1354,13 +1195,55 @@ subroutine sssi_ode_solver(this, sys, x, iv, err)
     end do
 
     ! If we're here, the solver has run out of allowable steps
-    call report_excessive_integration_steps(errmgr, "sssi_ode_solver", nsteps, &
+    call report_excessive_integration_steps(errmgr, "ssi_ode_solver", nsteps, &
         xn)
     return
 
     ! End
 100 continue
     return
+end subroutine
+
+! ******************************************************************************
+! IMPLICIT SINGLE-STEP INTEGRATOR
+! ------------------------------------------------------------------------------
+pure function issi_get_max_newton_iter(this) result(rst)
+    !! Gets the maximum number of Newton iterations allowed.
+    class(implicit_single_step_integrator), intent(in) :: this
+        !! The implicit_single_step_integrator object.
+    integer(int32) :: rst
+        !! The iteration limit.
+    rst = this%m_maxNewtonIter
+end function
+
+! --------------------
+subroutine issi_set_max_newton_iter(this, x)
+    !! Sets the maximum number of Newton iterations allowed.
+    class(implicit_single_step_integrator), intent(inout) :: this
+        !! The implicit_single_step_integrator object.
+    integer(int32), intent(in) :: x
+        !! The iteration limit
+    this%m_maxNewtonIter = x
+end subroutine
+
+! ------------------------------------------------------------------------------
+pure function issi_get_newton_tol(this) result(rst)
+    !! Gets the convergence tolerance for the Newton iteration.
+    class(implicit_single_step_integrator), intent(in) :: this
+        !! The implicit_single_step_integrator object.
+    real(real64) :: rst
+        !! The tolerance.
+    rst = this%m_newtonTol
+end function
+
+! --------------------
+subroutine issi_set_newton_tol(this, x)
+    !! Sets the convergence tolerance for the Newton iteration.
+    class(implicit_single_step_integrator), intent(inout) :: this
+        !! The implicit_single_step_integrator object.
+    real(real64), intent(in) :: x
+        !! The tolerance.
+    this%m_newtonTol = x
 end subroutine
 
 ! ------------------------------------------------------------------------------

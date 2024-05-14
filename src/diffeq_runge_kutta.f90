@@ -21,6 +21,8 @@ module diffeq_runge_kutta
         real(real64), private, allocatable, dimension(:) :: rc4
         real(real64), private, allocatable, dimension(:) :: rc5
     contains
+        procedure, public :: pre_step_action => rk45_pre_step
+            !! Performs any pre-step actions.
         procedure, public :: get_order => rk45_get_order
             !! Gets the order of the integrator.
         procedure, public :: get_is_fsal => rk45_get_is_fsal
@@ -47,6 +49,8 @@ module diffeq_runge_kutta
         real(real64), private, allocatable, dimension(:) :: rc2
         real(real64), private, allocatable, dimension(:) :: rc3
     contains
+        procedure, public :: pre_step_action => rk23_pre_step
+            !! Performs any pre-step actions.
         procedure, private :: initialize => rk32_init
             !! Initializes private storage arrays for the integrator.
         procedure, private :: initialize_interp => rk32_init_interp
@@ -87,6 +91,8 @@ module diffeq_runge_kutta
         real(real64), private, allocatable, dimension(:) :: work
         real(real64), private :: m_stepSize
     contains
+        procedure, public :: pre_step_action => rk853_pre_step
+            !! Performs any pre-step actions.
         procedure, private :: initialize => rk853_init
             !! Initializes private storage arrays for the integrator.
         procedure, private :: initialize_interp => rk853_init_interp
@@ -109,6 +115,37 @@ module diffeq_runge_kutta
 contains
 ! ******************************************************************************
 ! RUNGE_KUTTA_45
+! ------------------------------------------------------------------------------
+subroutine rk45_pre_step(this, prevs, sys, h, x, y, f, err)
+    !! Placeholder routine for any pre-step actions.
+    class(runge_kutta_45), intent(inout) :: this
+        !! The runge_kutta_45 object.
+    logical, intent(in) :: prevs
+        !! Defines the status of the previous step.  The value is true 
+        !! if the previous step was successful; else, false if the 
+        !! previous step failed.
+    class(ode_container), intent(inout) :: sys
+        !! The ode_container object containing the ODE's to integrate.
+    real(real64), intent(in) :: h
+        !! The current step size.
+    real(real64), intent(in) :: x
+        !! The current value of the independent variable.
+    real(real64), intent(in), dimension(:) :: y
+        !! An N-element array containing the current solution at x.
+    real(real64), intent(in), dimension(:) :: f
+        !! An N-element array containing the values of the derivatives
+        !! at x.
+    class(errors), intent(inout), optional, target :: err
+        !! An optional errors-based object that if provided 
+        !! can be used to retrieve information relating to any errors 
+        !! encountered during execution. If not provided, a default 
+        !! implementation of the errors class is used internally to 
+        !! provide error handling.
+
+    ! Process
+    return
+end subroutine
+
 ! ------------------------------------------------------------------------------
 pure function rk45_get_order(this) result(rst)
     !! Gets the order of the integrator.
@@ -342,6 +379,37 @@ end subroutine
 ! ******************************************************************************
 ! RUNGE_KUTTA_23
 ! ------------------------------------------------------------------------------
+subroutine rk23_pre_step(this, prevs, sys, h, x, y, f, err)
+    !! Placeholder routine for any pre-step actions.
+    class(runge_kutta_23), intent(inout) :: this
+        !! The runge_kutta_23 object.
+    logical, intent(in) :: prevs
+        !! Defines the status of the previous step.  The value is true 
+        !! if the previous step was successful; else, false if the 
+        !! previous step failed.
+    class(ode_container), intent(inout) :: sys
+        !! The ode_container object containing the ODE's to integrate.
+    real(real64), intent(in) :: h
+        !! The current step size.
+    real(real64), intent(in) :: x
+        !! The current value of the independent variable.
+    real(real64), intent(in), dimension(:) :: y
+        !! An N-element array containing the current solution at x.
+    real(real64), intent(in), dimension(:) :: f
+        !! An N-element array containing the values of the derivatives
+        !! at x.
+    class(errors), intent(inout), optional, target :: err
+        !! An optional errors-based object that if provided 
+        !! can be used to retrieve information relating to any errors 
+        !! encountered during execution. If not provided, a default 
+        !! implementation of the errors class is used internally to 
+        !! provide error handling.
+
+    ! Process
+    return
+end subroutine
+
+! ------------------------------------------------------------------------------
 pure function rk32_get_order(this) result(rst)
     !! Gets the order of the integrator.
     class(runge_kutta_23), intent(in) :: this
@@ -539,6 +607,37 @@ end subroutine
 
 ! ******************************************************************************
 ! RUNGE_KUTTA_853
+! ------------------------------------------------------------------------------
+subroutine rk853_pre_step(this, prevs, sys, h, x, y, f, err)
+    !! Placeholder routine for any pre-step actions.
+    class(runge_kutta_853), intent(inout) :: this
+        !! The runge_kutta_853 object.
+    logical, intent(in) :: prevs
+        !! Defines the status of the previous step.  The value is true 
+        !! if the previous step was successful; else, false if the 
+        !! previous step failed.
+    class(ode_container), intent(inout) :: sys
+        !! The ode_container object containing the ODE's to integrate.
+    real(real64), intent(in) :: h
+        !! The current step size.
+    real(real64), intent(in) :: x
+        !! The current value of the independent variable.
+    real(real64), intent(in), dimension(:) :: y
+        !! An N-element array containing the current solution at x.
+    real(real64), intent(in), dimension(:) :: f
+        !! An N-element array containing the values of the derivatives
+        !! at x.
+    class(errors), intent(inout), optional, target :: err
+        !! An optional errors-based object that if provided 
+        !! can be used to retrieve information relating to any errors 
+        !! encountered during execution. If not provided, a default 
+        !! implementation of the errors class is used internally to 
+        !! provide error handling.
+
+    ! Process
+    return
+end subroutine
+
 ! ------------------------------------------------------------------------------
 subroutine rk853_init(this, neqn)
     !! Initializes private storage arrays for the integrator.

@@ -7,7 +7,7 @@ module diffeq_stiffly_stable
     private
     public :: rosenbrock
 
-    type, extends(stiff_single_step_integrator) :: rosenbrock
+    type, extends(single_step_integrator) :: rosenbrock
         !! Defines a 4th order Rosenbrock integrator.
         !!
         !! Remarks:
@@ -46,7 +46,7 @@ module diffeq_stiffly_stable
             !! Initializes storage arrays for the rosenbrock object.
         procedure, private :: initialize_interp => rbrk_init_interp
             !! Initializes private storage for the interpolation process.
-        procedure, public :: compute_matrices => rbrk_form_matrix
+        procedure, public :: pre_step_action => rbrk_form_matrix
             !! Constructs the system matrix.
         procedure, public :: attempt_step => rbrk_attempt_step
             !! Attempts an integration step for this integrator.
