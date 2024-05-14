@@ -21,10 +21,10 @@ add_executable(
 link_library(rk853_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
 link_library(rk853_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
 
-# RK Comparison Example
+# Comparison Example
 add_executable(
-    rk_comparison_example
-    rk_comparison_example.f90
+    comparison_example
+    comparison_example.f90
     ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
 )
-link_library(rk_comparison_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
+link_library(comparison_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})

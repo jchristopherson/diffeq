@@ -2,6 +2,7 @@ program test
     use iso_fortran_env
     use diffeq_jacobian_tests
     use diffeq_test_runge_kutta
+    use diffeq_test_stiffly_stable
     ! use diffeq_rkfixed_tests
     ! use diffeq_adamsfixed_tests
     ! use diffeq_dprk45_tests
@@ -55,6 +56,15 @@ program test
 
     rst = test_runge_kutta_853_3()
     if (.not.rst) flag = 13
+
+    rst = test_rosenbrock_1()
+    if (.not.rst) flag = 14
+
+    rst = test_rosenbrock_2()
+    if (.not.rst) flag = 15
+
+    rst = test_rosenbrock_3()
+    if (.not.rst) flag = 16
 
     ! rst = test_rk4_1()
     ! if (.not.rst) flag = 5

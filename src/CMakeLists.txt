@@ -10,6 +10,8 @@ set(DIFFEQ_SOURCES
     ${dir}/diffeq_dprk45_constants.f90
     ${dir}/diffeq_bsrk32_constants.f90
     ${dir}/diffeq_rk853_constants.f90
+    ${dir}/diffeq_rosenbrock_constants.f90
+    ${dir}/diffeq_stiffly_stable.f90
     # ${dir}/diffeq_fixed_step.f90
     # ${dir}/diffeq_rk_fixed_step.f90
     # ${dir}/diffeq_rk4.f90
