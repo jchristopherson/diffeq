@@ -70,7 +70,7 @@ contains
 subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, err)
     use diffeq_rosenbrock_constants
     !! Constructs the system matrix of the form 
-    !! \( A = \fac{1}{\gamma h} M - J \), and then computes it's LU 
+    !! \( A = \frac{1}{\gamma h} M - J \), and then computes it's LU 
     !! factorization.  The LU-factored form of A is stored internally.
     class(rosenbrock), intent(inout) :: this
         !! The rosenbrock object.
