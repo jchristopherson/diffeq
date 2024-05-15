@@ -34,6 +34,8 @@ module diffeq_runge_kutta
         procedure, public :: get_is_fsal => rk45_get_is_fsal
             !! Gets a logical parameter stating if this is a first-same-as-last
             !! (FSAL) integrator.
+        procedure, public :: get_stage_count => rk45_get_stage_count
+            !! Gets the stage count for this integrator.
         procedure, private :: initialize => rk45_init
             !! Initializes private storage arrays for the integrator.
         procedure, private :: initialize_interp => rk45_init_interp
@@ -57,20 +59,22 @@ module diffeq_runge_kutta
     contains
         procedure, public :: pre_step_action => rk23_pre_step
             !! Performs any pre-step actions.
-        procedure, private :: initialize => rk32_init
+        procedure, private :: initialize => rk23_init
             !! Initializes private storage arrays for the integrator.
-        procedure, private :: initialize_interp => rk32_init_interp
+        procedure, private :: initialize_interp => rk23_init_interp
             !! Allocates storage for the interpolation process.
-        procedure, public :: get_order => rk32_get_order
+        procedure, public :: get_order => rk23_get_order
             !! Gets the order of the integrator.
-        procedure, public :: get_is_fsal => rk32_get_is_fsal
+        procedure, public :: get_is_fsal => rk23_get_is_fsal
             !! Gets a logical parameter stating if this is a first-same-as-last
             !! (FSAL) integrator.
-        procedure, public :: attempt_step => rk32_attempt_step
+        procedure, public :: get_stage_count => rk23_get_stage_count
+            !! Gets the stage count for this integrator.
+        procedure, public :: attempt_step => rk23_attempt_step
             !! Attempts an integration step for this integrator.
-        procedure, public :: post_step_action => rk32_set_up_interp
+        procedure, public :: post_step_action => rk23_set_up_interp
             !! Sets up the interpolation process as the post-step action.
-        procedure, public :: interpolate => rk32_interp
+        procedure, public :: interpolate => rk23_interp
             !! Performs the interpolation.
     end type
 
@@ -108,6 +112,8 @@ module diffeq_runge_kutta
         procedure, public :: get_is_fsal => rk853_get_is_fsal
             !! Gets a logical parameter stating if this is a first-same-as-last
             !! (FSAL) integrator.
+        procedure, public :: get_stage_count => rk853_get_stage_count
+            !! Gets the stage count for this integrator.
         procedure, public :: attempt_step => rk853_attempt_step
             !! Attempts an integration step for this integrator.
         procedure, public :: post_step_action => rk853_set_up_interp
@@ -286,6 +292,16 @@ pure function rk45_get_is_fsal(this) result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
+pure function rk45_get_stage_count(this) result(rst)
+    !! Gets the stage count for this integrator.
+    class(runge_kutta_45), intent(in) :: this
+        !! The runge_kutta_45 object.
+    integer(int32) :: rst
+        !! The stage count.
+    rst = 7
+end function
+
+! ------------------------------------------------------------------------------
 subroutine rk45_init(this, neqn)
     !! Initializes private storage arrays for the integrator.
     class(runge_kutta_45), intent(inout) :: this
@@ -434,7 +450,7 @@ subroutine rk45_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
         !! An N-element array containing the derivatives at x.
     real(real64), intent(in), dimension(:) :: fn
         !! An N-element array containing the derivatives at xn.
-    real(real64), intent(out), dimension(:,:) :: k
+    real(real64), intent(in), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
 
     ! Local Variables
@@ -532,7 +548,7 @@ subroutine rk23_pre_step(this, prevs, sys, h, x, y, f, err)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-pure function rk32_get_order(this) result(rst)
+pure function rk23_get_order(this) result(rst)
     !! Gets the order of the integrator.
     class(runge_kutta_23), intent(in) :: this
         !! The runge_kutta_23 object.
@@ -542,7 +558,7 @@ pure function rk32_get_order(this) result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
-pure function rk32_get_is_fsal(this) result(rst)
+pure function rk23_get_is_fsal(this) result(rst)
     !! Gets a logical parameter stating if this is a first-same-as-last
     !! (FSAL) integrator.
     class(runge_kutta_23), intent(in) :: this
@@ -553,7 +569,17 @@ pure function rk32_get_is_fsal(this) result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
-subroutine rk32_init(this, neqn)
+pure function rk23_get_stage_count(this) result(rst)
+    !! Gets the stage count for this integrator.
+    class(runge_kutta_23), intent(in) :: this
+        !! The runge_kutta_23 object.
+    integer(int32) :: rst
+        !! The stage count.
+    rst = 4
+end function
+
+! ------------------------------------------------------------------------------
+subroutine rk23_init(this, neqn)
     !! Initializes private storage arrays for the integrator.
     class(runge_kutta_23), intent(inout) :: this
         !! The runge_kutta_23 object.
@@ -582,7 +608,7 @@ subroutine rk32_init(this, neqn)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine rk32_init_interp(this, neqn)
+subroutine rk23_init_interp(this, neqn)
     !! Allocates storage for the interpolation process.
     class(runge_kutta_23), intent(inout) :: this
         !! The runge_kutta_23 object.
@@ -609,7 +635,7 @@ subroutine rk32_init_interp(this, neqn)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine rk32_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
+subroutine rk23_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
     use diffeq_bsrk32_constants
     !! Attempts an integration step for this integrator.
     class(runge_kutta_23), intent(inout) :: this
@@ -661,7 +687,7 @@ subroutine rk32_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine rk32_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
+subroutine rk23_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
     use diffeq_bsrk32_constants
     !! Sets up the interpolation process.
     class(runge_kutta_23), intent(inout) :: this
@@ -682,7 +708,7 @@ subroutine rk32_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
         !! An N-element array containing the derivatives at x.
     real(real64), intent(in), dimension(:) :: fn
         !! An N-element array containing the derivatives at xn.
-    real(real64), intent(out), dimension(:,:) :: k
+    real(real64), intent(in), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
 
     ! Local Variables
@@ -703,7 +729,7 @@ subroutine rk32_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
     this%rc3 = y - this%rc1 * x**2 - this%rc2 * x
 end subroutine
 ! ------------------------------------------------------------------------------
-subroutine rk32_interp(this, x, xn, yn, fn, xn1, yn1, fn1, y)
+subroutine rk23_interp(this, x, xn, yn, fn, xn1, yn1, fn1, y)
     !! Performs the interpolation.
     class(runge_kutta_23), intent(in) :: this
         !! The runge_kutta_23 object.
@@ -868,6 +894,16 @@ pure function rk853_get_is_fsal(this) result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
+pure function rk853_get_stage_count(this) result(rst)
+    !! Gets the stage count for this integrator.
+    class(runge_kutta_853), intent(in) :: this
+        !! The runge_kutta_853 object.
+    integer(int32) :: rst
+        !! The stage count.
+    rst = 12
+end function
+
+! ------------------------------------------------------------------------------
 subroutine rk853_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
     use diffeq_rk853_constants
     !! Attempts an integration step for this integrator.
@@ -979,7 +1015,7 @@ subroutine rk853_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
         !! An N-element array containing the derivatives at x.
     real(real64), intent(in), dimension(:) :: fn
         !! An N-element array containing the derivatives at xn.
-    real(real64), intent(out), dimension(:,:) :: k
+    real(real64), intent(in), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
 
     ! Local Variables

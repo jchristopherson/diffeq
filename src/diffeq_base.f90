@@ -1170,7 +1170,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, err)
             ! integration points and the solver oversteps the endpoint.
             if (abs(xn) > abs(xmax)) then
                 ! Interpolate to get the solution at xmax
-                call this%post_step_action(sys, .true., xo, xn, y, yn, f, fn)
+                call this%post_step_action(sys, .true., xo, xn, y, yn, f, fn, k)
                 call this%interpolate(xmax, xo, y, f, xn, yn, fn, yi)
                 call this%append_to_buffer(xmax, yi, errmgr)
                 if (errmgr%has_error_occurred()) return

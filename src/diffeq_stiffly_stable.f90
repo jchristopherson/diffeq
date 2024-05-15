@@ -59,6 +59,8 @@ module diffeq_stiffly_stable
         procedure, public :: get_is_fsal => rbrk_get_is_fsal
             !! Gets a logical parameter stating if this is a first-same-as-last
             !! (FSAL) integrator.
+        procedure, public :: get_stage_count => rbrk_get_stage_count
+            !! Gets the stage count for this integrator.
         procedure, public :: estimate_next_step_size => rbrk_next_step
             !! Estimates the next step size.
     end type
@@ -351,7 +353,7 @@ subroutine rbrk_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
         !! An N-element array containing the derivatives at x.
     real(real64), intent(in), dimension(:) :: fn
         !! An N-element array containing the derivatives at xn.
-    real(real64), intent(out), dimension(:,:) :: k
+    real(real64), intent(in), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
 
     ! Local Variables
@@ -429,6 +431,16 @@ pure function rbrk_get_is_fsal(this) result(rst)
     logical :: rst
         !! True for a FSAL integrator; else, false.
     rst = .true.
+end function
+
+! ------------------------------------------------------------------------------
+pure function rbrk_get_stage_count(this) result(rst)
+    !! Gets the stage count for this integrator.
+    class(rosenbrock), intent(in) :: this
+        !! The rosenbrock object.
+    integer(int32) :: rst
+        !! The stage count.
+    rst = 6
 end function
 
 ! ------------------------------------------------------------------------------
