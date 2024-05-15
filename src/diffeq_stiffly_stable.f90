@@ -225,7 +225,7 @@ subroutine rbrk_initialize(this, n)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr)
+subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
     use diffeq_rosenbrock_constants
     !! Attempts an integration step for this integrator.
     class(rosenbrock), intent(inout) :: this
@@ -250,6 +250,8 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr)
     real(real64), intent(out), dimension(:) :: yerr
         !! An N-element array where this routine will write an estimate
         !! of the error in each equation.
+    real(real64), intent(out), dimension(:,:) :: k
+        !! An N-by-NSTAGES matrix containing the derivatives at each stage.
 
     ! Local Variables
     integer(int32) :: n
@@ -328,7 +330,7 @@ subroutine rbrk_init_interp(this, neqn)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine rbrk_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn)
+subroutine rbrk_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
     use diffeq_rosenbrock_constants
     !! Sets up the interpolation process.
     class(rosenbrock), intent(inout) :: this
@@ -349,6 +351,8 @@ subroutine rbrk_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn)
         !! An N-element array containing the derivatives at x.
     real(real64), intent(in), dimension(:) :: fn
         !! An N-element array containing the derivatives at xn.
+    real(real64), intent(out), dimension(:,:) :: k
+        !! An N-by-NSTAGES matrix containing the derivatives at each stage.
 
     ! Local Variables
     integer(int32) :: i, n

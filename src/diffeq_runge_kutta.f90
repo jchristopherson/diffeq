@@ -2,12 +2,17 @@ module diffeq_runge_kutta
     use iso_fortran_env
     use diffeq_errors
     use diffeq_base
+    use ferror
     implicit none
     private
     public :: runge_kutta_45
     public :: runge_kutta_23
     public :: runge_kutta_853
     public :: diagonally_implicit_runge_kutta
+    public :: dirk_array_value
+    public :: dirk_matrix_value
+    public :: dirk_integer_inquiry
+    public :: implicit_runge_kutta_4
 
     type, extends(single_step_integrator) :: runge_kutta_45
         !! The Dormand-Prince, Runge-Kutta integrator (4th/5th order).
@@ -122,13 +127,41 @@ module diffeq_runge_kutta
         !! The integrators based upon this type are expected to utilize a
         !! constant on their diagonal such that \( a_{ii} = \gamma \) thereby
         !! allowing for a constant iteration matrix.  If the method does not
-        !! employ such behaviors, it is recommended to overload the Newton 
-        !! solve routine and code the appropriate behavior.
+        !! employ such behaviors, it is recommended to overload the  
+        !! newton_iteration routine and code the appropriate behavior.
         integer(int32), private :: m_maxNewtonIter = 20
             ! Maximum allowable number of Newton iterations.
         real(real64), private :: m_newtonTol = 1.0d-6
             ! Newton iteration convergence tolerance.
+        real(real64), private, allocatable, dimension(:,:) :: a
+            ! The Newton iteration matrix.
+        integer(int32), private, allocatable, dimension(:) :: pvt
+            ! The LU-factorization pivot tracking array.
+        real(real64), private, allocatable, dimension(:,:) :: jac
+            ! The Jacobian matrix.
+        real(real64), private, allocatable, dimension(:,:) :: mass
+            ! The mass matrix.
+        real(real64), private, allocatable, dimension(:,:) :: f
+            ! The NEQN-by-NSTAGES matrix containing the derivative values
+            ! after for each stage of the Newton iteration.
+        logical, private :: m_updateJacobian = .true.
+            ! True if the Jacobian should be updated; else, false.
     contains
+        procedure(dirk_matrix_value), public, pass, deferred :: &
+            get_model_coefficient
+            !! Gets the requested model coefficient from the Butcher tableau.
+        procedure(dirk_array_value), public, pass, deferred :: get_weight
+            !! Gets a weighting value from the Butcher tableau.
+        procedure(dirk_array_value), public, pass, deferred :: get_node
+            !! Gets a node value from the Butcher tableau.
+        procedure(dirk_array_value), public, pass, deferred :: &
+            get_error_coefficient
+            !! Gets the requested coefficient of the error stage.
+        procedure(dirk_integer_inquiry), public, pass, deferred :: &
+            get_stage_count
+            !! Gets the stage count for the integrator.
+        procedure, private :: initialize_matrices => dirk_init_matrices
+            !! Allocates internal storage for the system matrices.
         procedure, public :: get_max_newton_iteration_count => &
             dirk_get_max_newton_iter
             !! Gets the maximum number of Newton iterations allowed.
@@ -139,6 +172,63 @@ module diffeq_runge_kutta
             !! Gets the convergence tolerance for the Newton iteration.
         procedure, public :: set_newton_tolerance => dirk_set_newton_tol
             !! Sets the convergence tolerance for the Newton iteration.
+        procedure, public :: newton_iteration => dirk_solve_newton
+            !! Solves the Newton iteration problem for the i-th stage.
+        procedure, public :: pre_step_action => dirk_form_matrix
+            !! Constructs the system matrix.
+        procedure, public :: attempt_step => dirk_attempt_step
+            !! Attempts an integration step for this integrator.
+    end type
+
+    interface
+        pure function dirk_matrix_value(this, i, j) result(rst)
+            !! Gets a value from a stored matrix.
+            use iso_fortran_env
+            import diagonally_implicit_runge_kutta
+            class(diagonally_implicit_runge_kutta), intent(in) :: this
+                !! The diagonally_implicit_runge_kutta object.
+            integer(int32), intent(in) :: i
+                !! The row index.
+            integer(int32), intent(in) :: j
+                !! The column index.
+            real(real64) :: rst
+                !! The requested value.
+        end function
+
+        pure function dirk_array_value(this, i) result(rst)
+            !! Gets a value from a stored array.
+            use iso_fortran_env
+            import diagonally_implicit_runge_kutta
+            class(diagonally_implicit_runge_kutta), intent(in) :: this
+                !! The diagonally_implicit_runge_kutta object.
+            integer(int32), intent(in) :: i
+                !! The index.
+            real(real64) :: rst
+                !! The requested value.
+        end function
+
+        pure function dirk_integer_inquiry(this) result(rst)
+            !! Gets an integer value from the diagonally_implicit_runge_kutta
+            !! object.
+            use iso_fortran_env
+            import diagonally_implicit_runge_kutta
+            class(diagonally_implicit_runge_kutta), intent(in) :: this
+                !! The diagonally_implicit_runge_kutta object.
+            integer(int32) :: rst
+                !! The requested value.
+        end function
+    end interface
+
+    type, abstract, extends(diagonally_implicit_runge_kutta) :: implicit_runge_kutta_4
+        !! A singly-diagonally implicit 4th order Runge-Kutta integrator
+        !! suitable for integrating stiff systems of differential equations.
+    contains
+        procedure, public :: get_order => irk4_get_order
+            !! Gets the order of the integrator.
+        procedure, public :: get_is_fsal => irk4_get_is_fsal
+            !! Gets a logical parameter stating if this is a first-same-as-last
+            !! (FSAL) integrator.
+        procedure, public :: get_stage_count => irk4_get_stage_count
     end type
 contains
 ! ******************************************************************************
@@ -260,7 +350,7 @@ subroutine rk45_init_interp(this, neqn)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine rk45_attempt_step(this, sys, h, x, y, f, yn, fn, yerr)
+subroutine rk45_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
     use diffeq_dprk45_constants
     !! Attempts an integration step for this integrator.
     class(runge_kutta_45), intent(inout) :: this
@@ -285,6 +375,8 @@ subroutine rk45_attempt_step(this, sys, h, x, y, f, yn, fn, yerr)
     real(real64), intent(out), dimension(:) :: yerr
         !! An N-element array where this routine will write an estimate
         !! of the error in each equation.
+    real(real64), intent(out), dimension(:,:) :: k
+        !! An N-by-NSTAGES matrix containing the derivatives at each stage.
 
     ! Local Variables
     integer(int32) :: n
@@ -321,7 +413,7 @@ subroutine rk45_attempt_step(this, sys, h, x, y, f, yn, fn, yerr)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine rk45_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn)
+subroutine rk45_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
     use diffeq_dprk45_constants
     !! Sets up the interpolation process.
     class(runge_kutta_45), intent(inout) :: this
@@ -342,6 +434,8 @@ subroutine rk45_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn)
         !! An N-element array containing the derivatives at x.
     real(real64), intent(in), dimension(:) :: fn
         !! An N-element array containing the derivatives at xn.
+    real(real64), intent(out), dimension(:,:) :: k
+        !! An N-by-NSTAGES matrix containing the derivatives at each stage.
 
     ! Local Variables
     integer(int32) :: i, n
@@ -515,7 +609,7 @@ subroutine rk32_init_interp(this, neqn)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine rk32_attempt_step(this, sys, h, x, y, f, yn, fn, yerr)
+subroutine rk32_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
     use diffeq_bsrk32_constants
     !! Attempts an integration step for this integrator.
     class(runge_kutta_23), intent(inout) :: this
@@ -540,6 +634,8 @@ subroutine rk32_attempt_step(this, sys, h, x, y, f, yn, fn, yerr)
     real(real64), intent(out), dimension(:) :: yerr
         !! An N-element array where this routine will write an estimate
         !! of the error in each equation.
+    real(real64), intent(out), dimension(:,:) :: k
+        !! An N-by-NSTAGES matrix containing the derivatives at each stage.
 
     ! Local Variables
     integer(int32) :: n
@@ -565,7 +661,7 @@ subroutine rk32_attempt_step(this, sys, h, x, y, f, yn, fn, yerr)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine rk32_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn)
+subroutine rk32_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
     use diffeq_bsrk32_constants
     !! Sets up the interpolation process.
     class(runge_kutta_23), intent(inout) :: this
@@ -586,6 +682,8 @@ subroutine rk32_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn)
         !! An N-element array containing the derivatives at x.
     real(real64), intent(in), dimension(:) :: fn
         !! An N-element array containing the derivatives at xn.
+    real(real64), intent(out), dimension(:,:) :: k
+        !! An N-by-NSTAGES matrix containing the derivatives at each stage.
 
     ! Local Variables
     integer(int32) :: n
@@ -770,7 +868,7 @@ pure function rk853_get_is_fsal(this) result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
-subroutine rk853_attempt_step(this, sys, h, x, y, f, yn, fn, yerr)
+subroutine rk853_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
     use diffeq_rk853_constants
     !! Attempts an integration step for this integrator.
     class(runge_kutta_853), intent(inout) :: this
@@ -795,6 +893,8 @@ subroutine rk853_attempt_step(this, sys, h, x, y, f, yn, fn, yerr)
     real(real64), intent(out), dimension(:) :: yerr
         !! An N-element array where this routine will write an estimate
         !! of the error in each equation.
+    real(real64), intent(out), dimension(:,:) :: k
+        !! An N-by-NSTAGES matrix containing the derivatives at each stage.
 
     ! Local Variables
     integer(int32) :: n
@@ -858,7 +958,7 @@ subroutine rk853_attempt_step(this, sys, h, x, y, f, yn, fn, yerr)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine rk853_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn)
+subroutine rk853_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
     use diffeq_rk853_constants
     !! Sets up the interpolation process.
     class(runge_kutta_853), intent(inout) :: this
@@ -879,6 +979,8 @@ subroutine rk853_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn)
         !! An N-element array containing the derivatives at x.
     real(real64), intent(in), dimension(:) :: fn
         !! An N-element array containing the derivatives at xn.
+    real(real64), intent(out), dimension(:,:) :: k
+        !! An N-by-NSTAGES matrix containing the derivatives at each stage.
 
     ! Local Variables
     integer(int32) :: i, n
@@ -1059,7 +1161,9 @@ subroutine dirk_set_newton_tol(this, x)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine dirk_solve_newton(this, i, sys, h, x, y)
+subroutine dirk_solve_newton(this, i, sys, h, x, y, f, niter, &
+    success, err)
+    use linalg, only : solve_lu
     !! Solves the Newton iteration problem for the i-th stage assuming a
     !! the coefficient matrix is constant on its diagonal such that 
     !! \( a_{ii} = \gamma \).  This constraint allows for a constant iteration
@@ -1069,21 +1173,309 @@ subroutine dirk_solve_newton(this, i, sys, h, x, y)
     integer(int32), intent(in) :: i
         !! The number of the stage to solve.
     class(ode_container), intent(inout) :: sys
+        !! The N-element pivot tracking array from the LU factorization
+        !! process.
+    real(real64), intent(in) :: h
+        !! The current step size.
+    real(real64), intent(in) :: x
+        !! The current value of the independent variable.
+    real(real64), intent(inout), dimension(:) :: y
+        !! An N-element array containing the initial guess at the solution.
+        !! On output, the updated solution estimate.
+    real(real64), intent(inout), dimension(:) :: f
+        !! An N-element array, that on input, contains the values of the 
+        !! derivatives at x.  On output, the updated derivative estimate.
+    integer(int32), intent(out) :: niter
+        !! The number of iterations performed.
+    logical, intent(out) :: success
+        !! Returns true if the iteration process successfully converged; else,
+        !! false if the iteration could not converge.
+    class(errors), intent(inout), optional, target :: err
+        !! An optional errors-based object that if provided 
+        !! can be used to retrieve information relating to any errors 
+        !! encountered during execution. If not provided, a default 
+        !! implementation of the errors class is used internally to 
+        !! provide error handling.  Possible errors and warning messages
+        !! that may be encountered are as follows.
+        !!
+        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a 
+        !!      memory allocation issue.
+
+    ! Local Variables
+    integer(int32) :: j, n, flag, maxiter
+    real(real64) :: tol, z, alpha
+    real(real64), allocatable, dimension(:) :: w, dy
+    class(errors), pointer :: errmgr
+    type(errors), target :: deferr
+    
+    ! Initialization
+    if (present(err)) then
+        errmgr => err
+    else
+        errmgr => deferr
+    end if
+    n = size(y)
+    maxiter = this%get_max_newton_iteration_count()
+    tol = this%get_newton_tolerance()
+    alpha = this%get_model_coefficient(i, i)
+    success = .false.
+    allocate(w(n), dy(n), stat = flag, source = 0.0d0)
+    if (flag /= 0) then
+        call report_memory_error(errmgr, "dirk_solve_newton", flag)
+        return
+    end if
+
+    ! Process
+    do j = 1, i - 1
+        w = w + this%get_model_coefficient(i,j) * f
+    end do
+    w = y + h * w
+    z = x + this%get_node(i) * h
+    call sys%fcn(z, w, f)
+
+    ! Iteration
+    do niter = 1, maxiter
+        ! Compute the right-hand-side
+        dy = w + h * alpha * f - y
+
+        ! Solve the system
+        call solve_lu(this%a, this%pvt, dy)
+
+        ! Update the solution
+        y = y + dy
+        call sys%fcn(z, y, f)
+
+        ! Check for convergence
+        if (norm2(dy) < tol) then
+            success = .true.
+            exit
+        end if
+    end do
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine dirk_init_matrices(this, n, usemass)
+    !! Allocates internal storage for the system matrices.
+    class(diagonally_implicit_runge_kutta), intent(inout) :: this
+        !! The diagonally_implicit_runge_kutta object.
+    integer(int32), intent(in) :: n
+        !! The number of equations being integrated.
+    logical, intent(in) :: usemass
+        !! True if a mass matrix is used; else, false.
+
+    ! Local Variables
+    integer(int32) :: ns
+
+    ! Process
+    ns = this%get_stage_count()
+    if (allocated(this%jac)) then
+        if (size(this%jac, 1) == n .and. size(this%jac, 2) == n) then
+            ! All is good
+            return
+        else
+            deallocate(this%jac)
+            if (allocated(this%mass)) deallocate(this%mass)
+            deallocate(this%pvt)
+            deallocate(this%a)
+            deallocate(this%f)
+        end if
+    end if
+    if (usemass) then
+        allocate( &
+            this%jac(n, n), &
+            this%mass(n, n), &
+            this%pvt(n), &
+            this%a(n, n), &
+            this%f(n, ns) &
+        )
+    else
+        allocate( &
+            this%jac(n, n), &
+            this%pvt(n), &
+            this%a(n, n), &
+            this%f(n, ns) &
+        )
+    end if
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine dirk_form_matrix(this, prevs, sys, h, x, y, f, err)
+    use linalg, only : lu_factor
+    !! Constructs the system matrix of the form \( A = f M - J \), and then 
+    !! computes it's LU factorization.  The LU-factored form of A is stored 
+    !! internally.
+    class(diagonally_implicit_runge_kutta), intent(inout) :: this
+        !! The diagonally_implicit_runge_kutta object.
+    logical, intent(in) :: prevs
+        !! Defines the status of the previous step.  The value is true if the
+        !! previous step was successful; else, false if the previous step 
+        !! failed.
+    class(ode_container), intent(inout) :: sys
         !! The ode_container object containing the ODE's to integrate.
     real(real64), intent(in) :: h
         !! The current step size.
     real(real64), intent(in) :: x
         !! The current value of the independent variable.
     real(real64), intent(in), dimension(:) :: y
-        !! An N-element array containing the current values of the dependent
-        !! variables.
+        !! An N-element array containing the current solution at x.
+    real(real64), intent(in), dimension(:) :: f
+        !! An N-element array containing the values of the derivatives at x.
+    class(errors), intent(inout), optional, target :: err
+        !! An optional errors-based object that if provided 
+        !! can be used to retrieve information relating to any errors 
+        !! encountered during execution. If not provided, a default 
+        !! implementation of the errors class is used internally to 
+        !! provide error handling.
+
+    ! Local Variables
+    integer(int32) :: i, n, ns
+    logical :: useMass
+    real(real64) :: fac
+    class(errors), pointer :: errmgr
+    type(errors), target :: deferr
+
+    ! Quick Return
+    if (.not.this%m_updateJacobian) return
+    
+    ! Initialization
+    if (present(err)) then
+        errmgr => err
+    else
+        errmgr => deferr
+    end if
+    n = size(y)
+    useMass = associated(sys%mass_matrix)
+    call this%initialize_matrices(n, useMass)
+    ns = this%get_stage_count()
+    fac = this%get_model_coefficient(ns, ns) * h
+
+    ! Process
+    call sys%compute_jacobian(x, y, this%jac, errmgr)
+    if (errmgr%has_error_occurred()) return
+    if (useMass) then
+        this%a = this%mass - fac * this%jac
+    else
+        this%a = -fac * this%jac
+        do i = 1, n
+            this%a(i,i) = this%a(i,i) + 1.0d0
+        end do
+    end if
+
+    ! Compute the LU factorization
+    call lu_factor(this%a, this%pvt)
+
+    ! The Jacobian is updated
+    this%m_updateJacobian = .false.
+end subroutine
+! ------------------------------------------------------------------------------
+subroutine dirk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
+    !! Attempts an integration step for this integrator.
+    class(diagonally_implicit_runge_kutta), intent(inout) :: this
+        !! The diagonally_implicit_runge_kutta object.
+    class(ode_container), intent(inout) :: sys
+        !! The ode_container object containing the ODE's to integrate.
+    real(real64), intent(in) :: h
+        !! The current step size.
+    real(real64), intent(in) :: x
+        !! The current value of the independent variable.
+    real(real64), intent(in), dimension(:) :: y
+        !! An N-element array containing the current solution at x.
+    real(real64), intent(in), dimension(:) :: f
+        !! An N-element array containing the values of the derivatives
+        !! at x.
+    real(real64), intent(out), dimension(:) :: yn
+        !! An N-element array where this routine will write the next
+        !! solution estimate at x + h.
+    real(real64), intent(out), dimension(:) :: fn
+        !! An N-element array where this routine will write the next
+        !! derivative estimate at x + h.
+    real(real64), intent(out), dimension(:) :: yerr
+        !! An N-element array where this routine will write an estimate
+        !! of the error in each equation.
+    real(real64), intent(out), dimension(:,:) :: k
+        !! An N-by-NSTAGES matrix containing the derivatives at each stage.
+
+    ! Local Variables
+    logical :: success
+    integer(int32) :: i, n, ns, niter, maxiter, itertracking
+
+    ! Initialization
+    n = size(y)
+    ns = this%get_stage_count()
+    maxiter = this%get_max_newton_iteration_count()
+
+    ! Cycle over each stage and solve the Newton problem
+    itertracking = 0
+    yn = y  ! use the previously accepted solution as an initial guess
+    this%f(:,1) = f ! along with the corresponding derivatives
+    do i = 1, ns
+        call this%newton_iteration(i, sys, h, x, yn, this%f(:,i), niter, &
+            success)
+        itertracking = max(niter, itertracking)
+        if (.not.success) exit
+    end do
+
+    ! Do we need to update the Jacobian?
+    if (.not.success) then
+        ! No convergence could be achieved - force a Jacobian update
+        this%m_updateJacobian = .true.
+
+        ! Do we need to update the step size?
+    end if
+
+    ! Update the solution estimate
+    do i = 1, ns
+        if (i == 1) then
+            yn = this%get_weight(i) * this%f(:,i)
+            yerr = this%get_error_coefficient(i) * this%f(:,i)
+        else
+            yn = yn + this%get_weight(i) * this%f(:,i)
+            yerr = yerr + this%get_error_coefficient(i) * this%f(:,i)
+        end if
+    end do
+    yn = y + h * yn
+    yerr = h * yerr
+
+    ! Do we need to update the Jacobian
+    if (itertracking > maxiter / 2) then
+        ! We're having a tough enough time to justify a change
+        this%m_updateJacobian = .true.
+    end if
 end subroutine
 
+! ******************************************************************************
+! 4th ORDER IMPLICIT RUNGE KUTTA
 ! ------------------------------------------------------------------------------
+pure function irk4_get_order(this) result(rst)
+    !! Gets the order of the integrator.
+    class(implicit_runge_kutta_4), intent(in) :: this
+        !! The implicit_runge_kutta_4 object.
+    integer(int32) :: rst
+        !! The order.
+    rst = 4
+end function
 
 ! ------------------------------------------------------------------------------
+pure function irk4_get_is_fsal(this) result(rst)
+    !! Gets a logical parameter stating if this is a first-same-as-last
+    !! (FSAL) integrator.
+    class(implicit_runge_kutta_4), intent(in) :: this
+        !! The implicit_runge_kutta_4 object.
+    logical :: rst
+        !! True for a FSAL integrator; else, false.
+    rst = .true.
+end function
+
 
 ! ------------------------------------------------------------------------------
+pure function irk4_get_stage_count(this) result(rst)
+    !! Gets the stage count for the integrator.
+    class(implicit_runge_kutta_4), intent(in) :: this
+        !! The implicit_runge_kutta_4 object.
+    integer(int32) :: rst
+        !! The stage count.
+    rst = 6
+end function
 
 ! ------------------------------------------------------------------------------
 end module

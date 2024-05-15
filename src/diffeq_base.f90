@@ -17,6 +17,7 @@ module diffeq_base
     public :: single_step_post_step_routine
     public :: single_step_pre_step_routine
     public :: single_step_interpolate
+    public :: single_step_integer_inquiry
     public :: single_step_integrator
 
 ! ------------------------------------------------------------------------------
@@ -235,12 +236,15 @@ module diffeq_base
             pre_step_action
             !! Provides a routine for performing any actions, such as setting
             !! up Jacobian calculations.
+        procedure(single_step_integer_inquiry), public, pass, deferred :: &
+            get_stage_count
+            !! Gets the number of stages used by the integrator.
         procedure, public :: solve => ssi_ode_solver
             !! Solves the supplied system of ODE's.
     end type
 
     interface
-        subroutine attempt_single_step(this, sys, h, x, y, f, yn, fn, yerr)
+        subroutine attempt_single_step(this, sys, h, x, y, f, yn, fn, yerr, k)
             use iso_fortran_env
             import single_step_integrator
             import ode_container
@@ -267,6 +271,9 @@ module diffeq_base
             real(real64), intent(out), dimension(:) :: yerr
                 !! An N-element array where this routine will write an estimate
                 !! of the error in each equation.
+            real(real64), intent(out), dimension(:,:) :: k
+                !! An N-by-NSTAGES matrix containing the derivatives at each
+                !! stage.
         end subroutine
 
         pure function get_single_step_logical_parameter(this) result(rst)
@@ -279,7 +286,7 @@ module diffeq_base
         end function
 
         subroutine single_step_post_step_routine(this, sys, dense, x, xn, y, &
-            yn, f, fn)
+            yn, f, fn, k)
             !! Provides a routine for performing any actions, such as setting
             !! up interpolation, after successful completion of a step.
             use iso_fortran_env
@@ -303,6 +310,9 @@ module diffeq_base
                 !! An N-element array containing the derivatives at x.
             real(real64), intent(in), dimension(:) :: fn
                 !! An N-element array containing the derivatives at xn.
+            real(real64), intent(in), dimension(:,:) :: k
+                !! An N-by-NSTAGES matrix containing the derivatives at each
+                !! stage.
         end subroutine
 
         subroutine single_step_interpolate(this, x, xn, yn, fn, xn1, yn1, &
@@ -365,6 +375,16 @@ module diffeq_base
                 !! implementation of the errors class is used internally to 
                 !! provide error handling.
         end subroutine
+
+        pure function single_step_integer_inquiry(this) result(rst)
+            !! Gets an integer from the integrator.
+            use iso_fortran_env
+            import single_step_integrator
+            class(single_step_integrator), intent(in) :: this
+                !! The single_step_integrator object.
+            integer(int32) :: rst
+                !! The integer value.
+        end function
     end interface
     
 ! ------------------------------------------------------------------------------
@@ -1038,9 +1058,10 @@ subroutine ssi_ode_solver(this, sys, x, iv, err)
 
     ! Local Variables
     logical :: dense, success
-    integer(int32) :: i, j, n, neqn, flag, nsteps
+    integer(int32) :: i, j, n, neqn, flag, nsteps, nstages
     real(real64) :: h, xo, xn, xmax, ei, eold
     real(real64), allocatable, dimension(:) :: f, y, yn, fn, yerr, yi
+    real(real64), allocatable, dimension(:,:) :: k
     class(errors), pointer :: errmgr
     type(errors), target :: deferr
     
@@ -1071,9 +1092,18 @@ subroutine ssi_ode_solver(this, sys, x, iv, err)
     eold = 1.0d-4
     dense = (n > 2)
     nsteps = this%get_step_limit()
+    nstages = this%get_stage_count()
     
     ! Memory Allocations
-    allocate(f(neqn), y(neqn), yn(neqn), fn(neqn), yerr(neqn), stat = flag)
+    allocate( &
+        f(neqn), &
+        y(neqn), &
+        yn(neqn), &
+        fn(neqn), &
+        yerr(neqn), &
+        k(neqn, nstages),  &
+        stat = flag &
+    )
     if (flag == 0 .and. dense) allocate(yi(neqn), stat = flag)
     if (flag /= 0) then
         call report_memory_error(errmgr, "ssi_ode_solver", flag)
@@ -1099,7 +1129,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, err)
         if (errmgr%has_error_occurred()) return
         
         ! Attempt a step
-        call this%attempt_step(sys, h, xo, y, f, yn, fn, yerr)
+        call this%attempt_step(sys, h, xo, y, f, yn, fn, yerr, k)
         xn = xo + h
 
         ! Compute a normalized error value.  A value < 1 indicates success
@@ -1115,7 +1145,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, err)
 
         ! If we're here, the step has been successful.  Take any post-step
         ! action such as setting up interpolation routines, etc.
-        call this%post_step_action(sys, dense, xo, xn, y, yn, f, fn)
+        call this%post_step_action(sys, dense, xo, xn, y, yn, f, fn, k)
 
         ! Do we need to interpolate for dense output, or can we just store
         ! values and move on
