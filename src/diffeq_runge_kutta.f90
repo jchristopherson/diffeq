@@ -7,6 +7,7 @@ module diffeq_runge_kutta
     public :: runge_kutta_45
     public :: runge_kutta_23
     public :: runge_kutta_853
+    public :: diagonally_implicit_runge_kutta
 
     type, extends(single_step_integrator) :: runge_kutta_45
         !! The Dormand-Prince, Runge-Kutta integrator (4th/5th order).
@@ -112,6 +113,33 @@ module diffeq_runge_kutta
             !! Computes the norm of the scaled error estimate.
     end type
 
+    type, abstract, extends(single_step_integrator) :: &
+        diagonally_implicit_runge_kutta
+        !! Defines a diagonally implicit Runge-Kutta (DIRK) type integrator.
+        !!
+        !! Remarks:
+        !!
+        !! The integrators based upon this type are expected to utilize a
+        !! constant on their diagonal such that \( a_{ii} = \gamma \) thereby
+        !! allowing for a constant iteration matrix.  If the method does not
+        !! employ such behaviors, it is recommended to overload the Newton 
+        !! solve routine and code the appropriate behavior.
+        integer(int32), private :: m_maxNewtonIter = 20
+            ! Maximum allowable number of Newton iterations.
+        real(real64), private :: m_newtonTol = 1.0d-6
+            ! Newton iteration convergence tolerance.
+    contains
+        procedure, public :: get_max_newton_iteration_count => &
+            dirk_get_max_newton_iter
+            !! Gets the maximum number of Newton iterations allowed.
+        procedure, public :: set_max_newton_iteration_count => &
+            dirk_set_max_newton_iter
+            !! Sets the maximum number of Newton iterations allowed.
+        procedure, public :: get_newton_tolerance => dirk_get_newton_tol
+            !! Gets the convergence tolerance for the Newton iteration.
+        procedure, public :: set_newton_tolerance => dirk_set_newton_tol
+            !! Sets the convergence tolerance for the Newton iteration.
+    end type
 contains
 ! ******************************************************************************
 ! RUNGE_KUTTA_45
@@ -987,5 +1015,75 @@ pure function rk853_estimate_error(this, y, yest, yerr) result(rst)
     if (denom <= 0.0d0) denom = 1.0d0
     rst = err * sqrt(1.0d0 / (n * denom)) * abs(this%m_stepSize)
 end function
+
+! ******************************************************************************
+! DIAGONALLY IMPLICIT INTEGRATOR
+! ------------------------------------------------------------------------------
+pure function dirk_get_max_newton_iter(this) result(rst)
+    !! Gets the maximum number of Newton iterations allowed.
+    class(diagonally_implicit_runge_kutta), intent(in) :: this
+        !! The diagonally_implicit_runge_kutta object.
+    integer(int32) :: rst
+        !! The iteration limit.
+    rst = this%m_maxNewtonIter
+end function
+
+! --------------------
+subroutine dirk_set_max_newton_iter(this, x)
+    !! Sets the maximum number of Newton iterations allowed.
+    class(diagonally_implicit_runge_kutta), intent(inout) :: this
+        !! The diagonally_implicit_runge_kutta object.
+    integer(int32), intent(in) :: x
+        !! The iteration limit
+    this%m_maxNewtonIter = x
+end subroutine
+
+! ------------------------------------------------------------------------------
+pure function dirk_get_newton_tol(this) result(rst)
+    !! Gets the convergence tolerance for the Newton iteration.
+    class(diagonally_implicit_runge_kutta), intent(in) :: this
+        !! The diagonally_implicit_runge_kutta object.
+    real(real64) :: rst
+        !! The tolerance.
+    rst = this%m_newtonTol
+end function
+
+! --------------------
+subroutine dirk_set_newton_tol(this, x)
+    !! Sets the convergence tolerance for the Newton iteration.
+    class(diagonally_implicit_runge_kutta), intent(inout) :: this
+        !! The diagonally_implicit_runge_kutta object.
+    real(real64), intent(in) :: x
+        !! The tolerance.
+    this%m_newtonTol = x
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine dirk_solve_newton(this, i, sys, h, x, y)
+    !! Solves the Newton iteration problem for the i-th stage assuming a
+    !! the coefficient matrix is constant on its diagonal such that 
+    !! \( a_{ii} = \gamma \).  This constraint allows for a constant iteration
+    !! matrix.
+    class(diagonally_implicit_runge_kutta), intent(in) :: this
+        !! The diagonally_implicit_runge_kutta object.
+    integer(int32), intent(in) :: i
+        !! The number of the stage to solve.
+    class(ode_container), intent(inout) :: sys
+        !! The ode_container object containing the ODE's to integrate.
+    real(real64), intent(in) :: h
+        !! The current step size.
+    real(real64), intent(in) :: x
+        !! The current value of the independent variable.
+    real(real64), intent(in), dimension(:) :: y
+        !! An N-element array containing the current values of the dependent
+        !! variables.
+end subroutine
+
+! ------------------------------------------------------------------------------
+
+! ------------------------------------------------------------------------------
+
+! ------------------------------------------------------------------------------
+
 ! ------------------------------------------------------------------------------
 end module

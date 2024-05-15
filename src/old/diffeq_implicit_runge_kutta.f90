@@ -754,7 +754,7 @@ subroutine sdirk_solve_newton(this, sys, i, h, x, y, yw, accept, niter)
     this%m_w = 0.0d0
     do j = 1, i - 1
         alpha = this%a(i,j)
-        this%m_w = this%m_w + this%a(i,j) * this%f(:,i)
+        this%m_w = this%m_w + alpha * this%f(:,i)
     end do
     this%m_w = y + h * this%m_w
     call sys%ode(z, this%m_w, this%f(:,i))

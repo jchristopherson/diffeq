@@ -22,6 +22,7 @@ module diffeq
     public :: runge_kutta_45
     public :: runge_kutta_23
     public :: runge_kutta_853
+    public :: diagonally_implicit_runge_kutta
     public :: rosenbrock
     
     

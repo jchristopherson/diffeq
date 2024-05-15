@@ -18,7 +18,6 @@ module diffeq_base
     public :: single_step_pre_step_routine
     public :: single_step_interpolate
     public :: single_step_integrator
-    public :: implicit_single_step_integrator
 
 ! ------------------------------------------------------------------------------
     interface
@@ -367,27 +366,6 @@ module diffeq_base
                 !! provide error handling.
         end subroutine
     end interface
-
-! ------------------------------------------------------------------------------
-    type, abstract, extends(single_step_integrator) :: &
-        implicit_single_step_integrator
-        !! Defines an implicit, single-step integrator.
-        integer(int32), private :: m_maxNewtonIter = 20
-            ! Maximum allowable number of Newton iterations.
-        real(real64), private :: m_newtonTol = 1.0d-6
-            ! Newton iteration convergence tolerance.
-    contains
-        procedure, public :: get_max_newton_iteration_count => &
-            issi_get_max_newton_iter
-            !! Gets the maximum number of Newton iterations allowed.
-        procedure, public :: set_max_newton_iteration_count => &
-            issi_set_max_newton_iter
-            !! Sets the maximum number of Newton iterations allowed.
-        procedure, public :: get_newton_tolerance => issi_get_newton_tol
-            !! Gets the convergence tolerance for the Newton iteration.
-        procedure, public :: set_newton_tolerance => issi_set_newton_tol
-            !! Sets the convergence tolerance for the Newton iteration.
-    end type
     
 ! ------------------------------------------------------------------------------
     ! TO DO: multi-step integrator
@@ -1137,7 +1115,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, err)
 
         ! If we're here, the step has been successful.  Take any post-step
         ! action such as setting up interpolation routines, etc.
-♦        call this%post_step_action(sys, dense, xo, xn, y, yn, f, fn)
+        call this%post_step_action(sys, dense, xo, xn, y, yn, f, fn)
 
         ! Do we need to interpolate for dense output, or can we just store
         ! values and move on
@@ -1202,48 +1180,6 @@ subroutine ssi_ode_solver(this, sys, x, iv, err)
     ! End
 100 continue
     return
-end subroutine
-
-! ******************************************************************************
-! IMPLICIT SINGLE-STEP INTEGRATOR
-! ------------------------------------------------------------------------------
-pure function issi_get_max_newton_iter(this) result(rst)
-    !! Gets the maximum number of Newton iterations allowed.
-    class(implicit_single_step_integrator), intent(in) :: this
-        !! The implicit_single_step_integrator object.
-    integer(int32) :: rst
-        !! The iteration limit.
-    rst = this%m_maxNewtonIter
-end function
-
-! --------------------
-subroutine issi_set_max_newton_iter(this, x)
-    !! Sets the maximum number of Newton iterations allowed.
-    class(implicit_single_step_integrator), intent(inout) :: this
-        !! The implicit_single_step_integrator object.
-    integer(int32), intent(in) :: x
-        !! The iteration limit
-    this%m_maxNewtonIter = x
-end subroutine
-
-! ------------------------------------------------------------------------------
-pure function issi_get_newton_tol(this) result(rst)
-    !! Gets the convergence tolerance for the Newton iteration.
-    class(implicit_single_step_integrator), intent(in) :: this
-        !! The implicit_single_step_integrator object.
-    real(real64) :: rst
-        !! The tolerance.
-    rst = this%m_newtonTol
-end function
-
-! --------------------
-subroutine issi_set_newton_tol(this, x)
-    !! Sets the convergence tolerance for the Newton iteration.
-    class(implicit_single_step_integrator), intent(inout) :: this
-        !! The implicit_single_step_integrator object.
-    real(real64), intent(in) :: x
-        !! The tolerance.
-    this%m_newtonTol = x
 end subroutine
 
 ! ------------------------------------------------------------------------------
