@@ -1137,7 +1137,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, err)
 
         ! If we're here, the step has been successful.  Take any post-step
         ! action such as setting up interpolation routines, etc.
-        call this%post_step_action(sys, dense, xo, xn, y, yn, f, fn)
+♦        call this%post_step_action(sys, dense, xo, xn, y, yn, f, fn)
 
         ! Do we need to interpolate for dense output, or can we just store
         ! values and move on
