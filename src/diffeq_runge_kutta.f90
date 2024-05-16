@@ -12,6 +12,7 @@ module diffeq_runge_kutta
     public :: dirk_array_value
     public :: dirk_matrix_value
     public :: dirk_integer_inquiry
+    public :: dirk_action
     public :: implicit_runge_kutta_4
 
     type, extends(single_step_integrator) :: runge_kutta_45
@@ -126,9 +127,6 @@ module diffeq_runge_kutta
             ! The Jacobian matrix.
         real(real64), private, allocatable, dimension(:,:) :: mass
             ! The mass matrix.
-        real(real64), private, allocatable, dimension(:,:) :: f
-            ! The NEQN-by-NSTAGES matrix containing the derivative values
-            ! after for each stage of the Newton iteration.
         logical, private :: m_updateJacobian = .true.
             ! True if the Jacobian should be updated; else, false.
     contains
@@ -145,6 +143,8 @@ module diffeq_runge_kutta
         procedure(dirk_integer_inquiry), public, pass, deferred :: &
             get_stage_count
             !! Gets the stage count for the integrator.
+        procedure(dirk_action), public, pass, deferred :: fill_table
+            !! Fills out the Butcher tableau for this integrator object.
         procedure, private :: initialize_matrices => dirk_init_matrices
             !! Allocates internal storage for the system matrices.
         procedure, public :: get_max_newton_iteration_count => &
@@ -202,18 +202,54 @@ module diffeq_runge_kutta
             integer(int32) :: rst
                 !! The requested value.
         end function
+
+        subroutine dirk_action(this)
+            !! Performs an action on the integrator object.
+            import diagonally_implicit_runge_kutta
+            class(diagonally_implicit_runge_kutta), intent(inout) :: this
+                !! The diagonally_implicit_runge_kutta object.
+        end subroutine
     end interface
 
-    type, abstract, extends(diagonally_implicit_runge_kutta) :: implicit_runge_kutta_4
+    type, extends(diagonally_implicit_runge_kutta) :: implicit_runge_kutta_4
         !! A singly-diagonally implicit 4th order Runge-Kutta integrator
         !! suitable for integrating stiff systems of differential equations.
+        real(real64), private :: m_coeffs(6,6)
+            ! Butcher tableau coefficients.
+        real(real64), private :: m_weights(6)
+            ! Butcher tableau weighting factors.
+        real(real64), private :: m_nodes(6)
+            ! Butcher tableau nodes.
+        real(real64), private :: m_errorCoeffs(6)
+            ! Error estimator coefficients.
+        real(real64), private :: m_interpCoeffs(4,6)
+            ! Interpolation constants
+        logical, private :: m_filledTable = .false.
+            ! True if the tableau variables have been populated; else, false.
+        real(real64), private, allocatable, dimension(:,:) :: m_k
+            ! An N-by-NSTAGES matrix containing the derivatives at each stage.
     contains
+        procedure, public :: fill_table => irk4_fill_coeffs
+            !! Fills out the Butcher tableau for this integrator object.
         procedure, public :: get_order => irk4_get_order
             !! Gets the order of the integrator.
         procedure, public :: get_is_fsal => irk4_get_is_fsal
             !! Gets a logical parameter stating if this is a first-same-as-last
             !! (FSAL) integrator.
         procedure, public :: get_stage_count => irk4_get_stage_count
+            !! Gets the number of stages for this integrator.
+        procedure, public :: post_step_action => irk4_set_up_interp
+            !! Sets up the interpolation process.
+        procedure, public :: interpolate => irk4_interp
+            !! Performs the interpolation.
+        procedure, public :: get_model_coefficient => irk4_get_model_coeff
+            !! Gets the requested model coefficient from the Butcher tableau.
+        procedure, public :: get_weight => irk4_get_weight
+            !! Gets a weighting value from the Butcher tableau.
+        procedure, public :: get_node => irk4_get_node
+            !! Gets a node value from the Butcher tableau.
+        procedure, public :: get_error_coefficient => irk4_get_error_coeff
+            !! Gets the requested coefficient of the error stage.
     end type
 contains
 ! ******************************************************************************
@@ -1079,7 +1115,7 @@ subroutine dirk_solve_newton(this, i, sys, h, x, y, f, niter, &
     !! the coefficient matrix is constant on its diagonal such that 
     !! \( a_{ii} = \gamma \).  This constraint allows for a constant iteration
     !! matrix.
-    class(diagonally_implicit_runge_kutta), intent(in) :: this
+    class(diagonally_implicit_runge_kutta), intent(inout) :: this
         !! The diagonally_implicit_runge_kutta object.
     integer(int32), intent(in) :: i
         !! The number of the stage to solve.
@@ -1136,6 +1172,9 @@ subroutine dirk_solve_newton(this, i, sys, h, x, y, f, niter, &
         return
     end if
 
+    ! Ensure the tableau is filled
+    call this%fill_table()
+
     ! Process
     do j = 1, i - 1
         w = w + this%get_model_coefficient(i,j) * f
@@ -1188,7 +1227,6 @@ subroutine dirk_init_matrices(this, n, usemass)
             if (allocated(this%mass)) deallocate(this%mass)
             deallocate(this%pvt)
             deallocate(this%a)
-            deallocate(this%f)
         end if
     end if
     if (usemass) then
@@ -1196,15 +1234,13 @@ subroutine dirk_init_matrices(this, n, usemass)
             this%jac(n, n), &
             this%mass(n, n), &
             this%pvt(n), &
-            this%a(n, n), &
-            this%f(n, ns) &
+            this%a(n, n) &
         )
     else
         allocate( &
             this%jac(n, n), &
             this%pvt(n), &
-            this%a(n, n), &
-            this%f(n, ns) &
+            this%a(n, n) &
         )
     end if
 end subroutine
@@ -1247,6 +1283,9 @@ subroutine dirk_form_matrix(this, prevs, sys, h, x, y, f, err)
 
     ! Quick Return
     if (.not.this%m_updateJacobian) return
+
+    ! Ensure the tableau is filled
+    call this%fill_table()
     
     ! Initialization
     if (present(err)) then
@@ -1315,12 +1354,15 @@ subroutine dirk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
     ns = this%get_stage_count()
     maxiter = this%get_max_newton_iteration_count()
 
+    ! Ensure the tableau is filled
+    call this%fill_table()
+
     ! Cycle over each stage and solve the Newton problem
     itertracking = 0
     yn = y  ! use the previously accepted solution as an initial guess
-    this%f(:,1) = f ! along with the corresponding derivatives
+    k(:,1) = f ! along with the corresponding derivatives
     do i = 1, ns
-        call this%newton_iteration(i, sys, h, x, yn, this%f(:,i), niter, &
+        call this%newton_iteration(i, sys, h, x, yn, k(:,i), niter, &
             success)
         itertracking = max(niter, itertracking)
         if (.not.success) exit
@@ -1337,11 +1379,11 @@ subroutine dirk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
     ! Update the solution estimate
     do i = 1, ns
         if (i == 1) then
-            yn = this%get_weight(i) * this%f(:,i)
-            yerr = this%get_error_coefficient(i) * this%f(:,i)
+            yn = this%get_weight(i) * k(:,i)
+            yerr = this%get_error_coefficient(i) * k(:,i)
         else
-            yn = yn + this%get_weight(i) * this%f(:,i)
-            yerr = yerr + this%get_error_coefficient(i) * this%f(:,i)
+            yn = yn + this%get_weight(i) * k(:,i)
+            yerr = yerr + this%get_error_coefficient(i) * k(:,i)
         end if
     end do
     yn = y + h * yn
@@ -1386,6 +1428,252 @@ pure function irk4_get_stage_count(this) result(rst)
     integer(int32) :: rst
         !! The stage count.
     rst = 6
+end function
+
+! ------------------------------------------------------------------------------
+subroutine irk4_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
+    !! Sets up the interpolation process.
+    class(implicit_runge_kutta_4), intent(inout) :: this
+        !! The implicit_runge_kutta_4 object.
+    class(ode_container), intent(inout) :: sys
+        !! The ode_container object containing the ODE's to integrate.
+    logical, intent(in) :: dense
+        !! Determines if dense output is requested (true); else, false.
+    real(real64), intent(in) :: x
+        !! The previous value of the independent variable.
+    real(real64), intent(in) :: xn
+        !! The current value of the independent variable.
+    real(real64), intent(in), dimension(:) :: y
+        !! An N-element array containing the solution at x.
+    real(real64), intent(in), dimension(:) :: yn
+        !! An N-element array containing the solution at xn.
+    real(real64), intent(in), dimension(:) :: f
+        !! An N-element array containing the derivatives at x.
+    real(real64), intent(in), dimension(:) :: fn
+        !! An N-element array containing the derivatives at xn.
+    real(real64), intent(inout), dimension(:,:) :: k
+        !! An N-by-NSTAGES matrix containing the derivatives at each stage.
+
+    ! Local Variables
+    integer(int32) :: n, nstages
+
+    ! Initialization
+    n = size(y)
+    nstages = this%get_stage_count()
+    if (allocated(this%m_k)) then
+        ! Ensure it's sized appropriately
+        if (size(this%m_k, 1) /= n .or. size(this%m_k, 2) /= nstages) then
+            deallocate(this%m_k)
+            allocate(this%m_k(n, nstages))
+        end if
+    else
+        allocate(this%m_k(n, nstages))
+    end if
+    this%m_k = k    ! store the derivative values for use by the interpolation
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine irk4_interp(this, x, xn, yn, fn, xn1, yn1, fn1, y)
+    !! Performs the interpolation.
+    class(implicit_runge_kutta_4), intent(in) :: this
+        !! The implicit_runge_kutta_4 object.
+    real(real64), intent(in) :: x
+        !! The value of the independent variable at which to compute
+        !! the interpolation.
+    real(real64), intent(in) :: xn
+        !! The previous value of the independent variable at which the
+        !! solution is computed.
+    real(real64), intent(in), dimension(:) :: yn
+        !! An N-element array containing the solution at xn.
+    real(real64), intent(in), dimension(:) :: fn
+        !! An N-element array containing the derivatives at xn.
+    real(real64), intent(in) :: xn1
+        !! The value of the independent variable at xn + h.
+    real(real64), intent(in), dimension(:) :: yn1
+        !! An N-element array containing the solution at xn + h.
+    real(real64), intent(in), dimension(:) :: fn1
+        !! An N-element array containing the derivatives at xn + h.
+    real(real64), intent(out), dimension(:) :: y
+        !! An N-element array where this routine will write the 
+        !! solution values interpolated at x.
+
+    ! Local Variables
+    integer(int32) :: i, j, norder, nstages, n
+    real(real64) :: h, theta, bi
+    real(real64), allocatable, dimension(:) :: w
+
+    ! Initialization
+    n = size(yn)
+    norder = this%get_order()
+    nstages = this%get_stage_count()
+    h = xn1 - xn
+    theta = (x - xn) / h
+    allocate(w(n), source = 0.0d0)
+
+    ! Process
+    do i = 1, nstages
+        bi = 0.0d0
+        do j = 1, norder
+            bi = bi + this%m_interpCoeffs(j,i) * theta**j
+        end do
+        w = w + bi * this%m_k(:,i)
+    end do
+    y = yn + h * w
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine irk4_fill_coeffs(this)
+    use diffeq_sdirk4_constants
+    !! Fills the internal arrays storing the model coefficients.
+    class(implicit_runge_kutta_4), intent(inout) :: this
+        !! The implicit_runge_kutta_4 object.
+
+    ! Quick Return
+    if (this%m_filledTable) return
+
+    ! A
+    this%m_coeffs = 0.0d0
+
+    this%m_coeffs(2,1) = a21
+    this%m_coeffs(2,2) = a22
+
+    this%m_coeffs(3,1) = a31
+    this%m_coeffs(3,2) = a32
+    this%m_coeffs(3,3) = a33
+
+    this%m_coeffs(4,1) = a41
+    this%m_coeffs(4,2) = a42
+    this%m_coeffs(4,3) = a43
+    this%m_coeffs(4,4) = a44
+
+    this%m_coeffs(5,1) = a51
+    this%m_coeffs(5,2) = a52
+    this%m_coeffs(5,3) = a53
+    this%m_coeffs(5,4) = a54
+    this%m_coeffs(5,5) = a55
+
+    this%m_coeffs(6,1) = b1
+    this%m_coeffs(6,2) = b2
+    this%m_coeffs(6,3) = b3
+    this%m_coeffs(6,4) = b4
+    this%m_coeffs(6,5) = b5
+    this%m_coeffs(6,6) = b6
+
+    ! B
+    this%m_weights(1) = b1
+    this%m_weights(2) = b2
+    this%m_weights(3) = b3
+    this%m_weights(4) = b4
+    this%m_weights(5) = b5
+    this%m_weights(6) = b6
+
+    ! C
+    this%m_nodes(1) = 0.0d0
+    this%m_nodes(2) = c2
+    this%m_nodes(3) = c3
+    this%m_nodes(4) = c4
+    this%m_nodes(5) = c5
+    this%m_nodes(6) = c6
+
+    ! E
+    this%m_errorCoeffs(1) = b1a - b1
+    this%m_errorCoeffs(2) = b2a - b2
+    this%m_errorCoeffs(3) = b3a - b3
+    this%m_errorCoeffs(4) = b4a - b4
+    this%m_errorCoeffs(5) = b5a - b5
+    this%m_errorCoeffs(6) = b6a - b6
+
+    ! Interpolation Constants
+    this%m_interpCoeffs(1,1) = bs11
+    this%m_interpCoeffs(2,1) = bs21
+    this%m_interpCoeffs(3,1) = bs31
+    this%m_interpCoeffs(4,1) = bs41
+
+    this%m_interpCoeffs(1,2) = bs12
+    this%m_interpCoeffs(2,2) = bs22
+    this%m_interpCoeffs(3,2) = bs32
+    this%m_interpCoeffs(4,2) = bs42
+
+    this%m_interpCoeffs(1,3) = bs13
+    this%m_interpCoeffs(2,3) = bs23
+    this%m_interpCoeffs(3,3) = bs33
+    this%m_interpCoeffs(4,3) = bs43
+
+    this%m_interpCoeffs(1,4) = bs14
+    this%m_interpCoeffs(2,4) = bs24
+    this%m_interpCoeffs(3,4) = bs34
+    this%m_interpCoeffs(4,4) = bs44
+
+    this%m_interpCoeffs(1,5) = bs15
+    this%m_interpCoeffs(2,5) = bs25
+    this%m_interpCoeffs(3,5) = bs35
+    this%m_interpCoeffs(4,5) = bs45
+
+    this%m_interpCoeffs(1,6) = bs16
+    this%m_interpCoeffs(2,6) = bs26
+    this%m_interpCoeffs(3,6) = bs36
+    this%m_interpCoeffs(4,6) = bs46
+
+    ! Update status
+    this%m_filledTable = .true.
+end subroutine
+
+! ------------------------------------------------------------------------------
+pure function irk4_get_model_coeff(this, i, j) result(rst)
+    !! Gets the requested model coefficient from the Butcher tableau.
+    class(implicit_runge_kutta_4), intent(in) :: this
+        !! The implicit_runge_kutta_4 object.
+    integer(int32), intent(in) :: i
+        !! The row index.
+    integer(int32), intent(in) :: j
+        !! The column index.
+    real(real64) :: rst
+        !! The coefficient
+
+    ! Return the requested value
+    rst = this%m_coeffs(i, j)
+end function
+
+! ------------------------------------------------------------------------------
+pure function irk4_get_weight(this, i) result(rst)
+    !! Gets the requested weighting factor from the Butcher tableau.
+    class(implicit_runge_kutta_4), intent(in) :: this
+        !! The implicit_runge_kutta_4 object.
+    integer(int32), intent(in) :: i
+        !! The row index.
+    real(real64) :: rst
+        !! The weighting factor.
+
+    ! Return the requested value
+    rst = this%m_weights(i)
+end function
+
+! ------------------------------------------------------------------------------
+pure function irk4_get_node(this, i) result(rst)
+    !! Gets the requested node from the Butcher tableau.
+    class(implicit_runge_kutta_4), intent(in) :: this
+        !! The implicit_runge_kutta_4 object.
+    integer(int32), intent(in) :: i
+        !! The row index.
+    real(real64) :: rst
+        !! The node value.
+
+    ! Return the requested value
+    rst = this%m_nodes(i)
+end function
+
+! ------------------------------------------------------------------------------
+pure function irk4_get_error_coeff(this, i) result(rst)
+    !! Gets the requested error estimator coefficient from the Butcher tableau.
+    class(implicit_runge_kutta_4), intent(in) :: this
+        !! The implicit_runge_kutta_4 object.
+    integer(int32), intent(in) :: i
+        !! The row index.
+    real(real64) :: rst
+        !! The coefficient.
+
+    ! Return the requested value
+    rst = this%m_errorCoeffs(i)
 end function
 
 ! ------------------------------------------------------------------------------

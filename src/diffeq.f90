@@ -23,6 +23,11 @@ module diffeq
     public :: runge_kutta_23
     public :: runge_kutta_853
     public :: diagonally_implicit_runge_kutta
+    public :: dirk_array_value
+    public :: dirk_matrix_value
+    public :: dirk_integer_inquiry
+    public :: dirk_action
+    public :: implicit_runge_kutta_4
     public :: rosenbrock
     
     
