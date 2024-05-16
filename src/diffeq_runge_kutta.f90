@@ -16,11 +16,6 @@ module diffeq_runge_kutta
 
     type, extends(single_step_integrator) :: runge_kutta_45
         !! The Dormand-Prince, Runge-Kutta integrator (4th/5th order).
-        real(real64), private, allocatable, dimension(:) :: k2
-        real(real64), private, allocatable, dimension(:) :: k3
-        real(real64), private, allocatable, dimension(:) :: k4
-        real(real64), private, allocatable, dimension(:) :: k5
-        real(real64), private, allocatable, dimension(:) :: k6
         real(real64), private, allocatable, dimension(:) :: rc1
         real(real64), private, allocatable, dimension(:) :: rc2
         real(real64), private, allocatable, dimension(:) :: rc3
@@ -36,8 +31,6 @@ module diffeq_runge_kutta
             !! (FSAL) integrator.
         procedure, public :: get_stage_count => rk45_get_stage_count
             !! Gets the stage count for this integrator.
-        procedure, private :: initialize => rk45_init
-            !! Initializes private storage arrays for the integrator.
         procedure, private :: initialize_interp => rk45_init_interp
             !! Allocates storage for the interpolation process.
         procedure, public :: attempt_step => rk45_attempt_step
@@ -50,17 +43,12 @@ module diffeq_runge_kutta
 
     type, extends(single_step_integrator) :: runge_kutta_23
         !! The Bogacki-Shampine integrator (3rd/2nd order).
-        real(real64), private, allocatable, dimension(:) :: k2
-        real(real64), private, allocatable, dimension(:) :: k3
-        real(real64), private, allocatable, dimension(:) :: k4
         real(real64), private, allocatable, dimension(:) :: rc1
         real(real64), private, allocatable, dimension(:) :: rc2
         real(real64), private, allocatable, dimension(:) :: rc3
     contains
         procedure, public :: pre_step_action => rk23_pre_step
             !! Performs any pre-step actions.
-        procedure, private :: initialize => rk23_init
-            !! Initializes private storage arrays for the integrator.
         procedure, private :: initialize_interp => rk23_init_interp
             !! Allocates storage for the interpolation process.
         procedure, public :: get_order => rk23_get_order
@@ -80,15 +68,6 @@ module diffeq_runge_kutta
 
     type, extends(single_step_integrator) :: runge_kutta_853
         !! An 8th order Dormand-Prince type 8th order integrator.
-        real(real64), private, allocatable, dimension(:) :: k2
-        real(real64), private, allocatable, dimension(:) :: k3
-        real(real64), private, allocatable, dimension(:) :: k4
-        real(real64), private, allocatable, dimension(:) :: k5
-        real(real64), private, allocatable, dimension(:) :: k6
-        real(real64), private, allocatable, dimension(:) :: k7
-        real(real64), private, allocatable, dimension(:) :: k8
-        real(real64), private, allocatable, dimension(:) :: k9
-        real(real64), private, allocatable, dimension(:) :: k10
         real(real64), private, allocatable, dimension(:) :: yerr2
         real(real64), private, allocatable, dimension(:) :: rc1
         real(real64), private, allocatable, dimension(:) :: rc2
@@ -103,7 +82,7 @@ module diffeq_runge_kutta
     contains
         procedure, public :: pre_step_action => rk853_pre_step
             !! Performs any pre-step actions.
-        procedure, private :: initialize => rk853_init
+        ! procedure, private :: initialize => rk853_init
             !! Initializes private storage arrays for the integrator.
         procedure, private :: initialize_interp => rk853_init_interp
             !! Allocates storage for the interpolation process.
@@ -302,39 +281,6 @@ pure function rk45_get_stage_count(this) result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
-subroutine rk45_init(this, neqn)
-    !! Initializes private storage arrays for the integrator.
-    class(runge_kutta_45), intent(inout) :: this
-        !! The runge_kutta_45 object.
-    integer(int32), intent(in) :: neqn
-        !! The number of equations being integrated.
-
-    ! Process
-    if (allocated(this%k2)) then
-        if (size(this%k2) == neqn) then
-            ! All is good - go ahead and return
-            return
-        else
-            ! The arrays are not sized properly
-            deallocate(this%k2)
-            deallocate(this%k3)
-            deallocate(this%k4)
-            deallocate(this%k5)
-            deallocate(this%k6)
-        end if
-    end if
-
-    ! If we're here, we need to allocate the storage arrays
-    allocate( &
-        this%k2(neqn), &
-        this%k3(neqn), &
-        this%k4(neqn), &
-        this%k5(neqn), &
-        this%k6(neqn) &
-    )
-end subroutine
-
-! ------------------------------------------------------------------------------
 subroutine rk45_init_interp(this, neqn)
     !! Allocates storage for the interpolation process.
     class(runge_kutta_45), intent(inout) :: this
@@ -399,33 +345,33 @@ subroutine rk45_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
 
     ! Initialization
     n = size(y)
-    call this%initialize(n)
 
     ! Process
     ! k1 = f as the derivatives were computed from the previous step
+    k(:,1) = f
 
     yn = y + h * a21 * f
-    call sys%fcn(x + h * c2, yn, this%k2)
+    call sys%fcn(x + h * c2, yn, k(:,2))
 
-    yn = y + h * (a31 * f + a32 * this%k2)
-    call sys%fcn(x + h * c3, yn, this%k3)
+    yn = y + h * (a31 * f + a32 * k(:,2))
+    call sys%fcn(x + h * c3, yn, k(:,3))
 
-    yn = y + h * (a41 * f + a42 * this%k2 + a43 * this%k3)
-    call sys%fcn(x + h * c4, yn, this%k4)
+    yn = y + h * (a41 * f + a42 * k(:,2) + a43 * k(:,3))
+    call sys%fcn(x + h * c4, yn, k(:,4))
 
-    yn = y + h * (a51 * f + a52 * this%k2 + a53 * this%k3 + a54 * this%k4)
-    call sys%fcn(x + h * c5, yn, this%k5)
+    yn = y + h * (a51 * f + a52 * k(:,2) + a53 * k(:,3) + a54 * k(:,4))
+    call sys%fcn(x + h * c5, yn, k(:,5))
 
-    yn = y + h * (a61 * f + a62 * this%k2 + a63 * this%k3 + a64 * this%k4 + &
-        a65 * this%k5)
-    call sys%fcn(x + h * c6, yn, this%k6)
+    yn = y + h * (a61 * f + a62 * k(:,2) + a63 * k(:,3) + a64 * k(:,4) + &
+        a65 * k(:,5))
+    call sys%fcn(x + h * c6, yn, k(:,6))
 
-    yn = y + h * (a71 * f + a73 * this%k3 + a74 * this%k4 + a75 * this%k5 + a76 * this%k6)
+    yn = y + h * (a71 * f + a73 * k(:,3) + a74 * k(:,4) + a75 * k(:,5) + a76 * k(:,6))
     call sys%fcn(x + h * c7, yn, fn)
 
     ! Compute the error estimate
-    yerr = h * (e1 * f + e2 * this%k2 + e3 * this%k3 + e4 * this%k4 + &
-        e5 * this%k5 + e6 * this%k6 + e7 * fn)
+    yerr = h * (e1 * f + e2 * k(:,2) + e3 * k(:,3) + e4 * k(:,4) + &
+        e5 * k(:,5) + e6 * k(:,6) + e7 * fn)
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -450,7 +396,7 @@ subroutine rk45_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
         !! An N-element array containing the derivatives at x.
     real(real64), intent(in), dimension(:) :: fn
         !! An N-element array containing the derivatives at xn.
-    real(real64), intent(in), dimension(:,:) :: k
+    real(real64), intent(inout), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
 
     ! Local Variables
@@ -473,8 +419,8 @@ subroutine rk45_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
         bspl = h * f(i) - ydiff
         this%rc3(i) = bspl
         this%rc4(i) = ydiff - h * fn(i) - bspl
-        this%rc5 = h * (d1 * f(i) + d3 * this%k3(i) + d4 * this%k4(i) + &
-            d5 * this%k5(i) + d6 * this%k6(i) + d7 * fn(i))
+        this%rc5 = h * (d1 * f(i) + d3 * k(i,3) + d4 * k(i,4) + &
+            d5 * k(i,5) + d6 * k(i,6) + d7 * fn(i))
     end do
 end subroutine
 
@@ -579,35 +525,6 @@ pure function rk23_get_stage_count(this) result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
-subroutine rk23_init(this, neqn)
-    !! Initializes private storage arrays for the integrator.
-    class(runge_kutta_23), intent(inout) :: this
-        !! The runge_kutta_23 object.
-    integer(int32), intent(in) :: neqn
-        !! The number of equations being integrated.
-
-    ! Process
-    if (allocated(this%k2)) then
-        if (size(this%k2) == neqn) then
-            ! All is good - go ahead and return
-            return
-        else
-            ! The arrays are not sized properly
-            deallocate(this%k2)
-            deallocate(this%k3)
-            deallocate(this%k4)
-        end if
-    end if
-
-    ! If we're here, we need to allocate the storage arrays
-    allocate( &
-        this%k2(neqn), &
-        this%k3(neqn), &
-        this%k4(neqn) &
-    )
-end subroutine
-
-! ------------------------------------------------------------------------------
 subroutine rk23_init_interp(this, neqn)
     !! Allocates storage for the interpolation process.
     class(runge_kutta_23), intent(inout) :: this
@@ -668,22 +585,22 @@ subroutine rk23_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
 
     ! Initialization
     n = size(y)
-    call this%initialize(n)
 
     ! Process
     ! k1 = f as the derivatives were computed from the previous step
+    k(:,1) = f
 
     yn = y + h * a21 * f
-    call sys%fcn(x + h * c2, yn, this%k2)
+    call sys%fcn(x + h * c2, yn, k(:,2))
 
-    yn = y + h * (a31 * f + a32 * this%k2)
-    call sys%fcn(x + h * c3, yn, this%k3)
+    yn = y + h * (a31 * f + a32 * k(:,2))
+    call sys%fcn(x + h * c3, yn, k(:,3))
 
-    yn = y + h * (a41 * f + a42 * this%k2 + a43 * this%k3)
+    yn = y + h * (a41 * f + a42 * k(:,2) + a43 * k(:,3))
     call sys%fcn(x + h * c4, yn, fn)
 
     ! Compute the error estimate
-    yerr = h * (e1 * f + e2 * this%k2 + e3 * this%k3 + e4 * fn)
+    yerr = h * (e1 * f + e2 * k(:,2) + e3 * k(:,3) + e4 * fn)
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -708,7 +625,7 @@ subroutine rk23_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
         !! An N-element array containing the derivatives at x.
     real(real64), intent(in), dimension(:) :: fn
         !! An N-element array containing the derivatives at xn.
-    real(real64), intent(in), dimension(:,:) :: k
+    real(real64), intent(inout), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
 
     ! Local Variables
@@ -788,49 +705,6 @@ subroutine rk853_pre_step(this, prevs, sys, h, x, y, f, err)
 
     ! Process
     return
-end subroutine
-
-! ------------------------------------------------------------------------------
-subroutine rk853_init(this, neqn)
-    !! Initializes private storage arrays for the integrator.
-    class(runge_kutta_853), intent(inout) :: this
-        !! The runge_kutta_853 object.
-    integer(int32), intent(in) :: neqn
-        !! The number of equations being integrated.
-
-    ! Process
-    if (allocated(this%k2)) then
-        if (size(this%k2) == neqn) then
-            ! All is good - go ahead and return
-            return
-        else
-            ! The arrays are not sized properly
-            deallocate(this%k2)
-            deallocate(this%k3)
-            deallocate(this%k4)
-            deallocate(this%k5)
-            deallocate(this%k6)
-            deallocate(this%k7)
-            deallocate(this%k8)
-            deallocate(this%k9)
-            deallocate(this%k10)
-            deallocate(this%yerr2)
-        end if
-    end if
-
-    ! If we're here, we need to allocate the storage arrays
-    allocate( &
-        this%k2(neqn), &
-        this%k3(neqn), &
-        this%k4(neqn), &
-        this%k5(neqn), &
-        this%k6(neqn), &
-        this%k7(neqn), &
-        this%k8(neqn), &
-        this%k9(neqn), &
-        this%k10(neqn), &
-        this%yerr2(neqn) &
-    )
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -937,59 +811,60 @@ subroutine rk853_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
 
     ! Initialization
     n = size(y)
-    call this%initialize(n)
+    if (.not.allocated(this%yerr2)) allocate(this%yerr2(n))
 
     ! Process
     ! k1 = f as the derivatives were computed outside of this routine
+    k(:,1) = f
 
     yn = y + h * a21
-    call sys%fcn(x + c2 * h, yn, this%k2)
+    call sys%fcn(x + c2 * h, yn, k(:,2))
 
-    yn = y + h * (a31 * f + a32 * this%k2)
-    call sys%fcn(x + c3 * h, yn, this%k3)
+    yn = y + h * (a31 * f + a32 * k(:,2))
+    call sys%fcn(x + c3 * h, yn, k(:,3))
 
-    yn = y + h * (a41 * f + a43 * this%k3)
-    call sys%fcn(x + c4 * h, yn, this%k4)
+    yn = y + h * (a41 * f + a43 * k(:,3))
+    call sys%fcn(x + c4 * h, yn, k(:,4))
 
-    yn = y + h * (a51 * f + a53 * this%k3 + a54 * this%k4)
-    call sys%fcn(x + c5 * h, yn, this%k5)
+    yn = y + h * (a51 * f + a53 * k(:,3) + a54 * k(:,4))
+    call sys%fcn(x + c5 * h, yn, k(:,5))
 
-    yn = y + h * (a61 * f + a64 * this%k4 + a65 * this%k5)
-    call sys%fcn(x + c6 * h, yn, this%k6)
+    yn = y + h * (a61 * f + a64 * k(:,4) + a65 * k(:,5))
+    call sys%fcn(x + c6 * h, yn, k(:,6))
 
-    yn = y + h * (a71 * f + a74 * this%k4 + a75 * this%k5 + a76 * this%k6)
-    call sys%fcn(x + c7 * h, yn, this%k7)
+    yn = y + h * (a71 * f + a74 * k(:,4) + a75 * k(:,5) + a76 * k(:,6))
+    call sys%fcn(x + c7 * h, yn, k(:,7))
 
-    yn = y + h * (a81 * f + a84 * this%k4 + a85 * this%k5 + a86 * this%k6 + &
-        a87 * this%k7)
-    call sys%fcn(x + c8 * h, yn, this%k8)
+    yn = y + h * (a81 * f + a84 * k(:,4) + a85 * k(:,5) + a86 * k(:,6) + &
+        a87 * k(:,7))
+    call sys%fcn(x + c8 * h, yn, k(:,8))
 
-    yn = y + h * (a91 * f + a94 * this%k4 + a95 * this%k5 + a96 * this%k6 + &
-        a97 * this%k7 + a98 * this%k8)
-    call sys%fcn(x + c9 * h, yn, this%k9)
+    yn = y + h * (a91 * f + a94 * k(:,4) + a95 * k(:,5) + a96 * k(:,6) + &
+        a97 * k(:,7) + a98 * k(:,8))
+    call sys%fcn(x + c9 * h, yn, k(:,9))
 
-    yn = y + h * (a101 * f + a104 * this%k4 + a105 * this%k5 + &
-        a106 * this%k6 + a107 * this%k7 + a108 * this%k8 + a109 * this%k9)
-    call sys%fcn(x + c10 * h, yn, this%k10)
+    yn = y + h * (a101 * f + a104 * k(:,4) + a105 * k(:,5) + &
+        a106 * k(:,6) + a107 * k(:,7) + a108 * k(:,8) + a109 * k(:,9))
+    call sys%fcn(x + c10 * h, yn, k(:,10))
 
-    yn = y + h * (a111 * f + a114 * this%k4 + a115 * this%k5 + &
-        a116 * this%k6 + a117 * this%k7 + a118 * this%k8 + a119 * this%k9 + &
-        a1110 * this%k10)
-    call sys%fcn(x + c11 * h, yn, this%k2)
+    yn = y + h * (a111 * f + a114 * k(:,4) + a115 * k(:,5) + &
+        a116 * k(:,6) + a117 * k(:,7) + a118 * k(:,8) + a119 * k(:,9) + &
+        a1110 * k(:,10))
+    call sys%fcn(x + c11 * h, yn, k(:,2))
 
-    yn = y + h * (a121 * f + a124 * this%k4 + a125 * this%k5 + &
-        a126 * this%k6 + a127 * this%k7 + a128 * this%k8 + a129 * this%k9 + &
-        a1210 * this%k10 + a1211 * this%k2)
-    call sys%fcn(x + h, yn, this%k3)
+    yn = y + h * (a121 * f + a124 * k(:,4) + a125 * k(:,5) + &
+        a126 * k(:,6) + a127 * k(:,7) + a128 * k(:,8) + a129 * k(:,9) + &
+        a1210 * k(:,10) + a1211 * k(:,2))
+    call sys%fcn(x + h, yn, k(:,3))
 
-    this%k4 = b1 * f + b6 * this%k6 + b7 * this%k7 + b8 * this%k8 + &
-        b9 * this%k9 + b10 * this%k10 + b11 * this%k2 + b12 * this%k3
-    yn = y + h * this%k4
+    k(:,4) = b1 * f + b6 * k(:,6) + b7 * k(:,7) + b8 * k(:,8) + &
+        b9 * k(:,9) + b10 * k(:,10) + b11 * k(:,2) + b12 * k(:,3)
+    yn = y + h * k(:,4)
     call sys%fcn(x + h, yn, fn)
 
-    yerr = this%k4 - bhh1 * f - bhh2 * this%k9 - bhh3 * this%k3
-    this%yerr2 = er1 * f + er6 * this%k6 + er7 * this%k7 + er8 * this%k8 + &
-        er9 * this%k9 + er10 * this%k10 + er11 * this%k2 + er12 * this%k3
+    yerr = k(:,4) - bhh1 * f - bhh2 * k(:,9) - bhh3 * k(:,3)
+    this%yerr2 = er1 * f + er6 * k(:,6) + er7 * k(:,7) + er8 * k(:,8) + &
+        er9 * k(:,9) + er10 * k(:,10) + er11 * k(:,2) + er12 * k(:,3)
     this%m_stepSize = h
 end subroutine
 
@@ -1015,7 +890,7 @@ subroutine rk853_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
         !! An N-element array containing the derivatives at x.
     real(real64), intent(in), dimension(:) :: fn
         !! An N-element array containing the derivatives at xn.
-    real(real64), intent(in), dimension(:,:) :: k
+    real(real64), intent(inout), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
 
     ! Local Variables
@@ -1038,44 +913,44 @@ subroutine rk853_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
         bspl = h * f(i) - ydiff
         this%rc3(i) = bspl
         this%rc4(i) = ydiff - h * fn(i) - bspl
-        this%rc5(i) = d41 * f(i) + d46 * this%k6(i) + d47 * this%k7(i) + &
-            d48 * this%k8(i) + d49 * this%k9(i) + d410 * this%k10(i) + &
-            d411 * this%k2(i) + d412 * this%k3(i)
-        this%rc6(i) = d51 * f(i) + d56 * this%k6(i) + d57 * this%k7(i) + &
-            d58 * this%k8(i) + d59 * this%k9(i) + d510 * this%k10(i) + &
-            d511 * this%k2(i) + d512 * this%k3(i)
-        this%rc7(i) = d61 * f(i) + d66 * this%k6(i) + d67 * this%k7(i) + &
-            d68 * this%k8(i) + d69 * this%k9(i) + d610 * this%k10(i) + &
-            d611 * this%k2(i) + d612 * this%k3(i)
-        this%rc8(i) = d71 * f(i) + d76 * this%k6(i) + d77 * this%k7(i) + &
-            d78 * this%k8(i) + d79 * this%k9(i) + d710 * this%k10(i) + &
-            d711 * this%k2(i) + d712 * this%k3(i)
+        this%rc5(i) = d41 * f(i) + d46 * k(i,6) + d47 * k(i,7) + &
+            d48 * k(i,8) + d49 * k(i,9) + d410 * k(i,10) + &
+            d411 * k(i,2) + d412 * k(i,3)
+        this%rc6(i) = d51 * f(i) + d56 * k(i,6) + d57 * k(i,7) + &
+            d58 * k(i,8) + d59 * k(i,9) + d510 * k(i,10) + &
+            d511 * k(i,2) + d512 * k(i,3)
+        this%rc7(i) = d61 * f(i) + d66 * k(i,6) + d67 * k(i,7) + &
+            d68 * k(i,8) + d69 * k(i,9) + d610 * k(i,10) + &
+            d611 * k(i,2) + d612 * k(i,3)
+        this%rc8(i) = d71 * f(i) + d76 * k(i,6) + d77 * k(i,7) + &
+            d78 * k(i,8) + d79 * k(i,9) + d710 * k(i,10) + &
+            d711 * k(i,2) + d712 * k(i,3)
     end do
 
-    this%work = y + h * (a141 * f + a147 * this%k7 + a148 * this%k8 + &
-        a149 * this%k9 + a1410 * this%k10 + a1411 * this%k2 + &
-        a1412 * this%k3 + a1413 * fn)
-    call sys%fcn(x + c14 * h, this%work, this%k10)
+    this%work = y + h * (a141 * f + a147 * k(:,7) + a148 * k(:,8) + &
+        a149 * k(:,9) + a1410 * k(:,10) + a1411 * k(:,2) + &
+        a1412 * k(:,3) + a1413 * fn)
+    call sys%fcn(x + c14 * h, this%work, k(:,10))
 
-    this%work = y + h * (a151 * f + a156 * this%k6 + a157 * this%k7 + &
-        a158 * this%k8 + a1511 * this%k2 + a1512 * this%k3 + a1513 * fn + &
-        a1514 * this%k10)
-    call sys%fcn(x + c15 * h, this%work, this%k2)
+    this%work = y + h * (a151 * f + a156 * k(:,6) + a157 * k(:,7) + &
+        a158 * k(:,8) + a1511 * k(:,2) + a1512 * k(:,3) + a1513 * fn + &
+        a1514 * k(:,10))
+    call sys%fcn(x + c15 * h, this%work, k(:,2))
 
-    this%work = y + h * (a161 * f + a166 * this%k6 + a167 * this%k7 + &
-        a168 * this%k8 + a169 * this%k9 + a1613 * fn + a1614 * this%k10 + &
-        a1615 * this%k2)
-    call sys%fcn(x + c16 * h, this%work, this%k3)
+    this%work = y + h * (a161 * f + a166 * k(:,6) + a167 * k(:,7) + &
+        a168 * k(:,8) + a169 * k(:,9) + a1613 * fn + a1614 * k(:,10) + &
+        a1615 * k(:,2))
+    call sys%fcn(x + c16 * h, this%work, k(:,3))
 
     do i = 1, n
-        this%rc5(i) = h * (this%rc5(i) + d413 * fn(i) + d414 * this%k10(i) + &
-            d415 * this%k2(i) + d416 * this%k3(i))
-        this%rc6(i) = h * (this%rc6(i) + d513 * fn(i) + d514 * this%k10(i) + &
-            d515 * this%k2(i) + d516 * this%k3(i))
-        this%rc7(i) = h * (this%rc7(i) + d613 * fn(i) + d614 * this%k10(i) + &
-            d615 * this%k2(i) + d616 * this%k3(i))
-        this%rc8(i) = h * (this%rc8(i) + d713 * fn(i) + d714 * this%k10(i) + &
-            d715 * this%k2(i) + d716 * this%k3(i))
+        this%rc5(i) = h * (this%rc5(i) + d413 * fn(i) + d414 * k(i,10) + &
+            d415 * k(i,2) + d416 * k(i,3))
+        this%rc6(i) = h * (this%rc6(i) + d513 * fn(i) + d514 * k(i,10) + &
+            d515 * k(i,2) + d516 * k(i,3))
+        this%rc7(i) = h * (this%rc7(i) + d613 * fn(i) + d614 * k(i,10) + &
+            d615 * k(i,2) + d616 * k(i,3))
+        this%rc8(i) = h * (this%rc8(i) + d713 * fn(i) + d714 * k(i,10) + &
+            d715 * k(i,2) + d716 * k(i,3))
     end do
 end subroutine
 

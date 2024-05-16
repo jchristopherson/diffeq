@@ -310,7 +310,7 @@ module diffeq_base
                 !! An N-element array containing the derivatives at x.
             real(real64), intent(in), dimension(:) :: fn
                 !! An N-element array containing the derivatives at xn.
-            real(real64), intent(in), dimension(:,:) :: k
+            real(real64), intent(inout), dimension(:,:) :: k
                 !! An N-by-NSTAGES matrix containing the derivatives at each
                 !! stage.
         end subroutine

@@ -27,11 +27,6 @@ module diffeq_stiffly_stable
             ! N-element array of df/dx
         real(real64), private, allocatable, dimension(:,:) :: a
             ! System matrix.
-        real(real64), private, allocatable, dimension(:) :: k1
-        real(real64), private, allocatable, dimension(:) :: k2
-        real(real64), private, allocatable, dimension(:) :: k3
-        real(real64), private, allocatable, dimension(:) :: k4
-        real(real64), private, allocatable, dimension(:) :: k5
         real(real64), private, allocatable, dimension(:) :: rc1
         real(real64), private, allocatable, dimension(:) :: rc2
         real(real64), private, allocatable, dimension(:) :: rc3
@@ -42,8 +37,6 @@ module diffeq_stiffly_stable
     contains
         procedure, private :: initialize_matrices => rbrk_init_matrices
             !! Allocates internal storage for the system matrices.
-        procedure, private :: initialize => rbrk_initialize
-            !! Initializes storage arrays for the rosenbrock object.
         procedure, private :: initialize_interp => rbrk_init_interp
             !! Initializes private storage for the interpolation process.
         procedure, public :: pre_step_action => rbrk_form_matrix
@@ -196,37 +189,6 @@ subroutine rbrk_init_matrices(this, n, usemass)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine rbrk_initialize(this, n)
-    !! Initializes storage arrays for the rosenbrock object.
-    class(rosenbrock), intent(inout) :: this
-        !! The rosenbrock object.
-    integer(int32), intent(in) :: n
-        !! The number of equations being integrated.
-
-    ! Process
-    if (allocated(this%k1)) then
-        if (size(this%k1) == n) then
-            ! All is good
-            return
-        else
-            deallocate(this%k1)
-            deallocate(this%k2)
-            deallocate(this%k3)
-            deallocate(this%k4)
-            deallocate(this%k5)
-        end if
-    end if
-
-    allocate( &
-        this%k1(n), &
-        this%k2(n), &
-        this%k3(n), &
-        this%k4(n), &
-        this%k5(n) &
-    )
-end subroutine
-
-! ------------------------------------------------------------------------------
 subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
     use diffeq_rosenbrock_constants
     !! Attempts an integration step for this integrator.
@@ -260,43 +222,42 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
 
     ! Initialization
     n = size(y)
-    call this%initialize(n)
 
     ! Process
-    this%k1 = f + h * d1 * this%dfdx
-    call solve_lu(this%a, this%pivot, this%k1)
+    k(:,1) = f + h * d1 * this%dfdx
+    call solve_lu(this%a, this%pivot, k(:,1))
 
-    yn = y + a21 * this%k1
+    yn = y + a21 * k(:,1)
     call sys%fcn(x + c2 * h, yn, fn)
 
-    this%k2 = fn + h * d2 * this%dfdx + c21 * this%k1 / h
-    call solve_lu(this%a, this%pivot, this%k2)
+    k(:,2) = fn + h * d2 * this%dfdx + c21 * k(:,1) / h
+    call solve_lu(this%a, this%pivot, k(:,2))
 
-    yn = y + a31 * this%k1 + a32 * this%k2
+    yn = y + a31 * k(:,1) + a32 * k(:,2)
     call sys%fcn(x + c3 * h, yn, fn)
 
-    this%k3 = fn + h * d3 * this%dfdx + (c31 * this%k1 + c32 * this%k2) / h
-    call solve_lu(this%a, this%pivot, this%k3)
+    k(:,3) = fn + h * d3 * this%dfdx + (c31 * k(:,1) + c32 * k(:,2)) / h
+    call solve_lu(this%a, this%pivot, k(:,3))
 
-    yn = y + a41 * this%k1 + a42 * this%k2 + a43 * this%k3
+    yn = y + a41 * k(:,1) + a42 * k(:,2) + a43 * k(:,3)
     call sys%fcn(x + c4 * h, yn, fn)
 
-    this%k4 = fn + h * d4 * this%dfdx + (c41 * this%k1 + c42 * this%k2 + &
-        c43 * this%k3) / h
-    call solve_lu(this%a, this%pivot, this%k4)
+    k(:,4) = fn + h * d4 * this%dfdx + (c41 * k(:,1) + c42 * k(:,2) + &
+        c43 * k(:,3)) / h
+    call solve_lu(this%a, this%pivot, k(:,4))
 
-    yn = y + a51 * this%k1 + a52 * this%k2 + a53 * this%k3 + a54 * this%k4
+    yn = y + a51 * k(:,1) + a52 * k(:,2) + a53 * k(:,3) + a54 * k(:,4)
     call sys%fcn(x + h, yn, fn)
 
-    this%k5 = fn + (c51 * this%k1 + c52 * this%k2 + c53 * this%k3 + &
-        c54 * this%k4) / h
-    call solve_lu(this%a, this%pivot, this%k5)
+    k(:,5) = fn + (c51 * k(:,1) + c52 * k(:,2) + c53 * k(:,3) + &
+        c54 * k(:,4)) / h
+    call solve_lu(this%a, this%pivot, k(:,5))
 
-    yn = yn + this%k5
+    yn = yn + k(:,5)
     call sys%fcn(x + h, yn, fn) ! updated derivative
 
-    yerr = fn + (c61 * this%k1 + c62 * this%k2 + c63 * this%k3 + &
-        c64 * this%k4 + c65 * this%k5) / h
+    yerr = fn + (c61 * k(:,1) + c62 * k(:,2) + c63 * k(:,3) + &
+        c64 * k(:,4) + c65 * k(:,5)) / h
     call solve_lu(this%a, this%pivot, yerr)
 
     yn = yn + yerr
@@ -353,7 +314,7 @@ subroutine rbrk_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
         !! An N-element array containing the derivatives at x.
     real(real64), intent(in), dimension(:) :: fn
         !! An N-element array containing the derivatives at xn.
-    real(real64), intent(in), dimension(:,:) :: k
+    real(real64), intent(inout), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
 
     ! Local Variables
@@ -370,10 +331,10 @@ subroutine rbrk_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
     do i = 1, n
         this%rc1(i) = y(i)
         this%rc2(i) = yn(i)
-        this%rc3(i) = d21 * this%k1(i) + d22 * this%k2(i) + d23 * this%k3(i) + &
-            d24 * this%k4(i) + d25 * this%k5(i)
-        this%rc4(i) = d31 * this%k1(i) + d32 * this%k2(i) + d33 * this%k3(i) + &
-            d34 * this%k4(i) + d35 * this%k5(i)
+        this%rc3(i) = d21 * k(i,1) + d22 * k(i,2) + d23 * k(i,3) + &
+            d24 * k(i,4) + d25 * k(i,5)
+        this%rc4(i) = d31 * k(i,1) + d32 * k(i,2) + d33 * k(i,3) + &
+            d34 * k(i,4) + d35 * k(i,5)
     end do
 end subroutine
 

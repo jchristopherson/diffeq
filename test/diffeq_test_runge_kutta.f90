@@ -302,7 +302,7 @@ function test_runge_kutta_853_3() result(rst)
     ! Test
     if (.not.assert(ans, sol(:,2), tol)) then
         rst = .false.
-        print "(A)", "TEST FAILED: test_runge_kutta_45_3 -1"
+        print "(A)", "TEST FAILED: test_runge_kutta_853_3 -1"
     end if
 end function
 
