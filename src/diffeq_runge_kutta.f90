@@ -1360,8 +1360,8 @@ subroutine dirk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
     ! Cycle over each stage and solve the Newton problem
     itertracking = 0
     yn = y  ! use the previously accepted solution as an initial guess
-    k(:,1) = f ! along with the corresponding derivatives
     do i = 1, ns
+        k(:,i) = f
         call this%newton_iteration(i, sys, h, x, yn, k(:,i), niter, &
             success)
         itertracking = max(niter, itertracking)

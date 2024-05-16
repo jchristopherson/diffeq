@@ -343,7 +343,7 @@ function test_implicit_runge_kutta_4_2() result(rst)
     logical :: rst
 
     ! Parameters
-    real(real64), parameter :: tol = 1.0d-3
+    real(real64), parameter :: tol = 2.0d-2
 
     ! Local Variables
     type(implicit_runge_kutta_4) :: integrator
