@@ -13,7 +13,6 @@ program example
     type(runge_kutta_45) :: integrator_2
     type(runge_kutta_853) :: integrator_3
     type(rosenbrock) :: integrator_4
-    type(implicit_runge_kutta_4) :: integrator_5
     type(ode_container) :: mdl
     real(real64), allocatable, dimension(:,:) :: s1, s2, s3, s4, s5
 
@@ -25,19 +24,16 @@ program example
     call integrator_2%solve(mdl, t, ic)
     call integrator_3%solve(mdl, t, ic)
     call integrator_4%solve(mdl, t, ic)
-    call integrator_5%solve(mdl, t, ic)
 
     ! Retrieve the solution from each integrator
     s1 = integrator_1%get_solution()
     s2 = integrator_2%get_solution()
     s3 = integrator_3%get_solution()
     s4 = integrator_4%get_solution()
-    s5 = integrator_5%get_solution()
 
     ! Print out the size of each solution
     print "(AI0A)", "RUNGE_KUTTA_23: ", size(s1, 1), " Solution Points"
     print "(AI0A)", "RUNGE_KUTTA_45: ", size(s2, 1), " Solution Points"
     print "(AI0A)", "RUNGE_KUTTA_853: ", size(s3, 1), " Solution Points"
     print "(AI0A)", "ROSENBROCK: ", size(s4, 1), " Solution Points"
-    print "(AI0A)", "IMPLICIT_RUNGE_KUTTA_4: ", size(s5, 1), " Solution Points"
 end program

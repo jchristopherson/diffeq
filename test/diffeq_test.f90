@@ -66,15 +66,6 @@ program test
     rst = test_rosenbrock_3()
     if (.not.rst) flag = 16
 
-    rst = test_implicit_runge_kutta_4_1()
-    if (.not.rst) flag = 17
-
-    rst = test_implicit_runge_kutta_4_2()
-    if (.not.rst) flag = 18
-
-    rst = test_implicit_runge_kutta_4_3()
-    if (.not.rst) flag = 19
-
     ! Output
     stop flag
 end program

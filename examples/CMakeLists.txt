@@ -37,12 +37,3 @@ add_executable(
 )
 link_library(rosenbrock_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
 link_library(rosenbrock_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
-
-# Implicit Runge-Kutta, 4th Order Example
-add_executable(
-    irk4_example
-    irk4_example.f90
-    ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
-)
-link_library(irk4_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
-link_library(irk4_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
