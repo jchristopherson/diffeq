@@ -3,11 +3,7 @@ program test
     use diffeq_jacobian_tests
     use diffeq_test_runge_kutta
     use diffeq_test_stiffly_stable
-    ! use diffeq_rkfixed_tests
-    ! use diffeq_adamsfixed_tests
-    ! use diffeq_dprk45_tests
-    ! use diffeq_bsrk32_tests
-    ! use diffeq_sdirk4_tests
+    use diffeq_test_dirk
     implicit none
 
     ! Local Variables

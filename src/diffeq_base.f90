@@ -386,9 +386,8 @@ module diffeq_base
                 !! The integer value.
         end function
     end interface
-    
-! ------------------------------------------------------------------------------
-    ! TO DO: multi-step integrator
+  
+! ------------------------------------------------------------------------------    ! TO DO: multi-step integrator
 
 contains
 ! ******************************************************************************
@@ -969,7 +968,7 @@ pure subroutine oi_initial_step(this, sys, xo, xf, yo, fo, h)
     ! Use a very basic estimate of an initial step size.  The catch is that a
     ! single function evaluation must be made; however, this is likely needed
     ! in the first place, so no real extra work is necessary.
-    dx = xf - xo
+    dx = 0.1d0 * (xf - xo)
     e = max(this%get_absolute_tolerance(), this%get_relative_tolerance())
     call sys%fcn(xo, yo, fo)
     h = 2.0d0 * e / norm2(fo)
@@ -1031,7 +1030,7 @@ end subroutine
 subroutine ssi_ode_solver(this, sys, x, iv, err)
     !! Solves the supplied system of ODE's.
     class(single_step_integrator), intent(inout) :: this
-        !! The ode_integrator object.
+        !! The single_step_integrator object.
     class(ode_container), intent(inout) :: sys
         !! The ode_container object containing the ODE's to integrate.
     real(real64), intent(in), dimension(:) :: x
