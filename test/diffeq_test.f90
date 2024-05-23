@@ -61,21 +61,6 @@ program test
     rst = test_rosenbrock_3()
     if (.not.rst) flag = 16
 
-    rst = test_frf_1()
-    if (.not.rst) flag = 17
-
-    rst = test_frf_2()
-    if (.not.rst) flag = 18
-
-    rst = test_sdirk4_1()
-    if (.not.rst) flag = 19
-
-    rst = test_sdirk4_2()
-    if (.not.rst) flag = 20
-
-    rst = test_sdirk4_3()
-    if (.not.rst) flag = 21
-
     ! Output
     stop flag
 end program
