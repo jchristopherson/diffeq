@@ -2,8 +2,7 @@ program test
     use iso_fortran_env
     use diffeq_jacobian_tests
     use diffeq_test_runge_kutta
-    use diffeq_test_stiffly_stable
-    use diffeq_test_dirk
+    use diffeq_test_implicit_rk
     implicit none
 
     ! Local Variables

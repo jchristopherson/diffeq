@@ -1,4 +1,4 @@
-module diffeq_test_stiffly_stable
+module diffeq_test_implicit_rk
     use iso_fortran_env
     use diffeq
     use fortran_test_helper
