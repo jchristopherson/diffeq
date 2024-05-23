@@ -3,6 +3,7 @@ A modern Fortran library providing an object-oriented approach to solving and ex
 
 ## Build Status
 [![CMake](https://github.com/jchristopherson/diffeq/actions/workflows/cmake.yml/badge.svg)](https://github.com/jchristopherson/diffeq/actions/workflows/cmake.yml)
+[![Actions Status](https://github.com/jchristopherson/diffeq/workflows/fpm/badge.svg)](https://github.com/jchristopherson/diffeq/actions)
 
 ## Documentation
 The documentation can be found [here](https://jchristopherson.github.io/diffeq/).
@@ -12,6 +13,19 @@ The documentation can be found [here](https://jchristopherson.github.io/diffeq/)
 - Runge-Kutta, 3rd Order (Bogacki-Shampine)
 - Runge-Kutta, 8th Order (Hairer, Nörsett, & Wanner)
 - Rosenbrock, 4th Order
+
+## Building DIFFEQ
+[CMake](https://cmake.org/)This library can be built using CMake.  For instructions see [Running CMake](https://cmake.org/runningcmake/).
+
+[FPM](https://github.com/fortran-lang/fpm) can also be used to build this library using the provided fpm.toml.
+```txt
+fpm build
+```
+The DIFFEQ library can be used within your FPM project by adding the following to your fpm.toml file.
+```toml
+[dependencies]
+diffeq = { git = "https://github.com/jchristopherson/diffeq" }
+```
 
 ## Examples
 The following example illustrates solving the Van der Pol equation using a 4th-order Rosenbrock solver, but other solvers can be used in an identical manner.  The example also utilizes the [FPLOT](https://github.com/jchristopherson/fplot) library to plot the solution.
@@ -142,6 +156,11 @@ RUNGE_KUTTA_853: 925 Solution Points
 ROSENBROCK: 1178 Solution Points
 ROSENBROCK w/ PI Controller: 2356 Solution Points
 ```
+
+## External Libraries
+Here is a list of external code libraries utilized by this library.  The CMake build script will include these dependencies automatically; however, it is highly recommended that an optimized BLAS and LAPACK already reside on your system for best performance (used by LINALG for linear algebra calculations).
+- [FERROR](https://github.com/jchristopherson/ferror)
+- [LINALG](https://github.com/jchristopherson/linalg)
 
 ## References
 1. Butcher, J. C. (2003). Numerical methods for ordinary differential equations. J. Wiley.
