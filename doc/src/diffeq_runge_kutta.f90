@@ -10,7 +10,8 @@ module diffeq_runge_kutta
     public :: runge_kutta_853
 
     type, extends(single_step_integrator) :: runge_kutta_45
-        !! The Dormand-Prince, Runge-Kutta integrator (4th/5th order).
+        !! The Dormand-Prince, Runge-Kutta integrator (5th order, with an 
+        !! embedded 4th order used for error estimation).
         real(real64), private, allocatable, dimension(:) :: rc1
         real(real64), private, allocatable, dimension(:) :: rc2
         real(real64), private, allocatable, dimension(:) :: rc3
@@ -37,7 +38,8 @@ module diffeq_runge_kutta
     end type
 
     type, extends(single_step_integrator) :: runge_kutta_23
-        !! The Bogacki-Shampine integrator (3rd/2nd order).
+        !! The Bogacki-Shampine integrator (3rd order with an embedded 2nd order
+        !! used for error estimation).
         real(real64), private, allocatable, dimension(:) :: rc1
         real(real64), private, allocatable, dimension(:) :: rc2
         real(real64), private, allocatable, dimension(:) :: rc3
@@ -62,7 +64,8 @@ module diffeq_runge_kutta
     end type
 
     type, extends(single_step_integrator) :: runge_kutta_853
-        !! An 8th order Dormand-Prince type 8th order integrator.
+        !! An 8th order Runge-Kutta integrator with embedded 5th and 3rd order
+        !! solutions for error estimation.
         real(real64), private, allocatable, dimension(:) :: yerr2
         real(real64), private, allocatable, dimension(:) :: rc1
         real(real64), private, allocatable, dimension(:) :: rc2
