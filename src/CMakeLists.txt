@@ -11,6 +11,6 @@ set(DIFFEQ_SOURCES
     ${dir}/diffeq_bsrk32_constants.f90
     ${dir}/diffeq_rk853_constants.f90
     ${dir}/diffeq_rosenbrock_constants.f90
-    ${dir}/diffeq_stiffly_stable.f90
+    ${dir}/diffeq_implicit_runge_kutta.f90
 )
 set(DIFFEQ_SOURCES ${DIFFEQ_SOURCES} PARENT_SCOPE)

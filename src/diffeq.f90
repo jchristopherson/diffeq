@@ -3,7 +3,7 @@ module diffeq
     use iso_fortran_env
     use diffeq_base
     use diffeq_runge_kutta
-    use diffeq_stiffly_stable
+    use diffeq_implicit_runge_kutta
     use diffeq_dirk
     implicit none
     private
@@ -24,15 +24,4 @@ module diffeq
     public :: runge_kutta_23
     public :: runge_kutta_853
     public :: rosenbrock
-    
-    
-    ! public :: DIFFEQ_MEMORY_ALLOCATION_ERROR
-    ! public :: DIFFEQ_NULL_POINTER_ERROR
-    ! public :: DIFFEQ_MATRIX_SIZE_ERROR
-    ! public :: DIFFEQ_ARRAY_SIZE_ERROR
-    ! public :: DIFFEQ_INVALID_INPUT_ERROR
-    ! public :: DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR
-    ! public :: DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR
-    ! public :: DIFFEQ_INVALID_OPERATION_ERROR
-
 end module
