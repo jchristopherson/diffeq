@@ -4,7 +4,6 @@ module diffeq
     use diffeq_base
     use diffeq_runge_kutta
     use diffeq_implicit_runge_kutta
-    use diffeq_dirk
     implicit none
     private
     public :: ode
