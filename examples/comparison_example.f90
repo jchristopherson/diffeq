@@ -36,4 +36,13 @@ program example
     print "(AI0A)", "RUNGE_KUTTA_45: ", size(s2, 1), " Solution Points"
     print "(AI0A)", "RUNGE_KUTTA_853: ", size(s3, 1), " Solution Points"
     print "(AI0A)", "ROSENBROCK: ", size(s4, 1), " Solution Points"
+
+    ! Now, implement a PI controller and check its effect.  This will likely
+    ! increase the number of steps (loss of efficiency), but if there were
+    ! any stability issues, stability will likely improve.  Stability is likely
+    ! not relevant on this problem, but it's here for illustration purposes.
+    call integrator_4%set_step_size_control_parameter(0.1d0)
+    call integrator_4%solve(mdl, t, ic)
+    s5 = integrator_4%get_solution()
+    print "(AI0A)", "ROSENBROCK w/ PI Controller: ", size(s5, 1), " Solution Points"
 end program
