@@ -12,7 +12,6 @@ The documentation can be found [here](https://jchristopherson.github.io/diffeq/)
 - Bogacki-Shampine Runge-Kutta, 3rd/2nd Order
 - Dormand-Prince Runge-Kutta, 8th/5th/3rd Order
 - Rosenbrock, 4th Order
-- Singly Diagonally Implicit Runge-Kutta, 4th Order
 
 ## Examples
 The following example illustrates solving the Van der Pol equation using a 4th-order Rosenbrock solver, but other solvers can be used in an identical manner.  The example also utilizes the [FPLOT](https://github.com/jchristopherson/fplot) library to plot the solution.
