@@ -3,7 +3,7 @@ module diffeq_models
     implicit none
 contains
 ! Van Der Pol Equation
-subroutine vanderpol(x, y, dydx)
+pure subroutine vanderpol(x, y, dydx)
     ! Arguments
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: dydx(:)
@@ -33,7 +33,7 @@ end function
 
 ! ------------------------------------------------------------------------------
 ! Duffing Equation
-subroutine duffing(x, y, dydx)
+pure subroutine duffing(x, y, dydx)
     ! Arguments
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: dydx(:)
@@ -70,7 +70,7 @@ function duffing_jacobian(x, y) result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
-subroutine mathieu(x, y, dydx)
+pure subroutine mathieu(x, y, dydx)
     ! Arguments
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: dydx(:)
@@ -106,7 +106,7 @@ end function
 ! y(0) = 1
 ! y'(0) = 1/2
 ! y(x) = sin(wn * x) / 2 / wn + cos(wn * x)
-subroutine test_2dof_1(x, y, dydx)
+pure subroutine test_2dof_1(x, y, dydx)
     ! Arguments
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: dydx(:)
@@ -136,7 +136,7 @@ end function
 ! y' + y * sin(x)**2 = 0
 ! y(0) = 2
 ! y(x) = 2 * exp(0.25 * sin(2 * x) - 0.5 * x)
-subroutine test_1dof_1(x, y, dydx)
+pure subroutine test_1dof_1(x, y, dydx)
     ! Arguments
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: dydx(:)
@@ -157,40 +157,40 @@ end function
 ! ------------------------------------------------------------------------------
 ! 2nd Order Test Problem
 ! x" + 2 * z * wn * x' + wn**2 * x = f(t)
-pure function example_2nd_order_forcing(t) result(rst)
-    use diffeq_harmonics, only : chirp
+! pure function example_2nd_order_forcing(t) result(rst)
+!     use diffeq_harmonics, only : chirp
 
-    ! Arguments
-    real(real64), intent(in) :: t
-    real(real64) :: rst
+!     ! Arguments
+!     real(real64), intent(in) :: t
+!     real(real64) :: rst
 
-    ! Process
-    rst = chirp(t, 1.0d2, 5.0d0, 1.0d0, 1.0d2)
-end function
+!     ! Process
+!     rst = chirp(t, 1.0d2, 5.0d0, 1.0d0, 1.0d2)
+! end function
 
-subroutine example_2nd_order(t, x, dxdt)
-    ! Arguments
-    real(real64), intent(in) :: t
-    real(real64), intent(in), dimension(:) :: x
-    real(real64), intent(out), dimension(:) :: dxdt
+! subroutine example_2nd_order(t, x, dxdt)
+!     ! Arguments
+!     real(real64), intent(in) :: t
+!     real(real64), intent(in), dimension(:) :: x
+!     real(real64), intent(out), dimension(:) :: dxdt
 
-    ! Model Parameters
-    real(real64), parameter :: pi = 2.0d0 * acos(0.0d0)
-    real(real64), parameter :: z = 1.0d-1
-    real(real64), parameter :: wn = 2.0d0 * pi * 5.0d1
+!     ! Model Parameters
+!     real(real64), parameter :: pi = 2.0d0 * acos(0.0d0)
+!     real(real64), parameter :: z = 1.0d-1
+!     real(real64), parameter :: wn = 2.0d0 * pi * 5.0d1
 
-    ! Local Variables
-    real(real64) :: f
+!     ! Local Variables
+!     real(real64) :: f
 
-    ! Process
-    f = example_2nd_order_forcing(t)
-    dxdt(1) = x(2)
-    dxdt(2) = f - (2.0d0 * z * wn * x(2) + wn**2 * x(1))
-end subroutine
+!     ! Process
+!     f = example_2nd_order_forcing(t)
+!     dxdt(1) = x(2)
+!     dxdt(2) = f - (2.0d0 * z * wn * x(2) + wn**2 * x(1))
+! end subroutine
 
 ! ------------------------------------------------------------------------------
 ! Roots: -2, 3
-subroutine first_order_1(x, y, dydx)
+pure subroutine first_order_1(x, y, dydx)
     ! Arguments
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: y
@@ -202,7 +202,7 @@ end subroutine
 
 ! ------------------------------------------------------------------------------
 ! Roots: -2, 2, -1
-subroutine first_order_2(x, y, dydx)
+pure subroutine first_order_2(x, y, dydx)
     ! Arguments
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: y
