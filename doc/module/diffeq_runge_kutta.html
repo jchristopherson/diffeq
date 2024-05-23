@@ -1,3 +1,5 @@
+<!-- -*- mode: jinja2 -*- -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -10,77 +12,53 @@
 
     <title>diffeq_runge_kutta &ndash; DIFFEQ</title>
 
-    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link href="../css/pygments.css" rel="stylesheet">
     <link href="../css/font-awesome.min.css" rel="stylesheet">
     <link href="../css/local.css" rel="stylesheet">
       <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
 
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-        <![endif]-->
-
-         <script src="../js/jquery-2.1.3.min.js"></script>
-         <script src="../js/svg-pan-zoom.min.js"></script>
-
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
   <body>
 
     <!-- Fixed navbar -->
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
           <a class="navbar-brand" href="../index.html">DIFFEQ </a>
-        </div>
-        <div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
-            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
-              <a href="#" class="dropdown-toggle"
-                 data-toggle="dropdown" role="button"
-                 aria-haspopup="true"
-                 aria-expanded="false">
-                 Contents <span class="caret"></span>
-              </a>
-              <ul class="dropdown-menu">
-                    <li><a href="../lists/files.html">Source Files</a></li>
-                  <li><a href="../lists/modules.html">Modules</a></li>
-                  <li><a href="../lists/procedures.html">Procedures</a></li>
-                  <li><a href="../lists/types.html">Derived Types</a></li>
-              </ul>
-            </li>
-                <li class="visible-xs hidden-sm visible-lg">
-                  <a href="../lists/files.html">Source Files</a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
                 </li>
-              <li class="visible-xs hidden-sm visible-lg">
-                <a href="../lists/modules.html">Modules</a>
-              </li>
-              <li class="visible-xs hidden-sm visible-lg">
-                <a href="../lists/procedures.html">Procedures</a>
-              </li>
-              <li class="visible-xs hidden-sm visible-lg">
-                <a href="../lists/types.html">Derived Types</a>
-              </li>
-          </ul>
-            <form action="../search.html" class="navbar-form navbar-right" role="search">
-              <div class="form-group">
-                <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
               </div>
-              <!--
-                  <button type="submit" class="btn btn-default">Submit</button>
-                  -->
-            </form>
-        </div><!--/.nav-collapse -->
-      </div>
-    </nav>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
 
     <div class="container">
   <div class="row">
@@ -88,39 +66,43 @@
       <small>Module</small>
       
     </h1>
-      <div class="row" id="info-bar">
-    <div class="col-lg-12">
-      <div class="well well-sm">
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
         <ul class="list-inline" style="margin-bottom:0px;display:inline">
 
-          <li id="statements"><i class="fa fa-list-ol"></i>
-            <a data-toggle="tooltip"
-               data-placement="bottom" data-html="true"
-               title="20.7% of total for modules and submodules.">524 statements</a>
-          </li>
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip"
+                 data-bs-placement="bottom" data-html="true"
+                 title="19.9% of total for modules and submodules.">449 statements</a>
+            </li>
 
-            <li id="source-file">
+            <li class="list-inline-item" id="source-file">
               <i class="fa fa-code"></i>
               <a href="../src/diffeq_runge_kutta.f90"> Source File</a>
             </li>
         </ul>
-        <ol class="breadcrumb in-well text-right">
-              <li><a href='../sourcefile/diffeq_runge_kutta.f90.html'>diffeq_runge_kutta.f90</a></li>
-          <li class="active">diffeq_runge_kutta</li>
-        </ol>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='..\sourcefile\diffeq_runge_kutta.f90.html'>diffeq_runge_kutta.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">diffeq_runge_kutta</li>
+          </ol>
+        </nav>
       </div>
     </div>
   </div>
   <script>
     $(function () {
-    $('[data-toggle="tooltip"]').tooltip()
+    $('[data-bs-toggle="tooltip"]').tooltip()
     })
   </script>
 
   </div>
 
   <div class="row">
-    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    <div class="col-md-3">
         <div id="sidebar">
       <h3>Contents</h3>
   
@@ -131,53 +113,24 @@
   
   
   
-      <div class="panel panel-primary">
-      <div class="panel-heading text-left">
-        <h3 class="panel-title">
-          <a data-toggle="collapse" href="#inters-0">Interfaces</a>
-        </h3>
-      </div>
-      <div id="inters-0" class="panel-collapse collapse">
-        <div class="list-group">
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#interface-rkv_action">rkv_action</a>
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#interface-rkv_get_array_parameter">rkv_get_array_parameter</a>
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#interface-rkv_get_boolean_parameter">rkv_get_boolean_parameter</a>
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#interface-rkv_get_integer_parameter">rkv_get_integer_parameter</a>
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#interface-rkv_get_matrix_parameter">rkv_get_matrix_parameter</a>
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#interface-rkv_set_up_interp">rkv_set_up_interp</a>
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#type-runge_kutta_23">runge_kutta_23</a>
+            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#type-runge_kutta_45">runge_kutta_45</a>
+            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#type-runge_kutta_853">runge_kutta_853</a>
         </div>
       </div>
     </div>
 
   
-      <div class="panel panel-primary">
-      <div class="panel-heading text-left">
-        <h3 class="panel-title">
-          <a data-toggle="collapse" href="#types-0">Derived Types</a>
-        </h3>
-      </div>
-      <div id="types-0" class="panel-collapse collapse">
-        <div class="list-group">
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#type-bsrk32_integrator">bsrk32_integrator</a>
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#type-dprk45_integrator">dprk45_integrator</a>
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#type-rk_variable_integrator">rk_variable_integrator</a>
-        </div>
-      </div>
-    </div>
-
-      <div class="panel panel-primary">
-      <div class="panel-heading text-left">
-        <h3 class="panel-title">
-          <a data-toggle="collapse" href="#funcs-0">Functions</a>
-        </h3>
-      </div>
-      <div id="funcs-0" class="panel-collapse collapse">
-        <div class="list-group">
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#proc-pi_controller">pi_controller</a>
-        </div>
-      </div>
-    </div>
-
+  
   
   
   
@@ -193,664 +146,43 @@
 
     <div class="col-md-9" id='text'>
       
-<br>          <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title">Uses</h3>
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
+                  <li class="list-inline-item"><a href='diffeq_base.html'>diffeq_base</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item">ferror</li>
+              </ul>
+            </li>
+        </ul>
       </div>
-      <ul class="list-group">
-          <li class="list-group-item">
-            <ul class="list-inline">
-                <li><a href='../module/diffeq_variable_singlestep.html'>diffeq_variable_singlestep</a></li>
-                <li><a href='../module/diffeq_base.html'>diffeq_base</a></li>
-                <li><a href='../module/diffeq_errors.html'>diffeq_errors</a></li>
-                <li><a href='<a href="http://fortranwiki.org/fortran/show/iso_fortran_env">iso_fortran_env</a>'>iso_fortran_env</a></li>
-            </ul>
-          </li>
-      </ul>
     </div>
 
       
       <br>
 
-      <section class="visible-xs visible-sm hidden-md">
-          <h3>Contents</h3>
-  
-  
-  
-  
-  
-  
-  
-  
-      <div class="panel panel-primary">
-      <div class="panel-heading text-left">
-        <h3 class="panel-title">
-          <a data-toggle="collapse" href="#inters-1">Interfaces</a>
-        </h3>
-      </div>
-      <div id="inters-1" class="panel-collapse collapse">
-        <div class="list-group">
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#interface-rkv_action">rkv_action</a>
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#interface-rkv_get_array_parameter">rkv_get_array_parameter</a>
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#interface-rkv_get_boolean_parameter">rkv_get_boolean_parameter</a>
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#interface-rkv_get_integer_parameter">rkv_get_integer_parameter</a>
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#interface-rkv_get_matrix_parameter">rkv_get_matrix_parameter</a>
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#interface-rkv_set_up_interp">rkv_set_up_interp</a>
-        </div>
-      </div>
-    </div>
-
-  
-      <div class="panel panel-primary">
-      <div class="panel-heading text-left">
-        <h3 class="panel-title">
-          <a data-toggle="collapse" href="#types-1">Derived Types</a>
-        </h3>
-      </div>
-      <div id="types-1" class="panel-collapse collapse">
-        <div class="list-group">
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#type-bsrk32_integrator">bsrk32_integrator</a>
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#type-dprk45_integrator">dprk45_integrator</a>
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#type-rk_variable_integrator">rk_variable_integrator</a>
-        </div>
-      </div>
-    </div>
-
-      <div class="panel panel-primary">
-      <div class="panel-heading text-left">
-        <h3 class="panel-title">
-          <a data-toggle="collapse" href="#funcs-1">Functions</a>
-        </h3>
-      </div>
-      <div id="funcs-1" class="panel-collapse collapse">
-        <div class="list-group">
-            <a class="list-group-item" href="../module/diffeq_runge_kutta.html#proc-pi_controller">pi_controller</a>
-        </div>
-      </div>
-    </div>
-
-  
-  
-  
-  
-  
-  
-  
-
-
-      </section>
-      <br class="visible-xs visible-sm hidden-md">
 
 
 
-
-        <section>
-          <h2>Interfaces</h2>
-              <div class="panel panel-default">
-    <div class="panel-heading codesum">
-      <span class="anchor" id="interface-rkv_action"></span>
-      <h3>        interface
-      </h3>
-    </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-              <h3>
-    public  subroutine rkv_action(this)  
-
-    </h3>
-  <p>Defines an action to undertake on a rk_variable_integrator 
-object.</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th>Type</th>
-<th>Intent</th><th>Optional</th>        <th>Attributes</th>
-        <th></th>
-        <th>Name</th>
-        <th></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              class(<a href='../type/rk_variable_integrator.html'>rk_variable_integrator</a>),
-            </td>
-<td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>this</strong></td>
-            <td>
-                <p>The rk_variable_integrator object.</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-        </li>
-    </ul>
-  </div>
-
-              <div class="panel panel-default">
-    <div class="panel-heading codesum">
-      <span class="anchor" id="interface-rkv_get_array_parameter"></span>
-      <h3>        interface
-      </h3>
-    </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-              <h3>
-    public pure function rkv_get_array_parameter(this, i) result(rst)  
-
-    </h3>
-  
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th>Type</th>
-<th>Intent</th><th>Optional</th>        <th>Attributes</th>
-        <th></th>
-        <th>Name</th>
-        <th></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              class(<a href='../type/rk_variable_integrator.html'>rk_variable_integrator</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>this</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              integer(kind=int32),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>i</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>real(kind=real64)</small>
-    </h4>
-    
-
-        </li>
-    </ul>
-  </div>
-
-              <div class="panel panel-default">
-    <div class="panel-heading codesum">
-      <span class="anchor" id="interface-rkv_get_boolean_parameter"></span>
-      <h3>        interface
-      </h3>
-    </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-              <h3>
-    public pure function rkv_get_boolean_parameter(this) result(rst)  
-
-    </h3>
-  
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th>Type</th>
-<th>Intent</th><th>Optional</th>        <th>Attributes</th>
-        <th></th>
-        <th>Name</th>
-        <th></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              class(<a href='../type/rk_variable_integrator.html'>rk_variable_integrator</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>this</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>logical</small>
-    </h4>
-    
-
-        </li>
-    </ul>
-  </div>
-
-              <div class="panel panel-default">
-    <div class="panel-heading codesum">
-      <span class="anchor" id="interface-rkv_get_integer_parameter"></span>
-      <h3>        interface
-      </h3>
-    </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-              <h3>
-    public pure function rkv_get_integer_parameter(this) result(rst)  
-
-    </h3>
-  
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th>Type</th>
-<th>Intent</th><th>Optional</th>        <th>Attributes</th>
-        <th></th>
-        <th>Name</th>
-        <th></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              class(<a href='../type/rk_variable_integrator.html'>rk_variable_integrator</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>this</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>integer(kind=int32)</small>
-    </h4>
-    
-
-        </li>
-    </ul>
-  </div>
-
-              <div class="panel panel-default">
-    <div class="panel-heading codesum">
-      <span class="anchor" id="interface-rkv_get_matrix_parameter"></span>
-      <h3>        interface
-      </h3>
-    </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-              <h3>
-    public pure function rkv_get_matrix_parameter(this, i, j) result(rst)  
-
-    </h3>
-  
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th>Type</th>
-<th>Intent</th><th>Optional</th>        <th>Attributes</th>
-        <th></th>
-        <th>Name</th>
-        <th></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              class(<a href='../type/rk_variable_integrator.html'>rk_variable_integrator</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>this</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              integer(kind=int32),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>i</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              integer(kind=int32),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>j</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>real(kind=real64)</small>
-    </h4>
-    
-
-        </li>
-    </ul>
-  </div>
-
-              <div class="panel panel-default">
-    <div class="panel-heading codesum">
-      <span class="anchor" id="interface-rkv_set_up_interp"></span>
-      <h3>        interface
-      </h3>
-    </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-              <h3>
-    public  subroutine rkv_set_up_interp(this, x, xn, y, yn, k)  
-
-    </h3>
-  <p>Sets up interpolation for the rk_variable_integrator object.</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th>Type</th>
-<th>Intent</th><th>Optional</th>        <th>Attributes</th>
-        <th></th>
-        <th>Name</th>
-        <th></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              class(<a href='../type/rk_variable_integrator.html'>rk_variable_integrator</a>),
-            </td>
-<td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>this</strong></td>
-            <td>
-                <p>The rk_variable_integrator object.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              real(kind=real64),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>x</strong></td>
-            <td>
-                <p>The current value of the independent variable.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              real(kind=real64),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>xn</strong></td>
-            <td>
-                <p>The value of the independent variable at x + h.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              real(kind=real64),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              dimension(:)
-            </td>
-            <td>::</td>
-            <td><strong>y</strong></td>
-            <td>
-                <p>An N-element array containing the values of the dependent
-variables at x.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              real(kind=real64),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              dimension(:)
-            </td>
-            <td>::</td>
-            <td><strong>yn</strong></td>
-            <td>
-                <p>An N-element array containing the values of the dependent
-variables at x + h.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              real(kind=real64),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              dimension(:,:)
-            </td>
-            <td>::</td>
-            <td><strong>k</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-        </li>
-    </ul>
-  </div>
-
-        </section>
-        <br>
 
 
         <section>
           <h2>Derived Types</h2>
-              <div class="panel panel-default">
-    <div class="panel-heading codesum">
-      <span class="anchor" id="type-bsrk32_integrator"></span>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-runge_kutta_23"></span>
       <h3>
-        type, public, extends(<a href='../type/rk_variable_integrator.html'>rk_variable_integrator</a>)&nbsp;::&nbsp;
-        <a href='../type/bsrk32_integrator.html'>bsrk32_integrator</a>
+        type, public, extends(<a href='..\type\single_step_integrator.html'>single_step_integrator</a>)&nbsp;::&nbsp;
+        <a href='..\type\runge_kutta_23.html'>runge_kutta_23</a>
         
       </h3>
     </div>
-    <div class="panel-body">
-      <p>Defines the Bogacki-Shampine 3rd/2nd order integrator.</p>
-
-        <h4>Components</h4>
-          <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th>Type</th>
-<th>Visibility</th>        <th>Attributes</th>
-        <th></th>
-        <th>Name</th>
-<th></th><th>Initial</th>        <th></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-a"></span>
-              real(kind=real64),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable, dimension(:,:)
-            </td>
-            <td>::</td>
-            <td><strong>a</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-<p>The NSTAGE-by-NSTAGE method factor matrix A.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-b"></span>
-              real(kind=real64),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable, dimension(:)
-            </td>
-            <td>::</td>
-            <td><strong>b</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-<p>The NSTAGE-element quadrature weight array B.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-c"></span>
-              real(kind=real64),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable, dimension(:)
-            </td>
-            <td>::</td>
-            <td><strong>c</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-<p>The NSTAGE-element position factor array C.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-e"></span>
-              real(kind=real64),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable, dimension(:)
-            </td>
-            <td>::</td>
-            <td><strong>e</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-<p>The NSTAGE-element error estimate factor array E.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-f"></span>
-              real(kind=real64),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable, dimension(:,:)
-            </td>
-            <td>::</td>
-            <td><strong>f</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-<p>An NEQN-by-NSTAGE matrix containing the function evaluations
-(derivatives) at each of the stages of evaluation.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-m_buffercount"></span>
-              integer(kind=int32),
-            </td>
-              <td>public</td>
-            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>m_bufferCount</strong></td>
-<td> =</td>
-                <td>0</td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
+    <div class="card-body">
+      <p>The Bogacki-Shampine integrator (3rd/2nd order).</p>
 
 
 
@@ -859,599 +191,175 @@ variables at x + h.</p>
         <table class="table table-striped varlist">
           <tbody>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-attempt_step~2'>attempt_step</a></strong>
- =>
-                    rkv_attempt_step
-<small>Subroutine</small>                </td>
-                <td><p>Attempts a single integration step.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-append_to_buffer'>append_to_buffer</a></strong> => oi_append_to_buffer</td>
+                <td>..\..\<p>Appends the supplied solution point to the internal solution 
+buffer.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-buffer_results'>buffer_results</a></strong>
- =>
-                    vsi_append_to_buffer
-<small>Subroutine</small>                </td>
-                <td><p>Buffers a results set.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-attempt_step~3'>attempt_step</a></strong> => rk23_attempt_step</td>
+                <td>..\..\<p>Attempts an integration step for this integrator.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-clear_buffer'>clear_buffer</a></strong>
- =>
-                    vsi_clear_buffer
-<small>Subroutine</small>                </td>
-                <td><p>Clears the results buffer.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-clear_buffer'>clear_buffer</a></strong> => oi_clear_buffer</td>
+                <td>..\..\<p>Clears the contents of the buffer.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-compute_next_step_size~2'>compute_next_step_size</a></strong>
- =>
-                    rkv_next_step
-<small>Function</small>                </td>
-                <td><p>Computes the next step size.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
+                <td>..\..\<p>Computes the norm of the scaled error estimate.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/bsrk32_integrator.html#boundprocedure-define_model~4'>define_model</a></strong>
- =>
-                    bsrk32_define_model
-<small>Subroutine</small>                </td>
-                <td><p>Defines (initializes) the model parameters.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_inital_step_size'>estimate_inital_step_size</a></strong> => oi_initial_step</td>
+                <td>..\..\<p>Computes an estimate of an initial step size.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-estimate_first_step_size~2'>estimate_first_step_size</a></strong>
- =>
-                    vsi_estimate_first_step
-<small>Function</small>                </td>
-                <td><p>Computes an estimate to the first step size based upon the 
-initial function values.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
+                <td>..\..\<p>Estimates the next step size.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-get_alpha'>get_alpha</a></strong>
- =>
-                    rkv_get_alpha
-<small>Function</small>                </td>
-                <td><p>Gets the <script type="math/tex"> \alpha </script> control parameter in the PI controller
-<script type="math/tex"> h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} 
-e_n^{\alpha} e_{n-1}^{\beta}</script>, where <script type="math/tex"> f </script> is a safety 
-factor, and \f$ k ) is the order of the integration method.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_absolute_tolerance'>get_absolute_tolerance</a></strong> => oi_get_abs_tol</td>
+                <td>..\..\<p>Gets the absolute error tolerance.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-get_beta'>get_beta</a></strong>
- =>
-                    rkv_get_beta
-<small>Function</small>                </td>
-                <td><p>Gets the <script type="math/tex"> \beta </script> control parameter in the PI controller
-<script type="math/tex"> h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} 
-e_n^{\alpha} e_{n-1}^{\beta}</script>, where <script type="math/tex"> f </script> is a safety 
-factor, and \f$ k ) is the order of the integration method.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_allow_overshoot'>get_allow_overshoot</a></strong> => oi_get_allow_overshoot</td>
+                <td>..\..\<p>Gets a value determining if the solver is allowed to overshoot 
+the final value in the integration range.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_buffer_contents'>get_buffer_contents</a></strong>
- =>
-                    vsi_get_buffer_contents
-<small>Function</small>                </td>
-                <td><p>Returns the contents of the solution buffer.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-get_is_fsal~3'>get_is_fsal</a></strong> => rk23_get_is_fsal</td>
+                <td>..\..\<p>Gets a logical parameter stating if this is a first-same-as-last
+(FSAL) integrator.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_buffer_size'>get_buffer_size</a></strong>
- =>
-                    vsi_get_buffer_count
-<small>Function</small>                </td>
-                <td><p>Gets the number of entries into the solution buffer.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_maximum_step_size'>get_maximum_step_size</a></strong> => oi_get_max_step</td>
+                <td>..\..\<p>Gets the magnitude of the maximum allowed step size.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_default_absolute_tolerance'>get_default_absolute_tolerance</a></strong>
- =>
-                    vsi_get_default_abs_tol
-<small>Function</small>                </td>
-                <td><p>Gets the default absolute error tolerance.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_minimum_step_size'>get_minimum_step_size</a></strong> => oi_get_min_step</td>
+                <td>..\..\<p>Gets the magnitude of the minimum allowed step size.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_default_relative_tolerance'>get_default_relative_tolerance</a></strong>
- =>
-                    vsi_get_default_rel_tol
-<small>Function</small>                </td>
-                <td><p>Gets the default relative error tolerance.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-get_order~3'>get_order</a></strong> => rk23_get_order</td>
+                <td>..\..\<p>Gets the order of the integrator.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-get_is_first_step'>get_is_first_step</a></strong>
- =>
-                    rkv_get_is_first_step
-<small>Function</small>                </td>
-                <td><p>Gets a value determining if the integrator is set up to take its 
-first integration step.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_relative_tolerance'>get_relative_tolerance</a></strong> => oi_get_abs_tol</td>
+                <td>..\..\<p>Gets the relative error tolerance.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_max_integration_step_count'>get_max_integration_step_count</a></strong>
- =>
-                    vsi_get_max_step_count
-<small>Function</small>                </td>
-                <td><p>Gets the maximum number of integration steps allowed.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_solution'>get_solution</a></strong> => oi_get_solution</td>
+                <td>..\..\<p>Returns the solution computed by the integrator.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_max_per_step_iteration_count'>get_max_per_step_iteration_count</a></strong>
- =>
-                    vsi_get_max_iter_count
-<small>Function</small>                </td>
-                <td><p>Gets the maximum number of iterations per step allowed.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-get_stage_count~3'>get_stage_count</a></strong> => rk23_get_stage_count</td>
+                <td>..\..\<p>Gets the stage count for this integrator.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_max_step_size'>get_max_step_size</a></strong>
- =>
-                    vsi_get_max_step
-<small>Function</small>                </td>
-                <td><p>Gets the maximum allowed step size.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_limit'>get_step_limit</a></strong> => oi_get_step_limit</td>
+                <td>..\..\<p>Gets the limit on the number of integration steps.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_min_step_size'>get_min_step_size</a></strong>
- =>
-                    vsi_get_min_step
-<small>Function</small>                </td>
-                <td><p>Gets the minimum allowed step size.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_size_control_parameter'>get_step_size_control_parameter</a></strong> => oi_get_control_parameter</td>
+                <td>..\..\<p>Gets the step size PI control parameter.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_next_step_size'>get_next_step_size</a></strong>
- =>
-                    vsi_get_next_step_size
-<small>Function</small>                </td>
-                <td><p>Gets the next step size.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_size_factor'>get_step_size_factor</a></strong> => oi_get_safety_factor</td>
+                <td>..\..\<p>Gets the step size safety factor.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/bsrk32_integrator.html#boundprocedure-get_order~6'>get_order</a></strong>
- =>
-                    bsrk32_get_order
-<small>Function</small>                </td>
-                <td><p>Returns the order of the integrator.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-interpolate~3'>interpolate</a></strong> => rk23_interp</td>
+                <td>..\..\<p>Performs the interpolation.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_previous_error_norm'>get_previous_error_norm</a></strong>
- =>
-                    vsi_get_prev_err_norm
-<small>Function</small>                </td>
-                <td><p>Gets the norm of the previous step's error estimate.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-post_step_action~3'>post_step_action</a></strong> => rk23_set_up_interp</td>
+                <td>..\..\<p>Sets up the interpolation process as the post-step action.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_respect_x_max'>get_respect_x_max</a></strong>
- =>
-                    vsi_get_respect_xmax
-<small>Function</small>                </td>
-                <td><p>Gets a value determining if the integrator should respect a
-hard limit in the independent variable range.  If false, the 
-integrator may step pass the limit.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-pre_step_action~3'>pre_step_action</a></strong> => rk23_pre_step</td>
+                <td>..\..\<p>Performs any pre-step actions.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_safety_factor'>get_safety_factor</a></strong>
- =>
-                    vsi_get_safety_factor
-<small>Function</small>                </td>
-                <td><p>Gets a safety factor used to limit the predicted step size.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_absolute_tolerance'>set_absolute_tolerance</a></strong> => oi_set_abs_tol</td>
+                <td>..\..\<p>Sets the absolute error tolerance.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/bsrk32_integrator.html#boundprocedure-get_stage_count~4'>get_stage_count</a></strong>
- =>
-                    bsrk32_get_stage_count
-<small>Function</small>                </td>
-                <td><p>Gets the number of stages used by the integrator.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_allow_overshoot'>set_allow_overshoot</a></strong> => oi_set_allow_overshoot</td>
+                <td>..\..\<p>Sets a value determining if the solver is allowed to overshoot 
+the final value in the integration range.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_step_size'>get_step_size</a></strong>
- =>
-                    vsi_get_step_size
-<small>Function</small>                </td>
-                <td><p>Gets the current step size.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_maximum_step_size'>set_maximum_step_size</a></strong> => oi_set_max_step</td>
+                <td>..\..\<p>Sets the magnitude of the maximum allowed step size.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-initialize~3'>initialize</a></strong>
- =>
-                    rkv_alloc_workspace
-<small>Subroutine</small>                </td>
-                <td><p>Initializes the integrator.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_minimum_step_size'>set_minimum_step_size</a></strong> => oi_set_min_step</td>
+                <td>..\..\<p>Sets the magnitude of the minimum allowed step size.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/bsrk32_integrator.html#boundprocedure-interpolate~3'>interpolate</a></strong>
- =>
-                    bsrk32_interp
-<small>Subroutine</small>                </td>
-                <td><p>Provides interpolation between integration points allowing for
-dense output.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_relative_tolerance'>set_relative_tolerance</a></strong> => oi_set_abs_tol</td>
+                <td>..\..\<p>Sets the relative error tolerance.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/bsrk32_integrator.html#boundprocedure-is_fsal~4'>is_fsal</a></strong>
- =>
-                    bsrk32_is_fsal
-<small>Function</small>                </td>
-                <td><p>Determines if the integrator is an FSAL (first same as last)
-integrator.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_limit'>set_step_limit</a></strong> => oi_set_step_limit</td>
+                <td>..\..\<p>Sets the limit on the number of integration steps.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-on_successful_step'>on_successful_step</a></strong>
- =>
-                    rkv_on_successful_step
-<small>Subroutine</small>                </td>
-                <td><p>Perform necessary actions on completion of a successful step.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_size_control_parameter'>set_step_size_control_parameter</a></strong> => oi_set_control_parameter</td>
+                <td>..\..\<p>Sets the step size PI control parameter.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-reset'>reset</a></strong>
- =>
-                    rkv_reset
-<small>Subroutine</small>                </td>
-                <td><p>Resets the integrator to its initial state.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_size_factor'>set_step_size_factor</a></strong> => oi_set_safety_factor</td>
+                <td>..\..\<p>Sets the step size safety factor.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-set_alpha'>set_alpha</a></strong>
- =>
-                    rkv_set_alpha
-<small>Subroutine</small>                </td>
-                <td><p>Sets the <script type="math/tex"> \alpha </script> control parameter in the PI controller
-<script type="math/tex"> h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} 
-e_n^{\alpha} e_{n-1}^{\beta}</script>, where <script type="math/tex"> f </script> is a safety 
-factor, and \f$ k ) is the order of the integration method.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-set_beta'>set_beta</a></strong>
- =>
-                    rkv_set_beta
-<small>Subroutine</small>                </td>
-                <td><p>Sets the <script type="math/tex"> \beta </script> control parameter in the PI controller
-<script type="math/tex"> h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} 
-e_n^{\alpha} e_{n-1}^{\beta}</script>, where <script type="math/tex"> f </script> is a safety 
-factor, and \f$ k ) is the order of the integration method.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-set_is_first_step'>set_is_first_step</a></strong>
- =>
-                    rkv_set_is_first_step
-<small>Subroutine</small>                </td>
-                <td><p>Sets a value determining if the integrator is set up to take its 
-first integration step.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_max_integration_step_count'>set_max_integration_step_count</a></strong>
- =>
-                    vsi_set_max_step_count
-<small>Subroutine</small>                </td>
-                <td><p>Sets the maximum number of integration steps allowed.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_max_per_step_iteration_count'>set_max_per_step_iteration_count</a></strong>
- =>
-                    vsi_set_max_iter_count
-<small>Subroutine</small>                </td>
-                <td><p>Sets the maximum number of iterations per step allowed.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_max_step_size'>set_max_step_size</a></strong>
- =>
-                    vsi_set_max_step
-<small>Subroutine</small>                </td>
-                <td><p>Sets the maximum allowed step size.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_min_step_size'>set_min_step_size</a></strong>
- =>
-                    vsi_set_min_step
-<small>Subroutine</small>                </td>
-                <td><p>Sets the minimum allowed step size.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_next_step_size'>set_next_step_size</a></strong>
- =>
-                    vsi_set_next_step_size
-<small>Subroutine</small>                </td>
-                <td><p>Sets the next step size.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_previous_error_norm'>set_previous_error_norm</a></strong>
- =>
-                    vsi_set_prev_err_norm
-<small>Subroutine</small>                </td>
-                <td><p>Sets the norm of the previous step's error estimate.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_respect_x_max'>set_respect_x_max</a></strong>
- =>
-                    vsi_set_respect_xmax
-<small>Subroutine</small>                </td>
-                <td><p>Sets a value determining if the integrator should respect a
-hard limit in the independent variable range.  If false, the 
-integrator may step pass the limit.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_safety_factor'>set_safety_factor</a></strong>
- =>
-                    vsi_set_safety_factor
-<small>Subroutine</small>                </td>
-                <td><p>Sets a safety factor used to limit the predicted step size.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_step_size'>set_step_size</a></strong>
- =>
-                    vsi_set_step_size
-<small>Subroutine</small>                </td>
-                <td><p>Sets the current step size.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/bsrk32_integrator.html#boundprocedure-set_up_interpolation~4'>set_up_interpolation</a></strong>
- =>
-                    bsrk32_set_up_interp
-<small>Subroutine</small>                </td>
-                <td><p>Sets up the interpolation polynomial.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_singlestep_integrator.html#boundprocedure-solve~4'>solve</a></strong>
- =>
-                    vssi_solve
-<small>Function</small>                </td>
-                <td><p>Solves the supplied system of ODEs.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-step~4'>step</a></strong>
- =>
-                    vsi_step
-<small>Subroutine</small>                </td>
-                <td><p>Takes one integration step.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\single_step_integrator.html#boundprocedure-solve~2'>solve</a></strong> => ssi_ode_solver</td>
+                <td>..\..\<p>Solves the supplied system of ODE's.<\p></td>
               </tr>
           </tbody>
         </table>
     </div>
   </div>
 
-              <div class="panel panel-default">
-    <div class="panel-heading codesum">
-      <span class="anchor" id="type-dprk45_integrator"></span>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-runge_kutta_45"></span>
       <h3>
-        type, public, extends(<a href='../type/rk_variable_integrator.html'>rk_variable_integrator</a>)&nbsp;::&nbsp;
-        <a href='../type/dprk45_integrator.html'>dprk45_integrator</a>
+        type, public, extends(<a href='..\type\single_step_integrator.html'>single_step_integrator</a>)&nbsp;::&nbsp;
+        <a href='..\type\runge_kutta_45.html'>runge_kutta_45</a>
         
       </h3>
     </div>
-    <div class="panel-body">
-      <p>Defines the classical Dormand-Prince 4th/5th order integrator.</p>
-
-        <h4>Components</h4>
-          <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th>Type</th>
-<th>Visibility</th>        <th>Attributes</th>
-        <th></th>
-        <th>Name</th>
-<th></th><th>Initial</th>        <th></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-a"></span>
-              real(kind=real64),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable, dimension(:,:)
-            </td>
-            <td>::</td>
-            <td><strong>a</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-<p>The NSTAGE-by-NSTAGE method factor matrix A.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-b"></span>
-              real(kind=real64),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable, dimension(:)
-            </td>
-            <td>::</td>
-            <td><strong>b</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-<p>The NSTAGE-element quadrature weight array B.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-c"></span>
-              real(kind=real64),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable, dimension(:)
-            </td>
-            <td>::</td>
-            <td><strong>c</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-<p>The NSTAGE-element position factor array C.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-e"></span>
-              real(kind=real64),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable, dimension(:)
-            </td>
-            <td>::</td>
-            <td><strong>e</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-<p>The NSTAGE-element error estimate factor array E.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-f"></span>
-              real(kind=real64),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable, dimension(:,:)
-            </td>
-            <td>::</td>
-            <td><strong>f</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-<p>An NEQN-by-NSTAGE matrix containing the function evaluations
-(derivatives) at each of the stages of evaluation.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-m_buffercount"></span>
-              integer(kind=int32),
-            </td>
-              <td>public</td>
-            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>m_bufferCount</strong></td>
-<td> =</td>
-                <td>0</td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
+    <div class="card-body">
+      <p>The Dormand-Prince, Runge-Kutta integrator (4th/5th order).</p>
 
 
 
@@ -1460,599 +368,175 @@ integrator may step pass the limit.</p></td>
         <table class="table table-striped varlist">
           <tbody>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-attempt_step~2'>attempt_step</a></strong>
- =>
-                    rkv_attempt_step
-<small>Subroutine</small>                </td>
-                <td><p>Attempts a single integration step.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-append_to_buffer'>append_to_buffer</a></strong> => oi_append_to_buffer</td>
+                <td>..\..\<p>Appends the supplied solution point to the internal solution 
+buffer.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-buffer_results'>buffer_results</a></strong>
- =>
-                    vsi_append_to_buffer
-<small>Subroutine</small>                </td>
-                <td><p>Buffers a results set.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-attempt_step~2'>attempt_step</a></strong> => rk45_attempt_step</td>
+                <td>..\..\<p>Attempts an integration step for this integrator.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-clear_buffer'>clear_buffer</a></strong>
- =>
-                    vsi_clear_buffer
-<small>Subroutine</small>                </td>
-                <td><p>Clears the results buffer.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-clear_buffer'>clear_buffer</a></strong> => oi_clear_buffer</td>
+                <td>..\..\<p>Clears the contents of the buffer.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-compute_next_step_size~2'>compute_next_step_size</a></strong>
- =>
-                    rkv_next_step
-<small>Function</small>                </td>
-                <td><p>Computes the next step size.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
+                <td>..\..\<p>Computes the norm of the scaled error estimate.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/dprk45_integrator.html#boundprocedure-define_model~3'>define_model</a></strong>
- =>
-                    dprk45_define_model
-<small>Subroutine</small>                </td>
-                <td><p>Defines (initializes) the model parameters.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_inital_step_size'>estimate_inital_step_size</a></strong> => oi_initial_step</td>
+                <td>..\..\<p>Computes an estimate of an initial step size.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-estimate_first_step_size~2'>estimate_first_step_size</a></strong>
- =>
-                    vsi_estimate_first_step
-<small>Function</small>                </td>
-                <td><p>Computes an estimate to the first step size based upon the 
-initial function values.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
+                <td>..\..\<p>Estimates the next step size.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-get_alpha'>get_alpha</a></strong>
- =>
-                    rkv_get_alpha
-<small>Function</small>                </td>
-                <td><p>Gets the <script type="math/tex"> \alpha </script> control parameter in the PI controller
-<script type="math/tex"> h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} 
-e_n^{\alpha} e_{n-1}^{\beta}</script>, where <script type="math/tex"> f </script> is a safety 
-factor, and \f$ k ) is the order of the integration method.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_absolute_tolerance'>get_absolute_tolerance</a></strong> => oi_get_abs_tol</td>
+                <td>..\..\<p>Gets the absolute error tolerance.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-get_beta'>get_beta</a></strong>
- =>
-                    rkv_get_beta
-<small>Function</small>                </td>
-                <td><p>Gets the <script type="math/tex"> \beta </script> control parameter in the PI controller
-<script type="math/tex"> h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} 
-e_n^{\alpha} e_{n-1}^{\beta}</script>, where <script type="math/tex"> f </script> is a safety 
-factor, and \f$ k ) is the order of the integration method.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_allow_overshoot'>get_allow_overshoot</a></strong> => oi_get_allow_overshoot</td>
+                <td>..\..\<p>Gets a value determining if the solver is allowed to overshoot 
+the final value in the integration range.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_buffer_contents'>get_buffer_contents</a></strong>
- =>
-                    vsi_get_buffer_contents
-<small>Function</small>                </td>
-                <td><p>Returns the contents of the solution buffer.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-get_is_fsal~2'>get_is_fsal</a></strong> => rk45_get_is_fsal</td>
+                <td>..\..\<p>Gets a logical parameter stating if this is a first-same-as-last
+(FSAL) integrator.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_buffer_size'>get_buffer_size</a></strong>
- =>
-                    vsi_get_buffer_count
-<small>Function</small>                </td>
-                <td><p>Gets the number of entries into the solution buffer.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_maximum_step_size'>get_maximum_step_size</a></strong> => oi_get_max_step</td>
+                <td>..\..\<p>Gets the magnitude of the maximum allowed step size.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_default_absolute_tolerance'>get_default_absolute_tolerance</a></strong>
- =>
-                    vsi_get_default_abs_tol
-<small>Function</small>                </td>
-                <td><p>Gets the default absolute error tolerance.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_minimum_step_size'>get_minimum_step_size</a></strong> => oi_get_min_step</td>
+                <td>..\..\<p>Gets the magnitude of the minimum allowed step size.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_default_relative_tolerance'>get_default_relative_tolerance</a></strong>
- =>
-                    vsi_get_default_rel_tol
-<small>Function</small>                </td>
-                <td><p>Gets the default relative error tolerance.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-get_order~2'>get_order</a></strong> => rk45_get_order</td>
+                <td>..\..\<p>Gets the order of the integrator.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-get_is_first_step'>get_is_first_step</a></strong>
- =>
-                    rkv_get_is_first_step
-<small>Function</small>                </td>
-                <td><p>Gets a value determining if the integrator is set up to take its 
-first integration step.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_relative_tolerance'>get_relative_tolerance</a></strong> => oi_get_abs_tol</td>
+                <td>..\..\<p>Gets the relative error tolerance.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_max_integration_step_count'>get_max_integration_step_count</a></strong>
- =>
-                    vsi_get_max_step_count
-<small>Function</small>                </td>
-                <td><p>Gets the maximum number of integration steps allowed.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_solution'>get_solution</a></strong> => oi_get_solution</td>
+                <td>..\..\<p>Returns the solution computed by the integrator.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_max_per_step_iteration_count'>get_max_per_step_iteration_count</a></strong>
- =>
-                    vsi_get_max_iter_count
-<small>Function</small>                </td>
-                <td><p>Gets the maximum number of iterations per step allowed.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-get_stage_count~2'>get_stage_count</a></strong> => rk45_get_stage_count</td>
+                <td>..\..\<p>Gets the stage count for this integrator.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_max_step_size'>get_max_step_size</a></strong>
- =>
-                    vsi_get_max_step
-<small>Function</small>                </td>
-                <td><p>Gets the maximum allowed step size.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_limit'>get_step_limit</a></strong> => oi_get_step_limit</td>
+                <td>..\..\<p>Gets the limit on the number of integration steps.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_min_step_size'>get_min_step_size</a></strong>
- =>
-                    vsi_get_min_step
-<small>Function</small>                </td>
-                <td><p>Gets the minimum allowed step size.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_size_control_parameter'>get_step_size_control_parameter</a></strong> => oi_get_control_parameter</td>
+                <td>..\..\<p>Gets the step size PI control parameter.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_next_step_size'>get_next_step_size</a></strong>
- =>
-                    vsi_get_next_step_size
-<small>Function</small>                </td>
-                <td><p>Gets the next step size.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_size_factor'>get_step_size_factor</a></strong> => oi_get_safety_factor</td>
+                <td>..\..\<p>Gets the step size safety factor.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/dprk45_integrator.html#boundprocedure-get_order~5'>get_order</a></strong>
- =>
-                    dprk45_get_order
-<small>Function</small>                </td>
-                <td><p>Returns the order of the integrator.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-interpolate~2'>interpolate</a></strong> => rk45_interp</td>
+                <td>..\..\<p>Performs the interpolation.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_previous_error_norm'>get_previous_error_norm</a></strong>
- =>
-                    vsi_get_prev_err_norm
-<small>Function</small>                </td>
-                <td><p>Gets the norm of the previous step's error estimate.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-post_step_action~2'>post_step_action</a></strong> => rk45_set_up_interp</td>
+                <td>..\..\<p>Sets up the interpolation process as the post-step action.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_respect_x_max'>get_respect_x_max</a></strong>
- =>
-                    vsi_get_respect_xmax
-<small>Function</small>                </td>
-                <td><p>Gets a value determining if the integrator should respect a
-hard limit in the independent variable range.  If false, the 
-integrator may step pass the limit.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-pre_step_action~2'>pre_step_action</a></strong> => rk45_pre_step</td>
+                <td>..\..\<p>Performs any pre-step actions.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_safety_factor'>get_safety_factor</a></strong>
- =>
-                    vsi_get_safety_factor
-<small>Function</small>                </td>
-                <td><p>Gets a safety factor used to limit the predicted step size.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_absolute_tolerance'>set_absolute_tolerance</a></strong> => oi_set_abs_tol</td>
+                <td>..\..\<p>Sets the absolute error tolerance.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/dprk45_integrator.html#boundprocedure-get_stage_count~3'>get_stage_count</a></strong>
- =>
-                    dprk45_get_stage_count
-<small>Function</small>                </td>
-                <td><p>Gets the number of stages used by the integrator.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_allow_overshoot'>set_allow_overshoot</a></strong> => oi_set_allow_overshoot</td>
+                <td>..\..\<p>Sets a value determining if the solver is allowed to overshoot 
+the final value in the integration range.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_step_size'>get_step_size</a></strong>
- =>
-                    vsi_get_step_size
-<small>Function</small>                </td>
-                <td><p>Gets the current step size.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_maximum_step_size'>set_maximum_step_size</a></strong> => oi_set_max_step</td>
+                <td>..\..\<p>Sets the magnitude of the maximum allowed step size.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-initialize~3'>initialize</a></strong>
- =>
-                    rkv_alloc_workspace
-<small>Subroutine</small>                </td>
-                <td><p>Initializes the integrator.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_minimum_step_size'>set_minimum_step_size</a></strong> => oi_set_min_step</td>
+                <td>..\..\<p>Sets the magnitude of the minimum allowed step size.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/dprk45_integrator.html#boundprocedure-interpolate~2'>interpolate</a></strong>
- =>
-                    dprk45_interp
-<small>Subroutine</small>                </td>
-                <td><p>Provides interpolation between integration points allowing
-for dense output.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_relative_tolerance'>set_relative_tolerance</a></strong> => oi_set_abs_tol</td>
+                <td>..\..\<p>Sets the relative error tolerance.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/dprk45_integrator.html#boundprocedure-is_fsal~3'>is_fsal</a></strong>
- =>
-                    dprk45_is_fsal
-<small>Function</small>                </td>
-                <td><p>Determines if the integrator is an FSAL (first same as last)
-integrator (e.g. the 4th/5th order Dormand-Prince integrator).</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_limit'>set_step_limit</a></strong> => oi_set_step_limit</td>
+                <td>..\..\<p>Sets the limit on the number of integration steps.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-on_successful_step'>on_successful_step</a></strong>
- =>
-                    rkv_on_successful_step
-<small>Subroutine</small>                </td>
-                <td><p>Perform necessary actions on completion of a successful step.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_size_control_parameter'>set_step_size_control_parameter</a></strong> => oi_set_control_parameter</td>
+                <td>..\..\<p>Sets the step size PI control parameter.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-reset'>reset</a></strong>
- =>
-                    rkv_reset
-<small>Subroutine</small>                </td>
-                <td><p>Resets the integrator to its initial state.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_size_factor'>set_step_size_factor</a></strong> => oi_set_safety_factor</td>
+                <td>..\..\<p>Sets the step size safety factor.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-set_alpha'>set_alpha</a></strong>
- =>
-                    rkv_set_alpha
-<small>Subroutine</small>                </td>
-                <td><p>Sets the <script type="math/tex"> \alpha </script> control parameter in the PI controller
-<script type="math/tex"> h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} 
-e_n^{\alpha} e_{n-1}^{\beta}</script>, where <script type="math/tex"> f </script> is a safety 
-factor, and \f$ k ) is the order of the integration method.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-set_beta'>set_beta</a></strong>
- =>
-                    rkv_set_beta
-<small>Subroutine</small>                </td>
-                <td><p>Sets the <script type="math/tex"> \beta </script> control parameter in the PI controller
-<script type="math/tex"> h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} 
-e_n^{\alpha} e_{n-1}^{\beta}</script>, where <script type="math/tex"> f </script> is a safety 
-factor, and \f$ k ) is the order of the integration method.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-set_is_first_step'>set_is_first_step</a></strong>
- =>
-                    rkv_set_is_first_step
-<small>Subroutine</small>                </td>
-                <td><p>Sets a value determining if the integrator is set up to take its 
-first integration step.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_max_integration_step_count'>set_max_integration_step_count</a></strong>
- =>
-                    vsi_set_max_step_count
-<small>Subroutine</small>                </td>
-                <td><p>Sets the maximum number of integration steps allowed.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_max_per_step_iteration_count'>set_max_per_step_iteration_count</a></strong>
- =>
-                    vsi_set_max_iter_count
-<small>Subroutine</small>                </td>
-                <td><p>Sets the maximum number of iterations per step allowed.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_max_step_size'>set_max_step_size</a></strong>
- =>
-                    vsi_set_max_step
-<small>Subroutine</small>                </td>
-                <td><p>Sets the maximum allowed step size.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_min_step_size'>set_min_step_size</a></strong>
- =>
-                    vsi_set_min_step
-<small>Subroutine</small>                </td>
-                <td><p>Sets the minimum allowed step size.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_next_step_size'>set_next_step_size</a></strong>
- =>
-                    vsi_set_next_step_size
-<small>Subroutine</small>                </td>
-                <td><p>Sets the next step size.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_previous_error_norm'>set_previous_error_norm</a></strong>
- =>
-                    vsi_set_prev_err_norm
-<small>Subroutine</small>                </td>
-                <td><p>Sets the norm of the previous step's error estimate.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_respect_x_max'>set_respect_x_max</a></strong>
- =>
-                    vsi_set_respect_xmax
-<small>Subroutine</small>                </td>
-                <td><p>Sets a value determining if the integrator should respect a
-hard limit in the independent variable range.  If false, the 
-integrator may step pass the limit.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_safety_factor'>set_safety_factor</a></strong>
- =>
-                    vsi_set_safety_factor
-<small>Subroutine</small>                </td>
-                <td><p>Sets a safety factor used to limit the predicted step size.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_step_size'>set_step_size</a></strong>
- =>
-                    vsi_set_step_size
-<small>Subroutine</small>                </td>
-                <td><p>Sets the current step size.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/dprk45_integrator.html#boundprocedure-set_up_interpolation~3'>set_up_interpolation</a></strong>
- =>
-                    dprk45_set_up_interp
-<small>Subroutine</small>                </td>
-                <td><p>Sets up the interpolation polynomial.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_singlestep_integrator.html#boundprocedure-solve~4'>solve</a></strong>
- =>
-                    vssi_solve
-<small>Function</small>                </td>
-                <td><p>Solves the supplied system of ODEs.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-step~4'>step</a></strong>
- =>
-                    vsi_step
-<small>Subroutine</small>                </td>
-                <td><p>Takes one integration step.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\single_step_integrator.html#boundprocedure-solve~2'>solve</a></strong> => ssi_ode_solver</td>
+                <td>..\..\<p>Solves the supplied system of ODE's.<\p></td>
               </tr>
           </tbody>
         </table>
     </div>
   </div>
 
-              <div class="panel panel-default">
-    <div class="panel-heading codesum">
-      <span class="anchor" id="type-rk_variable_integrator"></span>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-runge_kutta_853"></span>
       <h3>
-        type, public, extends(<a href='../type/variable_singlestep_integrator.html'>variable_singlestep_integrator</a>)&nbsp;::&nbsp;
-        <a href='../type/rk_variable_integrator.html'>rk_variable_integrator</a>
+        type, public, extends(<a href='..\type\single_step_integrator.html'>single_step_integrator</a>)&nbsp;::&nbsp;
+        <a href='..\type\runge_kutta_853.html'>runge_kutta_853</a>
         
       </h3>
     </div>
-    <div class="panel-body">
-      <p>@brief Defines a variable-step, Runge-Kutta integrator.</p>
-
-        <h4>Components</h4>
-          <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th>Type</th>
-<th>Visibility</th>        <th>Attributes</th>
-        <th></th>
-        <th>Name</th>
-<th></th><th>Initial</th>        <th></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-a"></span>
-              real(kind=real64),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable, dimension(:,:)
-            </td>
-            <td>::</td>
-            <td><strong>a</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-<p>The NSTAGE-by-NSTAGE method factor matrix A.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-b"></span>
-              real(kind=real64),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable, dimension(:)
-            </td>
-            <td>::</td>
-            <td><strong>b</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-<p>The NSTAGE-element quadrature weight array B.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-c"></span>
-              real(kind=real64),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable, dimension(:)
-            </td>
-            <td>::</td>
-            <td><strong>c</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-<p>The NSTAGE-element position factor array C.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-e"></span>
-              real(kind=real64),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable, dimension(:)
-            </td>
-            <td>::</td>
-            <td><strong>e</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-<p>The NSTAGE-element error estimate factor array E.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-f"></span>
-              real(kind=real64),
-            </td>
-              <td>public,</td>
-            <td>
-              allocatable, dimension(:,:)
-            </td>
-            <td>::</td>
-            <td><strong>f</strong></td>
-                <td></td>
-                <td></td>
-            <td>
-<p>An NEQN-by-NSTAGE matrix containing the function evaluations
-(derivatives) at each of the stages of evaluation.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-m_buffercount"></span>
-              integer(kind=int32),
-            </td>
-              <td>public</td>
-            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>m_bufferCount</strong></td>
-<td> =</td>
-                <td>0</td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
+    <div class="card-body">
+      <p>An 8th order Dormand-Prince type 8th order integrator.</p>
 
 
 
@@ -2061,452 +545,158 @@ integrator may step pass the limit.</p></td>
         <table class="table table-striped varlist">
           <tbody>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-attempt_step~2'>attempt_step</a></strong>
- =>
-                    rkv_attempt_step
-<small>Subroutine</small>                </td>
-                <td><p>Attempts a single integration step.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-append_to_buffer'>append_to_buffer</a></strong> => oi_append_to_buffer</td>
+                <td>..\..\<p>Appends the supplied solution point to the internal solution 
+buffer.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-buffer_results'>buffer_results</a></strong>
- =>
-                    vsi_append_to_buffer
-<small>Subroutine</small>                </td>
-                <td><p>Buffers a results set.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-attempt_step~4'>attempt_step</a></strong> => rk853_attempt_step</td>
+                <td>..\..\<p>Attempts an integration step for this integrator.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-clear_buffer'>clear_buffer</a></strong>
- =>
-                    vsi_clear_buffer
-<small>Subroutine</small>                </td>
-                <td><p>Clears the results buffer.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-clear_buffer'>clear_buffer</a></strong> => oi_clear_buffer</td>
+                <td>..\..\<p>Clears the contents of the buffer.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-compute_next_step_size~2'>compute_next_step_size</a></strong>
- =>
-                    rkv_next_step
-<small>Function</small>                </td>
-                <td><p>Computes the next step size.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-compute_error_norm'>compute_error_norm</a></strong> => rk853_estimate_error</td>
+                <td>..\..\<p>Computes the norm of the scaled error estimate.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-(rkv_action)                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-define_model~2'>define_model</a></strong>
-<small></small>                </td>
-                <td><p>Defines (initializes) the model parameters.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_inital_step_size'>estimate_inital_step_size</a></strong> => oi_initial_step</td>
+                <td>..\..\<p>Computes an estimate of an initial step size.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-estimate_first_step_size~2'>estimate_first_step_size</a></strong>
- =>
-                    vsi_estimate_first_step
-<small>Function</small>                </td>
-                <td><p>Computes an estimate to the first step size based upon the 
-initial function values.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
+                <td>..\..\<p>Estimates the next step size.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-get_alpha'>get_alpha</a></strong>
- =>
-                    rkv_get_alpha
-<small>Function</small>                </td>
-                <td><p>Gets the <script type="math/tex"> \alpha </script> control parameter in the PI controller
-<script type="math/tex"> h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} 
-e_n^{\alpha} e_{n-1}^{\beta}</script>, where <script type="math/tex"> f </script> is a safety 
-factor, and \f$ k ) is the order of the integration method.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_absolute_tolerance'>get_absolute_tolerance</a></strong> => oi_get_abs_tol</td>
+                <td>..\..\<p>Gets the absolute error tolerance.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-get_beta'>get_beta</a></strong>
- =>
-                    rkv_get_beta
-<small>Function</small>                </td>
-                <td><p>Gets the <script type="math/tex"> \beta </script> control parameter in the PI controller
-<script type="math/tex"> h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} 
-e_n^{\alpha} e_{n-1}^{\beta}</script>, where <script type="math/tex"> f </script> is a safety 
-factor, and \f$ k ) is the order of the integration method.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_allow_overshoot'>get_allow_overshoot</a></strong> => oi_get_allow_overshoot</td>
+                <td>..\..\<p>Gets a value determining if the solver is allowed to overshoot 
+the final value in the integration range.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_buffer_contents'>get_buffer_contents</a></strong>
- =>
-                    vsi_get_buffer_contents
-<small>Function</small>                </td>
-                <td><p>Returns the contents of the solution buffer.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-get_is_fsal~4'>get_is_fsal</a></strong> => rk853_get_is_fsal</td>
+                <td>..\..\<p>Gets a logical parameter stating if this is a first-same-as-last
+(FSAL) integrator.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_buffer_size'>get_buffer_size</a></strong>
- =>
-                    vsi_get_buffer_count
-<small>Function</small>                </td>
-                <td><p>Gets the number of entries into the solution buffer.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_maximum_step_size'>get_maximum_step_size</a></strong> => oi_get_max_step</td>
+                <td>..\..\<p>Gets the magnitude of the maximum allowed step size.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_default_absolute_tolerance'>get_default_absolute_tolerance</a></strong>
- =>
-                    vsi_get_default_abs_tol
-<small>Function</small>                </td>
-                <td><p>Gets the default absolute error tolerance.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_minimum_step_size'>get_minimum_step_size</a></strong> => oi_get_min_step</td>
+                <td>..\..\<p>Gets the magnitude of the minimum allowed step size.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_default_relative_tolerance'>get_default_relative_tolerance</a></strong>
- =>
-                    vsi_get_default_rel_tol
-<small>Function</small>                </td>
-                <td><p>Gets the default relative error tolerance.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-get_order~4'>get_order</a></strong> => rk853_get_order</td>
+                <td>..\..\<p>Gets the order of the integrator.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-get_is_first_step'>get_is_first_step</a></strong>
- =>
-                    rkv_get_is_first_step
-<small>Function</small>                </td>
-                <td><p>Gets a value determining if the integrator is set up to take its 
-first integration step.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_relative_tolerance'>get_relative_tolerance</a></strong> => oi_get_abs_tol</td>
+                <td>..\..\<p>Gets the relative error tolerance.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_max_integration_step_count'>get_max_integration_step_count</a></strong>
- =>
-                    vsi_get_max_step_count
-<small>Function</small>                </td>
-                <td><p>Gets the maximum number of integration steps allowed.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_solution'>get_solution</a></strong> => oi_get_solution</td>
+                <td>..\..\<p>Returns the solution computed by the integrator.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_max_per_step_iteration_count'>get_max_per_step_iteration_count</a></strong>
- =>
-                    vsi_get_max_iter_count
-<small>Function</small>                </td>
-                <td><p>Gets the maximum number of iterations per step allowed.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-get_stage_count~4'>get_stage_count</a></strong> => rk853_get_stage_count</td>
+                <td>..\..\<p>Gets the stage count for this integrator.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_max_step_size'>get_max_step_size</a></strong>
- =>
-                    vsi_get_max_step
-<small>Function</small>                </td>
-                <td><p>Gets the maximum allowed step size.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_limit'>get_step_limit</a></strong> => oi_get_step_limit</td>
+                <td>..\..\<p>Gets the limit on the number of integration steps.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_min_step_size'>get_min_step_size</a></strong>
- =>
-                    vsi_get_min_step
-<small>Function</small>                </td>
-                <td><p>Gets the minimum allowed step size.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_size_control_parameter'>get_step_size_control_parameter</a></strong> => oi_get_control_parameter</td>
+                <td>..\..\<p>Gets the step size PI control parameter.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_next_step_size'>get_next_step_size</a></strong>
- =>
-                    vsi_get_next_step_size
-<small>Function</small>                </td>
-                <td><p>Gets the next step size.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_size_factor'>get_step_size_factor</a></strong> => oi_get_safety_factor</td>
+                <td>..\..\<p>Gets the step size safety factor.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-(ode_integer_inquiry)                    ,                  public
-, pass                  :: <strong><a href='../type/ode_integrator.html#boundprocedure-get_order~2'>get_order</a></strong>
-<small></small>                </td>
-                <td><p>Returns the order of the integrator.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-interpolate~4'>interpolate</a></strong> => rk853_interp</td>
+                <td>..\..\<p>Performs the interpolation.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_previous_error_norm'>get_previous_error_norm</a></strong>
- =>
-                    vsi_get_prev_err_norm
-<small>Function</small>                </td>
-                <td><p>Gets the norm of the previous step's error estimate.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-post_step_action~4'>post_step_action</a></strong> => rk853_set_up_interp</td>
+                <td>..\..\<p>Sets up the interpolation process as the post-step action.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_respect_x_max'>get_respect_x_max</a></strong>
- =>
-                    vsi_get_respect_xmax
-<small>Function</small>                </td>
-                <td><p>Gets a value determining if the integrator should respect a
-hard limit in the independent variable range.  If false, the 
-integrator may step pass the limit.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-pre_step_action~4'>pre_step_action</a></strong> => rk853_pre_step</td>
+                <td><p>Performs any pre-step actions.</p><a href="../type/runge_kutta_853.html#boundprocedure-pre_step_action~4" class="pull-right"><emph>Read more&hellip;</emph></a></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_safety_factor'>get_safety_factor</a></strong>
- =>
-                    vsi_get_safety_factor
-<small>Function</small>                </td>
-                <td><p>Gets a safety factor used to limit the predicted step size.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_absolute_tolerance'>set_absolute_tolerance</a></strong> => oi_set_abs_tol</td>
+                <td>..\..\<p>Sets the absolute error tolerance.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-(rkv_get_integer_parameter)                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-get_stage_count~2'>get_stage_count</a></strong>
-<small></small>                </td>
-                <td><p>Gets the number of stages used by the integrator.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_allow_overshoot'>set_allow_overshoot</a></strong> => oi_set_allow_overshoot</td>
+                <td>..\..\<p>Sets a value determining if the solver is allowed to overshoot 
+the final value in the integration range.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-get_step_size'>get_step_size</a></strong>
- =>
-                    vsi_get_step_size
-<small>Function</small>                </td>
-                <td><p>Gets the current step size.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_maximum_step_size'>set_maximum_step_size</a></strong> => oi_set_max_step</td>
+                <td>..\..\<p>Sets the magnitude of the maximum allowed step size.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-initialize~3'>initialize</a></strong>
- =>
-                    rkv_alloc_workspace
-<small>Subroutine</small>                </td>
-                <td><p>Initializes the integrator.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_minimum_step_size'>set_minimum_step_size</a></strong> => oi_set_min_step</td>
+                <td>..\..\<p>Sets the magnitude of the minimum allowed step size.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-(variable_step_interpolation)                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-interpolate~4'>interpolate</a></strong>
-<small></small>                </td>
-                <td><p>Provides interpolation between integration points.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_relative_tolerance'>set_relative_tolerance</a></strong> => oi_set_abs_tol</td>
+                <td>..\..\<p>Sets the relative error tolerance.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-(rkv_get_boolean_parameter)                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-is_fsal~2'>is_fsal</a></strong>
-<small></small>                </td>
-                <td><p>Gets a value determining if this is a FSAL (first, same as last)
-integrator.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_limit'>set_step_limit</a></strong> => oi_set_step_limit</td>
+                <td>..\..\<p>Sets the limit on the number of integration steps.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-on_successful_step'>on_successful_step</a></strong>
- =>
-                    rkv_on_successful_step
-<small>Subroutine</small>                </td>
-                <td><p>Perform necessary actions on completion of a successful step.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_size_control_parameter'>set_step_size_control_parameter</a></strong> => oi_set_control_parameter</td>
+                <td>..\..\<p>Sets the step size PI control parameter.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-reset'>reset</a></strong>
- =>
-                    rkv_reset
-<small>Subroutine</small>                </td>
-                <td><p>Resets the integrator to its initial state.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_size_factor'>set_step_size_factor</a></strong> => oi_set_safety_factor</td>
+                <td>..\..\<p>Sets the step size safety factor.<\p></td>
               </tr>
               <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-set_alpha'>set_alpha</a></strong>
- =>
-                    rkv_set_alpha
-<small>Subroutine</small>                </td>
-                <td><p>Sets the <script type="math/tex"> \alpha </script> control parameter in the PI controller
-<script type="math/tex"> h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} 
-e_n^{\alpha} e_{n-1}^{\beta}</script>, where <script type="math/tex"> f </script> is a safety 
-factor, and \f$ k ) is the order of the integration method.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-set_beta'>set_beta</a></strong>
- =>
-                    rkv_set_beta
-<small>Subroutine</small>                </td>
-                <td><p>Sets the <script type="math/tex"> \beta </script> control parameter in the PI controller
-<script type="math/tex"> h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} 
-e_n^{\alpha} e_{n-1}^{\beta}</script>, where <script type="math/tex"> f </script> is a safety 
-factor, and \f$ k ) is the order of the integration method.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-set_is_first_step'>set_is_first_step</a></strong>
- =>
-                    rkv_set_is_first_step
-<small>Subroutine</small>                </td>
-                <td><p>Sets a value determining if the integrator is set up to take its 
-first integration step.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_max_integration_step_count'>set_max_integration_step_count</a></strong>
- =>
-                    vsi_set_max_step_count
-<small>Subroutine</small>                </td>
-                <td><p>Sets the maximum number of integration steps allowed.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_max_per_step_iteration_count'>set_max_per_step_iteration_count</a></strong>
- =>
-                    vsi_set_max_iter_count
-<small>Subroutine</small>                </td>
-                <td><p>Sets the maximum number of iterations per step allowed.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_max_step_size'>set_max_step_size</a></strong>
- =>
-                    vsi_set_max_step
-<small>Subroutine</small>                </td>
-                <td><p>Sets the maximum allowed step size.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_min_step_size'>set_min_step_size</a></strong>
- =>
-                    vsi_set_min_step
-<small>Subroutine</small>                </td>
-                <td><p>Sets the minimum allowed step size.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_next_step_size'>set_next_step_size</a></strong>
- =>
-                    vsi_set_next_step_size
-<small>Subroutine</small>                </td>
-                <td><p>Sets the next step size.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_previous_error_norm'>set_previous_error_norm</a></strong>
- =>
-                    vsi_set_prev_err_norm
-<small>Subroutine</small>                </td>
-                <td><p>Sets the norm of the previous step's error estimate.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_respect_x_max'>set_respect_x_max</a></strong>
- =>
-                    vsi_set_respect_xmax
-<small>Subroutine</small>                </td>
-                <td><p>Sets a value determining if the integrator should respect a
-hard limit in the independent variable range.  If false, the 
-integrator may step pass the limit.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_safety_factor'>set_safety_factor</a></strong>
- =>
-                    vsi_set_safety_factor
-<small>Subroutine</small>                </td>
-                <td><p>Sets a safety factor used to limit the predicted step size.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-set_step_size'>set_step_size</a></strong>
- =>
-                    vsi_set_step_size
-<small>Subroutine</small>                </td>
-                <td><p>Sets the current step size.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-(rkv_set_up_interp)                    ,                  public
-                  :: <strong><a href='../type/rk_variable_integrator.html#boundprocedure-set_up_interpolation~2'>set_up_interpolation</a></strong>
-<small></small>                </td>
-                <td><p>Sets up the interpolation polynomial.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_singlestep_integrator.html#boundprocedure-solve~4'>solve</a></strong>
- =>
-                    vssi_solve
-<small>Function</small>                </td>
-                <td><p>Solves the supplied system of ODEs.</p></td>
-              </tr>
-              <tr>
-                <td>
-                    procedure
-                    ,                  public
-                  :: <strong><a href='../type/variable_step_integrator.html#boundprocedure-step~4'>step</a></strong>
- =>
-                    vsi_step
-<small>Subroutine</small>                </td>
-                <td><p>Takes one integration step.</p></td>
+                <td>  procedure, public ::
+  <strong><a href='..\type\single_step_integrator.html#boundprocedure-solve~2'>solve</a></strong> => ssi_ode_solver</td>
+                <td>..\..\<p>Solves the supplied system of ODE's.<\p></td>
               </tr>
           </tbody>
         </table>
@@ -2516,163 +706,6 @@ integrator may step pass the limit.</p></td>
         </section>
         <br>
 
-        <section>
-          <h2>Functions</h2>
-              <div class="panel panel-default">
-    <div class="panel-heading codesum"><span class="anchor" id="proc-pi_controller"></span><h3>public pure function <a href='../proc/pi_controller.html'>pi_controller</a>(alpha, beta, order, hn, en, enm1, fs, maxstep) result(rst)  
-</h3></div>
-    <div class="panel-body">
-          
-  <p>Computes the next step size using a PI type controller such that
-<script type="math/tex"> h_{n+1} = f h_n \left( \frac{1}{e_n} \right)^{1/k} e_n^{\alpha} 
-e_{n-1}^{\beta} </script> where <script type="math/tex"> f </script> is the safety factor and <script type="math/tex"> k </script>
-is the order of the integration method.</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th>Type</th>
-<th>Intent</th><th>Optional</th>        <th>Attributes</th>
-        <th></th>
-        <th>Name</th>
-        <th></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              real(kind=real64),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>alpha</strong></td>
-            <td>
-<p>The <script type="math/tex"> \alpha </script> control parameter.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              real(kind=real64),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>beta</strong></td>
-            <td>
-<p>The <script type="math/tex"> \beta </script> control parameter.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              integer(kind=int32),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>order</strong></td>
-            <td>
-<p>The order of the integrator.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              real(kind=real64),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>hn</strong></td>
-            <td>
-<p>The current step size.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              real(kind=real64),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>en</strong></td>
-            <td>
-<p>The norm of the error for the current step size.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              real(kind=real64),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>enm1</strong></td>
-            <td>
-<p>The norm of the error from the previous step size.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              real(kind=real64),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>fs</strong></td>
-            <td>
-<p>A safety factor to place on the growth of the step size.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" ></span>
-              real(kind=real64),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>maxstep</strong></td>
-            <td>
-<p>A cap on the size of the maximum step.</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>real(kind=real64)</small>
-    </h4>
-    <p>The new step size.</p>
-
-    </div>
-  </div>
-
-        </section>
-        <br>
 
 
 
@@ -2684,32 +717,27 @@ is the order of the integration method.</p>
     </div> <!-- /container -->
     <footer>
       <div class="container">
-        <div class="row">
-          <div class="col-xs-6 col-md-6"><p>DIFFEQ was developed by Jason Christopherson<br>&copy; 2024 
+        <div class="row justify-content-between">
+          <div class="col"><p>DIFFEQ was developed by Jason Christopherson<br>&copy; 2024 
 </p>
           </div>
-          <div class="col-xs-6 col-md-6">
-            <p class="text-right">
+          <div class="col">
+            <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2024-04-18 14:40              </p>
+ on 2024-05-22 19:44              </p>
           </div>
         </div>
         <br>
       </div> <!-- /container -->
     </footer>
 
-    <!-- Bootstrap core JavaScript
-         ================================================== -->
-         <!-- Placed at the end of the document so the pages load faster -->
-    <!--
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-        -->
-        <script src="../js/bootstrap.min.js"></script>
-        <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-        <script src="../js/ie10-viewport-bug-workaround.js"></script>
+    <!-- Bootstrap core JavaScript -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
 
-        <!-- MathJax JavaScript
+    <!-- MathJax JavaScript
              ================================================== -->
              <!-- Placed at the end of the document so the pages load faster -->
         <script type="text/x-mathjax-config">

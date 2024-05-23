@@ -1,0 +1,1118 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="DIFFEQ is a modern Fortran library providing an object-oriented approach to solving ordinary differential equations.">
+    <meta name="author" content="Jason Christopherson" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>diffeq_dirk &ndash; DIFFEQ</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">DIFFEQ </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>diffeq_dirk
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip"
+                 data-bs-placement="bottom" data-html="true"
+                 title="24.4% of total for modules and submodules.">550 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/diffeq_dirk.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='..\sourcefile\diffeq_dirk.f90.html'>diffeq_dirk.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">diffeq_dirk</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function () {
+    $('[data-bs-toggle="tooltip"]').tooltip()
+    })
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#inters-0"
+         aria-expanded="false" aria-controls="inters-0">
+         <h4 class="card-header bg-primary text-white">Interfaces</h4>
+      </a>
+      <div id="inters-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/diffeq_dirk.html#interface-dirk_eval_error">dirk_eval_error</a>
+            <a class="list-group-item" href="../module/diffeq_dirk.html#interface-dirk_get_array_value">dirk_get_array_value</a>
+            <a class="list-group-item" href="../module/diffeq_dirk.html#interface-dirk_get_matrix_value">dirk_get_matrix_value</a>
+        </div>
+      </div>
+    </div>
+
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/diffeq_dirk.html#type-diagonally_implicit_integrator">diagonally_implicit_integrator</a>
+            <a class="list-group-item" href="../module/diffeq_dirk.html#type-implicit_runge_kutta_4">implicit_runge_kutta_4</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
+                  <li class="list-inline-item"><a href='diffeq_base.html'>diffeq_base</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item">ferror</li>
+              </ul>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      
+      <br>
+
+
+
+
+        <section>
+          <h2>Interfaces</h2>
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-dirk_eval_error"></span>
+      <h3>        interface
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public  subroutine dirk_eval_error(this, sys, x, y, f, xn, yn, fn, k, resid, niter, yerr)  
+
+    </h3>
+  <p>Computes the error for each equation.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~76"></span>
+              class(<a href='..\type\diagonally_implicit_integrator.html'>diagonally_implicit_integrator</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The diagonally_implicit_integrator object.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sys~19"></span>
+              class(<a href='..\type\ode_container.html'>ode_container</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>sys</strong></td>
+            <td>
+                <p>The ode_container object containing the ODE's to integrate.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~43"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+            <td>
+                <p>The current value of the independent variable.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-y~29"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              dimension(:)
+            </td>
+            <td>::</td>
+            <td><strong>y</strong></td>
+            <td>
+                <p>An N-element array containing the solution at x.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-f~17"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              dimension(:)
+            </td>
+            <td>::</td>
+            <td><strong>f</strong></td>
+            <td>
+                <p>An N-element array containing the derivatives at x.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-xn~12"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>xn</strong></td>
+            <td>
+                <p>The next value of the independent variable.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-yn~17"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              dimension(:)
+            </td>
+            <td>::</td>
+            <td><strong>yn</strong></td>
+            <td>
+                <p>An N-element array containing the solution estimate at xn.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fn~17"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              dimension(:)
+            </td>
+            <td>::</td>
+            <td><strong>fn</strong></td>
+            <td>
+                <p>An N-element array containing the derivatives at xn.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-k~13"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              dimension(:,:)
+            </td>
+            <td>::</td>
+            <td><strong>k</strong></td>
+            <td>
+                <p>An N-by-NSTAGES matrix containing the derivatives at each
+stage.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-resid"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>resid</strong></td>
+            <td>
+                <p>The norm of the residual from the Newton iteration process.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-niter"></span>
+              integer(kind=int32),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>niter</strong></td>
+            <td>
+                <p>The number of iterations taken by the Newton process.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-yerr~9"></span>
+              real(kind=real64),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              dimension(:)
+            </td>
+            <td>::</td>
+            <td><strong>yerr</strong></td>
+            <td>
+                <p>An N-element array where this routine will write the error
+estimates for each equation.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-dirk_get_array_value"></span>
+      <h3>        interface
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public pure function dirk_get_array_value(this, i) result(rst)  
+
+    </h3>
+  <p>Retrieves an array value from the integrator.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~75"></span>
+              class(<a href='..\type\diagonally_implicit_integrator.html'>diagonally_implicit_integrator</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The diagonally_implicit_integrator object.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i~11"></span>
+              integer(kind=int32),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+                <p>The array index.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=real64)</small>
+    </h4>
+    <p>The value.</p>
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-dirk_get_matrix_value"></span>
+      <h3>        interface
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public pure function dirk_get_matrix_value(this, i, j) result(rst)  
+
+    </h3>
+  <p>Retrieves a matrix value from the integrator.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~74"></span>
+              class(<a href='..\type\diagonally_implicit_integrator.html'>diagonally_implicit_integrator</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The diagonally_implicit_integrator object.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i~10"></span>
+              integer(kind=int32),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+                <p>The row index.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-j~2"></span>
+              integer(kind=int32),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>j</strong></td>
+            <td>
+                <p>The column index.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=real64)</small>
+    </h4>
+    <p>The value.</p>
+
+        </li>
+    </ul>
+  </div>
+
+        </section>
+        <br>
+
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-diagonally_implicit_integrator"></span>
+      <h3>
+        type, public, extends(<a href='..\type\single_step_integrator.html'>single_step_integrator</a>)&nbsp;::&nbsp;
+        <a href='..\type\diagonally_implicit_integrator.html'>diagonally_implicit_integrator</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>Defines a diagonally implicit, single-step integrator.</p>
+
+
+
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-append_to_buffer'>append_to_buffer</a></strong> => oi_append_to_buffer</td>
+                <td>..\..\<p>Appends the supplied solution point to the internal solution 
+buffer.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-attempt_step~6'>attempt_step</a></strong> => dii_attempt_step</td>
+                <td>..\..\<p>This is a pass-thru routine that has no function for DIRK 
+integrators.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-clear_buffer'>clear_buffer</a></strong> => oi_clear_buffer</td>
+                <td>..\..\<p>Clears the contents of the buffer.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
+                <td>..\..\<p>Computes the norm of the scaled error estimate.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure(<a href='..\interface\dirk_eval_error.html'>dirk_eval_error</a>), public, deferred, pass ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-compute_errors'>compute_errors</a></strong></td>
+                <td>..\..\<p>Computes the error for each equation.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_inital_step_size'>estimate_inital_step_size</a></strong> => oi_initial_step</td>
+                <td>..\..\<p>Computes an estimate of an initial step size.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
+                <td>..\..\<p>Estimates the next step size.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-form_matrix'>form_matrix</a></strong> => dii_form_factored_matrix</td>
+                <td>..\..\<p>Forms the iteration matrix and computes its LU factorization.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_absolute_tolerance'>get_absolute_tolerance</a></strong> => oi_get_abs_tol</td>
+                <td>..\..\<p>Gets the absolute error tolerance.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_allow_overshoot'>get_allow_overshoot</a></strong> => oi_get_allow_overshoot</td>
+                <td>..\..\<p>Gets a value determining if the solver is allowed to overshoot 
+the final value in the integration range.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure(<a href='..\interface\get_single_step_logical_parameter.html'>get_single_step_logical_parameter</a>), public, deferred, pass ::
+  <strong><a href='..\type\single_step_integrator.html#boundprocedure-get_is_fsal~5'>get_is_fsal</a></strong></td>
+                <td>..\..\<p>Gets a logical parameter stating if this is a first-same-as-last
+(FSAL) integrator.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-get_is_matrix_current'>get_is_matrix_current</a></strong> => dii_get_mtx_current</td>
+                <td>..\..\<p>Gets a value determining if the iteration matrix is current.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_maximum_step_size'>get_maximum_step_size</a></strong> => oi_get_max_step</td>
+                <td>..\..\<p>Gets the magnitude of the maximum allowed step size.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_minimum_step_size'>get_minimum_step_size</a></strong> => oi_get_min_step</td>
+                <td>..\..\<p>Gets the magnitude of the minimum allowed step size.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure(<a href='..\interface\dirk_get_matrix_value.html'>dirk_get_matrix_value</a>), public, deferred, pass ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-get_model_coefficient'>get_model_coefficient</a></strong></td>
+                <td>..\..\<p>Gets the requested model coefficient from the Butcher tableau.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-get_newton_iteration_limit'>get_newton_iteration_limit</a></strong> => dii_get_newton_iter_limit</td>
+                <td>..\..\<p>Gets the maximum number of Newton iterations allowed.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-get_newton_tolerance'>get_newton_tolerance</a></strong> => dii_get_newton_tol</td>
+                <td>..\..\<p>Gets the convergence tolerance for the Newton solver.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure(<a href='..\interface\dirk_get_array_value.html'>dirk_get_array_value</a>), public, deferred, pass ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-get_node'>get_node</a></strong></td>
+                <td>..\..\<p>Gets the requested node value from the Butcher tableau.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure(<a href='..\interface\ode_integer_inquiry.html'>ode_integer_inquiry</a>), public, deferred, pass ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_order~5'>get_order</a></strong></td>
+                <td>..\..\<p>Returns the order of the integrator.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_relative_tolerance'>get_relative_tolerance</a></strong> => oi_get_abs_tol</td>
+                <td>..\..\<p>Gets the relative error tolerance.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_solution'>get_solution</a></strong> => oi_get_solution</td>
+                <td>..\..\<p>Returns the solution computed by the integrator.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure(<a href='..\interface\single_step_integer_inquiry.html'>single_step_integer_inquiry</a>), public, deferred, pass ::
+  <strong><a href='..\type\single_step_integrator.html#boundprocedure-get_stage_count~5'>get_stage_count</a></strong></td>
+                <td>..\..\<p>Gets the number of stages used by the integrator.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_limit'>get_step_limit</a></strong> => oi_get_step_limit</td>
+                <td>..\..\<p>Gets the limit on the number of integration steps.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_size_control_parameter'>get_step_size_control_parameter</a></strong> => oi_get_control_parameter</td>
+                <td>..\..\<p>Gets the step size PI control parameter.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_size_factor'>get_step_size_factor</a></strong> => oi_get_safety_factor</td>
+                <td>..\..\<p>Gets the step size safety factor.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure(<a href='..\interface\dirk_get_array_value.html'>dirk_get_array_value</a>), public, deferred, pass ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-get_weight'>get_weight</a></strong></td>
+                <td>..\..\<p>Gets the requested weighting factor from the Butcher tableau.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure(<a href='..\interface\single_step_interpolate.html'>single_step_interpolate</a>), public, deferred, pass ::
+  <strong><a href='..\type\single_step_integrator.html#boundprocedure-interpolate~5'>interpolate</a></strong></td>
+                <td>..\..\<p>Performs an interpolation to estimate the solution at the
+requested point.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-newton_iteration'>newton_iteration</a></strong> => dii_solve_newton</td>
+                <td>..\..\<p>Performs the Newton iteration for the i-th stage.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure(<a href='..\interface\single_step_post_step_routine.html'>single_step_post_step_routine</a>), public, deferred, pass ::
+  <strong><a href='..\type\single_step_integrator.html#boundprocedure-post_step_action~5'>post_step_action</a></strong></td>
+                <td>..\..\<p>Performs actions such as setting up interpolation after 
+completion of a successful integration step.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure(<a href='..\interface\single_step_pre_step_routine.html'>single_step_pre_step_routine</a>), public, deferred, pass ::
+  <strong><a href='..\type\single_step_integrator.html#boundprocedure-pre_step_action~5'>pre_step_action</a></strong></td>
+                <td>..\..\<p>Provides a routine for performing any actions, such as setting
+up Jacobian calculations.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_absolute_tolerance'>set_absolute_tolerance</a></strong> => oi_set_abs_tol</td>
+                <td>..\..\<p>Sets the absolute error tolerance.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_allow_overshoot'>set_allow_overshoot</a></strong> => oi_set_allow_overshoot</td>
+                <td>..\..\<p>Sets a value determining if the solver is allowed to overshoot 
+the final value in the integration range.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-set_is_matrix_current'>set_is_matrix_current</a></strong> => dii_set_mtx_current</td>
+                <td>..\..\<p>Sets a value determining if the iteration matrix is current.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_maximum_step_size'>set_maximum_step_size</a></strong> => oi_set_max_step</td>
+                <td>..\..\<p>Sets the magnitude of the maximum allowed step size.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_minimum_step_size'>set_minimum_step_size</a></strong> => oi_set_min_step</td>
+                <td>..\..\<p>Sets the magnitude of the minimum allowed step size.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-set_newton_iteration_limit'>set_newton_iteration_limit</a></strong> => dii_set_newton_iter_limit</td>
+                <td>..\..\<p>Sets the maximum number of Newton iterations allowed.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-set_newton_tolerance'>set_newton_tolerance</a></strong> => dii_set_newton_tol</td>
+                <td>..\..\<p>Sets the convergence tolerance for the Newton solver.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_relative_tolerance'>set_relative_tolerance</a></strong> => oi_set_abs_tol</td>
+                <td>..\..\<p>Sets the relative error tolerance.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_limit'>set_step_limit</a></strong> => oi_set_step_limit</td>
+                <td>..\..\<p>Sets the limit on the number of integration steps.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_size_control_parameter'>set_step_size_control_parameter</a></strong> => oi_set_control_parameter</td>
+                <td>..\..\<p>Sets the step size PI control parameter.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_size_factor'>set_step_size_factor</a></strong> => oi_set_safety_factor</td>
+                <td>..\..\<p>Sets the step size safety factor.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-solve~3'>solve</a></strong> => dii_ode_solver</td>
+                <td>..\..\<p>Solves the supplied system of ODE's.<\p></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-implicit_runge_kutta_4"></span>
+      <h3>
+        type, public, extends(<a href='..\type\diagonally_implicit_integrator.html'>diagonally_implicit_integrator</a>)&nbsp;::&nbsp;
+        <a href='..\type\implicit_runge_kutta_4.html'>implicit_runge_kutta_4</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A 6-stage, 4th order implicit Runge-Kutta integrator.</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-m_k"></span>
+              real(kind=real64),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable, dimension(:,:)
+            </td>
+            <td>::</td>
+            <td><strong>m_k</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-append_to_buffer'>append_to_buffer</a></strong> => oi_append_to_buffer</td>
+                <td>..\..\<p>Appends the supplied solution point to the internal solution 
+buffer.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-attempt_step~6'>attempt_step</a></strong> => dii_attempt_step</td>
+                <td>..\..\<p>This is a pass-thru routine that has no function for DIRK 
+integrators.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-clear_buffer'>clear_buffer</a></strong> => oi_clear_buffer</td>
+                <td>..\..\<p>Clears the contents of the buffer.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
+                <td>..\..\<p>Computes the norm of the scaled error estimate.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\implicit_runge_kutta_4.html#boundprocedure-compute_errors~2'>compute_errors</a></strong> => irk4_eval_error</td>
+                <td>..\..\<p>Computes the error for each equation.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_inital_step_size'>estimate_inital_step_size</a></strong> => oi_initial_step</td>
+                <td>..\..\<p>Computes an estimate of an initial step size.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
+                <td>..\..\<p>Estimates the next step size.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-form_matrix'>form_matrix</a></strong> => dii_form_factored_matrix</td>
+                <td>..\..\<p>Forms the iteration matrix and computes its LU factorization.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_absolute_tolerance'>get_absolute_tolerance</a></strong> => oi_get_abs_tol</td>
+                <td>..\..\<p>Gets the absolute error tolerance.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_allow_overshoot'>get_allow_overshoot</a></strong> => oi_get_allow_overshoot</td>
+                <td>..\..\<p>Gets a value determining if the solver is allowed to overshoot 
+the final value in the integration range.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\implicit_runge_kutta_4.html#boundprocedure-get_is_fsal~6'>get_is_fsal</a></strong> => irk4_get_is_fsal</td>
+                <td>..\..\<p>Gets a logical parameter stating if this is a first-same-as-last
+(FSAL) integrator.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-get_is_matrix_current'>get_is_matrix_current</a></strong> => dii_get_mtx_current</td>
+                <td>..\..\<p>Gets a value determining if the iteration matrix is current.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_maximum_step_size'>get_maximum_step_size</a></strong> => oi_get_max_step</td>
+                <td>..\..\<p>Gets the magnitude of the maximum allowed step size.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_minimum_step_size'>get_minimum_step_size</a></strong> => oi_get_min_step</td>
+                <td>..\..\<p>Gets the magnitude of the minimum allowed step size.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\implicit_runge_kutta_4.html#boundprocedure-get_model_coefficient~2'>get_model_coefficient</a></strong> => irk4_get_model_coeff</td>
+                <td>..\..\<p>Gets the requested model coefficient from the Butcher tableau.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-get_newton_iteration_limit'>get_newton_iteration_limit</a></strong> => dii_get_newton_iter_limit</td>
+                <td>..\..\<p>Gets the maximum number of Newton iterations allowed.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-get_newton_tolerance'>get_newton_tolerance</a></strong> => dii_get_newton_tol</td>
+                <td>..\..\<p>Gets the convergence tolerance for the Newton solver.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\implicit_runge_kutta_4.html#boundprocedure-get_node~2'>get_node</a></strong> => irk4_get_node</td>
+                <td>..\..\<p>Gets the requested weighting factor from the Butcher tableau.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\implicit_runge_kutta_4.html#boundprocedure-get_order~6'>get_order</a></strong> => irk4_get_order</td>
+                <td>..\..\<p>Gets the order of the integrator.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_relative_tolerance'>get_relative_tolerance</a></strong> => oi_get_abs_tol</td>
+                <td>..\..\<p>Gets the relative error tolerance.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_solution'>get_solution</a></strong> => oi_get_solution</td>
+                <td>..\..\<p>Returns the solution computed by the integrator.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\implicit_runge_kutta_4.html#boundprocedure-get_stage_count~6'>get_stage_count</a></strong> => irk4_get_stage_count</td>
+                <td>..\..\<p>Gets the stage count for this integrator.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_limit'>get_step_limit</a></strong> => oi_get_step_limit</td>
+                <td>..\..\<p>Gets the limit on the number of integration steps.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_size_control_parameter'>get_step_size_control_parameter</a></strong> => oi_get_control_parameter</td>
+                <td>..\..\<p>Gets the step size PI control parameter.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_size_factor'>get_step_size_factor</a></strong> => oi_get_safety_factor</td>
+                <td>..\..\<p>Gets the step size safety factor.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\implicit_runge_kutta_4.html#boundprocedure-get_weight~2'>get_weight</a></strong> => irk4_get_weight</td>
+                <td>..\..\<p>Gets the requested weighting factor from the Butcher tableau.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\implicit_runge_kutta_4.html#boundprocedure-interpolate~6'>interpolate</a></strong> => irk4_interp</td>
+                <td>..\..\<p>Performs the interpolation.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-newton_iteration'>newton_iteration</a></strong> => dii_solve_newton</td>
+                <td>..\..\<p>Performs the Newton iteration for the i-th stage.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\implicit_runge_kutta_4.html#boundprocedure-post_step_action~6'>post_step_action</a></strong> => irk4_set_up_interp</td>
+                <td>..\..\<p>Sets up the interpolation process as the post-step action.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\implicit_runge_kutta_4.html#boundprocedure-pre_step_action~6'>pre_step_action</a></strong> => irk4_pre_step</td>
+                <td>..\..\<p>Performs any pre-step actions.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_absolute_tolerance'>set_absolute_tolerance</a></strong> => oi_set_abs_tol</td>
+                <td>..\..\<p>Sets the absolute error tolerance.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_allow_overshoot'>set_allow_overshoot</a></strong> => oi_set_allow_overshoot</td>
+                <td>..\..\<p>Sets a value determining if the solver is allowed to overshoot 
+the final value in the integration range.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-set_is_matrix_current'>set_is_matrix_current</a></strong> => dii_set_mtx_current</td>
+                <td>..\..\<p>Sets a value determining if the iteration matrix is current.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_maximum_step_size'>set_maximum_step_size</a></strong> => oi_set_max_step</td>
+                <td>..\..\<p>Sets the magnitude of the maximum allowed step size.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_minimum_step_size'>set_minimum_step_size</a></strong> => oi_set_min_step</td>
+                <td>..\..\<p>Sets the magnitude of the minimum allowed step size.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-set_newton_iteration_limit'>set_newton_iteration_limit</a></strong> => dii_set_newton_iter_limit</td>
+                <td>..\..\<p>Sets the maximum number of Newton iterations allowed.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-set_newton_tolerance'>set_newton_tolerance</a></strong> => dii_set_newton_tol</td>
+                <td>..\..\<p>Sets the convergence tolerance for the Newton solver.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_relative_tolerance'>set_relative_tolerance</a></strong> => oi_set_abs_tol</td>
+                <td>..\..\<p>Sets the relative error tolerance.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_limit'>set_step_limit</a></strong> => oi_set_step_limit</td>
+                <td>..\..\<p>Sets the limit on the number of integration steps.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_size_control_parameter'>set_step_size_control_parameter</a></strong> => oi_set_control_parameter</td>
+                <td>..\..\<p>Sets the step size PI control parameter.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_size_factor'>set_step_size_factor</a></strong> => oi_set_safety_factor</td>
+                <td>..\..\<p>Sets the step size safety factor.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\diagonally_implicit_integrator.html#boundprocedure-solve~3'>solve</a></strong> => dii_ode_solver</td>
+                <td>..\..\<p>Solves the supplied system of ODE's.<\p></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col"><p>DIFFEQ was developed by Jason Christopherson<br>&copy; 2024 
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2024-05-22 19:44              </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
+
+    <!-- MathJax JavaScript
+             ================================================== -->
+             <!-- Placed at the end of the document so the pages load faster -->
+        <script type="text/x-mathjax-config">
+          MathJax.Hub.Config({
+          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+          });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+          <script src="../tipuesearch/tipuesearch_content.js"></script>
+          <script src="../tipuesearch/tipuesearch_set.js"></script>
+          <script src="../tipuesearch/tipuesearch.js"></script>
+
+  </body>
+</html>

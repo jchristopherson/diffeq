@@ -1,0 +1,50 @@
+module diffeq_rosenbrock_constants
+    use iso_fortran_env
+    implicit none
+    real(real64), parameter :: c2 =0.386d0;
+    real(real64), parameter :: c3 =0.21d0;
+    real(real64), parameter :: c4 =0.63d0;
+    real(real64), parameter :: bet2p =0.0317d0;
+    real(real64), parameter :: bet3p =0.0635d0;
+    real(real64), parameter :: bet4p =0.3438d0;
+    real(real64), parameter :: d1 = 0.25d0;
+    real(real64), parameter :: d2 = -0.1043d0;
+    real(real64), parameter :: d3 = 0.1035d0;
+    real(real64), parameter :: d4 = -0.3620000000000023d1;
+    real(real64), parameter :: a21 = 0.1544d1;
+    real(real64), parameter :: a31 = 0.9466785280815826d0;
+    real(real64), parameter :: a32 = 0.2557011698983284d0;
+    real(real64), parameter :: a41 = 0.3314825187068521d1;
+    real(real64), parameter :: a42 = 0.2896124015972201d1;
+    real(real64), parameter :: a43 = 0.9986419139977817d0;
+    real(real64), parameter :: a51 = 0.1221224509226641d1;
+    real(real64), parameter :: a52 = 0.6019134481288629d1;
+    real(real64), parameter :: a53 = 0.1253708332932087d2;
+    real(real64), parameter :: a54 = -0.6878860361058950d0;
+    real(real64), parameter :: c21 = -0.5668800000000000d1;
+    real(real64), parameter :: c31 = -0.2430093356833875d1;
+    real(real64), parameter :: c32 = -0.2063599157091915d0;
+    real(real64), parameter :: c41 = -0.1073529058151375d0;
+    real(real64), parameter :: c42 = -0.9594562251023355d1;
+    real(real64), parameter :: c43 = -0.2047028614809616d2;
+    real(real64), parameter :: c51 = 0.7496443313967647d1;
+    real(real64), parameter :: c52 = -0.1024680431464352d2;
+    real(real64), parameter :: c53 = -0.3399990352819905d2;
+    real(real64), parameter :: c54 = 0.1170890893206160d2;
+    real(real64), parameter :: c61 = 0.8083246795921522d1;
+    real(real64), parameter :: c62 = -0.7981132988064893d1;
+    real(real64), parameter :: c63 = -0.3152159432874371d2;
+    real(real64), parameter :: c64 = 0.1631930543123136d2;
+    real(real64), parameter :: c65 = -0.6058818238834054d1;
+    real(real64), parameter :: gam = 0.25d0;
+    real(real64), parameter :: d21 = 0.1012623508344586d2;
+    real(real64), parameter :: d22 = -0.7487995877610167d1;
+    real(real64), parameter :: d23 = -0.3480091861555747d2;
+    real(real64), parameter :: d24 = -0.7992771707568823d1;
+    real(real64), parameter :: d25 = 0.1025137723295662d1;
+    real(real64), parameter :: d31 = -0.6762803392801253d0;
+    real(real64), parameter :: d32 = 0.6087714651680015d1;
+    real(real64), parameter :: d33 = 0.1643084320892478d2;
+    real(real64), parameter :: d34 = 0.2476722511418386d2;
+    real(real64), parameter :: d35 = -0.6594389125716872d1;
+end module
