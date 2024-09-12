@@ -22,21 +22,21 @@ module diffeq_base
 
 ! ------------------------------------------------------------------------------
     interface
-        pure subroutine ode(x, y, dydx)
+        subroutine ode(x, y, dydx)
             use iso_fortran_env
             real(real64), intent(in) :: x
             real(real64), intent(in), dimension(:) :: y
             real(real64), intent(out), dimension(:) :: dydx
         end subroutine
 
-        pure subroutine ode_jacobian(x, y, jac)
+        subroutine ode_jacobian(x, y, jac)
             use iso_fortran_env
             real(real64), intent(in) :: x
             real(real64), intent(in), dimension(:) :: y
             real(real64), intent(out), dimension(:,:) :: jac
         end subroutine
 
-        pure subroutine ode_mass_matrix(x, y, m)
+        subroutine ode_mass_matrix(x, y, m)
             use iso_fortran_env
             real(real64), intent(in) :: x
             real(real64), intent(in), dimension(:) :: y
@@ -558,7 +558,7 @@ subroutine oc_alloc_workspace(this, ndof, err)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-pure function oc_get_is_ode_defined(this) result(rst)
+function oc_get_is_ode_defined(this) result(rst)
     !! Gets a logical value determining if the ODE routine has been defined.
     class(ode_container), intent(in) :: this
         !! The ode_container object.
@@ -945,7 +945,7 @@ function oi_next_step(this, e, eold, h, x, err) result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
-pure subroutine oi_initial_step(this, sys, xo, xf, yo, fo, h)
+subroutine oi_initial_step(this, sys, xo, xf, yo, fo, h)
     !! Computes an estimate of an initial step size.
     class(ode_integrator), intent(in) :: this
         !! The ode_integrator object.
