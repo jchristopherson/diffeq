@@ -558,7 +558,7 @@ subroutine oc_alloc_workspace(this, ndof, err)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-pure function oc_get_is_ode_defined(this) result(rst)
+function oc_get_is_ode_defined(this) result(rst)
     !! Gets a logical value determining if the ODE routine has been defined.
     class(ode_container), intent(in) :: this
         !! The ode_container object.
