@@ -105,7 +105,7 @@ contains
 ! ******************************************************************************
 ! RUNGE_KUTTA_45
 ! ------------------------------------------------------------------------------
-subroutine rk45_pre_step(this, prevs, sys, h, x, y, f, err)
+subroutine rk45_pre_step(this, prevs, sys, h, x, y, f, args, err)
     !! Placeholder routine for any pre-step actions.
     class(runge_kutta_45), intent(inout) :: this
         !! The runge_kutta_45 object.
@@ -124,6 +124,9 @@ subroutine rk45_pre_step(this, prevs, sys, h, x, y, f, err)
     real(real64), intent(in), dimension(:) :: f
         !! An N-element array containing the values of the derivatives
         !! at x.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the differential equation subroutine.
     class(errors), intent(inout), optional, target :: err
         !! An optional errors-based object that if provided 
         !! can be used to retrieve information relating to any errors 
@@ -198,7 +201,7 @@ subroutine rk45_init_interp(this, neqn)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine rk45_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
+subroutine rk45_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     use diffeq_dprk45_constants
     !! Attempts an integration step for this integrator.
     class(runge_kutta_45), intent(inout) :: this
@@ -225,6 +228,9 @@ subroutine rk45_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
         !! of the error in each equation.
     real(real64), intent(out), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the differential equation subroutine.
 
     ! Local Variables
     integer(int32) :: n
@@ -237,23 +243,23 @@ subroutine rk45_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
     k(:,1) = f
 
     yn = y + h * a21 * f
-    call sys%fcn(x + h * c2, yn, k(:,2))
+    call sys%fcn(x + h * c2, yn, k(:,2), args)
 
     yn = y + h * (a31 * f + a32 * k(:,2))
-    call sys%fcn(x + h * c3, yn, k(:,3))
+    call sys%fcn(x + h * c3, yn, k(:,3), args)
 
     yn = y + h * (a41 * f + a42 * k(:,2) + a43 * k(:,3))
-    call sys%fcn(x + h * c4, yn, k(:,4))
+    call sys%fcn(x + h * c4, yn, k(:,4), args)
 
     yn = y + h * (a51 * f + a52 * k(:,2) + a53 * k(:,3) + a54 * k(:,4))
-    call sys%fcn(x + h * c5, yn, k(:,5))
+    call sys%fcn(x + h * c5, yn, k(:,5), args)
 
     yn = y + h * (a61 * f + a62 * k(:,2) + a63 * k(:,3) + a64 * k(:,4) + &
         a65 * k(:,5))
-    call sys%fcn(x + h * c6, yn, k(:,6))
+    call sys%fcn(x + h * c6, yn, k(:,6), args)
 
     yn = y + h * (a71 * f + a73 * k(:,3) + a74 * k(:,4) + a75 * k(:,5) + a76 * k(:,6))
-    call sys%fcn(x + h * c7, yn, fn)
+    call sys%fcn(x + h * c7, yn, fn, args)
 
     ! Compute the error estimate
     yerr = h * (e1 * f + e2 * k(:,2) + e3 * k(:,3) + e4 * k(:,4) + &
@@ -261,7 +267,7 @@ subroutine rk45_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine rk45_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
+subroutine rk45_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k, args)
     use diffeq_dprk45_constants
     !! Sets up the interpolation process.
     class(runge_kutta_45), intent(inout) :: this
@@ -284,6 +290,9 @@ subroutine rk45_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
         !! An N-element array containing the derivatives at xn.
     real(real64), intent(inout), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the differential equation subroutine.
 
     ! Local Variables
     integer(int32) :: i, n
@@ -349,7 +358,7 @@ end subroutine
 ! ******************************************************************************
 ! RUNGE_KUTTA_23
 ! ------------------------------------------------------------------------------
-subroutine rk23_pre_step(this, prevs, sys, h, x, y, f, err)
+subroutine rk23_pre_step(this, prevs, sys, h, x, y, f, args, err)
     !! Placeholder routine for any pre-step actions.
     class(runge_kutta_23), intent(inout) :: this
         !! The runge_kutta_23 object.
@@ -368,6 +377,9 @@ subroutine rk23_pre_step(this, prevs, sys, h, x, y, f, err)
     real(real64), intent(in), dimension(:) :: f
         !! An N-element array containing the values of the derivatives
         !! at x.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the differential equation subroutine.
     class(errors), intent(inout), optional, target :: err
         !! An optional errors-based object that if provided 
         !! can be used to retrieve information relating to any errors 
@@ -438,7 +450,7 @@ subroutine rk23_init_interp(this, neqn)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine rk23_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
+subroutine rk23_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     use diffeq_bsrk32_constants
     !! Attempts an integration step for this integrator.
     class(runge_kutta_23), intent(inout) :: this
@@ -465,6 +477,9 @@ subroutine rk23_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
         !! of the error in each equation.
     real(real64), intent(out), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the differential equation subroutine.
 
     ! Local Variables
     integer(int32) :: n
@@ -477,20 +492,20 @@ subroutine rk23_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
     k(:,1) = f
 
     yn = y + h * a21 * f
-    call sys%fcn(x + h * c2, yn, k(:,2))
+    call sys%fcn(x + h * c2, yn, k(:,2), args)
 
     yn = y + h * (a31 * f + a32 * k(:,2))
-    call sys%fcn(x + h * c3, yn, k(:,3))
+    call sys%fcn(x + h * c3, yn, k(:,3), args)
 
     yn = y + h * (a41 * f + a42 * k(:,2) + a43 * k(:,3))
-    call sys%fcn(x + h * c4, yn, fn)
+    call sys%fcn(x + h * c4, yn, fn, args)
 
     ! Compute the error estimate
     yerr = h * (e1 * f + e2 * k(:,2) + e3 * k(:,3) + e4 * fn)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine rk23_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
+subroutine rk23_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k, args)
     use diffeq_bsrk32_constants
     !! Sets up the interpolation process.
     class(runge_kutta_23), intent(inout) :: this
@@ -513,6 +528,9 @@ subroutine rk23_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
         !! An N-element array containing the derivatives at xn.
     real(real64), intent(inout), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the differential equation subroutine.
 
     ! Local Variables
     integer(int32) :: n
@@ -563,7 +581,7 @@ end subroutine
 ! ******************************************************************************
 ! RUNGE_KUTTA_853
 ! ------------------------------------------------------------------------------
-subroutine rk853_pre_step(this, prevs, sys, h, x, y, f, err)
+subroutine rk853_pre_step(this, prevs, sys, h, x, y, f, args, err)
     !! Placeholder routine for any pre-step actions.
     class(runge_kutta_853), intent(inout) :: this
         !! The runge_kutta_853 object.
@@ -582,6 +600,9 @@ subroutine rk853_pre_step(this, prevs, sys, h, x, y, f, err)
     real(real64), intent(in), dimension(:) :: f
         !! An N-element array containing the values of the derivatives
         !! at x.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the differential equation subroutine.
     class(errors), intent(inout), optional, target :: err
         !! An optional errors-based object that if provided 
         !! can be used to retrieve information relating to any errors 
@@ -664,7 +685,7 @@ pure function rk853_get_stage_count(this) result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
-subroutine rk853_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
+subroutine rk853_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     use diffeq_rk853_constants
     !! Attempts an integration step for this integrator.
     class(runge_kutta_853), intent(inout) :: this
@@ -691,6 +712,9 @@ subroutine rk853_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
         !! of the error in each equation.
     real(real64), intent(out), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the differential equation subroutine.
 
     ! Local Variables
     integer(int32) :: n
@@ -704,49 +728,49 @@ subroutine rk853_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
     k(:,1) = f
 
     yn = y + h * a21
-    call sys%fcn(x + c2 * h, yn, k(:,2))
+    call sys%fcn(x + c2 * h, yn, k(:,2), args)
 
     yn = y + h * (a31 * f + a32 * k(:,2))
-    call sys%fcn(x + c3 * h, yn, k(:,3))
+    call sys%fcn(x + c3 * h, yn, k(:,3), args)
 
     yn = y + h * (a41 * f + a43 * k(:,3))
-    call sys%fcn(x + c4 * h, yn, k(:,4))
+    call sys%fcn(x + c4 * h, yn, k(:,4), args)
 
     yn = y + h * (a51 * f + a53 * k(:,3) + a54 * k(:,4))
-    call sys%fcn(x + c5 * h, yn, k(:,5))
+    call sys%fcn(x + c5 * h, yn, k(:,5), args)
 
     yn = y + h * (a61 * f + a64 * k(:,4) + a65 * k(:,5))
-    call sys%fcn(x + c6 * h, yn, k(:,6))
+    call sys%fcn(x + c6 * h, yn, k(:,6), args)
 
     yn = y + h * (a71 * f + a74 * k(:,4) + a75 * k(:,5) + a76 * k(:,6))
-    call sys%fcn(x + c7 * h, yn, k(:,7))
+    call sys%fcn(x + c7 * h, yn, k(:,7), args)
 
     yn = y + h * (a81 * f + a84 * k(:,4) + a85 * k(:,5) + a86 * k(:,6) + &
         a87 * k(:,7))
-    call sys%fcn(x + c8 * h, yn, k(:,8))
+    call sys%fcn(x + c8 * h, yn, k(:,8), args)
 
     yn = y + h * (a91 * f + a94 * k(:,4) + a95 * k(:,5) + a96 * k(:,6) + &
         a97 * k(:,7) + a98 * k(:,8))
-    call sys%fcn(x + c9 * h, yn, k(:,9))
+    call sys%fcn(x + c9 * h, yn, k(:,9), args)
 
     yn = y + h * (a101 * f + a104 * k(:,4) + a105 * k(:,5) + &
         a106 * k(:,6) + a107 * k(:,7) + a108 * k(:,8) + a109 * k(:,9))
-    call sys%fcn(x + c10 * h, yn, k(:,10))
+    call sys%fcn(x + c10 * h, yn, k(:,10), args)
 
     yn = y + h * (a111 * f + a114 * k(:,4) + a115 * k(:,5) + &
         a116 * k(:,6) + a117 * k(:,7) + a118 * k(:,8) + a119 * k(:,9) + &
         a1110 * k(:,10))
-    call sys%fcn(x + c11 * h, yn, k(:,2))
+    call sys%fcn(x + c11 * h, yn, k(:,2), args)
 
     yn = y + h * (a121 * f + a124 * k(:,4) + a125 * k(:,5) + &
         a126 * k(:,6) + a127 * k(:,7) + a128 * k(:,8) + a129 * k(:,9) + &
         a1210 * k(:,10) + a1211 * k(:,2))
-    call sys%fcn(x + h, yn, k(:,3))
+    call sys%fcn(x + h, yn, k(:,3), args)
 
     k(:,4) = b1 * f + b6 * k(:,6) + b7 * k(:,7) + b8 * k(:,8) + &
         b9 * k(:,9) + b10 * k(:,10) + b11 * k(:,2) + b12 * k(:,3)
     yn = y + h * k(:,4)
-    call sys%fcn(x + h, yn, fn)
+    call sys%fcn(x + h, yn, fn, args)
 
     yerr = k(:,4) - bhh1 * f - bhh2 * k(:,9) - bhh3 * k(:,3)
     this%yerr2 = er1 * f + er6 * k(:,6) + er7 * k(:,7) + er8 * k(:,8) + &
@@ -755,7 +779,7 @@ subroutine rk853_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine rk853_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
+subroutine rk853_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k, args)
     use diffeq_rk853_constants
     !! Sets up the interpolation process.
     class(runge_kutta_853), intent(inout) :: this
@@ -778,6 +802,9 @@ subroutine rk853_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
         !! An N-element array containing the derivatives at xn.
     real(real64), intent(inout), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the differential equation subroutine.
 
     ! Local Variables
     integer(int32) :: i, n

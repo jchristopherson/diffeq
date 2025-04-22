@@ -22,25 +22,53 @@ module diffeq_base
 
 ! ------------------------------------------------------------------------------
     interface
-        pure subroutine ode(x, y, dydx)
+        subroutine ode(x, y, dydx, args)
+            !! An interface to a routine containing a system of first order
+            !! ODE's to integrate.
             use iso_fortran_env
             real(real64), intent(in) :: x
+                !! The current value of the independent variable.
             real(real64), intent(in), dimension(:) :: y
+                !! An N-element array containing the current values of the
+                !! dependent variables.
             real(real64), intent(out), dimension(:) :: dydx
+                !! An N-element array where the derivative values will be
+                !! written.
+            class(*), intent(inout), optional :: args
+                !! An optional argument that can be used to pass information
+                !! in and out of the routine.
         end subroutine
 
-        pure subroutine ode_jacobian(x, y, jac)
+        subroutine ode_jacobian(x, y, jac, args)
+            !! An interface to a routine capable of computing the Jacobian
+            !! matrix of a system of first order ODE's.
             use iso_fortran_env
             real(real64), intent(in) :: x
+                !! The current value of the independent variable.
             real(real64), intent(in), dimension(:) :: y
+                !! An N-element array containing the current values of the
+                !! dependent variables.
             real(real64), intent(out), dimension(:,:) :: jac
+                !! An M-by-N matrix where the Jacobian will be written.
+            class(*), intent(inout), optional :: args
+                !! An optional argument that can be used to pass information
+                !! in and out of the routine.
         end subroutine
 
-        pure subroutine ode_mass_matrix(x, y, m)
+        subroutine ode_mass_matrix(x, y, m, args)
+            !! An interface to a routine capable of computing a mass matrix
+            !! for a system of differential equations.
             use iso_fortran_env
             real(real64), intent(in) :: x
+                !! The current value of the independent variable.
             real(real64), intent(in), dimension(:) :: y
+                !! An N-element array containing the current values of the
+                !! dependent variables.
             real(real64), intent(out), dimension(:,:) :: m
+                !! An N-by-N matrix where the 
+            class(*), intent(inout), optional :: args
+                !! An optional argument that can be used to pass information
+                !! in and out of the routine.
         end subroutine
     end interface
 
@@ -166,7 +194,7 @@ module diffeq_base
     end type
 
     interface
-        subroutine ode_solver(this, sys, x, iv, err)
+        subroutine ode_solver(this, sys, x, iv, args, err)
             !! Solves the supplied system of ODE's.
             use iso_fortran_env
             use ferror
@@ -184,6 +212,9 @@ module diffeq_base
                 !! values.
             real(real64), intent(in), dimension(:) :: iv
                 !! An array containing the initial values for each ODE.
+            class(*), intent(inout), optional :: args
+                !! An optional argument that can be used to pass information
+                !! in and out of the differential equation subroutine.
             class(errors), intent(inout), optional, target :: err
                 !! An optional errors-based object that if provided 
                 !! can be used to retrieve information relating to any errors 
@@ -244,7 +275,7 @@ module diffeq_base
     end type
 
     interface
-        subroutine attempt_single_step(this, sys, h, x, y, f, yn, fn, yerr, k)
+        subroutine attempt_single_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
             use iso_fortran_env
             import single_step_integrator
             import ode_container
@@ -274,6 +305,9 @@ module diffeq_base
             real(real64), intent(out), dimension(:,:) :: k
                 !! An N-by-NSTAGES matrix containing the derivatives at each
                 !! stage.
+            class(*), intent(inout), optional :: args
+                !! An optional argument that can be used to pass information
+                !! in and out of the differential equation subroutine.
         end subroutine
 
         pure function get_single_step_logical_parameter(this) result(rst)
@@ -286,7 +320,7 @@ module diffeq_base
         end function
 
         subroutine single_step_post_step_routine(this, sys, dense, x, xn, y, &
-            yn, f, fn, k)
+            yn, f, fn, k, args)
             !! Provides a routine for performing any actions, such as setting
             !! up interpolation, after successful completion of a step.
             use iso_fortran_env
@@ -313,6 +347,9 @@ module diffeq_base
             real(real64), intent(inout), dimension(:,:) :: k
                 !! An N-by-NSTAGES matrix containing the derivatives at each
                 !! stage.
+            class(*), intent(inout), optional :: args
+                !! An optional argument that can be used to pass information
+                !! in and out of the differential equation subroutine.
         end subroutine
 
         subroutine single_step_interpolate(this, x, xn, yn, fn, xn1, yn1, &
@@ -344,7 +381,7 @@ module diffeq_base
         end subroutine
 
         subroutine single_step_pre_step_routine(this, prevs, sys, h, x, y, f, &
-            err)
+            args, err)
             !! Provides a routine for performing any actions, such as setting
             !! up Jacobian calculations.
             use iso_fortran_env
@@ -368,6 +405,9 @@ module diffeq_base
             real(real64), intent(in), dimension(:) :: f
                 !! An N-element array containing the values of the derivatives
                 !! at x.
+            class(*), intent(inout), optional :: args
+                !! An optional argument that can be used to pass information
+                !! in and out of the differential equation subroutine.
             class(errors), intent(inout), optional, target :: err
                 !! An optional errors-based object that if provided 
                 !! can be used to retrieve information relating to any errors 
@@ -443,7 +483,7 @@ subroutine oc_set_is_mass_dependent(this, x)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine oc_jacobian(this, x, y, jac, err)
+subroutine oc_jacobian(this, x, y, jac, args, err)
     !! Computes the Jacobian matrix for the system of ODEs.  If
     !! a routine is provided with an analytical Jacobian, the supplied
     !! routine is utilized; else, the Jacobian is estimated via a forward
@@ -457,6 +497,9 @@ subroutine oc_jacobian(this, x, y, jac, err)
         !! variable values.
     real(real64), intent(out), dimension(:,:) :: jac
         !! An N-by-N matrix where the Jacobian will be written.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the differential equation subroutine.
     class(errors), intent(inout), optional, target :: err
         !! An optional errors-based object that if provided 
         !! can be used to retrieve information relating to any errors 
@@ -497,7 +540,7 @@ subroutine oc_jacobian(this, x, y, jac, err)
 
     ! Use a user-defined routine, and then be done
     if (associated(this%jacobian)) then
-        call this%jacobian(x, y, jac)
+        call this%jacobian(x, y, jac, args)
         return
     end if
 
@@ -509,10 +552,10 @@ subroutine oc_jacobian(this, x, y, jac, err)
     ! Finite Difference Approximation
     ! J(i,j) = df(i) / dy(j)
     this%m_jwork(1:ndof) = y
-    call this%fcn(x, y, this%m_jwork(ndof+1:))
+    call this%fcn(x, y, this%m_jwork(ndof+1:), args)
     do i = 1, ndof
         this%m_jwork(i) = this%m_jwork(i) + h
-        call this%fcn(x, this%m_jwork(1:ndof), jac(:,i))
+        call this%fcn(x, this%m_jwork(1:ndof), jac(:,i), args)
         jac(:,i) = (jac(:,i) - this%m_jwork(ndof+1:)) / h
         this%m_jwork(i) = y(i)
     end do
@@ -558,7 +601,7 @@ subroutine oc_alloc_workspace(this, ndof, err)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-pure function oc_get_is_ode_defined(this) result(rst)
+function oc_get_is_ode_defined(this) result(rst)
     !! Gets a logical value determining if the ODE routine has been defined.
     class(ode_container), intent(in) :: this
         !! The ode_container object.
@@ -945,7 +988,7 @@ function oi_next_step(this, e, eold, h, x, err) result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
-pure subroutine oi_initial_step(this, sys, xo, xf, yo, fo, h)
+subroutine oi_initial_step(this, sys, xo, xf, yo, fo, h, args)
     !! Computes an estimate of an initial step size.
     class(ode_integrator), intent(in) :: this
         !! The ode_integrator object.
@@ -961,6 +1004,9 @@ pure subroutine oi_initial_step(this, sys, xo, xf, yo, fo, h)
         !! An N-element array where the function values at xo will be written.
     real(real64), intent(out) :: h
         !! The initial step size estimate.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the differential equation subroutine.
 
     ! Local Variables
     real(real64) :: e, dx
@@ -970,7 +1016,7 @@ pure subroutine oi_initial_step(this, sys, xo, xf, yo, fo, h)
     ! in the first place, so no real extra work is necessary.
     dx = 0.1d0 * (xf - xo)
     e = max(this%get_absolute_tolerance(), this%get_relative_tolerance())
-    call sys%fcn(xo, yo, fo)
+    call sys%fcn(xo, yo, fo, args)
     h = 2.0d0 * e / norm2(fo)
     h = min(abs(dx), h)
     h = sign(h, dx)
@@ -1027,7 +1073,7 @@ end subroutine
 ! ******************************************************************************
 ! SINGLE-STEP INTEGRATOR
 ! ------------------------------------------------------------------------------
-subroutine ssi_ode_solver(this, sys, x, iv, err)
+subroutine ssi_ode_solver(this, sys, x, iv, args, err)
     !! Solves the supplied system of ODE's.
     class(single_step_integrator), intent(inout) :: this
         !! The single_step_integrator object.
@@ -1038,6 +1084,9 @@ subroutine ssi_ode_solver(this, sys, x, iv, err)
         !! the solution to the ODE's.
     real(real64), intent(in), dimension(:) :: iv
         !! An array containing the initial values for each ODE.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the differential equation subroutine.
     class(errors), intent(inout), optional, target :: err
         !! An optional errors-based object that if provided 
         !! can be used to retrieve information relating to any errors 
@@ -1114,7 +1163,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, err)
     ! Outputs:
     ! - f: Value of the derivatives at xo
     ! - h: Initial step size estimate
-    call this%estimate_inital_step_size(sys, xo, xmax, iv, f, h)
+    call this%estimate_inital_step_size(sys, xo, xmax, iv, f, h, args)
     
     ! Store the initial conditions
     call this%append_to_buffer(x(1), iv, errmgr)
@@ -1124,11 +1173,12 @@ subroutine ssi_ode_solver(this, sys, x, iv, err)
     ! Cycle until integration is complete
     do i = 1, nsteps
         ! Perform any pre-step actions
-        call this%pre_step_action(success, sys, h, xo, y, f, errmgr)
+        call this%pre_step_action(success, sys, h, xo, y, f, args = args, &
+            err = errmgr)
         if (errmgr%has_error_occurred()) return
         
         ! Attempt a step
-        call this%attempt_step(sys, h, xo, y, f, yn, fn, yerr, k)
+        call this%attempt_step(sys, h, xo, y, f, yn, fn, yerr, k, args)
         xn = xo + h
 
         ! Compute a normalized error value.  A value < 1 indicates success
@@ -1144,7 +1194,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, err)
 
         ! If we're here, the step has been successful.  Take any post-step
         ! action such as setting up interpolation routines, etc.
-        call this%post_step_action(sys, dense, xo, xn, y, yn, f, fn, k)
+        call this%post_step_action(sys, dense, xo, xn, y, yn, f, fn, k, args)
 
         ! Do we need to interpolate for dense output, or can we just store
         ! values and move on
@@ -1197,7 +1247,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, err)
             f = fn
         else
             ! Update the derivative estimates
-            call sys%fcn(xn, yn, f) ! write to f, not fn
+            call sys%fcn(xn, yn, f, args) ! write to f, not fn
         end if
     end do
 
