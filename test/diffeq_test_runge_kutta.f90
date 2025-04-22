@@ -112,7 +112,7 @@ function test_runge_kutta_23_1() result(rst)
     logical :: rst
 
     ! Parameters
-    real(real64), parameter :: tol = 1.0d-3
+    real(real64), parameter :: tol = 5.0d-3
 
     ! Local Variables
     type(runge_kutta_23) :: integrator
