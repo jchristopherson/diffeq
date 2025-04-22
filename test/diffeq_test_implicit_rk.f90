@@ -107,4 +107,37 @@ function test_rosenbrock_3() result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
+function test_rosenbrock_with_args() result(rst)
+    ! Arguments
+    logical :: rst
+
+    ! Local Variables
+    real(real64) :: mu
+    type(rosenbrock) :: integrator
+    type(ode_container) :: mdl, ref
+    real(real64), allocatable, dimension(:,:) :: sol, refsol
+
+    ! Initialization
+    rst = .true.
+    mdl%fcn => vanderpol_args
+    ref%fcn => vanderpol
+    mu = 5.0d0
+
+    ! Perform the integration with user-defined arguments
+    call integrator%solve(mdl, [0.0d0, 5.0d1], [2.0d0, 0.0d0], args = mu)
+    sol = integrator%get_solution()
+
+    ! Perform the integration without additional arguments
+    call integrator%clear_buffer()
+    call integrator%solve(ref, [0.0d0, 5.0d1], [2.0d0, 0.0d0])
+    refsol = integrator%get_solution()
+
+    ! Test
+    if (.not.assert(sol, refsol)) then
+        rst = .false.
+        print "(A)", "TEST FAILED: test_rosenbrock_with_args -1"
+    end if
+end function
+
+! ------------------------------------------------------------------------------
 end module

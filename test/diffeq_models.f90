@@ -3,10 +3,11 @@ module diffeq_models
     implicit none
 contains
 ! Van Der Pol Equation
-pure subroutine vanderpol(x, y, dydx)
+pure subroutine vanderpol(x, y, dydx, args)
     ! Arguments
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: dydx(:)
+    class(*), intent(inout), optional :: args
 
     ! Model Constants
     real(real64), parameter :: mu = 5.0d0
@@ -31,12 +32,31 @@ function vanderpol_jacobian(x, y) result(rst)
     rst(2,2) = mu * (1.0d0 - y(1)**2)
 end function
 
-! ------------------------------------------------------------------------------
-! Duffing Equation
-pure subroutine duffing(x, y, dydx)
+subroutine vanderpol_args(x, y, dydx, args)
     ! Arguments
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: dydx(:)
+    class(*), intent(inout), optional :: args
+
+    ! Get the model constant
+    real(real64) :: mu
+    select type (args)
+    type is (real(real64))
+        mu = args
+    end select
+
+    ! Equations
+    dydx(1) = y(2)
+    dydx(2) = mu * (1.0d0 - y(1)**2) * y(2) - y(1)
+end subroutine
+
+! ------------------------------------------------------------------------------
+! Duffing Equation
+pure subroutine duffing(x, y, dydx, args)
+    ! Arguments
+    real(real64), intent(in) :: x, y(:)
+    real(real64), intent(out) :: dydx(:)
+    class(*), intent(inout), optional :: args
 
     ! Model Constants
     real(real64), parameter :: alpha = 1.0d0
@@ -70,10 +90,11 @@ function duffing_jacobian(x, y) result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
-pure subroutine mathieu(x, y, dydx)
+pure subroutine mathieu(x, y, dydx, args)
     ! Arguments
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: dydx(:)
+    class(*), intent(inout), optional :: args
 
     ! Model Constants
     real(real64), parameter :: a = 1.0d0
@@ -106,10 +127,11 @@ end function
 ! y(0) = 1
 ! y'(0) = 1/2
 ! y(x) = sin(wn * x) / 2 / wn + cos(wn * x)
-pure subroutine test_2dof_1(x, y, dydx)
+pure subroutine test_2dof_1(x, y, dydx, args)
     ! Arguments
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: dydx(:)
+    class(*), intent(inout), optional :: args
 
     ! Model Constants
     real(real64), parameter :: wn = 2.0d1
@@ -136,10 +158,11 @@ end function
 ! y' + y * sin(x)**2 = 0
 ! y(0) = 2
 ! y(x) = 2 * exp(0.25 * sin(2 * x) - 0.5 * x)
-pure subroutine test_1dof_1(x, y, dydx)
+pure subroutine test_1dof_1(x, y, dydx, args)
     ! Arguments
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: dydx(:)
+    class(*), intent(inout), optional :: args
 
     ! Equation
     dydx(1) = -y(1) * sin(x)**2
@@ -190,11 +213,12 @@ end function
 
 ! ------------------------------------------------------------------------------
 ! Roots: -2, 3
-pure subroutine first_order_1(x, y, dydx)
+pure subroutine first_order_1(x, y, dydx, args)
     ! Arguments
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: y
     real(real64), intent(out), dimension(:) :: dydx
+    class(*), intent(inout), optional :: args
 
     ! Process
     dydx(1) = y(1)**2 - y(1) - 6.0d0
@@ -202,11 +226,12 @@ end subroutine
 
 ! ------------------------------------------------------------------------------
 ! Roots: -2, 2, -1
-pure subroutine first_order_2(x, y, dydx)
+pure subroutine first_order_2(x, y, dydx, args)
     ! Arguments
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: y
     real(real64), intent(out), dimension(:) :: dydx
+    class(*), intent(inout), optional :: args
 
     ! Process
     dydx(1) = (y(1)**2 - 4.0d0) * (y(1) + 1.0d0)**2

@@ -62,7 +62,7 @@ contains
 ! ******************************************************************************
 ! ROSENBROCK
 ! ------------------------------------------------------------------------------
-subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, err)
+subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args, err)
     use diffeq_rosenbrock_constants
     !! Constructs the system matrix of the form 
     !! \( A = \frac{1}{\gamma h} M - J \), and then computes it's LU 
@@ -83,6 +83,9 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, err)
         !! An N-element array containing the current solution at x.
     real(real64), intent(in), dimension(:) :: f
         !! An N-element array containing the values of the derivatives at x.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the differential equation subroutine.
     class(errors), intent(inout), optional, target :: err
         !! An optional errors-based object that if provided 
         !! can be used to retrieve information relating to any errors 
@@ -110,7 +113,7 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, err)
     ! Compute the Jacobian matrix - only need to update if the previous step
     ! was successful
     if (prevs) then
-        call sys%compute_jacobian(x, y, this%jac, errmgr)
+        call sys%compute_jacobian(x, y, this%jac, args = args, err = errmgr)
         if (errmgr%has_error_occurred()) return
 
         ! Compute the mass matrix
@@ -119,7 +122,7 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, err)
                 sys%get_is_mass_matrix_dependent()) &
             then
                 ! We need to compute the mass matrix
-                call sys%mass_matrix(x, y, this%mass)
+                call sys%mass_matrix(x, y, this%mass, args)
                 this%m_massComputed = .true.
             end if
         end if
@@ -142,7 +145,7 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, err)
 
     ! Compute df/dx
     fac = sys%get_finite_difference_step()
-    call sys%fcn(x + fac, y, this%dfdx)
+    call sys%fcn(x + fac, y, this%dfdx, args)
     this%dfdx = (this%dfdx - f) / h ! forward differencing
 end subroutine
 
@@ -189,7 +192,7 @@ subroutine rbrk_init_matrices(this, n, usemass)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
+subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     use diffeq_rosenbrock_constants
     !! Attempts an integration step for this integrator.
     class(rosenbrock), intent(inout) :: this
@@ -216,6 +219,9 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
         !! of the error in each equation.
     real(real64), intent(out), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the differential equation subroutine.
 
     ! Local Variables
     integer(int32) :: n
@@ -228,33 +234,33 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k)
     call solve_lu(this%a, this%pivot, k(:,1))
 
     yn = y + a21 * k(:,1)
-    call sys%fcn(x + c2 * h, yn, fn)
+    call sys%fcn(x + c2 * h, yn, fn, args)
 
     k(:,2) = fn + h * d2 * this%dfdx + c21 * k(:,1) / h
     call solve_lu(this%a, this%pivot, k(:,2))
 
     yn = y + a31 * k(:,1) + a32 * k(:,2)
-    call sys%fcn(x + c3 * h, yn, fn)
+    call sys%fcn(x + c3 * h, yn, fn, args)
 
     k(:,3) = fn + h * d3 * this%dfdx + (c31 * k(:,1) + c32 * k(:,2)) / h
     call solve_lu(this%a, this%pivot, k(:,3))
 
     yn = y + a41 * k(:,1) + a42 * k(:,2) + a43 * k(:,3)
-    call sys%fcn(x + c4 * h, yn, fn)
+    call sys%fcn(x + c4 * h, yn, fn, args)
 
     k(:,4) = fn + h * d4 * this%dfdx + (c41 * k(:,1) + c42 * k(:,2) + &
         c43 * k(:,3)) / h
     call solve_lu(this%a, this%pivot, k(:,4))
 
     yn = y + a51 * k(:,1) + a52 * k(:,2) + a53 * k(:,3) + a54 * k(:,4)
-    call sys%fcn(x + h, yn, fn)
+    call sys%fcn(x + h, yn, fn, args)
 
     k(:,5) = fn + (c51 * k(:,1) + c52 * k(:,2) + c53 * k(:,3) + &
         c54 * k(:,4)) / h
     call solve_lu(this%a, this%pivot, k(:,5))
 
     yn = yn + k(:,5)
-    call sys%fcn(x + h, yn, fn) ! updated derivative
+    call sys%fcn(x + h, yn, fn, args) ! updated derivative
 
     yerr = fn + (c61 * k(:,1) + c62 * k(:,2) + c63 * k(:,3) + &
         c64 * k(:,4) + c65 * k(:,5)) / h
@@ -293,7 +299,7 @@ subroutine rbrk_init_interp(this, neqn)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine rbrk_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
+subroutine rbrk_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k, args)
     use diffeq_rosenbrock_constants
     !! Sets up the interpolation process.
     class(rosenbrock), intent(inout) :: this
@@ -316,6 +322,9 @@ subroutine rbrk_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k)
         !! An N-element array containing the derivatives at xn.
     real(real64), intent(inout), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the differential equation subroutine.
 
     ! Local Variables
     integer(int32) :: i, n
