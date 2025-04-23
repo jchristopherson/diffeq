@@ -361,8 +361,12 @@ function test_runge_kutta_with_args() result(rst)
     if (.not.assert(sol853, ref853)) then
         rst = .false.
         print "(A)", "TEST FAILED: test_runge_kutta_with_args -3"
-        print *, size(sol853, 1), size(sol853, 2)
+        print 100, "Solution Size: ", size(sol853, 1), "-", size(sol853, 2)
+        print 100, "Reference Size: ", size(ref853, 1), "-", size(ref853, 2)
     end if
+
+    ! Formatting
+100 format(A, I0, A, I0)
 end function
 
 ! ------------------------------------------------------------------------------
