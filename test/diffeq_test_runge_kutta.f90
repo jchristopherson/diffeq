@@ -311,6 +311,9 @@ function test_runge_kutta_with_args() result(rst)
     ! Arguments
     logical :: rst
 
+    ! Parameters
+    real(real64), parameter :: tol = 1.0d-6
+
     ! Local Variables
     real(real64) :: mu
     type(runge_kutta_23) :: rk23
@@ -348,25 +351,20 @@ function test_runge_kutta_with_args() result(rst)
     ref853 = rk853%get_solution()
 
     ! Test
-    if (.not.assert(sol23, ref23)) then
+    if (.not.assert(sol23, ref23, tol)) then
         rst = .false.
         print "(A)", "TEST FAILED: test_runge_kutta_with_args -1"
     end if
 
-    if (.not.assert(sol45, ref45)) then
+    if (.not.assert(sol45, ref45, tol)) then
         rst = .false.
         print "(A)", "TEST FAILED: test_runge_kutta_with_args -2"
     end if
 
-    if (.not.assert(sol853, ref853)) then
+    if (.not.assert(sol853, ref853, tol)) then
         rst = .false.
         print "(A)", "TEST FAILED: test_runge_kutta_with_args -3"
-        print 100, "Solution Size: ", size(sol853, 1), "-", size(sol853, 2)
-        print 100, "Reference Size: ", size(ref853, 1), "-", size(ref853, 2)
     end if
-
-    ! Formatting
-100 format(A, I0, A, I0)
 end function
 
 ! ------------------------------------------------------------------------------

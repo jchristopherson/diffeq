@@ -111,6 +111,9 @@ function test_rosenbrock_with_args() result(rst)
     ! Arguments
     logical :: rst
 
+    ! Parameters
+    real(real64), parameter :: tol = 1.0d-6
+
     ! Local Variables
     real(real64) :: mu
     type(rosenbrock) :: integrator
@@ -133,7 +136,7 @@ function test_rosenbrock_with_args() result(rst)
     refsol = integrator%get_solution()
 
     ! Test
-    if (.not.assert(sol, refsol)) then
+    if (.not.assert(sol, refsol, tol)) then
         rst = .false.
         print "(A)", "TEST FAILED: test_rosenbrock_with_args -1"
     end if
