@@ -139,7 +139,12 @@ function test_rosenbrock_with_args() result(rst)
     if (.not.assert(sol, refsol, tol)) then
         rst = .false.
         print "(A)", "TEST FAILED: test_rosenbrock_with_args -1"
+        print 100, "Solution Size: ", size(sol, 1), "-", size(sol, 2)
+        print 100, "Reference Size: ", size(ref, 1), "-", size(ref, 2)
     end if
+
+    ! Formatting
+100 format(A, I0, A, I0)
 end function
 
 ! ------------------------------------------------------------------------------
