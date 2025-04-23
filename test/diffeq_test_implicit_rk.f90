@@ -113,9 +113,12 @@ function test_rosenbrock_with_args() result(rst)
 
     ! Parameters
     real(real64), parameter :: tol = 1.0d-6
+    integer(int32), parameter :: npts = 1000
+    real(real64), parameter :: tmax = 5.0d1
 
     ! Local Variables
-    real(real64) :: mu
+    integer(int32) :: i
+    real(real64) :: mu, dt, t(npts)
     type(rosenbrock) :: integrator
     type(ode_container) :: mdl, ref
     real(real64), allocatable, dimension(:,:) :: sol, refsol
@@ -125,14 +128,16 @@ function test_rosenbrock_with_args() result(rst)
     mdl%fcn => vanderpol_args
     ref%fcn => vanderpol
     mu = 5.0d0
+    dt = tmax / (npts - 1.0d0)
+    t = (/ (i * dt, i = 0, npts - 1) /)
 
     ! Perform the integration with user-defined arguments
-    call integrator%solve(mdl, [0.0d0, 5.0d1], [2.0d0, 0.0d0], args = mu)
+    call integrator%solve(mdl, t, [2.0d0, 0.0d0], args = mu)
     sol = integrator%get_solution()
 
     ! Perform the integration without additional arguments
     call integrator%clear_buffer()
-    call integrator%solve(ref, [0.0d0, 5.0d1], [2.0d0, 0.0d0])
+    call integrator%solve(ref, t, [2.0d0, 0.0d0])
     refsol = integrator%get_solution()
 
     ! Test
