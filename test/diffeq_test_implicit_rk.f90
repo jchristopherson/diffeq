@@ -140,7 +140,7 @@ function test_rosenbrock_with_args() result(rst)
         rst = .false.
         print "(A)", "TEST FAILED: test_rosenbrock_with_args -1"
         print 100, "Solution Size: ", size(sol, 1), "-", size(sol, 2)
-        print 100, "Reference Size: ", size(ref, 1), "-", size(ref, 2)
+        print 100, "Reference Size: ", size(refsol, 1), "-", size(refsol, 2)
     end if
 
     ! Formatting
