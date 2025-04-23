@@ -146,7 +146,10 @@ function test_rosenbrock_with_args() result(rst)
         print "(A)", "TEST FAILED: test_rosenbrock_with_args -1"
         print 100, "Solution Size: ", size(sol, 1), "-", size(sol, 2)
         print 100, "Reference Size: ", size(refsol, 1), "-", size(refsol, 2)
-        print 101, "Solution - Reference Norm: ", norm2(sol(:,2) - refsol(:,2))
+        print 101, "Solution - Reference Norm 1: ", norm2(sol(:,2) - refsol(:,2))
+        print 101, "Solution - Reference Norm 2: ", norm2(sol(:,3) - refsol(:,3))
+        print 101, "Max Delta 1: ", maxval(abs(sol(:,2) - refsol(:,2)))
+        print 101, "Max Delta 2: ", maxval(abs(sol(:,3) - refsol(:,3)))
     end if
 
     ! Formatting
