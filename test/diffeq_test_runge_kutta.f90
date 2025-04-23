@@ -361,6 +361,7 @@ function test_runge_kutta_with_args() result(rst)
     if (.not.assert(sol853, ref853)) then
         rst = .false.
         print "(A)", "TEST FAILED: test_runge_kutta_with_args -3"
+        print *, size(sol853, 1), size(sol853, 2)
     end if
 end function
 
