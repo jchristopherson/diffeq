@@ -81,13 +81,30 @@ end program
 ```
 The routine containing the ODE is located in a different module for this example.  This routine is as follows.
 ```fortran
-pure subroutine vanderpol(x, y, dydx)
+pure subroutine vanderpol(x, y, dydx, args)
     ! Arguments
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: dydx(:)
+    class(*), intent(inout), optional :: args
 
     ! Model Constants
     real(real64), parameter :: mu = 5.0d0
+
+    ! An alternative approach to defining model parameters in the routine is
+    ! to use the optional "args" variable.  For example, if mu were to be
+    ! passed from the calling routine the args parameter could be used as 
+    ! follows:
+    !
+    ! select type (args)
+    ! type is (real(real64))
+    !   mu = args
+    ! end select
+    !
+    ! Of course, the call to the solve routine would have to pass this
+    ! argument in a manner similar to the following.
+    !
+    ! mu = 5.0d0
+    ! call integrator%solve(...., args = mu)
 
     ! Equations
     dydx(1) = y(2)

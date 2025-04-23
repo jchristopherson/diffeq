@@ -8,6 +8,7 @@ program example
     ! Local Variables
     type(rosenbrock) :: integrator
     type(ode_container) :: mdl
+    real(real64) :: mu
     real(real64), allocatable :: sol(:,:)
 
     ! Plot Variables
@@ -17,10 +18,11 @@ program example
     class(legend), pointer :: lgnd
 
     ! Define the model
-    mdl%fcn => vanderpol
+    mdl%fcn => vanderpol_args
+    mu = 5.0d0
 
     ! Compute the solution
-    call integrator%solve(mdl, [0.0d0, 5.0d1], [2.0d0, 0.0d0])
+    call integrator%solve(mdl, [0.0d0, 5.0d1], [2.0d0, 0.0d0], args = mu)
     sol = integrator%get_solution()
 
     ! Plot the results

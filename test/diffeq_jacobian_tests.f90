@@ -150,10 +150,11 @@ function test_fd_jacobian_3() result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
-pure subroutine dummy_jacobian_routine(x, y, jac)
+pure subroutine dummy_jacobian_routine(x, y, jac, args)
     ! Arguments
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: jac(:,:)
+    class(*), intent(inout), optional :: args
 
     ! Process
     jac = reshape([1.0d0, 2.0d0, 3.0d0, 4.0d0], [2, 2])

@@ -107,4 +107,55 @@ function test_rosenbrock_3() result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
+function test_rosenbrock_with_args() result(rst)
+    ! Arguments
+    logical :: rst
+
+    ! Parameters
+    real(real64), parameter :: tol = 1.0d-3
+    integer(int32), parameter :: npts = 1000
+    real(real64), parameter :: tmax = 5.0d1
+
+    ! Local Variables
+    integer(int32) :: i
+    real(real64) :: mu, dt, t(npts)
+    type(rosenbrock) :: integrator
+    type(ode_container) :: mdl, ref
+    real(real64), allocatable, dimension(:,:) :: sol, refsol
+
+    ! Initialization
+    rst = .true.
+    mdl%fcn => vanderpol_args
+    ref%fcn => vanderpol
+    mu = 5.0d0
+    dt = tmax / (npts - 1.0d0)
+    t = (/ (i * dt, i = 0, npts - 1) /)
+
+    ! Perform the integration with user-defined arguments
+    call integrator%solve(mdl, t, [2.0d0, 0.0d0], args = mu)
+    sol = integrator%get_solution()
+
+    ! Perform the integration without additional arguments
+    call integrator%clear_buffer()
+    call integrator%solve(ref, t, [2.0d0, 0.0d0])
+    refsol = integrator%get_solution()
+
+    ! Test
+    if (.not.assert(sol, refsol, tol)) then
+        rst = .false.
+        print "(A)", "TEST FAILED: test_rosenbrock_with_args -1"
+        print 100, "Solution Size: ", size(sol, 1), "-", size(sol, 2)
+        print 100, "Reference Size: ", size(refsol, 1), "-", size(refsol, 2)
+        print 101, "Solution - Reference Norm 1: ", norm2(sol(:,2) - refsol(:,2))
+        print 101, "Solution - Reference Norm 2: ", norm2(sol(:,3) - refsol(:,3))
+        print 101, "Max Delta 1: ", maxval(abs(sol(:,2) - refsol(:,2)))
+        print 101, "Max Delta 2: ", maxval(abs(sol(:,3) - refsol(:,3)))
+    end if
+
+    ! Formatting
+100 format(A, I0, A, I0)
+101 format(A, G12.3)
+end function
+
+! ------------------------------------------------------------------------------
 end module
