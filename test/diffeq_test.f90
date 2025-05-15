@@ -67,6 +67,9 @@ program test
     rst = test_rosenbrock_with_args()
     if (.not.rst) flag = 18
 
+    rst = test_runge_kutta_dense_with_args()
+    if (.not.rst) flag = 19
+
     ! Output
     stop flag
 end program

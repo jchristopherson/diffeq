@@ -368,4 +368,72 @@ function test_runge_kutta_with_args() result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
+function test_runge_kutta_dense_with_args() result(rst)
+    ! Arguments
+    logical :: rst
+
+    ! Parameters
+    real(real64), parameter :: tol = 1.0d-6
+    real(real64), parameter :: maxX = 5.0d1
+    integer(int32), parameter :: npts = 1000
+
+    ! Local Variables
+    integer(int32) :: i
+    real(real64) :: mu, dx
+    real(real64), allocatable, dimension(:) :: x
+    type(runge_kutta_23) :: rk23
+    type(runge_kutta_45) :: rk45
+    type(runge_kutta_853) :: rk853
+    type(ode_container) :: mdl, ref
+    real(real64), allocatable, dimension(:,:) :: sol23, sol45, sol853, &
+        ref23, ref45, ref853
+
+    ! Initialization
+    rst = .true.
+    mdl%fcn => vanderpol_args
+    ref%fcn => vanderpol
+    mu = 5.0d0
+    allocate(x(npts))
+    dx = maxX / (npts - 1.0d0)
+    x = (/ (i * dx, i = 0, npts - 1) /)
+
+    ! Perform the integration with user-defined arguments
+    call rk23%solve(mdl, x, [2.0d0, 0.0d0], args = mu)
+    call rk45%solve(mdl, x, [2.0d0, 0.0d0], args = mu)
+    call rk853%solve(mdl, x, [2.0d0, 0.0d0], args = mu)
+
+    sol23 = rk23%get_solution()
+    sol45 = rk45%get_solution()
+    sol853 = rk853%get_solution()
+
+    ! Perform the integration without additional arguments
+    call rk23%clear_buffer()
+    call rk45%clear_buffer()
+    call rk853%clear_buffer()
+    call rk23%solve(ref, x, [2.0d0, 0.0d0])
+    call rk45%solve(ref, x, [2.0d0, 0.0d0])
+    call rk853%solve(ref, x, [2.0d0, 0.0d0])
+
+    ref23 = rk23%get_solution()
+    ref45 = rk45%get_solution()
+    ref853 = rk853%get_solution()
+
+    ! Test
+    if (.not.assert(sol23, ref23, tol)) then
+        rst = .false.
+        print "(A)", "TEST FAILED: test_runge_kutta_dense_with_args -1"
+    end if
+
+    if (.not.assert(sol45, ref45, tol)) then
+        rst = .false.
+        print "(A)", "TEST FAILED: test_runge_kutta_dense_with_args -2"
+    end if
+
+    if (.not.assert(sol853, ref853, tol)) then
+        rst = .false.
+        print "(A)", "TEST FAILED: test_runge_kutta_dense_with_args -3"
+    end if
+end function
+
+! ------------------------------------------------------------------------------
 end module
