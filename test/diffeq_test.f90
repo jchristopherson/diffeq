@@ -74,6 +74,15 @@ program test
     rst = test_adams_1()
     if (.not.rst) flag = 20
 
+    rst = test_bdf_1()
+    if (.not.rst) flag = 21
+
+    rst = test_adams_with_args()
+    if (.not.rst) flag = 22
+
+    rst = test_bdf_with_args()
+    if (.not.rst) flag = 23
+
     ! Output
     stop flag
 end program
