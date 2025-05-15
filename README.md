@@ -156,7 +156,7 @@ program example
     print "(AI0A)", "RUNGE_KUTTA_853: ", size(s3, 1), " Solution Points"
     print "(AI0A)", "ROSENBROCK: ", size(s4, 1), " Solution Points"
 
-    ! Now, implement a PI controller and check its effect.  This will likely
+    ! Now, implement a PI controller and check its effect.  This might
     ! increase the number of steps (loss of efficiency), but if there were
     ! any stability issues, stability will likely improve.  Stability is likely
     ! not relevant on this problem, but it's here for illustration purposes.
@@ -170,8 +170,8 @@ end program
 RUNGE_KUTTA_23: 2465 Solution Points
 RUNGE_KUTTA_45: 583 Solution Points
 RUNGE_KUTTA_853: 925 Solution Points
-ROSENBROCK: 1178 Solution Points
-ROSENBROCK w/ PI Controller: 2356 Solution Points
+ROSENBROCK: 1191 Solution Points
+ROSENBROCK w/ PI Controller: 1191 Solution Points
 ```
 
 ## External Libraries

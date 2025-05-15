@@ -238,4 +238,42 @@ pure subroutine first_order_2(x, y, dydx, args)
 end subroutine
 
 ! ------------------------------------------------------------------------------
+subroutine parametric_model(t, x, dxdt, args)
+    ! Arguments
+    real(real64), intent(in) :: t
+    real(real64), intent(in), dimension(:) :: x
+    real(real64), intent(out), dimension(:) :: dxdt
+    class(*), intent(inout), optional :: args
+
+    ! Parameters
+    real(real64), parameter :: pi = 2.0d0 * acos(0.0d0)
+    real(real64), parameter :: m = 6.1763013134581447d-5
+    real(real64), parameter :: b = 4.3487216190266362d-3
+    real(real64), parameter :: k = 190.46442027195485d0
+    real(real64), parameter :: kappa = 3.5035644222521636d-3
+    real(real64), parameter :: d = 8.0d0
+    real(real64), parameter :: V = 3.0d1
+    real(real64), parameter :: startRatio = 5.0d-1
+    real(real64), parameter :: endRatio = 2.0d0
+    real(real64), parameter :: span = 1.0d0
+
+    ! Local Variables
+    real(real64) :: wn, fn, startfHz, endfHz, c, F, y
+
+    ! Forcing Routine
+    wn = sqrt(k / m)
+    fn = wn / (2.0d0 * pi)
+    startfHz = startRatio * fn
+    endfHz = endRatio * fn
+    c = (endfHz - startfHz) / span
+    y = V * sin(2.0d0 * pi * t * (0.5d0 * c * t + startfHz))
+    F = sign(1.0d0, y) * kappa * y**2 / ((1.0d0 - x(1) / d)**2)
+
+    ! Equations of motion:
+    ! m x" + b x' + k x = sign(y) kappa y**2 / (1 - x / d)**2
+    dxdt(1) = x(2)
+    dxdt(2) = (F - b * x(2) - k * x(1)) / m
+end subroutine
+
+! ------------------------------------------------------------------------------
 end module

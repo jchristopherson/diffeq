@@ -41,6 +41,7 @@ program example
     ! increase the number of steps (loss of efficiency), but if there were
     ! any stability issues, stability will likely improve.  Stability is likely
     ! not relevant on this problem, but it's here for illustration purposes.
+    call integrator_4%clear_buffer()
     call integrator_4%set_step_size_control_parameter(0.1d0)
     call integrator_4%solve(mdl, t, ic)
     s5 = integrator_4%get_solution()

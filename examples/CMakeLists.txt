@@ -37,3 +37,12 @@ add_executable(
 )
 link_library(rosenbrock_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
 link_library(rosenbrock_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
+
+# Parametric Example
+add_executable(
+    parametric_example
+    parametric_example.f90
+    ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
+)
+link_library(parametric_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
+link_library(parametric_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
