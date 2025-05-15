@@ -13,8 +13,10 @@ program example
     type(runge_kutta_45) :: integrator_2
     type(runge_kutta_853) :: integrator_3
     type(rosenbrock) :: integrator_4
+    type(bdf) :: integrator_5
+    type(adams) :: integrator_6
     type(ode_container) :: mdl
-    real(real64), allocatable, dimension(:,:) :: s1, s2, s3, s4, s5
+    real(real64), allocatable, dimension(:,:) :: s1, s2, s3, s4, s4a, s5, s6
 
     ! Define the model
     mdl%fcn => vanderpol
@@ -24,12 +26,16 @@ program example
     call integrator_2%solve(mdl, t, ic)
     call integrator_3%solve(mdl, t, ic)
     call integrator_4%solve(mdl, t, ic)
+    call integrator_5%solve(mdl, t, ic)
+    call integrator_6%solve(mdl, t, ic)
 
     ! Retrieve the solution from each integrator
     s1 = integrator_1%get_solution()
     s2 = integrator_2%get_solution()
     s3 = integrator_3%get_solution()
     s4 = integrator_4%get_solution()
+    s5 = integrator_5%get_solution()
+    s6 = integrator_6%get_solution()
 
     ! Print out the size of each solution
     print "(AI0A)", "RUNGE_KUTTA_23: ", size(s1, 1), " Solution Points"
@@ -44,6 +50,10 @@ program example
     call integrator_4%clear_buffer()
     call integrator_4%set_step_size_control_parameter(0.1d0)
     call integrator_4%solve(mdl, t, ic)
-    s5 = integrator_4%get_solution()
-    print "(AI0A)", "ROSENBROCK w/ PI Controller: ", size(s5, 1), " Solution Points"
+    s4a = integrator_4%get_solution()
+    print "(AI0A)", "ROSENBROCK w/ PI Controller: ", size(s4a, 1), " Solution Points"
+
+    ! VODE Integrators
+    print "(AI0A)", "BDF: ", size(s5, 1), " Solution Points"
+    print "(AI0A)", "ADAMS: ", size(s6, 1), " Solution Points"
 end program
