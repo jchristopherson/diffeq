@@ -8,6 +8,7 @@ set(diffeq_test_sources
     diffeq_jacobian_tests.f90
     diffeq_test_runge_kutta.f90
     diffeq_test_implicit_rk.f90
+    diffeq_test_vode.f90
 )
 
 add_executable(diffeq_tests ${diffeq_test_sources})

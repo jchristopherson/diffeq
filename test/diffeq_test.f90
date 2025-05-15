@@ -3,6 +3,7 @@ program test
     use diffeq_jacobian_tests
     use diffeq_test_runge_kutta
     use diffeq_test_implicit_rk
+    use diffeq_test_vode
     implicit none
 
     ! Local Variables
@@ -69,6 +70,9 @@ program test
 
     rst = test_runge_kutta_dense_with_args()
     if (.not.rst) flag = 19
+
+    rst = test_adams_1()
+    if (.not.rst) flag = 20
 
     ! Output
     stop flag
