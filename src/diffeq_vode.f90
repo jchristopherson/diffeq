@@ -63,6 +63,40 @@ module diffeq_vode
             !! A pointer to the ODE jacobian routine.
     end type
 
+    interface
+        subroutine DVODE(f, neqn, y, t, tout, itol, rtol, atol, itask, istate, &
+            iopt, rwork, lrw, iwork, liw, jac, mf, rpar, ipar)
+            use iso_fortran_env, only : real64, int32
+            
+            interface
+                subroutine f(neqn_, t_, y_, ydot_, rpar_, ipar_)
+                    use iso_fortran_env, only : int32, real64
+                    integer(int32), intent(in) :: neqn_
+                    real(real64), intent(in) :: t_, y_(neqn_)
+                    real(real64), intent(out) :: ydot_(neqn_)
+                    real(real64), intent(inout) :: rpar_(*)
+                    integer(int32), intent(inout) :: ipar_(*)
+                end subroutine
+
+                subroutine jac(neqn_, t_, y_, ml_, mu_, pd_, nrowpd_, &
+                    rpar_, ipar_)
+                    use iso_fortran_env, only : int32, real64
+                    integer(int32), intent(in) :: neqn_, ml_, mu_, nrowpd_
+                    real(real64), intent(in) :: t_, y_(neqn_)
+                    real(real64), intent(out) :: pd_(nrowpd_,neqn_)
+                    real(real64), intent(inout) :: rpar_(*)
+                    integer(int32), intent(inout) :: ipar_(*)
+                end subroutine
+            end interface
+
+            integer(int32), intent(in) :: neqn, itol, itask, lrw, liw, mf, iopt
+            integer(int32), intent(inout) :: istate, iwork(*), ipar(*)
+            real(real64), intent(in) :: tout, rtol, atol
+            real(real64), intent(inout) :: y(neqn), t, rwork(*), rpar(*)
+
+        end subroutine
+    end interface
+
 contains
 ! ------------------------------------------------------------------------------
 subroutine vode_solve(this, sys, x, iv, args, err)
@@ -79,7 +113,7 @@ subroutine vode_solve(this, sys, x, iv, args, err)
         !! values.
     real(real64), intent(in), dimension(:) :: iv
         !! An array containing the initial values for each ODE.
-    class(*), intent(inout), optional :: args
+    class(*), intent(inout), optional, target :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
     class(errors), intent(inout), optional, target :: err
@@ -132,9 +166,9 @@ subroutine vode_solve(this, sys, x, iv, args, err)
 
     ! Additional Initialization
     container%fcn => sys%fcn
-
+    if (associated(sys%jacobian)) container%jac => sys%jacobian
     container%uses_args = present(args)
-    ! TO DO: Deal with the optional args instance
+    if (present(args)) container%args => args
     rpar = transfer(container, rpar)
     ipar(1) = size(rpar)
     allocate(y(neqn), source = iv, stat = flag)
@@ -148,7 +182,11 @@ subroutine vode_solve(this, sys, x, iv, args, err)
     if (this%get_method() == VODE_ADAMS_METHOD) then
         mf = 10
     else
-        mf = 22
+        if (associated(sys%jacobian)) then
+            mf = 21
+        else
+            mf = 22
+        end if
     end if
     maxord = this%get_order()
 
