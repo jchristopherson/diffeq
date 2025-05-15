@@ -13,6 +13,8 @@ The documentation can be found [here](https://jchristopherson.github.io/diffeq/)
 - Runge-Kutta, 3rd Order (Bogacki-Shampine)
 - Runge-Kutta, 8th Order (Hairer, Nörsett, & Wanner)
 - Rosenbrock, 4th Order
+- Adams (VODE)
+- Backward Differentiation Formula (VODE)
 
 ## Building DIFFEQ
 [CMake](https://cmake.org/)This library can be built using CMake.  For instructions see [Running CMake](https://cmake.org/runningcmake/).
