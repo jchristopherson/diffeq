@@ -4544,7 +4544,7 @@ C   891214  Prologue converted to Version 4.0 format.  (BAB)
 C   920310  Corrected definition of LX in DESCRIPTION.  (WRB)
 C   920501  Reformatted the REFERENCES section.  (WRB)
 C***END PROLOGUE  DCOPY
-      INTEGER N, INCX, INCY
+      INTEGER N, INCX, INCY, I, NS
       DOUBLE PRECISION DX(*), DY(*)
 C***FIRST EXECUTABLE STATEMENT  DCOPY
       IF (N .LE. 0) RETURN
@@ -4637,7 +4637,7 @@ C   891214  Prologue converted to Version 4.0 format.  (BAB)
 C   920310  Corrected definition of LX in DESCRIPTION.  (WRB)
 C   920501  Reformatted the REFERENCES section.  (WRB)
 C***END PROLOGUE  DDOT
-      INTEGER N, INCX, INCY
+      INTEGER N, INCX, INCY, I, IX, IY, M, MP1
       DOUBLE PRECISION DX(*), DY(*)
 C***FIRST EXECUTABLE STATEMENT  DDOT
       DDOT = 0.0D0
