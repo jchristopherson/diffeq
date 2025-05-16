@@ -4455,7 +4455,7 @@ C   891214  Prologue converted to Version 4.0 format.  (BAB)
 C   920310  Corrected definition of LX in DESCRIPTION.  (WRB)
 C   920501  Reformatted the REFERENCES section.  (WRB)
 C***END PROLOGUE  DAXPY
-      INTEGER N, INCX, INCY, IX, IY, M, MP1, NS
+      INTEGER N, INCX, INCY, IX, IY, M, MP1, NS, I
       DOUBLE PRECISION DX(*), DY(*), DA
 C***FIRST EXECUTABLE STATEMENT  DAXPY
       IF (N.LE.0 .OR. DA.EQ.0.0D0) RETURN
