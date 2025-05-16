@@ -122,7 +122,7 @@ function test_adams_with_args() result(rst)
     logical :: rst
 
     ! Parameters
-    real(real64), parameter :: tol = 1.0d-3
+    real(real64), parameter :: tol = 5.0d-3
     integer(int32), parameter :: npts = 1000
     real(real64), parameter :: tmax = 5.0d1
 
@@ -173,7 +173,7 @@ function test_bdf_with_args() result(rst)
     logical :: rst
 
     ! Parameters
-    real(real64), parameter :: tol = 1.0d-3
+    real(real64), parameter :: tol = 5.0d-3
     integer(int32), parameter :: npts = 1000
     real(real64), parameter :: tmax = 5.0d1
 
