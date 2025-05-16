@@ -10,6 +10,10 @@ homepage = "https://github.com/jchristopherson/spectrum"
 [library]
 source-dir = "src"
 
+[fortran]
+source-form = "default"
+implicit-external = true
+
 [dependencies]
 ferror = { git = "https://github.com/jchristopherson/ferror" }
 linalg = { git = "https://github.com/jchristopherson/linalg" }
