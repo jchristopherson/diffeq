@@ -212,7 +212,7 @@ module diffeq_base
                 !! values.
             real(real64), intent(in), dimension(:) :: iv
                 !! An array containing the initial values for each ODE.
-            class(*), intent(inout), optional :: args
+            class(*), intent(inout), optional, target :: args
                 !! An optional argument that can be used to pass information
                 !! in and out of the differential equation subroutine.
             class(errors), intent(inout), optional, target :: err
@@ -1084,7 +1084,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, args, err)
         !! the solution to the ODE's.
     real(real64), intent(in), dimension(:) :: iv
         !! An array containing the initial values for each ODE.
-    class(*), intent(inout), optional :: args
+    class(*), intent(inout), optional, target :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
     class(errors), intent(inout), optional, target :: err

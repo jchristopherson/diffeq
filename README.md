@@ -13,6 +13,8 @@ The documentation can be found [here](https://jchristopherson.github.io/diffeq/)
 - Runge-Kutta, 3rd Order (Bogacki-Shampine)
 - Runge-Kutta, 8th Order (Hairer, Nörsett, & Wanner)
 - Rosenbrock, 4th Order
+- Adams (VODE)
+- Backward Differentiation Formula (VODE)
 
 ## Building DIFFEQ
 [CMake](https://cmake.org/)This library can be built using CMake.  For instructions see [Running CMake](https://cmake.org/runningcmake/).
@@ -132,8 +134,10 @@ program example
     type(runge_kutta_45) :: integrator_2
     type(runge_kutta_853) :: integrator_3
     type(rosenbrock) :: integrator_4
+    type(bdf) :: integrator_5
+    type(adams) :: integrator_6
     type(ode_container) :: mdl
-    real(real64), allocatable, dimension(:,:) :: s1, s2, s3, s4, s5
+    real(real64), allocatable, dimension(:,:) :: s1, s2, s3, s4, s4a, s5, s6
 
     ! Define the model
     mdl%fcn => vanderpol
@@ -143,12 +147,16 @@ program example
     call integrator_2%solve(mdl, t, ic)
     call integrator_3%solve(mdl, t, ic)
     call integrator_4%solve(mdl, t, ic)
+    call integrator_5%solve(mdl, t, ic)
+    call integrator_6%solve(mdl, t, ic)
 
     ! Retrieve the solution from each integrator
     s1 = integrator_1%get_solution()
     s2 = integrator_2%get_solution()
     s3 = integrator_3%get_solution()
     s4 = integrator_4%get_solution()
+    s5 = integrator_5%get_solution()
+    s6 = integrator_6%get_solution()
 
     ! Print out the size of each solution
     print "(AI0A)", "RUNGE_KUTTA_23: ", size(s1, 1), " Solution Points"
@@ -156,22 +164,28 @@ program example
     print "(AI0A)", "RUNGE_KUTTA_853: ", size(s3, 1), " Solution Points"
     print "(AI0A)", "ROSENBROCK: ", size(s4, 1), " Solution Points"
 
-    ! Now, implement a PI controller and check its effect.  This will likely
+    ! Now, implement a PI controller and check its effect.  This might
     ! increase the number of steps (loss of efficiency), but if there were
     ! any stability issues, stability will likely improve.  Stability is likely
     ! not relevant on this problem, but it's here for illustration purposes.
     call integrator_4%set_step_size_control_parameter(0.1d0)
     call integrator_4%solve(mdl, t, ic)
-    s5 = integrator_4%get_solution()
-    print "(AI0A)", "ROSENBROCK w/ PI Controller: ", size(s5, 1), " Solution Points"
+    s4a = integrator_4%get_solution()
+    print "(AI0A)", "ROSENBROCK w/ PI Controller: ", size(s4a, 1), " Solution Points"
+
+    ! VODE Integrators
+    print "(AI0A)", "BDF: ", size(s5, 1), " Solution Points"
+    print "(AI0A)", "ADAMS: ", size(s6, 1), " Solution Points"
 end program
 ```
 ```txt
 RUNGE_KUTTA_23: 2465 Solution Points
 RUNGE_KUTTA_45: 583 Solution Points
 RUNGE_KUTTA_853: 925 Solution Points
-ROSENBROCK: 1178 Solution Points
-ROSENBROCK w/ PI Controller: 2356 Solution Points
+ROSENBROCK: 1191 Solution Points
+ROSENBROCK w/ PI Controller: 1191 Solution Points
+BDF: 1527 Solution Points
+ADAMS: 1865 Solution Points
 ```
 
 ## External Libraries
