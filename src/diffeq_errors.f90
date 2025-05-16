@@ -15,6 +15,9 @@ module diffeq_errors
     integer(int32), parameter :: DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR = 10006
     integer(int32), parameter :: DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR = 10007
     integer(int32), parameter :: DIFFEQ_INVALID_OPERATION_ERROR = 10008
+    integer(int32), parameter :: DIFFEQ_TOLERANCE_TOO_SMALL = 10009
+    integer(int32), parameter :: DIFFEQ_CONVERGENCE_ERROR = 10010
+    integer(int32), parameter :: DIFFEQ_ERROR_TEST_FAILURE = 10011
 
 ! ------------------------------------------------------------------------------
 contains
@@ -215,9 +218,69 @@ subroutine report_excessive_integration_steps(err, fcn, n, x)
     write(msg, 100) &
         "The allowable number of integration steps was exceeded (step ", &
         n, " at x = ", x, "."
+    call err%report_error(fcn, trim(msg), DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR)
 
     ! Formatting
 100 format(A, I0, A, EN0.3, A)
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine report_tolerance_too_small_error(err, fcn)
+    !! Reports an error where the requested tolerances are too small.
+    class(errors), intent(inout) :: err
+        !! The error handling object.
+    character(len = *), intent(in) :: fcn
+        !! The name of the function or subroutine in which the error occurred.
+
+    ! Process
+    call err%report_error(fcn, "The requested tolerances are too small.", &
+        DIFFEQ_TOLERANCE_TOO_SMALL)
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine report_multiple_convergence_error(err, fcn, n)
+    !! Reports an error when multiple convergence tests have failed on a single
+    !! integration step.
+    class(errors), intent(inout) :: err
+        !! The error handling object.
+    character(len = *), intent(in) :: fcn
+        !! The name of the function or subroutine in which the error occurred.
+    integer(int32), intent(in) :: n
+        !! The number of failed convergence tests.
+
+    ! Local Variables
+    character(len = 256) :: msg
+
+    ! Process
+    write(msg, 100) "The integrator has failed to converge ", n, &
+        " times on a single integration step."
+    call err%report_error(fcn, trim(msg), DIFFEQ_CONVERGENCE_ERROR)
+
+    ! Formatting
+100 format(A, I0, A)
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine report_successive_error_test_failures(err, fcn, n)
+    !! Reports an error condition resulting from an integrator failing multiple
+    !! successive error tests.
+    class(errors), intent(inout) :: err
+        !! The error handling object.
+    character(len = *), intent(in) :: fcn
+        !! The name of the function or subroutine in which the error occurred.
+    integer(int32), intent(in) :: n
+        !! The number of failed error tests.
+
+    ! Local Variables
+    character(len = 256) :: msg
+
+    ! Process
+    write(msg, 100) "The integrator has failed ", n, &
+        " sequential error tests on a single integration step."
+    call err%report_error(fcn, trim(msg), DIFFEQ_CONVERGENCE_ERROR)
+
+    ! Formatting
+100 format(A, I0, A)
 end subroutine
 
 ! ------------------------------------------------------------------------------
