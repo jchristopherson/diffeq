@@ -135,7 +135,7 @@ subroutine vode_solve(this, sys, x, iv, args, err)
 
     ! Local Variables
     integer(int32) :: i, ipar(1), itol, itask, istate, iopt, lrw, liw, mf, nx, &
-        neqn, flag, maxord, lwm, miter, nsteps, j
+        neqn, flag, maxord, lwm, miter, nsteps, j, stepsTaken, netf, ncfn
     integer(int32), allocatable, dimension(:) :: iwork
     real(real64) :: rtol, atol, t, tout, xmax
     real(real64), allocatable, dimension(:) :: rpar, rwork, y
@@ -241,16 +241,37 @@ subroutine vode_solve(this, sys, x, iv, args, err)
             ! Nothing was done as t == tout
         case (-1)
             ! To much work (more than mxstep)
+            stepsTaken = iwork(11)
+            call report_excessive_iterations(errmgr, "vode_solve", &
+                stepsTaken, t)
+            return
         case (-2)
             ! Tolerance values are too small
+            call report_tolerance_too_small_error(errmgr, "vode_solve")
+            return
         case (-3)
             ! Illegal input
+            call errmgr%report_error("vode_solve", &
+                "An invalid argument was passed to DVODE.  See the " // &
+                "command line output for more information.", &
+                DIFFEQ_INVALID_INPUT_ERROR)
+            return
         case (-4)
             ! Repeated error test failures
+            netf = iwork(22)
+            call report_successive_error_test_failures(err, "vode_solve", netf)
+            return
         case (-5)
             ! Failure to converge
+            ncfn = iwork(21)
+            call report_multiple_convergence_error(errmgr, "vode_solve", ncfn)
+            return
         case (-6)
             ! Pure relative error control requested but failed
+            call errmgr%report_error("vode_solve", &
+                "Pure relative error control requested, but is " // &
+                "unsuccessful for this problem.", DIFFEQ_ERROR_TEST_FAILURE)
+            return
         end select
 
         ! Store the results
