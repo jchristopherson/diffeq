@@ -843,17 +843,17 @@ subroutine rk853_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k, args)
     this%work = y + h * (a141 * f + a147 * k(:,7) + a148 * k(:,8) + &
         a149 * k(:,9) + a1410 * k(:,10) + a1411 * k(:,2) + &
         a1412 * k(:,3) + a1413 * fn)
-    call sys%fcn(x + c14 * h, this%work, k(:,10))
+    call sys%fcn(x + c14 * h, this%work, k(:,10), args)
 
     this%work = y + h * (a151 * f + a156 * k(:,6) + a157 * k(:,7) + &
         a158 * k(:,8) + a1511 * k(:,2) + a1512 * k(:,3) + a1513 * fn + &
         a1514 * k(:,10))
-    call sys%fcn(x + c15 * h, this%work, k(:,2))
+    call sys%fcn(x + c15 * h, this%work, k(:,2), args)
 
     this%work = y + h * (a161 * f + a166 * k(:,6) + a167 * k(:,7) + &
         a168 * k(:,8) + a169 * k(:,9) + a1613 * fn + a1614 * k(:,10) + &
         a1615 * k(:,2))
-    call sys%fcn(x + c16 * h, this%work, k(:,3))
+    call sys%fcn(x + c16 * h, this%work, k(:,3), args)
 
     do i = 1, n
         this%rc5(i) = h * (this%rc5(i) + d413 * fn(i) + d414 * k(i,10) + &

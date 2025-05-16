@@ -5,6 +5,7 @@ project_github: https://github.com/jchristopherson/diffeq
 author: Jason Christopherson
 author_email: jchristopherson@hotmail.com
 src_dir: ./src
+exclude_dir: **/VODE
 output_dir: ./doc
 display: public
 source: true

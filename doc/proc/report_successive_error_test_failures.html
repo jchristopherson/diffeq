@@ -10,7 +10,7 @@
     <meta name="author" content="Jason Christopherson" >
     <link rel="icon" href="../favicon.png">
 
-    <title>single_step_pre_step_routine &ndash; DIFFEQ</title>
+    <title>report_successive_error_test_failures &ndash; DIFFEQ</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
@@ -62,8 +62,8 @@
 
     <div class="container">
   <div class="row">
-    <h1>single_step_pre_step_routine
-      <small>Interface</small>
+    <h1>report_successive_error_test_failures
+      <small>Subroutine</small>
       
     </h1>
       <div class="container p-2 mb-4 bg-light border rounded-3">
@@ -74,21 +74,21 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title="11.1% of total for procedures.">73 statements</a>
+                 title=" 1.4% of total for procedures.">9 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/diffeq_base.f90"> Source File</a>
+              <a href="../src/diffeq_errors.f90"> Source File</a>
             </li>
         </ul>
       </div>
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='..\sourcefile\diffeq_base.f90.html'>diffeq_base.f90</a></li>
-                <li class="breadcrumb-item"><a href='..\module\diffeq_base.html'>diffeq_base</a></li>
-            <li class="breadcrumb-item active" aria-current="page">single_step_pre_step_routine</li>
+                <li class="breadcrumb-item"><a href='..\sourcefile\diffeq_errors.f90.html'>diffeq_errors.f90</a></li>
+                <li class="breadcrumb-item"><a href='..\module\diffeq_errors.html'>diffeq_errors</a></li>
+            <li class="breadcrumb-item active" aria-current="page">report_successive_error_test_failures</li>
           </ol>
         </nav>
       </div>
@@ -107,7 +107,18 @@
       <div id="sidebar">
       <h3>Contents</h3>
   
-  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../proc/report_successive_error_test_failures.html#variable-msg~8">msg</a>
+        </div>
+      </div>
+    </div>
+
   
   
   
@@ -127,18 +138,19 @@
   
   
 
-    <em>None</em>
 
   </div>
 
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>interface <br>
-      public  subroutine single_step_pre_step_routine(this, prevs, sys, h, x, y, f, args, err)  
-</h2>    
-
+    <h2>public  subroutine report_successive_error_test_failures(err, fcn, n)  
+</h2>
     
+
+    <p>Reports an error condition resulting from an integrator failing multiple
+successive error tests.</p>
+
 
     <h3>Arguments</h3>
         <table class="table table-striped varlist">
@@ -153,157 +165,101 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~37"></span>
-              class(<a href='..\type\single_step_integrator.html'>single_step_integrator</a>),
-            </td>
-<td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>this</strong></td>
-            <td>
-                <p>The single_step_integrator object.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-prevs~4"></span>
-              logical,
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>prevs</strong></td>
-            <td>
-                <p>Defines the status of the previous step.  The value is true 
-if the previous step was successful; else, false if the 
-previous step failed.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-sys~14"></span>
-              class(<a href='..\type\ode_container.html'>ode_container</a>),
-            </td>
-<td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>sys</strong></td>
-            <td>
-                <p>The ode_container object containing the ODE's to integrate.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-h~14"></span>
-              real(kind=real64),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>h</strong></td>
-            <td>
-                <p>The current step size.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-x~24"></span>
-              real(kind=real64),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>x</strong></td>
-            <td>
-                <p>The current value of the independent variable.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-y~24"></span>
-              real(kind=real64),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              dimension(:)
-            </td>
-            <td>::</td>
-            <td><strong>y</strong></td>
-            <td>
-                <p>An N-element array containing the current solution at x.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-f~13"></span>
-              real(kind=real64),
-            </td>
-<td>intent(in),</td>
-              <td></td>            <td>
-              dimension(:)
-            </td>
-            <td>::</td>
-            <td><strong>f</strong></td>
-            <td>
-                <p>An N-element array containing the values of the derivatives
-at x.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-args~20"></span>
-              class(*),
-            </td>
-<td>intent(inout),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>args</strong></td>
-            <td>
-                <p>An optional argument that can be used to pass information
-in and out of the differential equation subroutine.</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-err~19"></span>
+              <span class="anchor" id="variable-err~16"></span>
               class(errors),
             </td>
-<td>intent(inout),</td>
-              <td>optional,</td>            <td>
-              target
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
             </td>
             <td>::</td>
             <td><strong>err</strong></td>
             <td>
-                <p>An optional errors-based object that if provided 
-can be used to retrieve information relating to any errors 
-encountered during execution. If not provided, a default 
-implementation of the errors class is used internally to 
-provide error handling.</p>
+                <p>The error handling object.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fcn~12"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+            <td>
+                <p>The name of the function or subroutine in which the error occurred.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~11"></span>
+              integer(kind=int32),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+                <p>The number of failed error tests.</p>
             </td>
         </tr>
     </tbody>
   </table>
 
-    <h3>Description</h3>
-    <p>Provides a routine for performing any actions, such as setting
-up Jacobian calculations.</p>
     <br>
 
- </div>
-</div>
+
+    <section>    
+      <h2>Variables</h2>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-msg~8"></span>
+              character(len=256),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>msg</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    </section>
+    <br>
+    
+    
+
+    
+    
+
+
+
+    
+    
+    </div>
+  </div>
 
       <hr>
     </div> <!-- /container -->
