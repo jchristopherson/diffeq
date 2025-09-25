@@ -1,7 +1,11 @@
-include("${PROJECT_SOURCE_DIR}/cmake/helper.cmake")
-
 # Get Dependencies
-add_subdirectory(fplot)
+include(FetchContent)
+FetchContent_Declare(
+    fplot
+    GIT_REPOSITORY "https://github.com/jchristopherson/fplot"
+)
+FetchContent_MakeAvailable(fplot)
+set(fplot_LIBRARY fplot)
 
 # RK45 Example
 add_executable(
@@ -9,8 +13,7 @@ add_executable(
     rk45_example.f90
     ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
 )
-link_library(rk45_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
-link_library(rk45_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
+target_link_libraries(rk45_example diffeq ${fplot_LIBRARY})
 
 # RK853 Example
 add_executable(
@@ -18,8 +21,7 @@ add_executable(
     rk853_example.f90
     ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
 )
-link_library(rk853_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
-link_library(rk853_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
+target_link_libraries(rk853_example diffeq ${fplot_LIBRARY})
 
 # Comparison Example
 add_executable(
@@ -27,7 +29,7 @@ add_executable(
     comparison_example.f90
     ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
 )
-link_library(comparison_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
+target_link_libraries(comparison_example diffeq ${fplot_LIBRARY})
 
 # Rosenbrock Example
 add_executable(
@@ -35,8 +37,7 @@ add_executable(
     rosenbrock_example.f90
     ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
 )
-link_library(rosenbrock_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
-link_library(rosenbrock_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
+target_link_libraries(rosenbrock_example diffeq ${fplot_LIBRARY})
 
 # Parametric Example
 add_executable(
@@ -44,8 +45,7 @@ add_executable(
     parametric_example.f90
     ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
 )
-link_library(parametric_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
-link_library(parametric_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
+target_link_libraries(parametric_example diffeq ${fplot_LIBRARY})
 
 # Stiff Integrator Comparison Example
 add_executable(
@@ -53,5 +53,4 @@ add_executable(
     stiff_integrator_example.f90
     ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
 )
-link_library(stiff_integrator_example ${PROJECT_NAME} ${PROJECT_INCLUDE_DIR})
-link_library(stiff_integrator_example ${fplot_LIBRARY} ${fplot_INCLUDE_DIR})
+target_link_libraries(stiff_integrator_example diffeq ${fplot_LIBRARY})

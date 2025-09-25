@@ -5,33 +5,26 @@ project(
     LANGUAGES Fortran
     VERSION 1.1.1
 )
-
-# Get helper macros and functions
-include("${PROJECT_SOURCE_DIR}/cmake/helper.cmake")
+set(CMAKE_Fortran_STANDARD 2018)
+set(CMAKE_Fortran_STNADARD_REQUIRED TRUE)
 
 # Confgiure everything
 add_subdirectory(configure)
 
-# Deal with the dependencies
-add_subdirectory(dependencies)
-
 # Source
 add_subdirectory(src)
-add_fortran_library(
-    ${PROJECT_NAME}
-    ${PROJECT_INCLUDE_DIR}
-    ${CMAKE_INSTALL_INCLUDEDIR}
-    ${PROJECT_VERSION}
-    ${PROJECT_VERSION_MAJOR}
-    ${DIFFEQ_SOURCES}
+
+# Install
+install(
+    EXPORT ${PROJECT_NAME}-targets
+    NAMESPACE ${PROJECT_NAME}::
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
 )
-link_library(${PROJECT_NAME} ${ferror_LIBRARY} ${ferror_INCLUDE_DIR})
-link_library(${PROJECT_NAME} ${linalg_LIBRARY} ${linalg_INCLUDE_DIR})
 
 # Testing
 option(BUILD_TESTING "Build tests")
 include(CTest)
-message(STATUS "Build tests: ${BUILD_TESTING}")
+message(STATUS "Build DIFFEQ tests: ${BUILD_TESTING}")
 if (BUILD_TESTING)
     enable_testing()
     add_subdirectory(test)
