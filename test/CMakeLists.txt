@@ -1,5 +1,3 @@
-add_subdirectory(fortran_test_helper)
-
 set(diffeq_test_sources
     diffeq_test.f90
     diffeq_models.f90
