@@ -8,11 +8,11 @@ project(
 set(CMAKE_Fortran_STANDARD 2018)
 set(CMAKE_Fortran_STNADARD_REQUIRED TRUE)
 
-# Source
-add_subdirectory(src)
-
 # Confgiure everything
 add_subdirectory(configure)
+
+# Source
+add_subdirectory(src)
 
 # Install
 install(
