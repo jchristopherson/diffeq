@@ -19,7 +19,7 @@ set(DIFFEQ_SOURCES
 # Dependencies
 include(FetchContent)
 find_package(ferror QUIET)
-find_package(linalg 1.8.9 QUIET)
+find_package(linalg 1.8.10 QUIET)
 
 if (NOT ferror_FOUND)
     message(STATUS "FERROR could not be found.  A reference version will be employed.")
