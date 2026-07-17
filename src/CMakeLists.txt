@@ -19,7 +19,7 @@ set(DIFFEQ_SOURCES
 # Dependencies
 include(FetchContent)
 find_package(ferror QUIET)
-find_package(linalg QUIET)
+find_package(linalg 1.8.10 QUIET)
 
 if (NOT ferror_FOUND)
     message(STATUS "FERROR could not be found.  A reference version will be employed.")
@@ -89,10 +89,30 @@ install(
 )
 install(DIRECTORY ${DIFFEQ_MOD_DIR} DESTINATION ${CMAKE_INSTALL_MODULEDIR})
 
-if (${BUILD_FERROR} AND ${BUILD_SHARED_LIBS})
-    install(IMPORTED_RUNTIME_ARTIFACTS ${FERROR_LIBRARIES})
-endif()
-
-if (${BUILD_LINALG} AND ${BUILD_SHARED_LIBS})
-    install(IMPORTED_RUNTIME_ARTIFACTS ${LINALG_LIBRARIES})
+if (${BUILD_SHARED_LIBS})
+    if (${BUILD_FERROR})
+        install(TARGETS ${FERROR_LIBRARIES}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
+    endif()
+    if (${BUILD_LINALG})
+        install(TARGETS ${LINALG_LIBRARIES}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
+    endif()
+else()
+    if (${BUILD_FERROR})
+        install(TARGETS ${FERROR_LIBRARIES}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
+    endif()
+    if (${BUILD_LINALG})
+        install(TARGETS ${LINALG_LIBRARIES}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
+    endif()
 endif()
