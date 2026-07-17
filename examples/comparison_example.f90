@@ -38,10 +38,10 @@ program example
     s6 = integrator_6%get_solution()
 
     ! Print out the size of each solution
-    print "(AI0A)", "RUNGE_KUTTA_23: ", size(s1, 1), " Solution Points"
-    print "(AI0A)", "RUNGE_KUTTA_45: ", size(s2, 1), " Solution Points"
-    print "(AI0A)", "RUNGE_KUTTA_853: ", size(s3, 1), " Solution Points"
-    print "(AI0A)", "ROSENBROCK: ", size(s4, 1), " Solution Points"
+    print "(A, I0, A)", "RUNGE_KUTTA_23: ", size(s1, 1), " Solution Points"
+    print "(A, I0, A)", "RUNGE_KUTTA_45: ", size(s2, 1), " Solution Points"
+    print "(A, I0, A)", "RUNGE_KUTTA_853: ", size(s3, 1), " Solution Points"
+    print "(A, I0, A)", "ROSENBROCK: ", size(s4, 1), " Solution Points"
 
     ! Now, implement a PI controller and check its effect.  This will likely
     ! increase the number of steps (loss of efficiency), but if there were
@@ -51,9 +51,9 @@ program example
     call integrator_4%set_step_size_control_parameter(0.1d0)
     call integrator_4%solve(mdl, t, ic)
     s4a = integrator_4%get_solution()
-    print "(AI0A)", "ROSENBROCK w/ PI Controller: ", size(s4a, 1), " Solution Points"
+    print "(A, I0 ,A)", "ROSENBROCK w/ PI Controller: ", size(s4a, 1), " Solution Points"
 
     ! VODE Integrators
-    print "(AI0A)", "BDF: ", size(s5, 1), " Solution Points"
-    print "(AI0A)", "ADAMS: ", size(s6, 1), " Solution Points"
+    print "(A, I0, A)", "BDF: ", size(s5, 1), " Solution Points"
+    print "(A, I0, A)", "ADAMS: ", size(s6, 1), " Solution Points"
 end program
