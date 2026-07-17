@@ -2,15 +2,6 @@
 find_package(fplot QUIET)
 
 if (fplot_FOUND)
-    # The installed fplot package can export transitive imported targets
-    # like ferror::ferror, collections::collections, geompack::geompack,
-    # and fstring::fstring. Ensure those dependency targets are imported
-    # before linking so they are not passed through as raw -l flags.
-    find_package(ferror QUIET)
-    find_package(collections QUIET)
-    find_package(geompack QUIET)
-    find_package(fstring QUIET)
-
     set(fplot_LIBRARY fplot::fplot)
 else()
     include(FetchContent)
