@@ -17,4 +17,5 @@ module diffeq_errors
     integer(int32), parameter :: DIFFEQ_TOLERANCE_TOO_SMALL = 10009
     integer(int32), parameter :: DIFFEQ_CONVERGENCE_ERROR = 10010
     integer(int32), parameter :: DIFFEQ_ERROR_TEST_FAILURE = 10011
+    integer(int32), parameter :: DIFFEQ_SINGULAR_MATRIX_ERROR = 10012
 end module
