@@ -2,7 +2,6 @@ module diffeq_base
     !! A collection of base types for the DIFFEQ library.
     use iso_fortran_env
     use diffeq_errors
-    use ferror
     implicit none
     private
     public :: ode
@@ -194,10 +193,9 @@ module diffeq_base
     end type
 
     interface
-        subroutine ode_solver(this, sys, x, iv, args, err)
+        subroutine ode_solver(this, sys, x, iv, args)
             !! Solves the supplied system of ODE's.
             use iso_fortran_env
-            use ferror
             import ode_integrator
             import ode_container
             class(ode_integrator), intent(inout) :: this
@@ -215,22 +213,6 @@ module diffeq_base
             class(*), intent(inout), optional, target :: args
                 !! An optional argument that can be used to pass information
                 !! in and out of the differential equation subroutine.
-            class(errors), intent(inout), optional, target :: err
-                !! An optional errors-based object that if provided 
-                !! can be used to retrieve information relating to any errors 
-                !! encountered during execution. If not provided, a default 
-                !! implementation of the errors class is used internally to 
-                !! provide error handling.  Possible errors and warning messages
-                !! that may be encountered are as follows.
-                !!
-                !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a 
-                !!      memory allocation issue.
-                !!
-                !!  - DIFFEQ_NULL_POINTER_ERROR: Occurs if no ODE function is 
-                !!      defined.
-                !!
-                !!  - DIFFEQ_ARRAY_SIZE_ERROR: Occurs if there are less than 
-                !!      2 values given in the independent variable array x.
         end subroutine
 
         pure function ode_integer_inquiry(this) result(rst)
@@ -381,11 +363,10 @@ module diffeq_base
         end subroutine
 
         subroutine single_step_pre_step_routine(this, prevs, sys, h, x, y, f, &
-            args, err)
+            args)
             !! Provides a routine for performing any actions, such as setting
             !! up Jacobian calculations.
             use iso_fortran_env
-            use ferror
             import single_step_integrator
             import ode_container
             class(single_step_integrator), intent(inout) :: this
@@ -408,12 +389,6 @@ module diffeq_base
             class(*), intent(inout), optional :: args
                 !! An optional argument that can be used to pass information
                 !! in and out of the differential equation subroutine.
-            class(errors), intent(inout), optional, target :: err
-                !! An optional errors-based object that if provided 
-                !! can be used to retrieve information relating to any errors 
-                !! encountered during execution. If not provided, a default 
-                !! implementation of the errors class is used internally to 
-                !! provide error handling.
         end subroutine
 
         pure function single_step_integer_inquiry(this) result(rst)
@@ -483,7 +458,7 @@ subroutine oc_set_is_mass_dependent(this, x)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine oc_jacobian(this, x, y, jac, args, err)
+subroutine oc_jacobian(this, x, y, jac, args)
     !! Computes the Jacobian matrix for the system of ODEs.  If
     !! a routine is provided with an analytical Jacobian, the supplied
     !! routine is utilized; else, the Jacobian is estimated via a forward
@@ -500,43 +475,18 @@ subroutine oc_jacobian(this, x, y, jac, args, err)
     class(*), intent(inout), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
-    class(errors), intent(inout), optional, target :: err
-        !! An optional errors-based object that if provided 
-        !! can be used to retrieve information relating to any errors 
-        !! encountered during execution. If not provided, a default 
-        !! implementation of the errors class is used internally to provide 
-        !! error handling. Possible errors and warning messages that may be 
-        !! encountered are as follows.
-        !!
-        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a memory 
-        !!      allocation issue.
-        !!
-        !!  - DIFFEQ_NULL_POINTER_ERROR: Occurs if no ODE function is defined,
-        !!      and the calculation is being performed by finite differences.
-        !! 
-        !!  - DIFFEQ_MATRIX_SIZE_ERROR: Occurs if jac is not N-by-N.
 
     ! Local Variables
     integer(int32) :: i, ndof
     real(real64) :: h
-    class(errors), pointer :: errmgr
-    type(errors), target :: deferr
     
     ! Initialization
-    if (present(err)) then
-        errmgr => err
-    else
-        errmgr => deferr
-    end if
     ndof = size(y)
     h = this%get_finite_difference_step()
 
     ! Input Checking
-    if (size(jac, 1) /= ndof .or. size(jac, 2) /= ndof) then
-        call report_matrix_size_error(errmgr, "oc_jacobian", "jac", &
-            ndof, ndof, size(jac, 1), size(jac, 2))
-        return
-    end if
+    if (size(jac, 1) /= ndof .or. size(jac, 2) /= ndof) &
+        error stop DIFFEQ_MATRIX_SIZE_ERROR
 
     ! Use a user-defined routine, and then be done
     if (associated(this%jacobian)) then
@@ -546,8 +496,7 @@ subroutine oc_jacobian(this, x, y, jac, args, err)
 
     ! Allocate workspace.  No action is taken if the proper workspace is
     ! already allocated.
-    call this%allocate_workspace(ndof, errmgr)
-    if (errmgr%has_error_occurred()) return
+    call this%allocate_workspace(ndof)
 
     ! Finite Difference Approximation
     ! J(i,j) = df(i) / dy(j)
@@ -565,39 +514,23 @@ subroutine oc_jacobian(this, x, y, jac, args, err)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine oc_alloc_workspace(this, ndof, err)
+subroutine oc_alloc_workspace(this, ndof)
     ! Use to allocate internal workspaces.  This routine only takes action
     ! if the workspace array(s) are not sized properly for the application.
     class(ode_container), intent(inout) :: this
         ! The ode_container object.
     integer(int32), intent(in) :: ndof
         ! The number of degrees of freedom.
-    class(errors), intent(inout) :: err
-        ! The error handling object.
-
-    ! Local Variables
-    integer(int32) :: flag
 
     ! Jacobian Workspace Allocation
     if (allocated(this%m_jwork)) then
         if (size(this%m_jwork) /= 2 * ndof) then
             deallocate(this%m_jwork)
-            allocate(this%m_jwork(2 * ndof), stat = flag, source = 0.0d0)
-            if (flag /= 0) then
-                call report_memory_error(err, "oc_alloc_workspace", flag)
-                return
-            end if
+            allocate(this%m_jwork(2 * ndof), source = 0.0d0)
         end if
     else
-        allocate(this%m_jwork(2 * ndof), stat = flag, source = 0.0d0)
-        if (flag /= 0) then
-            call report_memory_error(err, "oc_alloc_workspace", flag)
-            return
-        end if
+        allocate(this%m_jwork(2 * ndof), source = 0.0d0)
     end if
-
-    ! End
-    return
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -614,7 +547,7 @@ end function
 ! ******************************************************************************
 ! ODE_INTEGRATOR ROUTINES
 ! ------------------------------------------------------------------------------
-subroutine oi_append_to_buffer(this, x, y, err)
+subroutine oi_append_to_buffer(this, x, y)
     !! Appends the supplied solution point to the internal solution buffer.
     class(ode_integrator), intent(inout) :: this
         !! The ode_integrator object.
@@ -622,32 +555,15 @@ subroutine oi_append_to_buffer(this, x, y, err)
         !! The independent variable value.
     real(real64), intent(in), dimension(:) :: y
         !! The values of the dependent variables corresponding to x.
-    class(errors), intent(inout), optional, target :: err
-        !! An optional errors-based object that if provided 
-        !! can be used to retrieve information relating to any errors 
-        !! encountered during execution. If not provided, a default 
-        !! implementation of the errors class is used internally to 
-        !! provide error handling.  Possible errors and warning messages
-        !! that may be encountered are as follows.
-        !!
-        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a 
-        !!      memory allocation issue.
 
     ! Parameters
     integer(int32), parameter :: buffer_size = 1000
 
     ! Local Variables
-    integer(int32) :: i, start, m, n, neqn, flag
+    integer(int32) :: i, start, m, n, neqn
     real(real64), allocatable, dimension(:,:) :: copy
-    class(errors), pointer :: errmgr
-    type(errors), target :: deferr
     
     ! Initialization
-    if (present(err)) then
-        errmgr => err
-    else
-        errmgr => deferr
-    end if
     if (allocated(this%m_buffer)) then
         neqn = size(this%m_buffer, 2) - 1
     else
@@ -657,25 +573,18 @@ subroutine oi_append_to_buffer(this, x, y, err)
     start = this%m_bufferCount + 1
 
     ! Input Checking
-    if (size(y) /= neqn) then
-        call report_array_size_error(errmgr, "oi_append_to_buffer", "y", neqn, &
-            size(y))
-        return
-    end if
+    if (size(y) /= neqn) error stop DIFFEQ_ARRAY_SIZE_ERROR
 
     ! Allocate memory if necessary
     if (.not.allocated(this%m_buffer)) then
-        allocate(this%m_buffer(buffer_size, n), stat = flag)
-        if (flag /= 0) go to 10
+        allocate(this%m_buffer(buffer_size, n))
     else
         m = size(this%m_buffer, 1)
         if (start == m + 1) then
-            allocate(copy(m, n), source = this%m_buffer, stat = flag)
-            if (flag /= 0) go to 10
+            allocate(copy(m, n), source = this%m_buffer)
             m = m + buffer_size
             deallocate(this%m_buffer)
-            allocate(this%m_buffer(m, n), stat = flag)
-            if (flag /= 0) go to 10
+            allocate(this%m_buffer(m, n))
             this%m_buffer(:this%m_bufferCount,:) = copy
         end if
     end if
@@ -684,14 +593,6 @@ subroutine oi_append_to_buffer(this, x, y, err)
     this%m_buffer(start,1) = x
     this%m_buffer(start,2:) = y
     this%m_bufferCount = this%m_bufferCount + 1
-
-    ! End
-    return
-
-    ! Memory Error Handler
-10  continue
-    call report_memory_error(errmgr, "oi_append_to_buffer", flag)
-    return
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -901,7 +802,7 @@ subroutine oi_set_control_parameter(this, x)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-function oi_next_step(this, e, eold, h, x, err) result(rst)
+function oi_next_step(this, e, eold, h, x) result(rst)
     !! Estimates the next step size based upon the current and previous error
     !! estimates.
     class(ode_integrator), intent(inout) :: this
@@ -915,16 +816,6 @@ function oi_next_step(this, e, eold, h, x, err) result(rst)
         !! The current step size.
     real(real64), intent(in) :: x
         !! The current independent variable value.
-    class(errors), intent(inout), optional, target :: err
-        !! An optional errors-based object that if provided 
-        !! can be used to retrieve information relating to any errors 
-        !! encountered during execution. If not provided, a default 
-        !! implementation of the errors class is used internally to 
-        !! provide error handling.  Possible errors and warning messages
-        !! that may be encountered are as follows.
-        !!
-        !!  - DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR: Occurs if the step size
-        !!      becomes too small in magnitude.
     real(real64) :: rst
         !! The new step size estimate.
 
@@ -935,15 +826,8 @@ function oi_next_step(this, e, eold, h, x, err) result(rst)
     ! Local Variables
     integer(int32) :: k
     real(real64) :: alpha, beta, fs, maxstep, minstep, scale
-    class(errors), pointer :: errmgr
-    type(errors), target :: deferr
     
     ! Initialization
-    if (present(err)) then
-        errmgr => err
-    else
-        errmgr => deferr
-    end if
     k = this%get_order()
     beta = this%get_step_size_control_parameter()
     alpha = 1.0d0 / k - 0.75d0 * beta
@@ -981,10 +865,7 @@ function oi_next_step(this, e, eold, h, x, err) result(rst)
     if (abs(rst) > maxstep) then
         rst = sign(maxstep, h)
     end if
-    if (abs(rst) < minstep) then
-        call report_step_size_too_small(errmgr, "oi_next_step", x, rst)
-        return
-    end if
+    if (abs(rst) < minstep) error stop DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR
 end function
 
 ! ------------------------------------------------------------------------------
@@ -1073,7 +954,7 @@ end subroutine
 ! ******************************************************************************
 ! SINGLE-STEP INTEGRATOR
 ! ------------------------------------------------------------------------------
-subroutine ssi_ode_solver(this, sys, x, iv, args, err)
+subroutine ssi_ode_solver(this, sys, x, iv, args)
     !! Solves the supplied system of ODE's.
     class(single_step_integrator), intent(inout) :: this
         !! The single_step_integrator object.
@@ -1087,50 +968,21 @@ subroutine ssi_ode_solver(this, sys, x, iv, args, err)
     class(*), intent(inout), optional, target :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
-    class(errors), intent(inout), optional, target :: err
-        !! An optional errors-based object that if provided 
-        !! can be used to retrieve information relating to any errors 
-        !! encountered during execution. If not provided, a default 
-        !! implementation of the errors class is used internally to 
-        !! provide error handling.  Possible errors and warning messages
-        !! that may be encountered are as follows.
-        !!
-        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a 
-        !!      memory allocation issue.
-        !!
-        !!  - DIFFEQ_NULL_POINTER_ERROR: Occurs if no ODE function is 
-        !!      defined.
-        !!
-        !!  - DIFFEQ_ARRAY_SIZE_ERROR: Occurs if there are less than 
-        !!      2 values given in the independent variable array x.
 
     ! Local Variables
     logical :: dense, success
-    integer(int32) :: i, j, n, neqn, flag, nsteps, nstages
+    integer(int32) :: i, j, n, neqn, nsteps, nstages
     real(real64) :: h, xo, xn, xmax, ei, eold
     real(real64), allocatable, dimension(:) :: f, y, yn, fn, yerr, yi
     real(real64), allocatable, dimension(:,:) :: k
-    class(errors), pointer :: errmgr
-    type(errors), target :: deferr
     
     ! Initialization
-    if (present(err)) then
-        errmgr => err
-    else
-        errmgr => deferr
-    end if
     n = size(x)
     success = .true.
 
     ! Input Checking
-    if (n < 2) then
-        call report_array_size_error(errmgr, "ssi_ode_solver", "x", 2, n)
-        return
-    end if
-    if (.not.sys%get_is_ode_defined()) then
-        call report_missing_ode(errmgr, "ssi_ode_solver")
-        return
-    end if
+    if (n < 2) error stop DIFFEQ_ARRAY_SIZE_ERROR
+    if (.not.sys%get_is_ode_defined()) error stop DIFFEQ_MISSING_ARGUMENT_ERROR
 
     ! Additional Initialization
     neqn = size(iv)
@@ -1149,14 +1001,9 @@ subroutine ssi_ode_solver(this, sys, x, iv, args, err)
         yn(neqn), &
         fn(neqn), &
         yerr(neqn), &
-        k(neqn, nstages),  &
-        stat = flag &
+        k(neqn, nstages), &
+        yi(neqn) &
     )
-    if (flag == 0 .and. dense) allocate(yi(neqn), stat = flag)
-    if (flag /= 0) then
-        call report_memory_error(errmgr, "ssi_ode_solver", flag)
-        return
-    end if
 
     ! Estimate an initial step size
     !
@@ -1166,16 +1013,13 @@ subroutine ssi_ode_solver(this, sys, x, iv, args, err)
     call this%estimate_inital_step_size(sys, xo, xmax, iv, f, h, args)
     
     ! Store the initial conditions
-    call this%append_to_buffer(x(1), iv, errmgr)
-    if (errmgr%has_error_occurred()) return
+    call this%append_to_buffer(x(1), iv)
     y = iv
 
     ! Cycle until integration is complete
     do i = 1, nsteps
         ! Perform any pre-step actions
-        call this%pre_step_action(success, sys, h, xo, y, f, args = args, &
-            err = errmgr)
-        if (errmgr%has_error_occurred()) return
+        call this%pre_step_action(success, sys, h, xo, y, f, args = args)
         
         ! Attempt a step
         call this%attempt_step(sys, h, xo, y, f, yn, fn, yerr, k, args)
@@ -1185,8 +1029,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, args, err)
         ei = this%compute_error_norm(y, yn, yerr)
 
         ! Determine the next step size
-        h = this%estimate_next_step_size(ei, eold, h, xo, errmgr)
-        if (errmgr%has_error_occurred()) return
+        h = this%estimate_next_step_size(ei, eold, h, xo)
 
         ! Reject the step?
         success = ei <= 1.0d0
@@ -1202,15 +1045,13 @@ subroutine ssi_ode_solver(this, sys, x, iv, args, err)
             ! Perform the interpolation as needed until a new step is required
             interp : do while (abs(x(j)) <= abs(xn))
                 call this%interpolate(x(j), xo, y, f, xn, yn, fn, yi)
-                call this%append_to_buffer(x(j), yi, errmgr)
-                if (errmgr%has_error_occurred()) return
+                call this%append_to_buffer(x(j), yi)
                 j = j + 1
                 if (j > n) exit interp
             end do interp
         else
             ! Store the values and move on
-            call this%append_to_buffer(xn, yn, errmgr)
-            if (errmgr%has_error_occurred()) return
+            call this%append_to_buffer(xn, yn)
         end if
 
         ! Are we done?
@@ -1221,8 +1062,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, args, err)
                 ! Interpolate to get the solution at xmax
                 call this%post_step_action(sys, .true., xo, xn, y, yn, f, fn, k)
                 call this%interpolate(xmax, xo, y, f, xn, yn, fn, yi)
-                call this%append_to_buffer(xmax, yi, errmgr)
-                if (errmgr%has_error_occurred()) return
+                call this%append_to_buffer(xmax, yi)
             end if
             
             ! We're done
@@ -1252,9 +1092,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, args, err)
     end do
 
     ! If we're here, the solver has run out of allowable steps
-    call report_excessive_integration_steps(errmgr, "ssi_ode_solver", nsteps, &
-        xn)
-    return
+    error stop DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR
 
     ! End
 100 continue

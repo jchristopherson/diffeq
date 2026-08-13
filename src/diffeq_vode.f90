@@ -2,7 +2,6 @@ module diffeq_vode
     use iso_fortran_env
     use diffeq_base
     use diffeq_errors
-    use ferror
     implicit none
     private
     public :: VODE_ADAMS_METHOD
@@ -99,7 +98,7 @@ module diffeq_vode
 
 contains
 ! ------------------------------------------------------------------------------
-subroutine vode_solve(this, sys, x, iv, args, err)
+subroutine vode_solve(this, sys, x, iv, args)
     !! Solves the supplied system of ODE's.
     class(vode), intent(inout) :: this
         !! The vode object.
@@ -116,53 +115,24 @@ subroutine vode_solve(this, sys, x, iv, args, err)
     class(*), intent(inout), optional, target :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
-    class(errors), intent(inout), optional, target :: err
-        !! An optional errors-based object that if provided 
-        !! can be used to retrieve information relating to any errors 
-        !! encountered during execution. If not provided, a default 
-        !! implementation of the errors class is used internally to 
-        !! provide error handling.  Possible errors and warning messages
-        !! that may be encountered are as follows.
-        !!
-        !!  - DIFFEQ_MEMORY_ALLOCATION_ERROR: Occurs if there is a 
-        !!      memory allocation issue.
-        !!
-        !!  - DIFFEQ_NULL_POINTER_ERROR: Occurs if no ODE function is 
-        !!      defined.
-        !!
-        !!  - DIFFEQ_ARRAY_SIZE_ERROR: Occurs if there are less than 
-        !!      2 values given in the independent variable array x.
 
     ! Local Variables
     integer(int32) :: i, ipar(1), itol, itask, istate, iopt, lrw, liw, mf, nx, &
-        neqn, flag, maxord, lwm, miter, nsteps, j, stepsTaken, netf, ncfn
+        neqn, maxord, lwm, miter, nsteps, j, stepsTaken, netf, ncfn
     integer(int32), allocatable, dimension(:) :: iwork
     real(real64) :: rtol, atol, t, tout, xmax
     real(real64), allocatable, dimension(:) :: rpar, rwork, y
     type(vode_argument_container) :: container
-    class(errors), pointer :: errmgr
-    type(errors), target :: deferr
     
     ! Initialization
-    if (present(err)) then
-        errmgr => err
-    else
-        errmgr => deferr
-    end if
     nx = size(x)
     xmax = x(nx)
     neqn = size(iv)
     nsteps = this%get_step_limit()
 
     ! Input Checking
-    if (nx < 2) then
-        call report_array_size_error(errmgr, "vode_solve", "x", 2, nx)
-        return
-    end if
-    if (.not.sys%get_is_ode_defined()) then
-        call report_missing_ode(errmgr, "vode_solve")
-        return
-    end if
+    if (nx < 2) error stop DIFFEQ_ARRAY_SIZE_ERROR
+    if (.not.sys%get_is_ode_defined()) error stop DIFFEQ_MISSING_ARGUMENT_ERROR
 
     ! Additional Initialization
     container%fcn => sys%fcn
@@ -171,8 +141,7 @@ subroutine vode_solve(this, sys, x, iv, args, err)
     if (present(args)) container%args => args
     rpar = transfer(container, rpar)
     ipar(1) = size(rpar)
-    allocate(y(neqn), source = iv, stat = flag)
-    if (flag /= 0) go to 10
+    allocate(y(neqn), source = iv)
     itol = 1
     rtol = this%get_relative_tolerance()
     atol = this%get_absolute_tolerance()
@@ -209,10 +178,8 @@ subroutine vode_solve(this, sys, x, iv, args, err)
     lwm = 2 * neqn**2 + 2
     lrw = 20 + neqn * (maxord + 1) + 3 * neqn + lwm
     liw = 30 + neqn
-    allocate(iwork(liw), source = 0, stat = flag)
-    if (flag /= 0) go to 10
-    allocate(rwork(lrw), source = 0.0d0, stat = flag)
-    if (flag /= 0) go to 10
+    allocate(iwork(liw), source = 0)
+    allocate(rwork(lrw), source = 0.0d0)
 
     ! Optional Parameter Initializations
     rwork(1) = xmax
@@ -227,8 +194,7 @@ subroutine vode_solve(this, sys, x, iv, args, err)
         tout = x(2)
     end if
     j = 1
-    call this%append_to_buffer(t, y, err = errmgr)
-    if (errmgr%has_error_occurred()) return
+    call this%append_to_buffer(t, y)
     do i = 1, nsteps
         ! Take the step
         call DVODE(vode_eqn, neqn, y, t, tout, itol, rtol, atol, itask, &
@@ -242,41 +208,28 @@ subroutine vode_solve(this, sys, x, iv, args, err)
         case (-1)
             ! To much work (more than mxstep)
             stepsTaken = iwork(11)
-            call report_excessive_iterations(errmgr, "vode_solve", &
-                stepsTaken, t)
-            return
+            error stop DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR
         case (-2)
             ! Tolerance values are too small
-            call report_tolerance_too_small_error(errmgr, "vode_solve")
-            return
+            error stop DIFFEQ_TOLERANCE_TOO_SMALL
         case (-3)
             ! Illegal input
-            call errmgr%report_error("vode_solve", &
-                "An invalid argument was passed to DVODE.  See the " // &
-                "command line output for more information.", &
-                DIFFEQ_INVALID_INPUT_ERROR)
-            return
+            error stop DIFFEQ_INVALID_INPUT_ERROR
         case (-4)
             ! Repeated error test failures
             netf = iwork(22)
-            call report_successive_error_test_failures(err, "vode_solve", netf)
-            return
+            error stop DIFFEQ_ERROR_TEST_FAILURE
         case (-5)
             ! Failure to converge
             ncfn = iwork(21)
-            call report_multiple_convergence_error(errmgr, "vode_solve", ncfn)
-            return
+            error stop DIFFEQ_CONVERGENCE_ERROR
         case (-6)
             ! Pure relative error control requested but failed
-            call errmgr%report_error("vode_solve", &
-                "Pure relative error control requested, but is " // &
-                "unsuccessful for this problem.", DIFFEQ_ERROR_TEST_FAILURE)
-            return
+            error stop DIFFEQ_ERROR_TEST_FAILURE
         end select
 
         ! Store the results
-        call this%append_to_buffer(t, y, err = errmgr)
-        if (errmgr%has_error_occurred()) return
+        call this%append_to_buffer(t, y)
 
         ! Update TOUT if nx /= 2
         if (nx /= 2) then
@@ -294,11 +247,6 @@ subroutine vode_solve(this, sys, x, iv, args, err)
 
     ! End
 100 continue
-    return
-
-10  continue
-    ! Memory Error Handling
-    call report_memory_error(errmgr, "vode_solve", flag)
     return
 end subroutine
 
