@@ -2,7 +2,6 @@ module diffeq_runge_kutta
     use iso_fortran_env
     use diffeq_errors
     use diffeq_base
-    use ferror
     implicit none
     private
     public :: runge_kutta_45
@@ -105,7 +104,7 @@ contains
 ! ******************************************************************************
 ! RUNGE_KUTTA_45
 ! ------------------------------------------------------------------------------
-subroutine rk45_pre_step(this, prevs, sys, h, x, y, f, args, err)
+subroutine rk45_pre_step(this, prevs, sys, h, x, y, f, args)
     !! Placeholder routine for any pre-step actions.
     class(runge_kutta_45), intent(inout) :: this
         !! The runge_kutta_45 object.
@@ -127,12 +126,6 @@ subroutine rk45_pre_step(this, prevs, sys, h, x, y, f, args, err)
     class(*), intent(inout), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
-    class(errors), intent(inout), optional, target :: err
-        !! An optional errors-based object that if provided 
-        !! can be used to retrieve information relating to any errors 
-        !! encountered during execution. If not provided, a default 
-        !! implementation of the errors class is used internally to 
-        !! provide error handling.
 
     ! Process
     return
@@ -358,7 +351,7 @@ end subroutine
 ! ******************************************************************************
 ! RUNGE_KUTTA_23
 ! ------------------------------------------------------------------------------
-subroutine rk23_pre_step(this, prevs, sys, h, x, y, f, args, err)
+subroutine rk23_pre_step(this, prevs, sys, h, x, y, f, args)
     !! Placeholder routine for any pre-step actions.
     class(runge_kutta_23), intent(inout) :: this
         !! The runge_kutta_23 object.
@@ -380,12 +373,6 @@ subroutine rk23_pre_step(this, prevs, sys, h, x, y, f, args, err)
     class(*), intent(inout), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
-    class(errors), intent(inout), optional, target :: err
-        !! An optional errors-based object that if provided 
-        !! can be used to retrieve information relating to any errors 
-        !! encountered during execution. If not provided, a default 
-        !! implementation of the errors class is used internally to 
-        !! provide error handling.
 
     ! Process
     return
@@ -581,7 +568,7 @@ end subroutine
 ! ******************************************************************************
 ! RUNGE_KUTTA_853
 ! ------------------------------------------------------------------------------
-subroutine rk853_pre_step(this, prevs, sys, h, x, y, f, args, err)
+subroutine rk853_pre_step(this, prevs, sys, h, x, y, f, args)
     !! Placeholder routine for any pre-step actions.
     class(runge_kutta_853), intent(inout) :: this
         !! The runge_kutta_853 object.
@@ -603,12 +590,6 @@ subroutine rk853_pre_step(this, prevs, sys, h, x, y, f, args, err)
     class(*), intent(inout), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
-    class(errors), intent(inout), optional, target :: err
-        !! An optional errors-based object that if provided 
-        !! can be used to retrieve information relating to any errors 
-        !! encountered during execution. If not provided, a default 
-        !! implementation of the errors class is used internally to 
-        !! provide error handling.
 
     ! Process
     return
