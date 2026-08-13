@@ -2,7 +2,8 @@ module diffeq_implicit_runge_kutta
     use iso_fortran_env
     use diffeq_base
     use diffeq_errors
-    use linalg, only : lu_factor, solve_lu
+    use linalg, only : solve_lu
+    use lapack, only : DGETRF
     implicit none
     private
     public :: rosenbrock
@@ -62,7 +63,7 @@ contains
 ! ******************************************************************************
 ! ROSENBROCK
 ! ------------------------------------------------------------------------------
-subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args, err)
+subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
     use diffeq_rosenbrock_constants
     !! Constructs the system matrix of the form 
     !! \( A = \frac{1}{\gamma h} M - J \), and then computes it's LU 
@@ -86,26 +87,14 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args, err)
     class(*), intent(inout), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
-    class(errors), intent(inout), optional, target :: err
-        !! An optional errors-based object that if provided 
-        !! can be used to retrieve information relating to any errors 
-        !! encountered during execution. If not provided, a default 
-        !! implementation of the errors class is used internally to 
-        !! provide error handling.
 
     ! Local Variables
-    integer(int32) :: i, n
+    integer(int32) :: i, n, flag
     logical :: useMass
     real(real64) :: fac
-    class(errors), pointer :: errmgr
-    type(errors), target :: deferr
+    real(real64), allocatable, dimension(:,:) :: lu
     
     ! Initialization
-    if (present(err)) then
-        errmgr => err
-    else
-        errmgr => deferr
-    end if
     n = size(y)
     useMass = associated(sys%mass_matrix)
     call this%initialize_matrices(n, useMass)
@@ -113,8 +102,7 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args, err)
     ! Compute the Jacobian matrix - only need to update if the previous step
     ! was successful
     if (prevs) then
-        call sys%compute_jacobian(x, y, this%jac, args = args, err = errmgr)
-        if (errmgr%has_error_occurred()) return
+        call sys%compute_jacobian(x, y, this%jac, args = args)
 
         ! Compute the mass matrix
         if (useMass) then
@@ -140,8 +128,8 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args, err)
     end if
 
     ! Factor the equations
-    call lu_factor(this%a, this%pivot, errmgr)
-    if (errmgr%has_error_occurred()) return
+    call DGETRF(n, n, this%a, n, this%pivot, flag)
+    if (flag /= 0) error stop DIFFEQ_SINGULAR_MATRIX_ERROR
 
     ! Compute df/dx
     fac = sys%get_finite_difference_step()
@@ -231,40 +219,40 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
 
     ! Process
     k(:,1) = f + h * d1 * this%dfdx
-    call solve_lu(this%a, this%pivot, k(:,1))
+    k(:,1) = solve_lu(this%a, this%pivot, k(:,1))
 
     yn = y + a21 * k(:,1)
     call sys%fcn(x + c2 * h, yn, fn, args)
 
     k(:,2) = fn + h * d2 * this%dfdx + c21 * k(:,1) / h
-    call solve_lu(this%a, this%pivot, k(:,2))
+    k(:,2) = solve_lu(this%a, this%pivot, k(:,2))
 
     yn = y + a31 * k(:,1) + a32 * k(:,2)
     call sys%fcn(x + c3 * h, yn, fn, args)
 
     k(:,3) = fn + h * d3 * this%dfdx + (c31 * k(:,1) + c32 * k(:,2)) / h
-    call solve_lu(this%a, this%pivot, k(:,3))
+    k(:,3) = solve_lu(this%a, this%pivot, k(:,3))
 
     yn = y + a41 * k(:,1) + a42 * k(:,2) + a43 * k(:,3)
     call sys%fcn(x + c4 * h, yn, fn, args)
 
     k(:,4) = fn + h * d4 * this%dfdx + (c41 * k(:,1) + c42 * k(:,2) + &
         c43 * k(:,3)) / h
-    call solve_lu(this%a, this%pivot, k(:,4))
+    k(:,4) = solve_lu(this%a, this%pivot, k(:,4))
 
     yn = y + a51 * k(:,1) + a52 * k(:,2) + a53 * k(:,3) + a54 * k(:,4)
     call sys%fcn(x + h, yn, fn, args)
 
     k(:,5) = fn + (c51 * k(:,1) + c52 * k(:,2) + c53 * k(:,3) + &
         c54 * k(:,4)) / h
-    call solve_lu(this%a, this%pivot, k(:,5))
+    k(:,5) = solve_lu(this%a, this%pivot, k(:,5))
 
     yn = yn + k(:,5)
     call sys%fcn(x + h, yn, fn, args) ! updated derivative
 
     yerr = fn + (c61 * k(:,1) + c62 * k(:,2) + c63 * k(:,3) + &
         c64 * k(:,4) + c65 * k(:,5)) / h
-    call solve_lu(this%a, this%pivot, yerr)
+    yerr = solve_lu(this%a, this%pivot, yerr)
 
     yn = yn + yerr
 end subroutine
@@ -414,7 +402,7 @@ pure function rbrk_get_stage_count(this) result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
-function rbrk_next_step(this, e, eold, h, x, err) result(rst)
+function rbrk_next_step(this, e, eold, h, x) result(rst)
     !! Estimates the next step size based upon the current and previous error
     !! estimates.
     class(rosenbrock), intent(inout) :: this
@@ -428,16 +416,6 @@ function rbrk_next_step(this, e, eold, h, x, err) result(rst)
         !! The current step size.
     real(real64), intent(in) :: x
         !! The current independent variable value.
-    class(errors), intent(inout), optional, target :: err
-        !! An optional errors-based object that if provided 
-        !! can be used to retrieve information relating to any errors 
-        !! encountered during execution. If not provided, a default 
-        !! implementation of the errors class is used internally to 
-        !! provide error handling.  Possible errors and warning messages
-        !! that may be encountered are as follows.
-        !!
-        !!  - DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR: Occurs if the step size
-        !!      becomes too small in magnitude.
     real(real64) :: rst
         !! The new step size estimate.
 
