@@ -190,7 +190,6 @@ ADAMS: 1865 Solution Points
 
 ## External Libraries
 Here is a list of external code libraries utilized by this library.  The CMake build script will include these dependencies automatically; however, it is highly recommended that an optimized BLAS and LAPACK already reside on your system for best performance (used by LINALG for linear algebra calculations).
-- [FERROR](https://github.com/jchristopherson/ferror)
 - [LINALG](https://github.com/jchristopherson/linalg)
 
 ## References
