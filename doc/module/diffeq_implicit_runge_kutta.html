@@ -88,7 +88,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="13.7% of total for modules and submodules.">244 statements</a>
+                 title="14.7% of total for modules and submodules.">264 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -159,18 +159,24 @@
     </div>
 
     <div class="col-md-9" id='text'>
-      
+      <p>Linearly implicit Rosenbrock ODE solvers.</p>
+<p>The solver targets stiff initial-value problems and supports systems
+written with a mass matrix,
+<script type="math/tex; mode=display">
+M(x,y)y' = f(x,y).
+</script>
+</p>
 <br>          <div class="card mb-4">
       <h3 class="card-header card-title bg-light">Uses</h3>
       <div class="card-body">
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
+                  <li class="list-inline-item">linalg</li>
+                  <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
                   <li class="list-inline-item"><a href='diffeq_base.html'>diffeq_base</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item">linalg</li>
                   <li class="list-inline-item">lapack</li>
-                  <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
               </ul>
             </li>
         </ul>
@@ -197,7 +203,7 @@
       </h3>
     </div>
     <div class="card-body">
-      <p>Defines a 4th order Rosenbrock integrator.</p><a href="../type/rosenbrock.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+      <p>A fourth-order Rosenbrock integrator for stiff systems.</p><a href="../type/rosenbrock.html" class="pull-right"><emph>Read more&hellip;</emph></a>
 
 
 
@@ -213,7 +219,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\rosenbrock.html#boundprocedure-attempt_step~2'>attempt_step</a></strong> => rbrk_attempt_step</td>
+  <strong><a href='..\type\rosenbrock.html#boundprocedure-attempt_step'>attempt_step</a></strong> => rbrk_attempt_step</td>
                   <td><p>Attempts an integration step for this integrator.</p></td>
               </tr>
               <tr>
@@ -223,7 +229,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm'>compute_error_norm</a></strong> => oi_estimate_error</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
                   <td><p>Computes the norm of the scaled error estimate.</p></td>
               </tr>
               <tr>
@@ -233,7 +239,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\rosenbrock.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => rbrk_next_step</td>
+  <strong><a href='..\type\rosenbrock.html#boundprocedure-estimate_next_step_size'>estimate_next_step_size</a></strong> => rbrk_next_step</td>
                   <td><p>Estimates the next step size.</p></td>
               </tr>
               <tr>
@@ -249,7 +255,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\rosenbrock.html#boundprocedure-get_is_fsal~2'>get_is_fsal</a></strong> => rbrk_get_is_fsal</td>
+  <strong><a href='..\type\rosenbrock.html#boundprocedure-get_is_fsal'>get_is_fsal</a></strong> => rbrk_get_is_fsal</td>
                   <td><p>Gets a logical parameter stating if this is a first-same-as-last
 (FSAL) integrator.</p></td>
               </tr>
@@ -265,7 +271,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\rosenbrock.html#boundprocedure-get_order~3'>get_order</a></strong> => rbrk_get_order</td>
+  <strong><a href='..\type\rosenbrock.html#boundprocedure-get_order'>get_order</a></strong> => rbrk_get_order</td>
                   <td><p>Gets the order of the integrator.</p></td>
               </tr>
               <tr>
@@ -280,7 +286,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\rosenbrock.html#boundprocedure-get_stage_count~2'>get_stage_count</a></strong> => rbrk_get_stage_count</td>
+  <strong><a href='..\type\rosenbrock.html#boundprocedure-get_stage_count'>get_stage_count</a></strong> => rbrk_get_stage_count</td>
                   <td><p>Gets the stage count for this integrator.</p></td>
               </tr>
               <tr>
@@ -300,17 +306,17 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\rosenbrock.html#boundprocedure-interpolate~2'>interpolate</a></strong> => rbrk_interp</td>
+  <strong><a href='..\type\rosenbrock.html#boundprocedure-interpolate'>interpolate</a></strong> => rbrk_interp</td>
                   <td><p>Performs the interpolation.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\rosenbrock.html#boundprocedure-post_step_action~2'>post_step_action</a></strong> => rbrk_set_up_interp</td>
+  <strong><a href='..\type\rosenbrock.html#boundprocedure-post_step_action'>post_step_action</a></strong> => rbrk_set_up_interp</td>
                   <td><p>Sets up the interpolation process as the post-step action.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\rosenbrock.html#boundprocedure-pre_step_action~2'>pre_step_action</a></strong> => rbrk_form_matrix</td>
+  <strong><a href='..\type\rosenbrock.html#boundprocedure-pre_step_action'>pre_step_action</a></strong> => rbrk_form_matrix</td>
                   <td><p>Constructs the system matrix.</p></td>
               </tr>
               <tr>
@@ -356,7 +362,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\single_step_integrator.html#boundprocedure-solve~2'>solve</a></strong> => ssi_ode_solver</td>
+  <strong><a href='..\type\single_step_integrator.html#boundprocedure-solve~3'>solve</a></strong> => ssi_ode_solver</td>
                   <td><p>Solves the supplied system of ODE's.</p></td>
               </tr>
           </tbody>
@@ -389,7 +395,7 @@ the final value in the integration range.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-08-13 14:37 -0500             </p>
+ on 2026-08-18 10:20 -0500             </p>
           </div>
         </div>
         <br>

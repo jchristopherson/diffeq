@@ -1,4 +1,11 @@
 module diffeq_implicit_runge_kutta
+    !! Linearly implicit Rosenbrock ODE solvers.
+    !!
+    !! The solver targets stiff initial-value problems and supports systems
+    !! written with a mass matrix,
+    !! \[
+    !! M(x,y)y' = f(x,y).
+    !! \]
     use iso_fortran_env
     use diffeq_base
     use diffeq_errors
@@ -9,13 +16,23 @@ module diffeq_implicit_runge_kutta
     public :: rosenbrock
 
     type, extends(single_step_integrator) :: rosenbrock
-        !! Defines a 4th order Rosenbrock integrator.
+        !! A fourth-order Rosenbrock integrator for stiff systems.
         !!
-        !! Remarks:
-        !! 1. This integrator is suitable for systems of stiff equations 
-        !!  with modest accuracy requirements.
-        !! 2. This integrator is capable of dealing with systems that utilize a 
-        !!  mass matrix.
+        !! Instead of solving a nonlinear equation at every stage, the method
+        !! reuses one factored linear system based on the Jacobian
+        !! \( J = \partial f / \partial y \).  Without a mass matrix, the
+        !! factored matrix is
+        !! \[
+        !! A = \frac{1}{\gamma h}I - J,
+        !! \]
+        !! while a user-supplied mass matrix produces
+        !! \[
+        !! A = \frac{1}{\gamma h}M - J.
+        !! \]
+        !! The method is appropriate for stiff problems where explicit
+        !! Runge--Kutta methods would require prohibitively small steps.
+        !! A mass matrix may be constant or state-dependent; state-dependent
+        !! matrices are recomputed as needed.
         real(real64), private, allocatable, dimension(:,:) :: jac
             ! The Jacobian matrix.
         real(real64), private, allocatable, dimension(:,:) :: mass

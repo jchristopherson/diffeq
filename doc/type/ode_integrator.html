@@ -88,7 +88,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p>24.2% of total for derived types.</p>Including implementation: 241 statements,  7.4% of total for derived types.">38 statements</a>
+                 title="<p>24.2% of total for derived types.</p>Including implementation: 241 statements,  7.3% of total for derived types.">38 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -148,14 +148,14 @@
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-append_to_buffer">append_to_buffer</a>
             <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-clear_buffer">clear_buffer</a>
-            <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-compute_error_norm">compute_error_norm</a>
+            <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-compute_error_norm~2">compute_error_norm</a>
             <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-estimate_inital_step_size">estimate_inital_step_size</a>
-            <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-estimate_next_step_size">estimate_next_step_size</a>
+            <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-estimate_next_step_size~2">estimate_next_step_size</a>
             <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-get_absolute_tolerance">get_absolute_tolerance</a>
             <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-get_allow_overshoot">get_allow_overshoot</a>
             <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-get_maximum_step_size">get_maximum_step_size</a>
             <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-get_minimum_step_size">get_minimum_step_size</a>
-            <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-get_order">get_order</a>
+            <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-get_order~6">get_order</a>
             <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-get_relative_tolerance">get_relative_tolerance</a>
             <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-get_solution">get_solution</a>
             <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-get_step_limit">get_step_limit</a>
@@ -169,7 +169,7 @@
             <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-set_step_limit">set_step_limit</a>
             <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-set_step_size_control_parameter">set_step_size_control_parameter</a>
             <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-set_step_size_factor">set_step_size_factor</a>
-            <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-solve">solve</a>
+            <a class="list-group-item" href="../type/ode_integrator.html#boundprocedure-solve~2">solve</a>
         </div>
       </div>
     </div>
@@ -185,8 +185,12 @@
     <div class="col-md-9" id='text'>
       <h2 id="type-def-statement">
         type, public, abstract :: ode_integrator</h2>
-    <p>The most basic ODE integrator object capable of integrating
-systems of ODE's.</p>
+    <p>Abstract base class for all DIFFEQ ODE integrators.</p>
+<p>Every concrete integrator accepts an <code>ode_container</code>, an array of
+output coordinates, and an initial state. Adaptive solvers use a
+scaled local error such as
+<script type="math/tex"> \mathrm{err}_i / (\mathrm{atol} + \mathrm{rtol}|y_i|) </script>
+to choose their step sizes.</p>
     <br>
 
     
@@ -342,7 +346,7 @@ buffer.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-compute_error_norm"></span>
+      <span class="anchor" id="boundprocedure-compute_error_norm~2"></span>
       <h3>
           procedure, public ::
   <strong>compute_error_norm</strong> => oi_estimate_error
@@ -615,7 +619,7 @@ in and out of the differential equation subroutine.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-estimate_next_step_size"></span>
+      <span class="anchor" id="boundprocedure-estimate_next_step_size~2"></span>
       <h3>
           procedure, public ::
   <strong>estimate_next_step_size</strong> => oi_next_step
@@ -991,7 +995,7 @@ cannot overshoot.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-get_order"></span>
+      <span class="anchor" id="boundprocedure-get_order~6"></span>
       <h3>
           procedure(<a href='..\interface\ode_integer_inquiry.html'>ode_integer_inquiry</a>), public, deferred, pass ::
   <strong>get_order</strong>
@@ -1970,7 +1974,7 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-solve"></span>
+      <span class="anchor" id="boundprocedure-solve~2"></span>
       <h3>
           procedure(<a href='..\interface\ode_solver.html'>ode_solver</a>), public, deferred, pass ::
   <strong>solve</strong>
@@ -2110,7 +2114,7 @@ in and out of the differential equation subroutine.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-08-13 14:37 -0500             </p>
+ on 2026-08-18 10:20 -0500             </p>
           </div>
         </div>
         <br>

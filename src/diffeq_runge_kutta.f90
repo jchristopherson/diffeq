@@ -1,4 +1,18 @@
 module diffeq_runge_kutta
+    !! Explicit, adaptive Runge--Kutta ODE solvers.
+    !!
+    !! Each solver advances the initial-value problem
+    !! \( y' = f(x,y), \quad y(x_0) = y_0 \)
+    !! with an explicit stage sequence of the form
+    !! \[
+    !! k_i = f\left(x + c_i h,
+    !!     y + h\sum_{j<i} a_{ij} k_j\right),
+    !! \qquad
+    !! y_{n+1} = y_n + h\sum_i b_i k_i.
+    !! \]
+    !! The embedded lower-order formula supplies a local error estimate used
+    !! to accept or reject the step and select the next step size.  These
+    !! methods are generally effective for non-stiff systems.
     use iso_fortran_env
     use diffeq_errors
     use diffeq_base
@@ -9,8 +23,16 @@ module diffeq_runge_kutta
     public :: runge_kutta_853
 
     type, extends(single_step_integrator) :: runge_kutta_45
-        !! The Dormand-Prince, Runge-Kutta integrator (5th order, with an 
-        !! embedded 4th order used for error estimation).
+        !! The Dormand--Prince RK45 integrator.
+        !!
+        !! A fifth-order solution is paired with an embedded fourth-order
+        !! solution.  The estimated local defect is
+        !! \( e_{n+1} = y_{n+1}^{[5]} - y_{n+1}^{[4]} \), and the method uses
+        !! the fifth-order result after an accepted step.  The method has
+        !! seven stages and FSAL (first-same-as-last) reuse, so the final
+        !! stage derivative becomes the first derivative of the next step.
+        !! It is a general-purpose choice for moderate-to-high accuracy on
+        !! non-stiff problems.
         real(real64), private, allocatable, dimension(:) :: rc1
         real(real64), private, allocatable, dimension(:) :: rc2
         real(real64), private, allocatable, dimension(:) :: rc3
@@ -37,8 +59,13 @@ module diffeq_runge_kutta
     end type
 
     type, extends(single_step_integrator) :: runge_kutta_23
-        !! The Bogacki-Shampine integrator (3rd order with an embedded 2nd order
-        !! used for error estimation).
+        !! The Bogacki--Shampine RK23 integrator.
+        !!
+        !! A third-order solution is paired with an embedded second-order
+        !! solution, giving the local estimate
+        !! \( e_{n+1} = y_{n+1}^{[3]} - y_{n+1}^{[2]} \).  The method has four
+        !! stages and FSAL reuse.  Its lower order reduces the cost per step
+        !! and is useful when high accuracy is not required.
         real(real64), private, allocatable, dimension(:) :: rc1
         real(real64), private, allocatable, dimension(:) :: rc2
         real(real64), private, allocatable, dimension(:) :: rc3
@@ -63,8 +90,13 @@ module diffeq_runge_kutta
     end type
 
     type, extends(single_step_integrator) :: runge_kutta_853
-        !! An 8th order Runge-Kutta integrator with embedded 5th and 3rd order
-        !! solutions for error estimation.
+        !! The Fehlberg RK8(5,3) integrator.
+        !!
+        !! This method computes an eighth-order solution together with fifth-
+        !! and third-order embedded solutions.  Its error estimate is
+        !! \( e_{n+1} = y_{n+1}^{[5]} - y_{n+1}^{[3]} \), while the accepted
+        !! solution is the eighth-order result.  The higher order is useful
+        !! for smooth, non-stiff problems over long integration intervals.
         real(real64), private, allocatable, dimension(:) :: yerr2
         real(real64), private, allocatable, dimension(:) :: rc1
         real(real64), private, allocatable, dimension(:) :: rc2

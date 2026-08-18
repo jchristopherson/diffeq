@@ -1,4 +1,11 @@
 module diffeq_implicit_runge_kutta
+    !! Linearly implicit Rosenbrock ODE solvers.
+    !!
+    !! The solver targets stiff initial-value problems and supports systems
+    !! written with a mass matrix,
+    !! \[
+    !! M(x,y)y' = f(x,y).
+    !! \]
     use iso_fortran_env
     use diffeq_base
     use diffeq_errors
@@ -9,13 +16,23 @@ module diffeq_implicit_runge_kutta
     public :: rosenbrock
 
     type, extends(single_step_integrator) :: rosenbrock
-        !! Defines a 4th order Rosenbrock integrator.
+        !! A fourth-order Rosenbrock integrator for stiff systems.
         !!
-        !! Remarks:
-        !! 1. This integrator is suitable for systems of stiff equations 
-        !!  with modest accuracy requirements.
-        !! 2. This integrator is capable of dealing with systems that utilize a 
-        !!  mass matrix.
+        !! Instead of solving a nonlinear equation at every stage, the method
+        !! reuses one factored linear system based on the Jacobian
+        !! \( J = \partial f / \partial y \).  Without a mass matrix, the
+        !! factored matrix is
+        !! \[
+        !! A = \frac{1}{\gamma h}I - J,
+        !! \]
+        !! while a user-supplied mass matrix produces
+        !! \[
+        !! A = \frac{1}{\gamma h}M - J.
+        !! \]
+        !! The method is appropriate for stiff problems where explicit
+        !! Runge--Kutta methods would require prohibitively small steps.
+        !! A mass matrix may be constant or state-dependent; state-dependent
+        !! matrices are recomputed as needed.
         real(real64), private, allocatable, dimension(:,:) :: jac
             ! The Jacobian matrix.
         real(real64), private, allocatable, dimension(:,:) :: mass
@@ -150,6 +167,10 @@ subroutine rbrk_init_matrices(this, n, usemass)
     ! Process
     if (allocated(this%jac)) then
         if (size(this%jac, 1) == n .and. size(this%jac, 2) == n) then
+            if (.not.usemass .and. allocated(this%mass)) then
+                deallocate(this%mass)
+                this%m_massComputed = .false.
+            end if
             ! All is good
             return
         else
@@ -213,9 +234,11 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
 
     ! Local Variables
     integer(int32) :: n
+    real(real64), allocatable :: rhs(:)
 
     ! Initialization
     n = size(y)
+    allocate(rhs(n))
 
     ! Process
     k(:,1) = f + h * d1 * this%dfdx
@@ -224,34 +247,47 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     yn = y + a21 * k(:,1)
     call sys%fcn(x + c2 * h, yn, fn, args)
 
-    k(:,2) = fn + h * d2 * this%dfdx + c21 * k(:,1) / h
+    rhs = c21 * k(:,1) / h
+    if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
+    rhs = fn + h * d2 * this%dfdx + rhs
+    k(:,2) = rhs
     k(:,2) = solve_lu(this%a, this%pivot, k(:,2))
 
     yn = y + a31 * k(:,1) + a32 * k(:,2)
     call sys%fcn(x + c3 * h, yn, fn, args)
 
-    k(:,3) = fn + h * d3 * this%dfdx + (c31 * k(:,1) + c32 * k(:,2)) / h
+    rhs = (c31 * k(:,1) + c32 * k(:,2)) / h
+    if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
+    rhs = fn + h * d3 * this%dfdx + rhs
+    k(:,3) = rhs
     k(:,3) = solve_lu(this%a, this%pivot, k(:,3))
 
     yn = y + a41 * k(:,1) + a42 * k(:,2) + a43 * k(:,3)
     call sys%fcn(x + c4 * h, yn, fn, args)
 
-    k(:,4) = fn + h * d4 * this%dfdx + (c41 * k(:,1) + c42 * k(:,2) + &
-        c43 * k(:,3)) / h
+    rhs = (c41 * k(:,1) + c42 * k(:,2) + c43 * k(:,3)) / h
+    if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
+    rhs = fn + h * d4 * this%dfdx + rhs
+    k(:,4) = rhs
     k(:,4) = solve_lu(this%a, this%pivot, k(:,4))
 
     yn = y + a51 * k(:,1) + a52 * k(:,2) + a53 * k(:,3) + a54 * k(:,4)
     call sys%fcn(x + h, yn, fn, args)
 
-    k(:,5) = fn + (c51 * k(:,1) + c52 * k(:,2) + c53 * k(:,3) + &
+    rhs = (c51 * k(:,1) + c52 * k(:,2) + c53 * k(:,3) + &
         c54 * k(:,4)) / h
+    if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
+    rhs = fn + rhs
+    k(:,5) = rhs
     k(:,5) = solve_lu(this%a, this%pivot, k(:,5))
 
     yn = yn + k(:,5)
     call sys%fcn(x + h, yn, fn, args) ! updated derivative
 
-    yerr = fn + (c61 * k(:,1) + c62 * k(:,2) + c63 * k(:,3) + &
+    rhs = (c61 * k(:,1) + c62 * k(:,2) + c63 * k(:,3) + &
         c64 * k(:,4) + c65 * k(:,5)) / h
+    if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
+    yerr = fn + rhs
     yerr = solve_lu(this%a, this%pivot, yerr)
 
     yn = yn + yerr

@@ -73,7 +73,14 @@ module diffeq_base
 
 ! ------------------------------------------------------------------------------
     type ode_container
-        !! A container for the routine containing the ODEs to integrate.
+        !! Defines the callbacks and model options for an ODE problem.
+        !!
+        !! The required right-hand-side callback describes
+        !! \( y' = f(x,y) \). Optional callbacks provide an analytical
+        !! Jacobian \( J = \partial f / \partial y \) and a mass matrix for
+        !! systems of the form \( M(x,y)y' = f(x,y) \). If no Jacobian is
+        !! supplied, DIFFEQ estimates it using finite differences. A null
+        !! mass-matrix callback means that \( M = I \).
         logical, private :: m_massDependent = .true.
             ! A value determining if the mass matrix is state dependent such 
             ! that it must be recomputed at each step. 
@@ -107,8 +114,13 @@ module diffeq_base
 
 ! ------------------------------------------------------------------------------
     type, abstract :: ode_integrator
-        !! The most basic ODE integrator object capable of integrating
-        !! systems of ODE's.
+        !! Abstract base class for all DIFFEQ ODE integrators.
+        !!
+        !! Every concrete integrator accepts an `ode_container`, an array of
+        !! output coordinates, and an initial state. Adaptive solvers use a
+        !! scaled local error such as
+        !! \( \mathrm{err}_i / (\mathrm{atol} + \mathrm{rtol}|y_i|) \)
+        !! to choose their step sizes.
         real(real64), private, allocatable, dimension(:,:) :: m_buffer
             ! The internal solution buffer.
         integer(int32), private :: m_bufferCount = 0

@@ -1,4 +1,16 @@
 module diffeq_vode
+    !! VODE-based variable-order ODE solvers.
+    !!
+    !! VODE uses variable-step formulas of the general form
+    !! \[
+    !! \sum_{j=0}^{q} \alpha_j y_{n-j}
+    !!   = h_n \beta f(x_n,y_n),
+    !! \]
+    !! where the coefficient set and order \(q\) change with the selected
+    !! method.  Adams formulas are intended primarily for non-stiff systems;
+    !! backward differentiation formulas are intended primarily for stiff
+    !! systems.  The wrapper manages VODE's work arrays, tolerances, and
+    !! optional Jacobian callback.
     use iso_fortran_env
     use diffeq_base
     use diffeq_errors
@@ -16,8 +28,11 @@ module diffeq_vode
         !! Describes the VODE BDF method solver.
 
     type, abstract, extends(ode_integrator) :: vode
-        !! This type encpsulats the VODE variable coefficient backward 
-        !! difference code or Adams method.
+        !! Abstract base for the VODE Adams and BDF solver variants.
+        !!
+        !! VODE controls a weighted local error against the requested absolute
+        !! and relative tolerances, using a component scale such as
+        !! \( \mathrm{sc}_i = \mathrm{atol}_i + \mathrm{rtol}_i |y_i| \).
     contains
         procedure, public :: solve => vode_solve
         procedure, public :: get_order => vode_order_inquiry
@@ -25,13 +40,22 @@ module diffeq_vode
     end type
 
     type, extends(vode) :: adams
-        !! Defines an Adams method solver implemented by VODE.
+        !! Variable-order Adams solver implemented by VODE.
+        !!
+        !! Adams predictor--corrector formulas use past derivative information
+        !! and are efficient for smooth, non-stiff systems.  They are usually
+        !! the preferred VODE method when stiffness is not expected.
     contains
         procedure, public :: get_method => adams_method_inquiry
     end type
 
     type, extends(vode) :: bdf
-        !! Defines a BDF solver implemented by VODE.
+        !! Variable-order backward differentiation formula solver implemented
+        !! by VODE.
+        !!
+        !! BDF formulas are implicit and use past solution values.  They are
+        !! designed for stiff systems and can remain stable at step sizes that
+        !! would make an explicit method impractical.
     contains
         procedure, public :: get_method => bdf_method_inquiry
     end type

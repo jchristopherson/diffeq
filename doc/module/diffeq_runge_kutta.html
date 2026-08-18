@@ -88,7 +88,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="25.5% of total for modules and submodules.">454 statements</a>
+                 title="25.2% of total for modules and submodules.">454 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -161,16 +161,28 @@
     </div>
 
     <div class="col-md-9" id='text'>
-      
+      <p>Explicit, adaptive Runge--Kutta ODE solvers.</p>
+<p>Each solver advances the initial-value problem
+<script type="math/tex"> y' = f(x,y), \quad y(x_0) = y_0 </script>
+with an explicit stage sequence of the form
+<script type="math/tex; mode=display">
+k_i = f\left(x + c_i h,
+    y + h\sum_{j<i} a_{ij} k_j\right),
+\qquad
+y_{n+1} = y_n + h\sum_i b_i k_i.
+</script>
+The embedded lower-order formula supplies a local error estimate used
+to accept or reject the step and select the next step size.  These
+methods are generally effective for non-stiff systems.</p>
 <br>          <div class="card mb-4">
       <h3 class="card-header card-title bg-light">Uses</h3>
       <div class="card-body">
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
                   <li class="list-inline-item"><a href='diffeq_base.html'>diffeq_base</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
               </ul>
             </li>
         </ul>
@@ -197,8 +209,7 @@
       </h3>
     </div>
     <div class="card-body">
-      <p>The Bogacki-Shampine integrator (3rd order with an embedded 2nd order
-used for error estimation).</p>
+      <p>The Bogacki--Shampine RK23 integrator.</p><a href="../type/runge_kutta_23.html" class="pull-right"><emph>Read more&hellip;</emph></a>
 
 
 
@@ -214,7 +225,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-attempt_step~4'>attempt_step</a></strong> => rk23_attempt_step</td>
+  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-attempt_step~3'>attempt_step</a></strong> => rk23_attempt_step</td>
                   <td><p>Attempts an integration step for this integrator.</p></td>
               </tr>
               <tr>
@@ -224,7 +235,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm'>compute_error_norm</a></strong> => oi_estimate_error</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
                   <td><p>Computes the norm of the scaled error estimate.</p></td>
               </tr>
               <tr>
@@ -234,7 +245,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size'>estimate_next_step_size</a></strong> => oi_next_step</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
                   <td><p>Estimates the next step size.</p></td>
               </tr>
               <tr>
@@ -250,7 +261,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-get_is_fsal~4'>get_is_fsal</a></strong> => rk23_get_is_fsal</td>
+  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-get_is_fsal~3'>get_is_fsal</a></strong> => rk23_get_is_fsal</td>
                   <td><p>Gets a logical parameter stating if this is a first-same-as-last
 (FSAL) integrator.</p></td>
               </tr>
@@ -266,7 +277,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-get_order~5'>get_order</a></strong> => rk23_get_order</td>
+  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-get_order~3'>get_order</a></strong> => rk23_get_order</td>
                   <td><p>Gets the order of the integrator.</p></td>
               </tr>
               <tr>
@@ -281,7 +292,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-get_stage_count~4'>get_stage_count</a></strong> => rk23_get_stage_count</td>
+  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-get_stage_count~3'>get_stage_count</a></strong> => rk23_get_stage_count</td>
                   <td><p>Gets the stage count for this integrator.</p></td>
               </tr>
               <tr>
@@ -301,17 +312,17 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-interpolate~4'>interpolate</a></strong> => rk23_interp</td>
+  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-interpolate~3'>interpolate</a></strong> => rk23_interp</td>
                   <td><p>Performs the interpolation.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-post_step_action~4'>post_step_action</a></strong> => rk23_set_up_interp</td>
+  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-post_step_action~3'>post_step_action</a></strong> => rk23_set_up_interp</td>
                   <td><p>Sets up the interpolation process as the post-step action.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-pre_step_action~4'>pre_step_action</a></strong> => rk23_pre_step</td>
+  <strong><a href='..\type\runge_kutta_23.html#boundprocedure-pre_step_action~3'>pre_step_action</a></strong> => rk23_pre_step</td>
                   <td><p>Performs any pre-step actions.</p></td>
               </tr>
               <tr>
@@ -357,7 +368,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\single_step_integrator.html#boundprocedure-solve~2'>solve</a></strong> => ssi_ode_solver</td>
+  <strong><a href='..\type\single_step_integrator.html#boundprocedure-solve~3'>solve</a></strong> => ssi_ode_solver</td>
                   <td><p>Solves the supplied system of ODE's.</p></td>
               </tr>
           </tbody>
@@ -375,8 +386,7 @@ the final value in the integration range.</p></td>
       </h3>
     </div>
     <div class="card-body">
-      <p>The Dormand-Prince, Runge-Kutta integrator (5th order, with an 
-embedded 4th order used for error estimation).</p>
+      <p>The Dormand--Prince RK45 integrator.</p><a href="../type/runge_kutta_45.html" class="pull-right"><emph>Read more&hellip;</emph></a>
 
 
 
@@ -392,7 +402,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-attempt_step~3'>attempt_step</a></strong> => rk45_attempt_step</td>
+  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-attempt_step~2'>attempt_step</a></strong> => rk45_attempt_step</td>
                   <td><p>Attempts an integration step for this integrator.</p></td>
               </tr>
               <tr>
@@ -402,7 +412,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm'>compute_error_norm</a></strong> => oi_estimate_error</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
                   <td><p>Computes the norm of the scaled error estimate.</p></td>
               </tr>
               <tr>
@@ -412,7 +422,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size'>estimate_next_step_size</a></strong> => oi_next_step</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
                   <td><p>Estimates the next step size.</p></td>
               </tr>
               <tr>
@@ -428,7 +438,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-get_is_fsal~3'>get_is_fsal</a></strong> => rk45_get_is_fsal</td>
+  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-get_is_fsal~2'>get_is_fsal</a></strong> => rk45_get_is_fsal</td>
                   <td><p>Gets a logical parameter stating if this is a first-same-as-last
 (FSAL) integrator.</p></td>
               </tr>
@@ -444,7 +454,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-get_order~4'>get_order</a></strong> => rk45_get_order</td>
+  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-get_order~2'>get_order</a></strong> => rk45_get_order</td>
                   <td><p>Gets the order of the integrator.</p></td>
               </tr>
               <tr>
@@ -459,7 +469,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-get_stage_count~3'>get_stage_count</a></strong> => rk45_get_stage_count</td>
+  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-get_stage_count~2'>get_stage_count</a></strong> => rk45_get_stage_count</td>
                   <td><p>Gets the stage count for this integrator.</p></td>
               </tr>
               <tr>
@@ -479,17 +489,17 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-interpolate~3'>interpolate</a></strong> => rk45_interp</td>
+  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-interpolate~2'>interpolate</a></strong> => rk45_interp</td>
                   <td><p>Performs the interpolation.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-post_step_action~3'>post_step_action</a></strong> => rk45_set_up_interp</td>
+  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-post_step_action~2'>post_step_action</a></strong> => rk45_set_up_interp</td>
                   <td><p>Sets up the interpolation process as the post-step action.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-pre_step_action~3'>pre_step_action</a></strong> => rk45_pre_step</td>
+  <strong><a href='..\type\runge_kutta_45.html#boundprocedure-pre_step_action~2'>pre_step_action</a></strong> => rk45_pre_step</td>
                   <td><p>Performs any pre-step actions.</p></td>
               </tr>
               <tr>
@@ -535,7 +545,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\single_step_integrator.html#boundprocedure-solve~2'>solve</a></strong> => ssi_ode_solver</td>
+  <strong><a href='..\type\single_step_integrator.html#boundprocedure-solve~3'>solve</a></strong> => ssi_ode_solver</td>
                   <td><p>Solves the supplied system of ODE's.</p></td>
               </tr>
           </tbody>
@@ -553,8 +563,7 @@ the final value in the integration range.</p></td>
       </h3>
     </div>
     <div class="card-body">
-      <p>An 8th order Runge-Kutta integrator with embedded 5th and 3rd order
-solutions for error estimation.</p>
+      <p>The Fehlberg RK8(5,3) integrator.</p><a href="../type/runge_kutta_853.html" class="pull-right"><emph>Read more&hellip;</emph></a>
 
 
 
@@ -570,7 +579,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-attempt_step~5'>attempt_step</a></strong> => rk853_attempt_step</td>
+  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-attempt_step~4'>attempt_step</a></strong> => rk853_attempt_step</td>
                   <td><p>Attempts an integration step for this integrator.</p></td>
               </tr>
               <tr>
@@ -580,7 +589,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => rk853_estimate_error</td>
+  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-compute_error_norm'>compute_error_norm</a></strong> => rk853_estimate_error</td>
                   <td><p>Computes the norm of the scaled error estimate.</p></td>
               </tr>
               <tr>
@@ -590,7 +599,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size'>estimate_next_step_size</a></strong> => oi_next_step</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
                   <td><p>Estimates the next step size.</p></td>
               </tr>
               <tr>
@@ -606,7 +615,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-get_is_fsal~5'>get_is_fsal</a></strong> => rk853_get_is_fsal</td>
+  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-get_is_fsal~4'>get_is_fsal</a></strong> => rk853_get_is_fsal</td>
                   <td><p>Gets a logical parameter stating if this is a first-same-as-last
 (FSAL) integrator.</p></td>
               </tr>
@@ -622,7 +631,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-get_order~6'>get_order</a></strong> => rk853_get_order</td>
+  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-get_order~4'>get_order</a></strong> => rk853_get_order</td>
                   <td><p>Gets the order of the integrator.</p></td>
               </tr>
               <tr>
@@ -637,7 +646,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-get_stage_count~5'>get_stage_count</a></strong> => rk853_get_stage_count</td>
+  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-get_stage_count~4'>get_stage_count</a></strong> => rk853_get_stage_count</td>
                   <td><p>Gets the stage count for this integrator.</p></td>
               </tr>
               <tr>
@@ -657,18 +666,18 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-interpolate~5'>interpolate</a></strong> => rk853_interp</td>
+  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-interpolate~4'>interpolate</a></strong> => rk853_interp</td>
                   <td><p>Performs the interpolation.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-post_step_action~5'>post_step_action</a></strong> => rk853_set_up_interp</td>
+  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-post_step_action~4'>post_step_action</a></strong> => rk853_set_up_interp</td>
                   <td><p>Sets up the interpolation process as the post-step action.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-pre_step_action~5'>pre_step_action</a></strong> => rk853_pre_step</td>
-                  <td><p>Performs any pre-step actions.</p><a href="../type/runge_kutta_853.html#boundprocedure-pre_step_action~5" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+  <strong><a href='..\type\runge_kutta_853.html#boundprocedure-pre_step_action~4'>pre_step_action</a></strong> => rk853_pre_step</td>
+                  <td><p>Performs any pre-step actions.</p><a href="../type/runge_kutta_853.html#boundprocedure-pre_step_action~4" class="pull-right"><emph>Read more&hellip;</emph></a></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
@@ -713,7 +722,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\single_step_integrator.html#boundprocedure-solve~2'>solve</a></strong> => ssi_ode_solver</td>
+  <strong><a href='..\type\single_step_integrator.html#boundprocedure-solve~3'>solve</a></strong> => ssi_ode_solver</td>
                   <td><p>Solves the supplied system of ODE's.</p></td>
               </tr>
           </tbody>
@@ -746,7 +755,7 @@ the final value in the integration range.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-08-13 14:37 -0500             </p>
+ on 2026-08-18 10:20 -0500             </p>
           </div>
         </div>
         <br>

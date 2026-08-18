@@ -88,7 +88,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="12.6% of total for modules and submodules.">224 statements</a>
+                 title="12.4% of total for modules and submodules.">224 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -173,16 +173,26 @@
     </div>
 
     <div class="col-md-9" id='text'>
-      
+      <p>VODE-based variable-order ODE solvers.</p>
+<p>VODE uses variable-step formulas of the general form
+<script type="math/tex; mode=display">
+\sum_{j=0}^{q} \alpha_j y_{n-j}
+  = h_n \beta f(x_n,y_n),
+</script>
+where the coefficient set and order <script type="math/tex">q</script> change with the selected
+method.  Adams formulas are intended primarily for non-stiff systems;
+backward differentiation formulas are intended primarily for stiff
+systems.  The wrapper manages VODE's work arrays, tolerances, and
+optional Jacobian callback.</p>
 <br>          <div class="card mb-4">
       <h3 class="card-header card-title bg-light">Uses</h3>
       <div class="card-body">
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
                   <li class="list-inline-item"><a href='diffeq_base.html'>diffeq_base</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
               </ul>
             </li>
         </ul>
@@ -260,7 +270,7 @@ parameter
       </h3>
     </div>
     <div class="card-body">
-      <p>Defines an Adams method solver implemented by VODE.</p>
+      <p>Variable-order Adams solver implemented by VODE.</p><a href="../type/adams.html" class="pull-right"><emph>Read more&hellip;</emph></a>
 
 
 
@@ -281,7 +291,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm'>compute_error_norm</a></strong> => oi_estimate_error</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
                   <td><p>Computes the norm of the scaled error estimate.</p></td>
               </tr>
               <tr>
@@ -291,7 +301,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size'>estimate_next_step_size</a></strong> => oi_next_step</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
                   <td><p>Estimates the next step size.</p></td>
               </tr>
               <tr>
@@ -322,7 +332,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\vode.html#boundprocedure-get_order~2'>get_order</a></strong> => vode_order_inquiry</td>
+  <strong><a href='..\type\vode.html#boundprocedure-get_order~5'>get_order</a></strong> => vode_order_inquiry</td>
                   <td></td>
               </tr>
               <tr>
@@ -393,7 +403,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\vode.html#boundprocedure-solve~3'>solve</a></strong> => vode_solve</td>
+  <strong><a href='..\type\vode.html#boundprocedure-solve'>solve</a></strong> => vode_solve</td>
                   <td></td>
               </tr>
           </tbody>
@@ -411,7 +421,8 @@ the final value in the integration range.</p></td>
       </h3>
     </div>
     <div class="card-body">
-      <p>Defines a BDF solver implemented by VODE.</p>
+      <p>Variable-order backward differentiation formula solver implemented
+by VODE.</p><a href="../type/bdf.html" class="pull-right"><emph>Read more&hellip;</emph></a>
 
 
 
@@ -432,7 +443,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm'>compute_error_norm</a></strong> => oi_estimate_error</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
                   <td><p>Computes the norm of the scaled error estimate.</p></td>
               </tr>
               <tr>
@@ -442,7 +453,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size'>estimate_next_step_size</a></strong> => oi_next_step</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
                   <td><p>Estimates the next step size.</p></td>
               </tr>
               <tr>
@@ -473,7 +484,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\vode.html#boundprocedure-get_order~2'>get_order</a></strong> => vode_order_inquiry</td>
+  <strong><a href='..\type\vode.html#boundprocedure-get_order~5'>get_order</a></strong> => vode_order_inquiry</td>
                   <td></td>
               </tr>
               <tr>
@@ -544,7 +555,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\vode.html#boundprocedure-solve~3'>solve</a></strong> => vode_solve</td>
+  <strong><a href='..\type\vode.html#boundprocedure-solve'>solve</a></strong> => vode_solve</td>
                   <td></td>
               </tr>
           </tbody>
@@ -562,8 +573,7 @@ the final value in the integration range.</p></td>
       </h3>
     </div>
     <div class="card-body">
-      <p>This type encpsulats the VODE variable coefficient backward 
-difference code or Adams method.</p>
+      <p>Abstract base for the VODE Adams and BDF solver variants.</p><a href="../type/vode.html" class="pull-right"><emph>Read more&hellip;</emph></a>
 
 
 
@@ -584,7 +594,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm'>compute_error_norm</a></strong> => oi_estimate_error</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
                   <td><p>Computes the norm of the scaled error estimate.</p></td>
               </tr>
               <tr>
@@ -594,7 +604,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size'>estimate_next_step_size</a></strong> => oi_next_step</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
                   <td><p>Estimates the next step size.</p></td>
               </tr>
               <tr>
@@ -625,7 +635,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\vode.html#boundprocedure-get_order~2'>get_order</a></strong> => vode_order_inquiry</td>
+  <strong><a href='..\type\vode.html#boundprocedure-get_order~5'>get_order</a></strong> => vode_order_inquiry</td>
                   <td></td>
               </tr>
               <tr>
@@ -696,7 +706,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\vode.html#boundprocedure-solve~3'>solve</a></strong> => vode_solve</td>
+  <strong><a href='..\type\vode.html#boundprocedure-solve'>solve</a></strong> => vode_solve</td>
                   <td></td>
               </tr>
           </tbody>
@@ -729,7 +739,7 @@ the final value in the integration range.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-08-13 14:37 -0500             </p>
+ on 2026-08-18 10:20 -0500             </p>
           </div>
         </div>
         <br>
