@@ -107,6 +107,84 @@ function test_rosenbrock_3() result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
+function test_rosenbrock_mass_matrix() result(rst)
+    ! Arguments
+    logical :: rst
+
+    ! Parameters
+    real(real64), parameter :: tol = 1.0d-5
+    integer(int32), parameter :: npts = 1000
+    real(real64), parameter :: tmax = 1.0d1
+
+    ! Local Variables
+    integer(int32) :: i
+    real(real64) :: dt, t(npts)
+    type(rosenbrock) :: integrator
+    type(ode_container) :: mass_mdl, ref_mdl
+    real(real64), allocatable, dimension(:,:) :: sol, refsol
+
+    ! Initialization
+    rst = .true.
+    dt = tmax / (npts - 1.0d0)
+    t = (/ (i * dt, i = 0, npts - 1) /)
+    mass_mdl%fcn => rosenbrock_mass_ode
+    mass_mdl%mass_matrix => rosenbrock_mass_matrix
+    call mass_mdl%set_is_mass_matrix_dependent(.false.)
+    ref_mdl%fcn => rosenbrock_reference_ode
+
+    ! Solve the mass-matrix form and the equivalent standard ODE form
+    call integrator%solve(mass_mdl, t, [1.0d0, 1.0d0])
+    sol = integrator%get_solution()
+
+    call integrator%clear_buffer()
+    call integrator%solve(ref_mdl, t, [1.0d0, 1.0d0])
+    refsol = integrator%get_solution()
+
+    ! Test
+    if (.not.assert(sol, refsol, tol)) then
+        rst = .false.
+        print "(A)", "TEST FAILED: test_rosenbrock_mass_matrix -1"
+    end if
+end function
+
+! ------------------------------------------------------------------------------
+subroutine rosenbrock_mass_matrix(x, y, m, args)
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:,:) :: m
+    class(*), intent(inout), optional :: args
+
+    m(1,1) = 2.0d0
+    m(1,2) = 0.0d0
+    m(2,1) = 0.0d0
+    m(2,2) = 3.0d0
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine rosenbrock_mass_ode(x, y, dydx, args)
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:) :: dydx
+    class(*), intent(inout), optional :: args
+
+    ! M * y' = g(y), with M = diag(2,3) and g(y) = [-2*y1, -6*y2]
+    ! This is equivalent to y' = [-y1, -2*y2].
+    dydx(1) = -2.0d0 * y(1)
+    dydx(2) = -6.0d0 * y(2)
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine rosenbrock_reference_ode(x, y, dydx, args)
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:) :: dydx
+    class(*), intent(inout), optional :: args
+
+    dydx(1) = -1.0d0 * y(1)
+    dydx(2) = -2.0d0 * y(2)
+end subroutine
+
+! ------------------------------------------------------------------------------
 function test_rosenbrock_with_args() result(rst)
     ! Arguments
     logical :: rst

@@ -62,7 +62,7 @@ program test
     rst = test_rosenbrock_3()
     if (.not.rst) flag = 16
 
-    rst = test_runge_kutta_with_args()
+    rst = test_rosenbrock_mass_matrix()
     if (.not.rst) flag = 17
 
     rst = test_rosenbrock_with_args()
