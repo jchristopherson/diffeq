@@ -16,19 +16,6 @@ The documentation can be found [here](https://jchristopherson.github.io/diffeq/)
 - Adams (VODE)
 - Backward Differentiation Formula (VODE)
 
-## Building DIFFEQ
-[CMake](https://cmake.org/)This library can be built using CMake.  For instructions see [Running CMake](https://cmake.org/runningcmake/).
-
-[FPM](https://github.com/fortran-lang/fpm) can also be used to build this library using the provided fpm.toml.
-```txt
-fpm build
-```
-The DIFFEQ library can be used within your FPM project by adding the following to your fpm.toml file.
-```toml
-[dependencies]
-diffeq = { git = "https://github.com/jchristopherson/diffeq" }
-```
-
 ## Getting Started
 DIFFEQ solves an initial-value problem of the form
 
@@ -102,6 +89,89 @@ solver types expose the same `solve` and `get_solution` workflow.
   mass-matrix problems.
 - `adams`: variable-order VODE method for smooth, non-stiff systems.
 - `bdf`: variable-order VODE method for stiff systems.
+
+## Building DIFFEQ
+DIFFEQ can be built with either [CMake](https://cmake.org/) or the [Fortran
+Package Manager (FPM)](https://github.com/fortran-lang/fpm). Both build systems
+require a Fortran 2018 compiler, Git, and BLAS/LAPACK libraries. CMake can
+download the LINALG dependency and the test helper automatically when they are
+not already installed; FPM resolves the dependencies listed in `fpm.toml`.
+
+### CMake
+From the repository root, configure an out-of-source build and compile the
+library:
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release
+```
+
+The default CMake build is a static library. To build a shared library instead,
+add `-DBUILD_SHARED_LIBS=ON` during configuration. To build the test executable
+and register it with CTest, enable `BUILD_TESTING`:
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+cmake --build build --config Release
+ctest --test-dir build --output-on-failure
+```
+
+The example programs are enabled separately:
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_TESTING=ON -DBUILD_DIFFEQ_EXAMPLES=ON
+cmake --build build --config Release
+```
+
+Install the library, generated Fortran module files, CMake package files, and
+pkg-config metadata to a local prefix with:
+
+```sh
+cmake --install build --prefix "$PWD/install"
+```
+
+On Windows PowerShell, use `cmake --install build --prefix "$PWD/install"`.
+For a multi-configuration generator such as Visual Studio, specify the
+configuration when installing:
+
+```sh
+cmake --install build --config Release --prefix "$PWD/install"
+```
+
+To use an installed CMake package from another project, point CMake at the
+installation prefix with `-DCMAKE_PREFIX_PATH=/path/to/install` and link the
+exported `diffeq::diffeq` target.
+
+### FPM
+The repository includes an `fpm.toml` manifest. Build the library with:
+
+```sh
+fpm build --profile release
+```
+
+Run the test target defined by the manifest with:
+
+```sh
+fpm test --profile release
+```
+
+FPM places build artifacts under `build/`. The manifest builds DIFFEQ as a
+library and disables automatic discovery of executables, examples, and tests;
+the declared `diffeq_tests` target is therefore the supported FPM test entry
+point.
+
+To use DIFFEQ as a dependency in another FPM project, add it to that project's
+`fpm.toml`:
+
+```toml
+[dependencies]
+diffeq = { git = "https://github.com/jchristopherson/diffeq" }
+```
+
+Then import the public module in Fortran with `use diffeq`. The dependency's
+LINALG and BLAS/LAPACK requirements are resolved through the consuming
+project's FPM and system toolchain configuration.
 
 ## Examples
 The following example illustrates solving the Van der Pol equation using a 4th-order Rosenbrock solver, but other solvers can be used in an identical manner.  The example also utilizes the [FPLOT](https://github.com/jchristopherson/fplot) library to plot the solution.
