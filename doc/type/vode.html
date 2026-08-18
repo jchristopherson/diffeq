@@ -88,7 +88,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p> 3.8% of total for derived types.</p>Including implementation: 320 statements,  9.8% of total for derived types.">6 statements</a>
+                 title="<p> 3.8% of total for derived types.</p>Including implementation: 320 statements,  9.7% of total for derived types.">6 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -148,15 +148,15 @@
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/vode.html#boundprocedure-append_to_buffer">append_to_buffer</a>
             <a class="list-group-item" href="../type/vode.html#boundprocedure-clear_buffer">clear_buffer</a>
-            <a class="list-group-item" href="../type/vode.html#boundprocedure-compute_error_norm">compute_error_norm</a>
+            <a class="list-group-item" href="../type/vode.html#boundprocedure-compute_error_norm~2">compute_error_norm</a>
             <a class="list-group-item" href="../type/vode.html#boundprocedure-estimate_inital_step_size">estimate_inital_step_size</a>
-            <a class="list-group-item" href="../type/vode.html#boundprocedure-estimate_next_step_size">estimate_next_step_size</a>
+            <a class="list-group-item" href="../type/vode.html#boundprocedure-estimate_next_step_size~2">estimate_next_step_size</a>
             <a class="list-group-item" href="../type/vode.html#boundprocedure-get_absolute_tolerance">get_absolute_tolerance</a>
             <a class="list-group-item" href="../type/vode.html#boundprocedure-get_allow_overshoot">get_allow_overshoot</a>
             <a class="list-group-item" href="../type/vode.html#boundprocedure-get_maximum_step_size">get_maximum_step_size</a>
             <a class="list-group-item" href="../type/vode.html#boundprocedure-get_method">get_method</a>
             <a class="list-group-item" href="../type/vode.html#boundprocedure-get_minimum_step_size">get_minimum_step_size</a>
-            <a class="list-group-item" href="../type/vode.html#boundprocedure-get_order~2">get_order</a>
+            <a class="list-group-item" href="../type/vode.html#boundprocedure-get_order~5">get_order</a>
             <a class="list-group-item" href="../type/vode.html#boundprocedure-get_relative_tolerance">get_relative_tolerance</a>
             <a class="list-group-item" href="../type/vode.html#boundprocedure-get_solution">get_solution</a>
             <a class="list-group-item" href="../type/vode.html#boundprocedure-get_step_limit">get_step_limit</a>
@@ -170,7 +170,7 @@
             <a class="list-group-item" href="../type/vode.html#boundprocedure-set_step_limit">set_step_limit</a>
             <a class="list-group-item" href="../type/vode.html#boundprocedure-set_step_size_control_parameter">set_step_size_control_parameter</a>
             <a class="list-group-item" href="../type/vode.html#boundprocedure-set_step_size_factor">set_step_size_factor</a>
-            <a class="list-group-item" href="../type/vode.html#boundprocedure-solve~3">solve</a>
+            <a class="list-group-item" href="../type/vode.html#boundprocedure-solve">solve</a>
         </div>
       </div>
     </div>
@@ -186,8 +186,10 @@
     <div class="col-md-9" id='text'>
       <h2 id="type-def-statement">
         type, public, abstract, extends(<a href='ode_integrator.html'>ode_integrator</a>) :: vode</h2>
-    <p>This type encpsulats the VODE variable coefficient backward 
-difference code or Adams method.</p>
+    <p>Abstract base for the VODE Adams and BDF solver variants.</p>
+<p>VODE controls a weighted local error against the requested absolute
+and relative tolerances, using a component scale such as
+<script type="math/tex"> \mathrm{sc}_i = \mathrm{atol}_i + \mathrm{rtol}_i |y_i| </script>.</p>
     <br>
 
     
@@ -343,7 +345,7 @@ buffer.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-compute_error_norm"></span>
+      <span class="anchor" id="boundprocedure-compute_error_norm~2"></span>
       <h3>
           procedure, public ::
   <strong>compute_error_norm</strong> => oi_estimate_error
@@ -616,7 +618,7 @@ in and out of the differential equation subroutine.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-estimate_next_step_size"></span>
+      <span class="anchor" id="boundprocedure-estimate_next_step_size~2"></span>
       <h3>
           procedure, public ::
   <strong>estimate_next_step_size</strong> => oi_next_step
@@ -1051,7 +1053,7 @@ integer-valued property from a vode object.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-get_order~2"></span>
+      <span class="anchor" id="boundprocedure-get_order~5"></span>
       <h3>
           procedure, public ::
   <strong>get_order</strong> => vode_order_inquiry
@@ -2027,7 +2029,7 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-solve~3"></span>
+      <span class="anchor" id="boundprocedure-solve"></span>
       <h3>
           procedure, public ::
   <strong>solve</strong> => vode_solve
@@ -2163,7 +2165,7 @@ in and out of the differential equation subroutine.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-08-13 14:37 -0500             </p>
+ on 2026-08-18 10:20 -0500             </p>
           </div>
         </div>
         <br>

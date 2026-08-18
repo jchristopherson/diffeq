@@ -16,18 +16,162 @@ The documentation can be found [here](https://jchristopherson.github.io/diffeq/)
 - Adams (VODE)
 - Backward Differentiation Formula (VODE)
 
-## Building DIFFEQ
-[CMake](https://cmake.org/)This library can be built using CMake.  For instructions see [Running CMake](https://cmake.org/runningcmake/).
+## Getting Started
+DIFFEQ solves an initial-value problem of the form
 
-[FPM](https://github.com/fortran-lang/fpm) can also be used to build this library using the provided fpm.toml.
-```txt
-fpm build
+$$
+\frac{dy}{dx} = f(x,y), \qquad y(x_0) = y_0.
+$$
+
+Define the right-hand side through an `ode_container`, choose an integrator,
+and call `solve`. The first column returned by `get_solution` contains the
+independent-variable values; the remaining columns contain the solution
+components.
+
+```fortran
+program first_diffeq
+    use iso_fortran_env, only : real64
+    use diffeq
+    implicit none
+
+    type(ode_container) :: model
+    type(runge_kutta_45) :: solver
+    real(real64), allocatable :: solution(:,:)
+
+    model%fcn => exponential_rhs
+    call solver%solve(model, [0.0d0, 1.0d0], [1.0d0])
+    solution = solver%get_solution()
+
+    print *, "y(1) = ", solution(size(solution, 1), 2)
+
+contains
+    subroutine exponential_rhs(x, y, dydx, args)
+        real(real64), intent(in) :: x
+        real(real64), intent(in) :: y(:)
+        real(real64), intent(out) :: dydx(:)
+        class(*), intent(inout), optional :: args
+
+        dydx(1) = y(1)
+    end subroutine exponential_rhs
+end program first_diffeq
 ```
-The DIFFEQ library can be used within your FPM project by adding the following to your fpm.toml file.
+
+The example solves $y' = y$ with $y(0) = 1$, so the final value is close to
+$y(1) = e$. The callback must fill every element of `dydx`; its `args`
+argument can be used to pass model parameters to `solve`.
+
+## API Overview
+The public API is organized around a model container and interchangeable
+integrators:
+
+| API | Purpose |
+| --- | --- |
+| `ode_container` | Stores the right-hand-side callback and optional Jacobian or mass-matrix callbacks. |
+| `model%fcn` | Defines $f(x,y)$ for the problem. This callback is required. |
+| `model%jacobian` | Supplies $J = \partial f / \partial y$. If omitted, DIFFEQ estimates it by finite differences where needed. |
+| `model%mass_matrix` | Supplies $M(x,y)$ for a system written as $M y' = f(x,y)$. It is used by the Rosenbrock solver. |
+| `integrator%solve(model, x, y0)` | Integrates from `x(1)` to `x(size(x))` using initial state `y0`. |
+| `integrator%get_solution()` | Returns an $N \times (n+1)$ array with the independent variable in column 1 and state values in columns 2 through $n+1$. |
+| `set_absolute_tolerance` / `set_relative_tolerance` | Control the local error scale, approximately $\mathrm{atol} + \mathrm{rtol}|y|$. |
+| `set_maximum_step_size` / `set_minimum_step_size` | Bound adaptive step sizes. |
+| `set_allow_overshoot` | Controls whether a final integration step may pass the requested endpoint and be interpolated back. |
+
+The `x` argument may contain only the start and end points, in which case the
+solver returns accepted step endpoints. When it contains more than two values,
+the solver returns values at those requested points using dense output. All
+solver types expose the same `solve` and `get_solution` workflow.
+
+### Choosing an Integrator
+- `runge_kutta_23`: inexpensive, lower-order integration for modest accuracy.
+- `runge_kutta_45`: general-purpose adaptive integration for non-stiff systems.
+- `runge_kutta_853`: high-order integration for smooth, non-stiff problems.
+- `rosenbrock`: linearly implicit integration for stiff systems and supported
+  mass-matrix problems.
+- `adams`: variable-order VODE method for smooth, non-stiff systems.
+- `bdf`: variable-order VODE method for stiff systems.
+
+## Building DIFFEQ
+DIFFEQ can be built with either [CMake](https://cmake.org/) or the [Fortran
+Package Manager (FPM)](https://github.com/fortran-lang/fpm). Both build systems
+require a Fortran 2018 compiler, Git, and BLAS/LAPACK libraries. CMake can
+download the LINALG dependency and the test helper automatically when they are
+not already installed; FPM resolves the dependencies listed in `fpm.toml`.
+
+### CMake
+From the repository root, configure an out-of-source build and compile the
+library:
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release
+```
+
+The default CMake build is a static library. To build a shared library instead,
+add `-DBUILD_SHARED_LIBS=ON` during configuration. To build the test executable
+and register it with CTest, enable `BUILD_TESTING`:
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+cmake --build build --config Release
+ctest --test-dir build --output-on-failure
+```
+
+The example programs are enabled separately:
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_TESTING=ON -DBUILD_DIFFEQ_EXAMPLES=ON
+cmake --build build --config Release
+```
+
+Install the library, generated Fortran module files, CMake package files, and
+pkg-config metadata to a local prefix with:
+
+```sh
+cmake --install build --prefix "$PWD/install"
+```
+
+On Windows PowerShell, use `cmake --install build --prefix "$PWD/install"`.
+For a multi-configuration generator such as Visual Studio, specify the
+configuration when installing:
+
+```sh
+cmake --install build --config Release --prefix "$PWD/install"
+```
+
+To use an installed CMake package from another project, point CMake at the
+installation prefix with `-DCMAKE_PREFIX_PATH=/path/to/install` and link the
+exported `diffeq::diffeq` target.
+
+### FPM
+The repository includes an `fpm.toml` manifest. Build the library with:
+
+```sh
+fpm build --profile release
+```
+
+Run the test target defined by the manifest with:
+
+```sh
+fpm test --profile release
+```
+
+FPM places build artifacts under `build/`. The manifest builds DIFFEQ as a
+library and disables automatic discovery of executables, examples, and tests;
+the declared `diffeq_tests` target is therefore the supported FPM test entry
+point.
+
+To use DIFFEQ as a dependency in another FPM project, add it to that project's
+`fpm.toml`:
+
 ```toml
 [dependencies]
 diffeq = { git = "https://github.com/jchristopherson/diffeq" }
 ```
+
+Then import the public module in Fortran with `use diffeq`. The dependency's
+LINALG and BLAS/LAPACK requirements are resolved through the consuming
+project's FPM and system toolchain configuration.
 
 ## Examples
 The following example illustrates solving the Van der Pol equation using a 4th-order Rosenbrock solver, but other solvers can be used in an identical manner.  The example also utilizes the [FPLOT](https://github.com/jchristopherson/fplot) library to plot the solution.
@@ -159,10 +303,10 @@ program example
     s6 = integrator_6%get_solution()
 
     ! Print out the size of each solution
-    print "(AI0A)", "RUNGE_KUTTA_23: ", size(s1, 1), " Solution Points"
-    print "(AI0A)", "RUNGE_KUTTA_45: ", size(s2, 1), " Solution Points"
-    print "(AI0A)", "RUNGE_KUTTA_853: ", size(s3, 1), " Solution Points"
-    print "(AI0A)", "ROSENBROCK: ", size(s4, 1), " Solution Points"
+    print "(A,I0,A)", "RUNGE_KUTTA_23: ", size(s1, 1), " Solution Points"
+    print "(A,I0,A)", "RUNGE_KUTTA_45: ", size(s2, 1), " Solution Points"
+    print "(A,I0,A)", "RUNGE_KUTTA_853: ", size(s3, 1), " Solution Points"
+    print "(A,I0,A)", "ROSENBROCK: ", size(s4, 1), " Solution Points"
 
     ! Now, implement a PI controller and check its effect.  This might
     ! increase the number of steps (loss of efficiency), but if there were
@@ -171,11 +315,11 @@ program example
     call integrator_4%set_step_size_control_parameter(0.1d0)
     call integrator_4%solve(mdl, t, ic)
     s4a = integrator_4%get_solution()
-    print "(AI0A)", "ROSENBROCK w/ PI Controller: ", size(s4a, 1), " Solution Points"
+    print "(A,I0,A)", "ROSENBROCK w/ PI Controller: ", size(s4a, 1), " Solution Points"
 
     ! VODE Integrators
-    print "(AI0A)", "BDF: ", size(s5, 1), " Solution Points"
-    print "(AI0A)", "ADAMS: ", size(s6, 1), " Solution Points"
+    print "(A,I0,A)", "BDF: ", size(s5, 1), " Solution Points"
+    print "(A,I0,A)", "ADAMS: ", size(s6, 1), " Solution Points"
 end program
 ```
 ```txt

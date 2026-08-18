@@ -88,7 +88,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p>16.6% of total for derived types.</p>Including implementation: 462 statements, 14.1% of total for derived types.">26 statements</a>
+                 title="<p>16.6% of total for derived types.</p>Including implementation: 482 statements, 14.6% of total for derived types.">26 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -147,26 +147,26 @@
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-append_to_buffer">append_to_buffer</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-attempt_step~2">attempt_step</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-attempt_step">attempt_step</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-clear_buffer">clear_buffer</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-compute_error_norm">compute_error_norm</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-compute_error_norm~2">compute_error_norm</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-estimate_inital_step_size">estimate_inital_step_size</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-estimate_next_step_size~2">estimate_next_step_size</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-estimate_next_step_size">estimate_next_step_size</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_absolute_tolerance">get_absolute_tolerance</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_allow_overshoot">get_allow_overshoot</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_is_fsal~2">get_is_fsal</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_is_fsal">get_is_fsal</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_maximum_step_size">get_maximum_step_size</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_minimum_step_size">get_minimum_step_size</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_order~3">get_order</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_order">get_order</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_relative_tolerance">get_relative_tolerance</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_solution">get_solution</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_stage_count~2">get_stage_count</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_stage_count">get_stage_count</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_step_limit">get_step_limit</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_step_size_control_parameter">get_step_size_control_parameter</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_step_size_factor">get_step_size_factor</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-interpolate~2">interpolate</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-post_step_action~2">post_step_action</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-pre_step_action~2">pre_step_action</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-interpolate">interpolate</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-post_step_action">post_step_action</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-pre_step_action">pre_step_action</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-set_absolute_tolerance">set_absolute_tolerance</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-set_allow_overshoot">set_allow_overshoot</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-set_maximum_step_size">set_maximum_step_size</a>
@@ -175,7 +175,7 @@
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-set_step_limit">set_step_limit</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-set_step_size_control_parameter">set_step_size_control_parameter</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-set_step_size_factor">set_step_size_factor</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-solve~2">solve</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-solve~3">solve</a>
         </div>
       </div>
     </div>
@@ -191,12 +191,22 @@
     <div class="col-md-9" id='text'>
       <h2 id="type-def-statement">
         type, public, extends(<a href='single_step_integrator.html'>single_step_integrator</a>) :: rosenbrock</h2>
-    <p>Defines a 4th order Rosenbrock integrator.</p>
-<p>Remarks:
-1. This integrator is suitable for systems of stiff equations 
- with modest accuracy requirements.
-2. This integrator is capable of dealing with systems that utilize a 
- mass matrix.</p>
+    <p>A fourth-order Rosenbrock integrator for stiff systems.</p>
+<p>Instead of solving a nonlinear equation at every stage, the method
+reuses one factored linear system based on the Jacobian
+<script type="math/tex"> J = \partial f / \partial y </script>.  Without a mass matrix, the
+factored matrix is
+<script type="math/tex; mode=display">
+A = \frac{1}{\gamma h}I - J,
+</script>
+while a user-supplied mass matrix produces
+<script type="math/tex; mode=display">
+A = \frac{1}{\gamma h}M - J.
+</script>
+The method is appropriate for stiff problems where explicit
+Runge--Kutta methods would require prohibitively small steps.
+A mass matrix may be constant or state-dependent; state-dependent
+matrices are recomputed as needed.</p>
     <br>
 
     
@@ -295,7 +305,7 @@ buffer.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-attempt_step~2"></span>
+      <span class="anchor" id="boundprocedure-attempt_step"></span>
       <h3>
           procedure, public ::
   <strong>attempt_step</strong> => rbrk_attempt_step
@@ -564,7 +574,7 @@ in and out of the differential equation subroutine.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-compute_error_norm"></span>
+      <span class="anchor" id="boundprocedure-compute_error_norm~2"></span>
       <h3>
           procedure, public ::
   <strong>compute_error_norm</strong> => oi_estimate_error
@@ -837,7 +847,7 @@ in and out of the differential equation subroutine.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-estimate_next_step_size~2"></span>
+      <span class="anchor" id="boundprocedure-estimate_next_step_size"></span>
       <h3>
           procedure, public ::
   <strong>estimate_next_step_size</strong> => rbrk_next_step
@@ -1089,7 +1099,7 @@ cannot overshoot.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-get_is_fsal~2"></span>
+      <span class="anchor" id="boundprocedure-get_is_fsal"></span>
       <h3>
           procedure, public ::
   <strong>get_is_fsal</strong> => rbrk_get_is_fsal
@@ -1277,7 +1287,7 @@ cannot overshoot.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-get_order~3"></span>
+      <span class="anchor" id="boundprocedure-get_order"></span>
       <h3>
           procedure, public ::
   <strong>get_order</strong> => rbrk_get_order
@@ -1468,7 +1478,7 @@ before this routine.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-get_stage_count~2"></span>
+      <span class="anchor" id="boundprocedure-get_stage_count"></span>
       <h3>
           procedure, public ::
   <strong>get_stage_count</strong> => rbrk_get_stage_count
@@ -1727,7 +1737,7 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-interpolate~2"></span>
+      <span class="anchor" id="boundprocedure-interpolate"></span>
       <h3>
           procedure, public ::
   <strong>interpolate</strong> => rbrk_interp
@@ -1907,7 +1917,7 @@ solution values interpolated at x.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-post_step_action~2"></span>
+      <span class="anchor" id="boundprocedure-post_step_action"></span>
       <h3>
           procedure, public ::
   <strong>post_step_action</strong> => rbrk_set_up_interp
@@ -2115,7 +2125,7 @@ in and out of the differential equation subroutine.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-pre_step_action~2"></span>
+      <span class="anchor" id="boundprocedure-pre_step_action"></span>
       <h3>
           procedure, public ::
   <strong>pre_step_action</strong> => rbrk_form_matrix
@@ -2873,7 +2883,7 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-solve~2"></span>
+      <span class="anchor" id="boundprocedure-solve~3"></span>
       <h3>
           procedure, public ::
   <strong>solve</strong> => ssi_ode_solver
@@ -3010,7 +3020,7 @@ in and out of the differential equation subroutine.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-08-13 14:37 -0500             </p>
+ on 2026-08-18 10:20 -0500             </p>
           </div>
         </div>
         <br>
