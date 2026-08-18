@@ -88,53 +88,50 @@
                  <td><a href='..\type\adams.html'>adams</a></td>
                  <td><a href='..\module\diffeq_vode.html'>diffeq_vode</a></td>
                  <td><a href='..\type\vode.html'>vode</a></td>
-                 <td><p>Defines an Adams method solver implemented by VODE.</p></td>
+                 <td><p>Variable-order Adams solver implemented by VODE.</p><a href="../type/adams.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='..\type\bdf.html'>bdf</a></td>
                  <td><a href='..\module\diffeq_vode.html'>diffeq_vode</a></td>
                  <td><a href='..\type\vode.html'>vode</a></td>
-                 <td><p>Defines a BDF solver implemented by VODE.</p></td>
+                 <td><p>Variable-order backward differentiation formula solver implemented
+by VODE.</p><a href="../type/bdf.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='..\type\ode_container.html'>ode_container</a></td>
                  <td><a href='..\module\diffeq_base.html'>diffeq_base</a></td>
                  <td>None</td>
-                 <td><p>A container for the routine containing the ODEs to integrate.</p></td>
+                 <td><p>Defines the callbacks and model options for an ODE problem.</p><a href="../type/ode_container.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='..\type\ode_integrator.html'>ode_integrator</a></td>
                  <td><a href='..\module\diffeq_base.html'>diffeq_base</a></td>
                  <td>None</td>
-                 <td><p>The most basic ODE integrator object capable of integrating
-systems of ODE's.</p></td>
+                 <td><p>Abstract base class for all DIFFEQ ODE integrators.</p><a href="../type/ode_integrator.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='..\type\rosenbrock.html'>rosenbrock</a></td>
                  <td><a href='..\module\diffeq_implicit_runge_kutta.html'>diffeq_implicit_runge_kutta</a></td>
                  <td><a href='..\type\single_step_integrator.html'>single_step_integrator</a></td>
-                 <td><p>Defines a 4th order Rosenbrock integrator.</p><a href="../type/rosenbrock.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+                 <td><p>A fourth-order Rosenbrock integrator for stiff systems.</p><a href="../type/rosenbrock.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='..\type\runge_kutta_23.html'>runge_kutta_23</a></td>
                  <td><a href='..\module\diffeq_runge_kutta.html'>diffeq_runge_kutta</a></td>
                  <td><a href='..\type\single_step_integrator.html'>single_step_integrator</a></td>
-                 <td><p>The Bogacki-Shampine integrator (3rd order with an embedded 2nd order
-used for error estimation).</p></td>
+                 <td><p>The Bogacki--Shampine RK23 integrator.</p><a href="../type/runge_kutta_23.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='..\type\runge_kutta_45.html'>runge_kutta_45</a></td>
                  <td><a href='..\module\diffeq_runge_kutta.html'>diffeq_runge_kutta</a></td>
                  <td><a href='..\type\single_step_integrator.html'>single_step_integrator</a></td>
-                 <td><p>The Dormand-Prince, Runge-Kutta integrator (5th order, with an 
-embedded 4th order used for error estimation).</p></td>
+                 <td><p>The Dormand--Prince RK45 integrator.</p><a href="../type/runge_kutta_45.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='..\type\runge_kutta_853.html'>runge_kutta_853</a></td>
                  <td><a href='..\module\diffeq_runge_kutta.html'>diffeq_runge_kutta</a></td>
                  <td><a href='..\type\single_step_integrator.html'>single_step_integrator</a></td>
-                 <td><p>An 8th order Runge-Kutta integrator with embedded 5th and 3rd order
-solutions for error estimation.</p></td>
+                 <td><p>The Fehlberg RK8(5,3) integrator.</p><a href="../type/runge_kutta_853.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			   <tr>
                  <td><a href='..\type\single_step_integrator.html'>single_step_integrator</a></td>
@@ -147,8 +144,7 @@ systems of ODE's.</p></td>
                  <td><a href='..\type\vode.html'>vode</a></td>
                  <td><a href='..\module\diffeq_vode.html'>diffeq_vode</a></td>
                  <td><a href='..\type\ode_integrator.html'>ode_integrator</a></td>
-                 <td><p>This type encpsulats the VODE variable coefficient backward 
-difference code or Adams method.</p></td>
+                 <td><p>Abstract base for the VODE Adams and BDF solver variants.</p><a href="../type/vode.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
                </tr>
 			 </tbody></table>
              
@@ -169,7 +165,7 @@ difference code or Adams method.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-08-13 14:37 -0500             </p>
+ on 2026-08-18 10:20 -0500             </p>
           </div>
         </div>
         <br>
