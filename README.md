@@ -29,6 +29,80 @@ The DIFFEQ library can be used within your FPM project by adding the following t
 diffeq = { git = "https://github.com/jchristopherson/diffeq" }
 ```
 
+## Getting Started
+DIFFEQ solves an initial-value problem of the form
+
+$$
+\frac{dy}{dx} = f(x,y), \qquad y(x_0) = y_0.
+$$
+
+Define the right-hand side through an `ode_container`, choose an integrator,
+and call `solve`. The first column returned by `get_solution` contains the
+independent-variable values; the remaining columns contain the solution
+components.
+
+```fortran
+program first_diffeq
+    use iso_fortran_env, only : real64
+    use diffeq
+    implicit none
+
+    type(ode_container) :: model
+    type(runge_kutta_45) :: solver
+    real(real64), allocatable :: solution(:,:)
+
+    model%fcn => exponential_rhs
+    call solver%solve(model, [0.0d0, 1.0d0], [1.0d0])
+    solution = solver%get_solution()
+
+    print *, "y(1) = ", solution(size(solution, 1), 2)
+
+contains
+    subroutine exponential_rhs(x, y, dydx, args)
+        real(real64), intent(in) :: x
+        real(real64), intent(in) :: y(:)
+        real(real64), intent(out) :: dydx(:)
+        class(*), intent(inout), optional :: args
+
+        dydx(1) = y(1)
+    end subroutine exponential_rhs
+end program first_diffeq
+```
+
+The example solves $y' = y$ with $y(0) = 1$, so the final value is close to
+$y(1) = e$. The callback must fill every element of `dydx`; its `args`
+argument can be used to pass model parameters to `solve`.
+
+## API Overview
+The public API is organized around a model container and interchangeable
+integrators:
+
+| API | Purpose |
+| --- | --- |
+| `ode_container` | Stores the right-hand-side callback and optional Jacobian or mass-matrix callbacks. |
+| `model%fcn` | Defines $f(x,y)$ for the problem. This callback is required. |
+| `model%jacobian` | Supplies $J = \partial f / \partial y$. If omitted, DIFFEQ estimates it by finite differences where needed. |
+| `model%mass_matrix` | Supplies $M(x,y)$ for a system written as $M y' = f(x,y)$. It is used by the Rosenbrock solver. |
+| `integrator%solve(model, x, y0)` | Integrates from `x(1)` to `x(size(x))` using initial state `y0`. |
+| `integrator%get_solution()` | Returns an $N \times (n+1)$ array with the independent variable in column 1 and state values in columns 2 through $n+1$. |
+| `set_absolute_tolerance` / `set_relative_tolerance` | Control the local error scale, approximately $\mathrm{atol} + \mathrm{rtol}|y|$. |
+| `set_maximum_step_size` / `set_minimum_step_size` | Bound adaptive step sizes. |
+| `set_allow_overshoot` | Controls whether a final integration step may pass the requested endpoint and be interpolated back. |
+
+The `x` argument may contain only the start and end points, in which case the
+solver returns accepted step endpoints. When it contains more than two values,
+the solver returns values at those requested points using dense output. All
+solver types expose the same `solve` and `get_solution` workflow.
+
+### Choosing an Integrator
+- `runge_kutta_23`: inexpensive, lower-order integration for modest accuracy.
+- `runge_kutta_45`: general-purpose adaptive integration for non-stiff systems.
+- `runge_kutta_853`: high-order integration for smooth, non-stiff problems.
+- `rosenbrock`: linearly implicit integration for stiff systems and supported
+  mass-matrix problems.
+- `adams`: variable-order VODE method for smooth, non-stiff systems.
+- `bdf`: variable-order VODE method for stiff systems.
+
 ## Examples
 The following example illustrates solving the Van der Pol equation using a 4th-order Rosenbrock solver, but other solvers can be used in an identical manner.  The example also utilizes the [FPLOT](https://github.com/jchristopherson/fplot) library to plot the solution.
 ```fortran
