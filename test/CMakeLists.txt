@@ -4,7 +4,7 @@ set(diffeq_test_sources
     diffeq_jacobian_tests.f90
     diffeq_test_runge_kutta.f90
     diffeq_test_implicit_rk.f90
-    diffeq_test_vode.f90
+    diffeq_test_multistep.f90
 )
 
 find_package(fortran_test_helper QUIET)
@@ -43,3 +43,4 @@ if (${BUILD_SHARED_LIBS} AND WIN32)
         COMMAND_EXPAND_LISTS
     )
 endif()
+

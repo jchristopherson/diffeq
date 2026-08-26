@@ -14,6 +14,36 @@ module diffeq_implicit_runge_kutta
     implicit none
     private
     public :: rosenbrock
+    public :: kennedy_carpenter_4
+    public :: kennedy_carpenter_5
+
+    type, abstract, extends(single_step_integrator) :: kennedy_carpenter
+        !! Shared implementation for Kennedy--Carpenter ESDIRK methods.
+        !!
+        !! The stage equations are solved with Newton iteration.  A supplied
+        !! mass matrix is incorporated in each stage system as
+        !! \(M-h a_{ii}J\), while the embedded tableau supplies the error
+        !! estimate used by the inherited adaptive driver.
+    contains
+        procedure, public :: pre_step_action => kc_pre_step
+        procedure, public :: attempt_step => kc_attempt_step
+        procedure, public :: post_step_action => kc_post_step
+        procedure, public :: interpolate => kc_interpolate
+        procedure, public :: get_is_fsal => kc_get_is_fsal
+        procedure, public :: get_stage_count => kc_get_stage_count
+    end type
+
+    type, extends(kennedy_carpenter) :: kennedy_carpenter_4
+        !! Fourth-order ARK4(3)6L[2]SA ESDIRK method.
+    contains
+        procedure, public :: get_order => kc4_get_order
+    end type
+
+    type, extends(kennedy_carpenter) :: kennedy_carpenter_5
+        !! Fifth-order ARK5(4)8L[2]SA ESDIRK method.
+    contains
+        procedure, public :: get_order => kc5_get_order
+    end type
 
     type, extends(single_step_integrator) :: rosenbrock
         !! A fourth-order Rosenbrock integrator for stiff systems.
@@ -494,6 +524,227 @@ function rbrk_next_step(this, e, eold, h, x) result(rst)
         this%m_rejectStep = .true.
     end if
 end function
+
+! ------------------------------------------------------------------------------
+subroutine kc_pre_step(this, prevs, sys, h, x, y, f, args)
+    class(kennedy_carpenter), intent(inout) :: this
+    logical, intent(in) :: prevs
+    class(ode_container), intent(inout) :: sys
+    real(real64), intent(in) :: h, x, y(:), f(:)
+    class(*), intent(inout), optional :: args
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine kc_post_step(this, sys, dense, x, xn, y, yn, f, fn, k, args)
+    class(kennedy_carpenter), intent(inout) :: this
+    class(ode_container), intent(inout) :: sys
+    logical, intent(in) :: dense
+    real(real64), intent(in) :: x, xn, y(:), yn(:), f(:), fn(:)
+    real(real64), intent(inout) :: k(:,:)
+    class(*), intent(inout), optional :: args
+end subroutine
+
+! ------------------------------------------------------------------------------
+pure function kc_get_is_fsal(this) result(rst)
+    class(kennedy_carpenter), intent(in) :: this
+    logical :: rst
+    rst = .false.
+end function
+
+! ------------------------------------------------------------------------------
+pure function kc_get_stage_count(this) result(rst)
+    class(kennedy_carpenter), intent(in) :: this
+    integer(int32) :: rst
+    select type (this)
+    type is (kennedy_carpenter_4)
+        rst = 6
+    type is (kennedy_carpenter_5)
+        rst = 8
+    class default
+        rst = 0
+    end select
+end function
+
+! ------------------------------------------------------------------------------
+pure function kc4_get_order(this) result(rst)
+    class(kennedy_carpenter_4), intent(in) :: this
+    integer(int32) :: rst
+    rst = 4
+end function
+
+! ------------------------------------------------------------------------------
+pure function kc5_get_order(this) result(rst)
+    class(kennedy_carpenter_5), intent(in) :: this
+    integer(int32) :: rst
+    rst = 5
+end function
+
+! ------------------------------------------------------------------------------
+subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
+    !! Attempts one Kennedy--Carpenter ESDIRK step.
+    !!
+    !! The stage state is solved from
+    !! \[
+    !! M(Y_i-Y_i^*)-h a_{ii}f(x+c_i h,Y_i)=0,
+    !! \]
+    !! using Newton iteration.  The high- and embedded-order solutions are
+    !! \(y_{n+1}=y_n+h\sum b_i k_i\) and
+    !! \(\widehat y_{n+1}=y_n+h\sum d_i k_i\), respectively.
+    class(kennedy_carpenter), intent(inout) :: this
+    class(ode_container), intent(inout) :: sys
+    real(real64), intent(in) :: h, x, y(:), f(:)
+    real(real64), intent(out) :: yn(:), fn(:), yerr(:)
+    real(real64), intent(out) :: k(:,:)
+    class(*), intent(inout), optional :: args
+    real(real64) :: a(8,8), b(8), d(8), c(8)
+    real(real64) :: base(size(y)), state(size(y)), rhs(size(y)), initial_f(size(y))
+    real(real64) :: jac(size(y),size(y)), mass(size(y),size(y))
+    real(real64) :: delta(size(y))
+    integer(int32) :: stages, i, j, iteration
+    logical :: use_mass
+
+    call kc_table(this, a, b, d, c, stages)
+    k = 0.0d0
+    initial_f = f
+    if (associated(sys%mass_matrix)) then
+        call sys%mass_matrix(x, y, mass, args)
+        call solve_kc_system(mass, initial_f, k(:,1))
+    else
+        k(:,1) = initial_f
+    end if
+    do i = 2, stages
+        base = y
+        do j = 1, i - 1
+            base = base + h * a(i,j) * k(:,j)
+        end do
+        call sys%fcn(x + c(i)*h, base, rhs, args)
+        if (associated(sys%mass_matrix)) then
+            call sys%mass_matrix(x + c(i)*h, base, mass, args)
+            call solve_kc_system(mass, rhs, initial_f)
+            state = base + h*a(i,i)*initial_f
+        else
+            state = base + h*a(i,i)*rhs
+        end if
+        do iteration = 1, 12
+            call sys%fcn(x + c(i)*h, state, rhs, args)
+            use_mass = associated(sys%mass_matrix)
+            if (use_mass) then
+                call sys%mass_matrix(x + c(i)*h, state, mass, args)
+                call sys%compute_jacobian(x + c(i)*h, state, jac, args)
+                rhs = matmul(mass, (state - base)) - h*a(i,i)*rhs
+                    call solve_kc_system(mass - h*a(i,i)*jac, -rhs, delta)
+            else
+                call sys%compute_jacobian(x + c(i)*h, state, jac, args)
+                rhs = state - base - h*a(i,i)*rhs
+                    call solve_kc_system(identity_kc(size(y)) - h*a(i,i)*jac, -rhs, delta)
+            end if
+            if (norm2(rhs) <= 1.0d-12*max(1.0d0,norm2(state))) exit
+            state = state + delta
+        end do
+        if (iteration > 12) error stop DIFFEQ_CONVERGENCE_ERROR
+        call sys%fcn(x + c(i)*h, state, rhs, args)
+        if (associated(sys%mass_matrix)) then
+            call sys%mass_matrix(x + c(i)*h, state, mass, args)
+            call solve_kc_system(mass, rhs, k(:,i))
+        else
+            k(:,i) = rhs
+        end if
+    end do
+    yn = y
+    rhs = 0.0d0
+    do i = 1, stages
+        yn = yn + h*b(i)*k(:,i)
+        rhs = rhs + h*d(i)*k(:,i)
+    end do
+    yerr = yn - (y + rhs)
+    call sys%fcn(x + h, yn, fn, args)
+    if (associated(sys%mass_matrix)) then
+        call sys%mass_matrix(x + h, yn, mass, args)
+        call solve_kc_system(mass, fn, initial_f)
+        fn = initial_f
+    end if
+end subroutine
+
+subroutine kc_table(this, a, b, d, c, stages)
+    class(kennedy_carpenter), intent(in) :: this
+    real(real64), intent(out) :: a(8,8), b(8), d(8), c(8)
+    integer(int32), intent(out) :: stages
+    a = 0.0d0; b = 0.0d0; d = 0.0d0; c = 0.0d0
+    select type (this)
+    type is (kennedy_carpenter_4)
+        stages = 6
+        a(2,1)=1.0d0/4.0d0; a(2,2)=1.0d0/4.0d0
+        a(3,1)=8611.0d0/62500.0d0; a(3,2)=-1743.0d0/31250.0d0; a(3,3)=1.0d0/4.0d0
+        a(4,1)=5012029.0d0/34652500.0d0; a(4,2)=-654441.0d0/2922500.0d0
+        a(4,3)=174375.0d0/388108.0d0; a(4,4)=1.0d0/4.0d0
+        a(5,1)=15267082809.0d0/155376265600.0d0; a(5,2)=-71443401.0d0/120774400.0d0
+        a(5,3)=730878875.0d0/902184768.0d0; a(5,4)=2285395.0d0/8070912.0d0; a(5,5)=1.0d0/4.0d0
+        a(6,1)=82889.0d0/524892.0d0; a(6,3)=15625.0d0/83664.0d0
+        a(6,4)=69875.0d0/102672.0d0; a(6,5)=-2260.0d0/8211.0d0; a(6,6)=1.0d0/4.0d0
+        b(1)=a(6,1); b(3)=a(6,3); b(4)=a(6,4); b(5)=a(6,5); b(6)=a(6,6)
+        d(1)=4586570599.0d0/29645900160.0d0; d(3)=178811875.0d0/945068544.0d0
+        d(4)=814220225.0d0/1159782912.0d0; d(5)=-3700637.0d0/11593932.0d0; d(6)=61727.0d0/225920.0d0
+        c(2)=0.5d0; c(3)=83.0d0/250.0d0; c(4)=31.0d0/50.0d0; c(5)=17.0d0/20.0d0; c(6)=1.0d0
+    type is (kennedy_carpenter_5)
+        stages = 8
+        a(2,1)=41.0d0/200.0d0; a(2,2)=41.0d0/200.0d0
+        a(3,1)=41.0d0/400.0d0; a(3,2)=-567603406766.0d0/11931857230679.0d0; a(3,3)=41.0d0/200.0d0
+        a(4,1)=683785636431.0d0/9252920307686.0d0; a(4,3)=-110385047103.0d0/1367015193373.0d0; a(4,4)=41.0d0/200.0d0
+        a(5,1)=3016520224154.0d0/10081342136671.0d0; a(5,3)=30586259806659.0d0/12414158314087.0d0
+        a(5,4)=-22760509404356.0d0/11113319521817.0d0; a(5,5)=41.0d0/200.0d0
+        a(6,1)=218866479029.0d0/1489978393911.0d0; a(6,3)=638256894668.0d0/5436446318841.0d0
+        a(6,4)=-1179710474555.0d0/5321154724896.0d0; a(6,5)=-60928119172.0d0/8023461067671.0d0; a(6,6)=41.0d0/200.0d0
+        a(7,1)=1020004230633.0d0/5715676835656.0d0; a(7,3)=25762820946817.0d0/25263940353407.0d0
+        a(7,4)=-2161375909145.0d0/9755907335909.0d0; a(7,5)=-211217309593.0d0/5846859502534.0d0
+        a(7,6)=-4269925059573.0d0/7827059040749.0d0; a(7,7)=41.0d0/200.0d0
+        a(8,1)=-872700587467.0d0/9133579230613.0d0; a(8,4)=22348218063261.0d0/9555858737531.0d0
+        a(8,5)=-1143369518992.0d0/8141816002931.0d0; a(8,6)=-39379526789629.0d0/19018526304540.0d0
+        a(8,7)=32727382324388.0d0/42900044865799.0d0; a(8,8)=41.0d0/200.0d0
+        b(1)=a(8,1); b(4)=a(8,4); b(5)=a(8,5); b(6)=a(8,6); b(7)=a(8,7); b(8)=a(8,8)
+        d(1)=-975461918565.0d0/9796059967033.0d0; d(4)=78070527104295.0d0/32432590147079.0d0
+        d(5)=-548382580838.0d0/3424219808633.0d0; d(6)=-33438840321285.0d0/15594753105479.0d0
+        d(7)=3629800801594.0d0/4656183773603.0d0; d(8)=4035322873751.0d0/18575991585200.0d0
+        c(2)=41.0d0/100.0d0; c(3)=2935347310677.0d0/11292855782101.0d0; c(4)=1426016391358.0d0/7196633302097.0d0
+        c(5)=0.92d0; c(6)=0.24d0; c(7)=0.6d0; c(8)=1.0d0
+    end select
+end subroutine
+
+function identity_kc(n) result(a)
+    integer(int32), intent(in) :: n
+    real(real64) :: a(n,n)
+    integer(int32) :: i
+    a = 0.0d0
+    do i = 1, n; a(i,i) = 1.0d0; end do
+end function
+
+subroutine solve_kc_system(a, b, x)
+    real(real64), intent(in) :: a(:,:), b(:)
+    real(real64), intent(out) :: x(:)
+    real(real64) :: aa(size(b),size(b)), bb(size(b)), row(size(b)), factor
+    integer(int32) :: i, k, p, n
+    n = size(b); aa = a; bb = b
+    do k = 1, n - 1
+        p = k
+        do i = k + 1, n; if (abs(aa(i,k)) > abs(aa(p,k))) p = i; end do
+        if (abs(aa(p,k)) <= epsilon(1.0d0)) error stop DIFFEQ_SINGULAR_MATRIX_ERROR
+        if (p /= k) then; row = aa(k,:); aa(k,:) = aa(p,:); aa(p,:) = row; factor = bb(k); bb(k)=bb(p); bb(p)=factor; end if
+        do i = k + 1, n
+            factor = aa(i,k)/aa(k,k); aa(i,k:n) = aa(i,k:n)-factor*aa(k,k:n); bb(i)=bb(i)-factor*bb(k)
+        end do
+    end do
+    x(n)=bb(n)/aa(n,n)
+    do i=n-1,1,-1; x(i)=(bb(i)-sum(aa(i,i+1:n)*x(i+1:n)))/aa(i,i); end do
+end subroutine
+
+subroutine kc_interpolate(this, x, xn, yn, fn, xn1, yn1, fn1, y)
+    class(kennedy_carpenter), intent(in) :: this
+    real(real64), intent(in) :: x, xn, yn(:), fn(:), xn1, yn1(:), fn1(:)
+    real(real64), intent(out) :: y(:)
+    real(real64) :: s, h
+    h=xn1-xn; s=(x-xn)/h
+    y=(2.0d0*s**3-3.0d0*s**2+1.0d0)*yn+(s**3-2.0d0*s**2+s)*h*fn &
+        +(-2.0d0*s**3+3.0d0*s**2)*yn1+(s**3-s**2)*h*fn1
+end subroutine
 
 ! ------------------------------------------------------------------------------
 end module

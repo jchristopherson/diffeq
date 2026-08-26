@@ -4,7 +4,7 @@ module diffeq
     use diffeq_base
     use diffeq_runge_kutta
     use diffeq_implicit_runge_kutta
-    use diffeq_vode
+    use diffeq_multistep
     implicit none
     private
     
@@ -30,11 +30,12 @@ module diffeq
 
     ! DIFFEQ_IMPLICIT_RUNGE_KUTTA.F90
     public :: rosenbrock
+    public :: kennedy_carpenter_4
+    public :: kennedy_carpenter_5
 
-    ! DIFFEQ_VODE.F90
-    public :: VODE_ADAMS_METHOD
-    public :: VODE_BDF_METHOD
-    public :: vode
+    ! DIFFEQ_MULTISTEP.F90
+    public :: DIFFEQ_ADAMS_METHOD
+    public :: DIFFEQ_BDF_METHOD
     public :: adams
     public :: bdf
 end module

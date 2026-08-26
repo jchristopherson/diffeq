@@ -1,5 +1,5 @@
-module diffeq_vode
-    !! VODE-based variable-order ODE solvers.
+module diffeq_multistep
+    !! Variable-order multistep ODE solvers backed by DVODE.
     !!
     !! VODE uses variable-step formulas of the general form
     !! \[
@@ -9,26 +9,26 @@ module diffeq_vode
     !! where the coefficient set and order \(q\) change with the selected
     !! method.  Adams formulas are intended primarily for non-stiff systems;
     !! backward differentiation formulas are intended primarily for stiff
-    !! systems.  The wrapper manages VODE's work arrays, tolerances, and
-    !! optional Jacobian callback.
+    !! systems.  The modern library types manage DVODE's work arrays,
+    !! tolerances, callbacks, interpolation, and solution buffering.
     use iso_fortran_env
     use diffeq_base
     use diffeq_errors
     implicit none
     private
-    public :: VODE_ADAMS_METHOD
-    public :: VODE_BDF_METHOD
-    public :: vode
+    public :: DIFFEQ_ADAMS_METHOD
+    public :: DIFFEQ_BDF_METHOD
+    public :: multistep_integrator
     public :: adams
     public :: bdf
 
-    integer(int32), parameter :: VODE_ADAMS_METHOD = 10
+    integer(int32), parameter :: DIFFEQ_ADAMS_METHOD = 10
         !! Describes the VODE Adams method solver.
-    integer(int32), parameter :: VODE_BDF_METHOD = 21
+    integer(int32), parameter :: DIFFEQ_BDF_METHOD = 21
         !! Describes the VODE BDF method solver.
 
-    type, abstract, extends(ode_integrator) :: vode
-        !! Abstract base for the VODE Adams and BDF solver variants.
+    type, abstract, extends(ode_integrator) :: multistep_integrator
+        !! Abstract base for the DVODE-backed Adams and BDF solver variants.
         !!
         !! VODE controls a weighted local error against the requested absolute
         !! and relative tolerances, using a component scale such as
@@ -39,7 +39,7 @@ module diffeq_vode
         procedure(vode_integer_inquiry), deferred, public :: get_method
     end type
 
-    type, extends(vode) :: adams
+    type, extends(multistep_integrator) :: adams
         !! Variable-order Adams solver implemented by VODE.
         !!
         !! Adams predictor--corrector formulas use past derivative information
@@ -49,7 +49,7 @@ module diffeq_vode
         procedure, public :: get_method => adams_method_inquiry
     end type
 
-    type, extends(vode) :: bdf
+    type, extends(multistep_integrator) :: bdf
         !! Variable-order backward differentiation formula solver implemented
         !! by VODE.
         !!
@@ -63,11 +63,11 @@ module diffeq_vode
     interface
         pure function vode_integer_inquiry(this) result(rst)
             !! Defines the signature of a function for inquiring about an
-            !! integer-valued property from a vode object.
+                !! integer-valued property from a multistep integrator.
             use iso_fortran_env, only : int32
-            import vode
-            class(vode), intent(in) :: this
-                !! The vode object.
+            import multistep_integrator
+            class(multistep_integrator), intent(in) :: this
+                !! The multistep integrator.
             integer(int32) :: rst
                 !! The requested integer value.
         end function
@@ -84,6 +84,8 @@ module diffeq_vode
             !! A pointer to the ODE routine.
         procedure(ode_jacobian), pointer, nopass :: jac
             !! A pointer to the ODE jacobian routine.
+        procedure(ode_mass_matrix), pointer, nopass :: mass => null()
+            !! A pointer to the optional mass matrix routine.
     end type
 
     interface
@@ -118,14 +120,28 @@ module diffeq_vode
             real(real64), intent(inout) :: y(neqn), t, rwork(*), rpar(*)
 
         end subroutine
+
+        subroutine DVINDY(tout, k, yh, ldyh, y, iflag)
+            use iso_fortran_env, only : real64, int32
+            integer(int32), intent(in) :: k, ldyh
+            integer(int32), intent(out) :: iflag
+            real(real64), intent(in) :: tout, yh(ldyh,*)
+            real(real64), intent(out) :: y(*)
+        end subroutine
     end interface
 
 contains
 ! ------------------------------------------------------------------------------
 subroutine vode_solve(this, sys, x, iv, args)
     !! Solves the supplied system of ODE's.
-    class(vode), intent(inout) :: this
-        !! The vode object.
+    !!
+    !! DVODE controls the variable step size and method order internally.
+    !! When `x` contains only the initial and final coordinates, every
+    !! successful internal DVODE step is appended to the solution buffer.
+    !! When additional coordinates are supplied, DVODE is advanced to those
+    !! coordinates and its dense-output interpolation is used as requested.
+    class(multistep_integrator), intent(inout) :: this
+        !! The multistep integrator.
     class(ode_container), intent(inout) :: sys
         !! The ode_container object containing the ODE's to integrate.
     real(real64), intent(in), dimension(:) :: x
@@ -158,9 +174,10 @@ subroutine vode_solve(this, sys, x, iv, args)
     if (nx < 2) error stop DIFFEQ_ARRAY_SIZE_ERROR
     if (.not.sys%get_is_ode_defined()) error stop DIFFEQ_MISSING_ARGUMENT_ERROR
 
-    ! Additional Initialization
+    ! Package the library callbacks for DVODE's legacy calling convention.
     container%fcn => sys%fcn
     if (associated(sys%jacobian)) container%jac => sys%jacobian
+    if (associated(sys%mass_matrix)) container%mass => sys%mass_matrix
     container%uses_args = present(args)
     if (present(args)) container%args => args
     rpar = transfer(container, rpar)
@@ -172,7 +189,7 @@ subroutine vode_solve(this, sys, x, iv, args)
     istate = 1
     iopt = 1
     miter = 1
-    if (this%get_method() == VODE_ADAMS_METHOD) then
+    if (this%get_method() == DIFFEQ_ADAMS_METHOD) then
         mf = 10
     else
         if (associated(sys%jacobian)) then
@@ -183,13 +200,10 @@ subroutine vode_solve(this, sys, x, iv, args)
     end if
     maxord = this%get_order()
 
-    ! Determine the proper task
+    ! Use one-step output for a two-point request so accepted internal steps
+    ! remain visible; DVINDY restores the requested endpoint after overshoot.
     if (nx == 2) then
-        if (this%get_allow_overshoot()) then
-            itask = 2
-        else
-            itask = 5
-        end if
+        itask = 2
     else
         if (this%get_allow_overshoot()) then
             itask = 1
@@ -253,6 +267,11 @@ subroutine vode_solve(this, sys, x, iv, args)
         end select
 
         ! Store the results
+        if (nx == 2 .and. abs(t) > abs(xmax)) then
+            call DVINDY(xmax, 0, rwork(21), neqn, y, istate)
+            if (istate /= 0) error stop DIFFEQ_INVALID_OPERATION_ERROR
+            t = xmax
+        end if
         call this%append_to_buffer(t, y)
 
         ! Update TOUT if nx /= 2
@@ -278,13 +297,13 @@ end subroutine
 pure function vode_order_inquiry(this) result(rst)
     !! Gets the highest order of this integrator.  This integrator is a variable
     !! order integrator; therefore, the exact order is problem dependent.
-    class(vode), intent(in) :: this
-        !! The vode object.
+    class(multistep_integrator), intent(in) :: this
+        !! The multistep integrator.
     integer(int32) :: rst
         !! The highest order of this integrator.
 
     ! Process
-    if (this%get_method() == VODE_ADAMS_METHOD) then
+    if (this%get_method() == DIFFEQ_ADAMS_METHOD) then
         rst = 12
     else
         rst = 5
@@ -294,6 +313,10 @@ end function
 ! ------------------------------------------------------------------------------
 subroutine vode_eqn(neqn, t, y, ydot, rpar, ipar)
     !! The routine containing the differential equations solved by VODE.
+    !!
+    !! For a BDF problem with a supplied mass matrix, DVODE receives the
+    !! equivalent explicit system \(y' = M^{-1}f(t,y)\).  The transformation
+    !! is applied here so the public callback remains \(M y' = f\).
     integer(int32), intent(in) :: neqn
         !! The number of equations.
     real(real64), intent(in) :: t
@@ -323,11 +346,18 @@ subroutine vode_eqn(neqn, t, y, ydot, rpar, ipar)
     else
         call args%fcn(t, y(1:neqn), ydot(1:neqn))
     end if
+    if (associated(args%mass)) then
+        call transform_mass_rhs(args%mass, neqn, t, y, ydot, args)
+    end if
 end subroutine
 
 ! ------------------------------------------------------------------------------
 subroutine vode_jacobian(neqn, t, y, ml, mu, pd, nrowpd, rpar, ipar)
     !! The routine containing the Jacobian calculation routine.
+    !!
+    !! If a mass matrix is present, the supplied Jacobian is transformed to
+    !! the Jacobian of the equivalent DVODE system, \(M^{-1}J\).  This matches
+    !! the constant-mass formulation used by the BDF adapter.
     integer(int32), intent(in) :: neqn
         !! The number of equations.
     real(real64), intent(in) :: t
@@ -365,6 +395,72 @@ subroutine vode_jacobian(neqn, t, y, ml, mu, pd, nrowpd, rpar, ipar)
     else
         call args%jac(t, y(1:neqn), pd(1:neqn,1:neqn))
     end if
+    pd(1,1) = pd(1,1) + 0.0d0 * real(ml + mu, real64)
+    if (associated(args%mass)) then
+        call transform_mass_jacobian(args%mass, neqn, t, y, pd, args)
+    end if
+end subroutine
+
+subroutine transform_mass_rhs(mass_callback, neqn, t, y, rhs, args)
+    !! Transform a mass-matrix right-hand side into \(M^{-1}f\).
+    procedure(ode_mass_matrix) :: mass_callback
+    integer(int32), intent(in) :: neqn
+    real(real64), intent(in) :: t, y(neqn)
+    real(real64), intent(inout) :: rhs(neqn)
+    class(vode_argument_container), intent(in) :: args
+    real(real64) :: mass(neqn,neqn), solution(neqn)
+    call mass_callback(t, y, mass, args%args)
+    call solve_dense_system(mass, rhs, solution)
+    rhs = solution
+end subroutine
+
+subroutine transform_mass_jacobian(mass_callback, neqn, t, y, jac, args)
+    !! Transform Jacobian columns into the equivalent \(M^{-1}J\) system.
+    procedure(ode_mass_matrix) :: mass_callback
+    integer(int32), intent(in) :: neqn
+    real(real64), intent(in) :: t, y(neqn)
+    real(real64), intent(inout) :: jac(neqn,neqn)
+    class(vode_argument_container), intent(in) :: args
+    real(real64) :: mass(neqn,neqn), column(neqn)
+    integer(int32) :: i
+    call mass_callback(t, y, mass, args%args)
+    do i = 1, neqn
+        column = jac(:,i)
+        call solve_dense_system(mass, column, jac(:,i))
+    end do
+end subroutine
+
+subroutine solve_dense_system(matrix, rhs, solution)
+    !! Solve a dense linear system with partial pivoting.
+    real(real64), intent(in) :: matrix(:,:), rhs(:)
+    real(real64), intent(out) :: solution(:)
+    real(real64) :: a(size(rhs),size(rhs)), b(size(rhs)), factor, pivot_value
+    real(real64) :: row(size(rhs))
+    integer(int32) :: i, k, pivot, n
+    n = size(rhs); a = matrix; b = rhs
+    do k = 1, n - 1
+        pivot = k; pivot_value = abs(a(k,k))
+        do i = k + 1, n
+            if (abs(a(i,k)) > pivot_value) then
+                pivot = i; pivot_value = abs(a(i,k))
+            end if
+        end do
+        if (pivot_value <= epsilon(1.0d0)) error stop DIFFEQ_SINGULAR_MATRIX_ERROR
+        if (pivot /= k) then
+            row = a(k,:); a(k,:) = a(pivot,:); a(pivot,:) = row
+            factor = b(k); b(k) = b(pivot); b(pivot) = factor
+        end if
+        do i = k + 1, n
+            factor = a(i,k) / a(k,k)
+            a(i,k:n) = a(i,k:n) - factor * a(k,k:n)
+            b(i) = b(i) - factor * b(k)
+        end do
+    end do
+    if (abs(a(n,n)) <= epsilon(1.0d0)) error stop DIFFEQ_SINGULAR_MATRIX_ERROR
+    solution(n) = b(n) / a(n,n)
+    do i = n - 1, 1, -1
+        solution(i) = (b(i) - sum(a(i,i+1:n) * solution(i+1:n))) / a(i,i)
+    end do
 end subroutine
 
 ! ******************************************************************************
@@ -377,7 +473,7 @@ pure function adams_method_inquiry(this) result(rst)
     integer(int32) :: rst
         !! The method identifier.
 
-    rst = VODE_ADAMS_METHOD
+    rst = DIFFEQ_ADAMS_METHOD
 end function
 
 ! ******************************************************************************
@@ -390,7 +486,7 @@ pure function bdf_method_inquiry(this) result(rst)
     integer(int32) :: rst
         !! The method identifier.
 
-    rst = VODE_BDF_METHOD
+    rst = DIFFEQ_BDF_METHOD
 end function
 
 ! ------------------------------------------------------------------------------

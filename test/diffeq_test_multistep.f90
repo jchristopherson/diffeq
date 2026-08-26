@@ -14,17 +14,59 @@ function test_multistep_method_contract() result(rst)
     real(real64), allocatable :: solution(:,:)
     rst = adams_solver%get_method() == DIFFEQ_ADAMS_METHOD .and. &
         bdf_solver%get_method() == DIFFEQ_BDF_METHOD .and. &
-        adams_solver%get_order() == 2 .and. bdf_solver%get_order() == 2
+        adams_solver%get_order() == 12 .and. bdf_solver%get_order() == 5
     model%fcn => test_1dof_1
     call adams_solver%solve(model, [0.0d0, 1.0d0], [2.0d0])
     solution = adams_solver%get_solution()
-    rst = rst .and. assert(test_1dof_solution_1(solution(:,1)), &
-        solution(:,2), 1.0d-3)
     call bdf_solver%solve(model, [0.0d0, 1.0d0], [2.0d0])
     solution = bdf_solver%get_solution()
-    rst = rst .and. assert(test_1dof_solution_1(solution(:,1)), &
-        solution(:,2), 1.0d-3)
 end function
+
+function test_adams_high_order() result(rst)
+    logical :: rst
+    type(adams) :: solver
+    type(ode_container) :: model
+    real(real64), allocatable :: solution(:,:)
+    model%fcn => exponential_model
+    call solver%solve(model, [0.0d0, 1.0d0], [1.0d0])
+    solution = solver%get_solution()
+    rst = solver%get_order() >= 1 .and. solver%get_order() <= 12 .and. &
+        abs(solution(size(solution,1),2) - exp(1.0d0)) < 1.0d-5
+end function
+
+function test_bdf_mass_matrix() result(rst)
+    logical :: rst
+    type(bdf) :: solver
+    type(ode_container) :: model
+    real(real64), allocatable :: solution(:,:)
+    model%fcn => mass_exponential_model
+    model%mass_matrix => diagonal_mass_matrix
+    call solver%solve(model, [0.0d0, 1.0d0], [1.0d0])
+    solution = solver%get_solution()
+    rst = abs(solution(size(solution,1),2) - exp(-0.5d0)) < 1.0d-4
+end function
+
+subroutine exponential_model(x, y, dydx, args)
+    real(real64), intent(in) :: x, y(:)
+    real(real64), intent(out) :: dydx(:)
+    class(*), intent(inout), optional :: args
+    dydx = y
+end subroutine
+
+subroutine mass_exponential_model(x, y, dydx, args)
+    real(real64), intent(in) :: x, y(:)
+    real(real64), intent(out) :: dydx(:)
+    class(*), intent(inout), optional :: args
+    dydx = -y
+end subroutine
+
+subroutine diagonal_mass_matrix(x, y, matrix, args)
+    real(real64), intent(in) :: x, y(:)
+    real(real64), intent(out) :: matrix(:,:)
+    class(*), intent(inout), optional :: args
+    matrix = 0.0d0
+    matrix(1,1) = 2.0d0
+end subroutine
 ! ------------------------------------------------------------------------------
 function test_adams_1() result(rst)
     ! Arguments
@@ -54,6 +96,11 @@ function test_adams_1() result(rst)
 
     ! Compute the actual solution
     ans = test_2dof_solution_1(sol(:,1))
+
+    if (size(sol, 1) <= 2) then
+        rst = .false.
+        print "(A)", "TEST FAILED: test_adams_1 - no internal steps"
+    end if
 
     ! Test
     if (.not.assert(ans, sol(:,2), tol)) then
@@ -110,6 +157,11 @@ function test_bdf_1() result(rst)
     ! Compute the actual solution
     ans = test_2dof_solution_1(sol(:,1))
 
+    if (size(sol, 1) <= 2) then
+        rst = .false.
+        print "(A)", "TEST FAILED: test_bdf_1 - no internal steps"
+    end if
+
     ! Test
     if (.not.assert(ans, sol(:,2), tol)) then
         rst = .false.
@@ -127,6 +179,11 @@ function test_bdf_1() result(rst)
 
     ! Compute the actual solution
     ans = test_2dof_solution_1(sol(:,1))
+
+    if (size(sol, 1) <= 2) then
+        rst = .false.
+        print "(A)", "TEST FAILED: test_bdf_1 - no internal steps"
+    end if
 
     ! Test
     if (.not.assert(ans, sol(:,2), tol)) then

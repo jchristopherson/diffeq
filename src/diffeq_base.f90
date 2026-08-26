@@ -636,6 +636,7 @@ subroutine oi_clear_buffer(this)
     ! Clear the buffer
     if (allocated(this%m_buffer)) deallocate(this%m_buffer)
     this%m_bufferCount = 0
+    this%m_reject = .false.
 end subroutine
 
 ! ------------------------------------------------------------------------------
