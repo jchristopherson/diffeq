@@ -9,7 +9,7 @@ module diffeq_implicit_runge_kutta
     use iso_fortran_env
     use diffeq_base
     use diffeq_errors
-    use linalg, only : solve_lu
+    use linalg, only : solve_lu, solve_qr, qr_factor
     use lapack, only : DGETRF
     implicit none
     private
@@ -68,13 +68,17 @@ module diffeq_implicit_runge_kutta
         real(real64), private, allocatable, dimension(:,:) :: mass
             ! The mass matrix.
         integer(int32), private, allocatable, dimension(:) :: pivot
-            ! LU factorization pivot tracking array
+            ! QR factorization pivot tracking array
+        real(real64), private, allocatable, dimension(:) :: tau
+            ! QR factorization scalar factors array
         logical, private :: m_massComputed = .false.
             ! True if the mass matrix has been computed; else, false.
         real(real64), private, allocatable, dimension(:) :: dfdx
             ! N-element array of df/dx
         real(real64), private, allocatable, dimension(:,:) :: a
             ! System matrix.
+        real(real64), private, allocatable, dimension(:,:) :: qr
+            ! QR factored matrix
         real(real64), private, allocatable, dimension(:) :: rc1
         real(real64), private, allocatable, dimension(:) :: rc2
         real(real64), private, allocatable, dimension(:) :: rc3
@@ -175,8 +179,8 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
     end if
 
     ! Factor the equations
-    call DGETRF(n, n, this%a, n, this%pivot, flag)
-    if (flag /= 0) error stop DIFFEQ_SINGULAR_MATRIX_ERROR
+    this%pivot = 0
+    call qr_factor(this%a, this%pivot, tau = this%tau, qr = this%qr)
 
     ! Compute df/dx
     fac = sys%get_finite_difference_step()
@@ -207,6 +211,7 @@ subroutine rbrk_init_matrices(this, n, usemass)
             deallocate(this%jac)
             if (allocated(this%mass)) deallocate(this%mass)
             deallocate(this%pivot)
+            deallocate(this%tau)
             deallocate(this%dfdx)
             deallocate(this%a)
         end if
@@ -216,6 +221,7 @@ subroutine rbrk_init_matrices(this, n, usemass)
             this%jac(n, n), &
             this%mass(n, n), &
             this%pivot(n), &
+            this%tau(n), &
             this%dfdx(n), &
             this%a(n, n) &
         )
@@ -223,6 +229,7 @@ subroutine rbrk_init_matrices(this, n, usemass)
         allocate( &
             this%jac(n, n), &
             this%pivot(n), &
+            this%tau(n), &
             this%dfdx(n), &
             this%a(n, n) &
         )
@@ -264,15 +271,15 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
 
     ! Local Variables
     integer(int32) :: n
-    real(real64), allocatable :: rhs(:)
+    real(real64), allocatable, dimension(:) :: rhs
 
     ! Initialization
     n = size(y)
     allocate(rhs(n))
 
     ! Process
-    k(:,1) = f + h * d1 * this%dfdx
-    k(:,1) = solve_lu(this%a, this%pivot, k(:,1))
+    rhs = f + h * d1 * this%dfdx
+    k(:,1) = solve_qr(this%qr, this%tau, this%pivot, rhs)
 
     yn = y + a21 * k(:,1)
     call sys%fcn(x + c2 * h, yn, fn, args)
@@ -280,8 +287,7 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     rhs = c21 * k(:,1) / h
     if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
     rhs = fn + h * d2 * this%dfdx + rhs
-    k(:,2) = rhs
-    k(:,2) = solve_lu(this%a, this%pivot, k(:,2))
+    k(:,2) = solve_qr(this%qr, this%tau, this%pivot, rhs)
 
     yn = y + a31 * k(:,1) + a32 * k(:,2)
     call sys%fcn(x + c3 * h, yn, fn, args)
@@ -290,7 +296,7 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
     rhs = fn + h * d3 * this%dfdx + rhs
     k(:,3) = rhs
-    k(:,3) = solve_lu(this%a, this%pivot, k(:,3))
+    k(:,3) = solve_qr(this%qr, this%tau, this%pivot, rhs)
 
     yn = y + a41 * k(:,1) + a42 * k(:,2) + a43 * k(:,3)
     call sys%fcn(x + c4 * h, yn, fn, args)
@@ -298,8 +304,7 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     rhs = (c41 * k(:,1) + c42 * k(:,2) + c43 * k(:,3)) / h
     if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
     rhs = fn + h * d4 * this%dfdx + rhs
-    k(:,4) = rhs
-    k(:,4) = solve_lu(this%a, this%pivot, k(:,4))
+    k(:,4) = solve_qr(this%qr, this%tau, this%pivot, rhs)
 
     yn = y + a51 * k(:,1) + a52 * k(:,2) + a53 * k(:,3) + a54 * k(:,4)
     call sys%fcn(x + h, yn, fn, args)
@@ -308,8 +313,8 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         c54 * k(:,4)) / h
     if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
     rhs = fn + rhs
-    k(:,5) = rhs
-    k(:,5) = solve_lu(this%a, this%pivot, k(:,5))
+    k(:,5) = solve_qr(this%qr, this%tau, this%pivot, rhs)
+
 
     yn = yn + k(:,5)
     call sys%fcn(x + h, yn, fn, args) ! updated derivative
@@ -318,7 +323,7 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         c64 * k(:,4) + c65 * k(:,5)) / h
     if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
     yerr = fn + rhs
-    yerr = solve_lu(this%a, this%pivot, yerr)
+    yerr = solve_qr(this%qr, this%tau, this%pivot, yerr)
 
     yn = yn + yerr
 end subroutine
@@ -525,6 +530,8 @@ function rbrk_next_step(this, e, eold, h, x) result(rst)
     end if
 end function
 
+! ******************************************************************************
+! KENNEDY-CARPENTER INTEGRATORS
 ! ------------------------------------------------------------------------------
 subroutine kc_pre_step(this, prevs, sys, h, x, y, f, args)
     class(kennedy_carpenter), intent(inout) :: this
