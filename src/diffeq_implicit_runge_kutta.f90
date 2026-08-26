@@ -9,7 +9,7 @@ module diffeq_implicit_runge_kutta
     use iso_fortran_env
     use diffeq_base
     use diffeq_errors
-    use linalg, only : solve_lu, solve_qr, qr_factor
+    use linalg_qr, only : solve_qr, qr_factor
     use lapack, only : DGETRF
     implicit none
     private
@@ -214,6 +214,7 @@ subroutine rbrk_init_matrices(this, n, usemass)
             deallocate(this%tau)
             deallocate(this%dfdx)
             deallocate(this%a)
+            deallocate(this%qr)
         end if
     end if
     if (usemass) then
@@ -223,7 +224,8 @@ subroutine rbrk_init_matrices(this, n, usemass)
             this%pivot(n), &
             this%tau(n), &
             this%dfdx(n), &
-            this%a(n, n) &
+            this%a(n, n), &
+            this%qr(n, n) &
         )
     else
         allocate( &
@@ -231,7 +233,8 @@ subroutine rbrk_init_matrices(this, n, usemass)
             this%pivot(n), &
             this%tau(n), &
             this%dfdx(n), &
-            this%a(n, n) &
+            this%a(n, n), &
+            this%qr(n, n) &
         )
     end if
 
@@ -295,7 +298,6 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     rhs = (c31 * k(:,1) + c32 * k(:,2)) / h
     if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
     rhs = fn + h * d3 * this%dfdx + rhs
-    k(:,3) = rhs
     k(:,3) = solve_qr(this%qr, this%tau, this%pivot, rhs)
 
     yn = y + a41 * k(:,1) + a42 * k(:,2) + a43 * k(:,3)
@@ -727,20 +729,16 @@ end function
 subroutine solve_kc_system(a, b, x)
     real(real64), intent(in) :: a(:,:), b(:)
     real(real64), intent(out) :: x(:)
-    real(real64) :: aa(size(b),size(b)), bb(size(b)), row(size(b)), factor
-    integer(int32) :: i, k, p, n
-    n = size(b); aa = a; bb = b
-    do k = 1, n - 1
-        p = k
-        do i = k + 1, n; if (abs(aa(i,k)) > abs(aa(p,k))) p = i; end do
-        if (abs(aa(p,k)) <= epsilon(1.0d0)) error stop DIFFEQ_SINGULAR_MATRIX_ERROR
-        if (p /= k) then; row = aa(k,:); aa(k,:) = aa(p,:); aa(p,:) = row; factor = bb(k); bb(k)=bb(p); bb(p)=factor; end if
-        do i = k + 1, n
-            factor = aa(i,k)/aa(k,k); aa(i,k:n) = aa(i,k:n)-factor*aa(k,k:n); bb(i)=bb(i)-factor*bb(k)
-        end do
-    end do
-    x(n)=bb(n)/aa(n,n)
-    do i=n-1,1,-1; x(i)=(bb(i)-sum(aa(i,i+1:n)*x(i+1:n)))/aa(i,i); end do
+
+    integer(int32) :: n
+    integer(int32), allocatable, dimension(:) :: pivot
+    real(real64), allocatable, dimension(:) :: tau
+    real(real64), allocatable, dimension(:,:) :: qr
+
+    n = size(a, 2)
+    allocate(pivot(n), source = 0)
+    call qr_factor(a, pivot, tau = tau, qr = qr)
+    x = solve_qr(qr, tau, pivot, b)
 end subroutine
 
 subroutine kc_interpolate(this, x, xn, yn, fn, xn1, yn1, fn1, y)
