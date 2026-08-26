@@ -69,7 +69,7 @@ program example
 
     ! Kennedy-Carpenter Integrators
     print "(A, I0, A)", "KC4: ", size(s7, 1), " Solution Points"
-    print "(A, I0, A)", "KC4: ", size(s8, 1), " Solution Points"
+    print "(A, I0, A)", "KC5: ", size(s8, 1), " Solution Points"
 
     ! Tsitouras Integrators
     print "(A, I0, A)", "TSITOURAS 4/5: ", size(s9, 1), " Solution Points"

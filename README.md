@@ -343,7 +343,7 @@ program example
 
     ! Kennedy-Carpenter Integrators
     print "(A, I0, A)", "KC4: ", size(s7, 1), " Solution Points"
-    print "(A, I0, A)", "KC4: ", size(s8, 1), " Solution Points"
+    print "(A, I0, A)", "KC5: ", size(s8, 1), " Solution Points"
 
     ! Tsitouras Integrators
     print "(A, I0, A)", "TSITOURAS 4/5: ", size(s9, 1), " Solution Points"
@@ -358,7 +358,7 @@ ROSENBROCK w/ PI Controller: 1187 Solution Points
 BDF: 1527 Solution Points
 ADAMS: 1865 Solution Points
 KC4: 483 Solution Points
-KC4: 245 Solution Points
+KC5: 245 Solution Points
 TSITOURAS 4/5: 522 Solution Points
 ```
 
