@@ -9,10 +9,13 @@ A modern Fortran library providing an object-oriented approach to solving and ex
 The documentation can be found [here](https://jchristopherson.github.io/diffeq/).
 
 ## Available Integrators
-- Runge-Kutta, 5th Order (Dormand-Prince)
-- Runge-Kutta, 3rd Order (Bogacki-Shampine)
-- Runge-Kutta, 8th Order (Hairer, Nörsett, & Wanner)
+- Runge-Kutta, 5th Order with 4th-Order Embedded Estimate (Dormand-Prince)
+- Tsitouras, 5th Order with 4th-Order Embedded Estimate
+- Runge-Kutta, 3rd Order with 2nd-Order Embedded Estimate (Bogacki-Shampine)
+- Runge-Kutta, 8th Order with 5th & 3rd-Order Embedded Estimates (Hairer, Nörsett, & Wanner)
 - Rosenbrock, 4th Order
+- Kennedy-Carpenter ESDIRK, 4th Order with 3rd-Order Embedded Estimate
+- Kennedy-Carpenter ESDIRK, 5th Order with 4th-Order Embedded Estimate
 - Adams (VODE)
 - Backward Differentiation Formula (VODE)
 
@@ -69,7 +72,7 @@ integrators:
 | `ode_container` | Stores the right-hand-side callback and optional Jacobian or mass-matrix callbacks. |
 | `model%fcn` | Defines $f(x,y)$ for the problem. This callback is required. |
 | `model%jacobian` | Supplies $J = \partial f / \partial y$. If omitted, DIFFEQ estimates it by finite differences where needed. |
-| `model%mass_matrix` | Supplies $M(x,y)$ for a system written as $M y' = f(x,y)$. It is used by the Rosenbrock solver. |
+| `model%mass_matrix` | Supplies $M(x,y)$ for a system written as $M y' = f(x,y)$. It is supported by the Rosenbrock, Kennedy-Carpenter, and BDF solvers. |
 | `integrator%solve(model, x, y0)` | Integrates from `x(1)` to `x(size(x))` using initial state `y0`. |
 | `integrator%get_solution()` | Returns an $N \times (n+1)$ array with the independent variable in column 1 and state values in columns 2 through $n+1$. |
 | `set_absolute_tolerance` / `set_relative_tolerance` | Control the local error scale, approximately $\mathrm{atol} + \mathrm{rtol}|y|$. |
@@ -84,11 +87,17 @@ solver types expose the same `solve` and `get_solution` workflow.
 ### Choosing an Integrator
 - `runge_kutta_23`: inexpensive, lower-order integration for modest accuracy.
 - `runge_kutta_45`: general-purpose adaptive integration for non-stiff systems.
+- `tsitouras_54`: efficient fifth-order adaptive integration for non-stiff systems; its FSAL tableau uses a fourth-order embedded error estimate.
 - `runge_kutta_853`: high-order integration for smooth, non-stiff problems.
 - `rosenbrock`: linearly implicit integration for stiff systems and supported
   mass-matrix problems.
+- `kennedy_carpenter_4`: fourth-order ESDIRK integration for stiff systems,
+    with a third-order embedded error estimate and mass-matrix support.
+- `kennedy_carpenter_5`: fifth-order ESDIRK integration for stiff systems,
+    with a fourth-order embedded error estimate and mass-matrix support.
 - `adams`: variable-order VODE method for smooth, non-stiff systems.
-- `bdf`: variable-order VODE method for stiff systems.
+- `bdf`: variable-order VODE method for stiff systems, including supported
+    mass-matrix problems.
 
 ## Building DIFFEQ
 DIFFEQ can be built with either [CMake](https://cmake.org/) or the [Fortran
@@ -280,8 +289,12 @@ program example
     type(rosenbrock) :: integrator_4
     type(bdf) :: integrator_5
     type(adams) :: integrator_6
+    type(kennedy_carpenter_4) :: integrator_7
+    type(kennedy_carpenter_5) :: integrator_8
+    type(tsitouras_54) :: integrator_9
     type(ode_container) :: mdl
-    real(real64), allocatable, dimension(:,:) :: s1, s2, s3, s4, s4a, s5, s6
+    real(real64), allocatable, dimension(:,:) :: s1, s2, s3, s4, s4a, s5, s6, &
+        s7, s8, s9
 
     ! Define the model
     mdl%fcn => vanderpol
@@ -293,6 +306,9 @@ program example
     call integrator_4%solve(mdl, t, ic)
     call integrator_5%solve(mdl, t, ic)
     call integrator_6%solve(mdl, t, ic)
+    call integrator_7%solve(mdl, t, ic)
+    call integrator_8%solve(mdl, t, ic)
+    call integrator_9%solve(mdl, t, ic)
 
     ! Retrieve the solution from each integrator
     s1 = integrator_1%get_solution()
@@ -301,35 +317,49 @@ program example
     s4 = integrator_4%get_solution()
     s5 = integrator_5%get_solution()
     s6 = integrator_6%get_solution()
+    s7 = integrator_7%get_solution()
+    s8 = integrator_8%get_solution()
+    s9 = integrator_9%get_solution()
 
     ! Print out the size of each solution
-    print "(A,I0,A)", "RUNGE_KUTTA_23: ", size(s1, 1), " Solution Points"
-    print "(A,I0,A)", "RUNGE_KUTTA_45: ", size(s2, 1), " Solution Points"
-    print "(A,I0,A)", "RUNGE_KUTTA_853: ", size(s3, 1), " Solution Points"
-    print "(A,I0,A)", "ROSENBROCK: ", size(s4, 1), " Solution Points"
+    print "(A, I0, A)", "RUNGE_KUTTA_23: ", size(s1, 1), " Solution Points"
+    print "(A, I0, A)", "RUNGE_KUTTA_45: ", size(s2, 1), " Solution Points"
+    print "(A, I0, A)", "RUNGE_KUTTA_853: ", size(s3, 1), " Solution Points"
+    print "(A, I0, A)", "ROSENBROCK: ", size(s4, 1), " Solution Points"
 
-    ! Now, implement a PI controller and check its effect.  This might
+    ! Now, implement a PI controller and check its effect.  This will likely
     ! increase the number of steps (loss of efficiency), but if there were
     ! any stability issues, stability will likely improve.  Stability is likely
     ! not relevant on this problem, but it's here for illustration purposes.
+    call integrator_4%clear_buffer()
     call integrator_4%set_step_size_control_parameter(0.1d0)
     call integrator_4%solve(mdl, t, ic)
     s4a = integrator_4%get_solution()
-    print "(A,I0,A)", "ROSENBROCK w/ PI Controller: ", size(s4a, 1), " Solution Points"
+    print "(A, I0 ,A)", "ROSENBROCK w/ PI Controller: ", size(s4a, 1), " Solution Points"
 
     ! VODE Integrators
-    print "(A,I0,A)", "BDF: ", size(s5, 1), " Solution Points"
-    print "(A,I0,A)", "ADAMS: ", size(s6, 1), " Solution Points"
+    print "(A, I0, A)", "BDF: ", size(s5, 1), " Solution Points"
+    print "(A, I0, A)", "ADAMS: ", size(s6, 1), " Solution Points"
+
+    ! Kennedy-Carpenter Integrators
+    print "(A, I0, A)", "KC4: ", size(s7, 1), " Solution Points"
+    print "(A, I0, A)", "KC4: ", size(s8, 1), " Solution Points"
+
+    ! Tsitouras Integrators
+    print "(A, I0, A)", "TSITOURAS 4/5: ", size(s9, 1), " Solution Points"
 end program
 ```
 ```txt
 RUNGE_KUTTA_23: 2465 Solution Points
 RUNGE_KUTTA_45: 583 Solution Points
 RUNGE_KUTTA_853: 925 Solution Points
-ROSENBROCK: 1191 Solution Points
-ROSENBROCK w/ PI Controller: 1191 Solution Points
+ROSENBROCK: 1187 Solution Points
+ROSENBROCK w/ PI Controller: 1187 Solution Points
 BDF: 1527 Solution Points
 ADAMS: 1865 Solution Points
+KC4: 483 Solution Points
+KC4: 245 Solution Points
+TSITOURAS 4/5: 522 Solution Points
 ```
 
 ## External Libraries

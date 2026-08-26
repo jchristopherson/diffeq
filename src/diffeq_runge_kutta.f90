@@ -21,6 +21,23 @@ module diffeq_runge_kutta
     public :: runge_kutta_45
     public :: runge_kutta_23
     public :: runge_kutta_853
+    public :: tsitouras_54
+
+    type, extends(single_step_integrator) :: tsitouras_54
+        !! The Tsitouras fifth-order Runge--Kutta method with an embedded
+        !! fourth-order estimator.
+        !!
+        !! The seven-stage FSAL tableau is designed for efficient adaptive
+        !! integration of non-stiff systems.
+    contains
+        procedure, public :: pre_step_action => tsit_pre_step
+        procedure, public :: get_order => tsit_get_order
+        procedure, public :: get_is_fsal => tsit_get_is_fsal
+        procedure, public :: get_stage_count => tsit_get_stage_count
+        procedure, public :: attempt_step => tsit_attempt_step
+        procedure, public :: post_step_action => tsit_post_step
+        procedure, public :: interpolate => tsit_interpolate
+    end type
 
     type, extends(single_step_integrator) :: runge_kutta_45
         !! The Dormand--Prince RK45 integrator.
@@ -133,6 +150,96 @@ module diffeq_runge_kutta
     end type
 
 contains
+! ------------------------------------------------------------------------------
+subroutine tsit_pre_step(this, prevs, sys, h, x, y, f, args)
+    class(tsitouras_54), intent(inout) :: this
+    logical, intent(in) :: prevs
+    class(ode_container), intent(inout) :: sys
+    real(real64), intent(in) :: h, x, y(:), f(:)
+    class(*), intent(inout), optional :: args
+end subroutine
+
+! ------------------------------------------------------------------------------
+pure function tsit_get_order(this) result(rst)
+    class(tsitouras_54), intent(in) :: this
+    integer(int32) :: rst
+    rst = 5
+end function
+
+! ------------------------------------------------------------------------------
+pure function tsit_get_is_fsal(this) result(rst)
+    class(tsitouras_54), intent(in) :: this
+    logical :: rst
+    rst = .true.
+end function
+
+! ------------------------------------------------------------------------------
+pure function tsit_get_stage_count(this) result(rst)
+    class(tsitouras_54), intent(in) :: this
+    integer(int32) :: rst
+    rst = 7
+end function
+
+! ------------------------------------------------------------------------------
+subroutine tsit_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
+    !! Attempts one Tsitouras 5/4 Runge--Kutta step.
+    !!
+    !! The seventh-order-indexed stage is evaluated at the endpoint and is
+    !! reused as the first stage of the next accepted step.  The fifth-order
+    !! solution is paired with an embedded fourth-order solution; their
+    !! difference supplies the local error estimate.
+    use diffeq_tsit45_constants
+    class(tsitouras_54), intent(inout) :: this
+    class(ode_container), intent(inout) :: sys
+    real(real64), intent(in) :: h, x, y(:), f(:)
+    real(real64), intent(out) :: yn(:), fn(:), yerr(:)
+    real(real64), intent(out) :: k(:,:)
+    class(*), intent(inout), optional :: args
+    integer(int32) :: i, j
+    real(real64) :: stage(size(y))
+
+    k(:,1) = f
+    do i = 2, 7
+        stage = y
+        do j = 1, i - 1
+            stage = stage + h * tsit_a(i,j) * k(:,j)
+        end do
+        call sys%fcn(x + tsit_c(i)*h, stage, k(:,i), args)
+    end do
+
+    yn = y
+    yerr = 0.0d0
+    do i = 1, 7
+        yn = yn + h * tsit_b(i) * k(:,i)
+        yerr = yerr + h * tsit_e(i) * k(:,i)
+    end do
+    call sys%fcn(x + h, yn, fn, args)
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine tsit_post_step(this, sys, dense, x, xn, y, yn, f, fn, k, args)
+    class(tsitouras_54), intent(inout) :: this
+    class(ode_container), intent(inout) :: sys
+    logical, intent(in) :: dense
+    real(real64), intent(in) :: x, xn, y(:), yn(:), f(:), fn(:)
+    real(real64), intent(inout) :: k(:,:)
+    class(*), intent(inout), optional :: args
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine tsit_interpolate(this, x, xn, yn, fn, xn1, yn1, fn1, y)
+    class(tsitouras_54), intent(in) :: this
+    real(real64), intent(in) :: x, xn, yn(:), fn(:), xn1, yn1(:), fn1(:)
+    real(real64), intent(out) :: y(:)
+    real(real64) :: s, h
+    h = xn1 - xn
+    s = (x - xn) / h
+    y = (2.0d0*s**3 - 3.0d0*s**2 + 1.0d0)*yn + &
+        (s**3 - 2.0d0*s**2 + s)*h*fn + &
+        (-2.0d0*s**3 + 3.0d0*s**2)*yn1 + &
+        (s**3 - s**2)*h*fn1
+end subroutine
+
 ! ******************************************************************************
 ! RUNGE_KUTTA_45
 ! ------------------------------------------------------------------------------

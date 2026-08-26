@@ -14,8 +14,14 @@ program test
     flag = 0
 
     ! Tests
-    rst = test_multistep_method_contract()
+    rst = test_tsitouras_54()
     if (.not.rst) flag = 1
+
+    rst = test_tsitouras_54_dense()
+    if (.not.rst) flag = 2
+
+    rst = test_multistep_method_contract()
+    if (.not.rst) flag = 3
 
     rst = test_adams_high_order()
     if (.not.rst) flag = 2

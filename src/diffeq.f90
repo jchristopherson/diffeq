@@ -27,6 +27,7 @@ module diffeq
     public :: runge_kutta_45
     public :: runge_kutta_23
     public :: runge_kutta_853
+    public :: tsitouras_54
 
     ! DIFFEQ_IMPLICIT_RUNGE_KUTTA.F90
     public :: rosenbrock
