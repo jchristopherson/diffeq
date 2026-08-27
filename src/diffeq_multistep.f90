@@ -372,7 +372,6 @@ subroutine vode_jacobian(neqn, t, y, ml, mu, pd, nrowpd, rpar, ipar)
         !! The leading dimension of the Jacobian matrix.
     real(real64), intent(out) :: pd(nrowpd,neqn)
         !! The Jacobian matrix.
-
     real(real64), intent(inout) :: rpar(*)
         !! Real-valued parameter array for communication with the calling code.
         !! This is the array used to transfer data.  The ipar array is used
@@ -395,34 +394,61 @@ subroutine vode_jacobian(neqn, t, y, ml, mu, pd, nrowpd, rpar, ipar)
     else
         call args%jac(t, y(1:neqn), pd(1:neqn,1:neqn))
     end if
+    ! Reference ml and mu to satisfy DVODE's dense-Jacobian calling convention
     pd(1,1) = pd(1,1) + 0.0d0 * real(ml + mu, real64)
     if (associated(args%mass)) then
         call transform_mass_jacobian(args%mass, neqn, t, y, pd, args)
     end if
 end subroutine
 
+! ------------------------------------------------------------------------------
 subroutine transform_mass_rhs(mass_callback, neqn, t, y, rhs, args)
     !! Transform a mass-matrix right-hand side into \(M^{-1}f\).
     procedure(ode_mass_matrix) :: mass_callback
+        !! The routine defining the mass matrix.
     integer(int32), intent(in) :: neqn
-    real(real64), intent(in) :: t, y(neqn)
+        !! The number of equations.
+    real(real64), intent(in) :: t
+        !! The current value of the independent variable.
+    real(real64), intent(in) :: y(neqn)
+        !! The current state vector.
     real(real64), intent(inout) :: rhs(neqn)
+        !! On input, the right-hand side.  On output, the transformed
+        !! right-hand side.
     class(vode_argument_container), intent(in) :: args
+        !! The container holding the user-defined arguments.
+
+    ! Local Variables
     real(real64) :: mass(neqn,neqn), solution(neqn)
+
+    ! Process
     call mass_callback(t, y, mass, args%args)
     call solve_dense_system(mass, rhs, solution)
     rhs = solution
 end subroutine
 
+! ------------------------------------------------------------------------------
 subroutine transform_mass_jacobian(mass_callback, neqn, t, y, jac, args)
     !! Transform Jacobian columns into the equivalent \(M^{-1}J\) system.
     procedure(ode_mass_matrix) :: mass_callback
+        !! The routine defining the mass matrix.
     integer(int32), intent(in) :: neqn
-    real(real64), intent(in) :: t, y(neqn)
+        !! The number of equations.
+    real(real64), intent(in) :: t
+        !! The current value of the independent variable.
+    real(real64), intent(in) :: y(neqn)
+        !! The current state vector.
     real(real64), intent(inout) :: jac(neqn,neqn)
+        !! On input, the Jacobian matrix.  On output, the transformed
+        !! Jacobian matrix.
     class(vode_argument_container), intent(in) :: args
-    real(real64) :: mass(neqn,neqn), column(neqn)
+        !! The container holding the user-defined arguments.
+
+    ! Local Variables
     integer(int32) :: i
+    real(real64) :: mass(neqn,neqn), column(neqn)
+
+    ! Process
     call mass_callback(t, y, mass, args%args)
     do i = 1, neqn
         column = jac(:,i)
@@ -430,33 +456,64 @@ subroutine transform_mass_jacobian(mass_callback, neqn, t, y, jac, args)
     end do
 end subroutine
 
+! ------------------------------------------------------------------------------
 subroutine solve_dense_system(matrix, rhs, solution)
     !! Solve a dense linear system with partial pivoting.
-    real(real64), intent(in) :: matrix(:,:), rhs(:)
-    real(real64), intent(out) :: solution(:)
-    real(real64) :: a(size(rhs),size(rhs)), b(size(rhs)), factor, pivot_value
-    real(real64) :: row(size(rhs))
+    real(real64), intent(in), dimension(:,:) :: matrix
+        !! The N-by-N system matrix.
+    real(real64), intent(in), dimension(:) :: rhs
+        !! An N-element array containing the right-hand side.
+    real(real64), intent(out), dimension(:) :: solution
+        !! An N-element array where the solution will be written.
+
+    ! Local Variables
     integer(int32) :: i, k, pivot, n
-    n = size(rhs); a = matrix; b = rhs
+    real(real64) :: factor, pivot_value
+    real(real64) :: a(size(rhs),size(rhs)), b(size(rhs)), row(size(rhs))
+
+    ! Initialization
+    n = size(rhs)
+    a = matrix
+    b = rhs
+
+    ! Reduce the system to upper triangular form
     do k = 1, n - 1
-        pivot = k; pivot_value = abs(a(k,k))
+        ! Locate the pivot row
+        pivot = k
+        pivot_value = abs(a(k,k))
         do i = k + 1, n
             if (abs(a(i,k)) > pivot_value) then
-                pivot = i; pivot_value = abs(a(i,k))
+                pivot = i
+                pivot_value = abs(a(i,k))
             end if
         end do
-        if (pivot_value <= epsilon(1.0d0)) error stop DIFFEQ_SINGULAR_MATRIX_ERROR
-        if (pivot /= k) then
-            row = a(k,:); a(k,:) = a(pivot,:); a(pivot,:) = row
-            factor = b(k); b(k) = b(pivot); b(pivot) = factor
+        if (pivot_value <= epsilon(1.0d0)) then
+            error stop DIFFEQ_SINGULAR_MATRIX_ERROR
         end if
+
+        ! Interchange rows as needed
+        if (pivot /= k) then
+            row = a(k,:)
+            a(k,:) = a(pivot,:)
+            a(pivot,:) = row
+
+            factor = b(k)
+            b(k) = b(pivot)
+            b(pivot) = factor
+        end if
+
+        ! Eliminate the entries below the diagonal
         do i = k + 1, n
             factor = a(i,k) / a(k,k)
             a(i,k:n) = a(i,k:n) - factor * a(k,k:n)
             b(i) = b(i) - factor * b(k)
         end do
     end do
-    if (abs(a(n,n)) <= epsilon(1.0d0)) error stop DIFFEQ_SINGULAR_MATRIX_ERROR
+    if (abs(a(n,n)) <= epsilon(1.0d0)) then
+        error stop DIFFEQ_SINGULAR_MATRIX_ERROR
+    end if
+
+    ! Back substitute
     solution(n) = b(n) / a(n,n)
     do i = n - 1, 1, -1
         solution(i) = (b(i) - sum(a(i,i+1:n) * solution(i+1:n))) / a(i,i)
