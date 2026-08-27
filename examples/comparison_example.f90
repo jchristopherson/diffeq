@@ -19,7 +19,7 @@ program example
     type(kennedy_carpenter_5) :: integrator_8
     type(tsitouras_54) :: integrator_9
     type(ode_container) :: mdl
-    real(real64), allocatable, dimension(:,:) :: s1, s2, s3, s4, s4a, s5, s6, &
+    real(real64), allocatable, dimension(:,:) :: s1, s2, s2a, s3, s4, s5, s6, &
         s7, s8, s9
 
     ! Define the model
@@ -57,11 +57,11 @@ program example
     ! increase the number of steps (loss of efficiency), but if there were
     ! any stability issues, stability will likely improve.  Stability is likely
     ! not relevant on this problem, but it's here for illustration purposes.
-    call integrator_4%clear_buffer()
-    call integrator_4%set_step_size_control_parameter(0.1d0)
-    call integrator_4%solve(mdl, t, ic)
-    s4a = integrator_4%get_solution()
-    print "(A, I0 ,A)", "ROSENBROCK w/ PI Controller: ", size(s4a, 1), " Solution Points"
+    call integrator_2%clear_buffer()
+    call integrator_2%set_step_size_control_parameter(0.1d0)
+    call integrator_2%solve(mdl, t, ic)
+    s2a = integrator_2%get_solution()
+    print "(A, I0 ,A)", "RUNGE_KUTTA_45 w/ PI Controller: ", size(s2a, 1), " Solution Points"
 
     ! VODE Integrators
     print "(A, I0, A)", "BDF: ", size(s5, 1), " Solution Points"
