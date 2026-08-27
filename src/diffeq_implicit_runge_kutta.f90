@@ -9,8 +9,7 @@ module diffeq_implicit_runge_kutta
     use iso_fortran_env
     use diffeq_base
     use diffeq_errors
-    use linalg_qr, only : solve_qr, qr_factor
-    use lapack, only : DGETRF
+    use linalg_qr, only : solve_qr, qr_factor, identity
     implicit none
     private
     public :: rosenbrock
@@ -645,7 +644,7 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
             else
                 call sys%compute_jacobian(x + c(i)*h, state, jac, args)
                 rhs = state - base - h*a(i,i)*rhs
-                    call solve_kc_system(identity_kc(size(y)) - h*a(i,i)*jac, -rhs, delta)
+                    call solve_kc_system(identity(size(y)) - h*a(i,i)*jac, -rhs, delta)
             end if
             if (norm2(rhs) <= 1.0d-12*max(1.0d0,norm2(state))) exit
             state = state + delta
@@ -717,14 +716,6 @@ subroutine kc_table(this, a, b, d, c, stages)
         c(5)=0.92d0; c(6)=0.24d0; c(7)=0.6d0; c(8)=1.0d0
     end select
 end subroutine
-
-function identity_kc(n) result(a)
-    integer(int32), intent(in) :: n
-    real(real64) :: a(n,n)
-    integer(int32) :: i
-    a = 0.0d0
-    do i = 1, n; a(i,i) = 1.0d0; end do
-end function
 
 subroutine solve_kc_system(a, b, x)
     real(real64), intent(in) :: a(:,:), b(:)
