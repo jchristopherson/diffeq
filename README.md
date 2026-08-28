@@ -97,7 +97,7 @@ integrators:
 | `ode_container` | Stores the right-hand-side callback, optional Jacobian, and optional mass-matrix callbacks. |
 | `model%fcn` | Defines $f(x,y)$ for the problem. This callback is required. |
 | `model%jacobian` | Supplies $J = \partial f / \partial y$. If omitted, DIFFEQ estimates it by finite differences where needed. |
-| `model%mass_matrix` | Supplies $M(x,y)$ for a system written as $M y' = f(x,y)$. It is supported by the Rosenbrock and Kennedy-Carpenter solvers; only the Rosenbrock solver accommodates a singular $M$. |
+| `model%mass_matrix` | Supplies $M(x,y)$ for a system written as $M y' = f(x,y)$. It is supported by the Rosenbrock and Kennedy-Carpenter solvers. |
 | `integrator%solve(model, x, y0)` | Integrates from `x(1)` to `x(size(x))` using initial state `y0`. |
 | `integrator%get_solution()` | Returns an $N \times (n+1)$ array with the independent variable in column 1 and state values in columns 2 through $n+1$. |
 | `set_absolute_tolerance` / `set_relative_tolerance` | Control the local error scale, approximately $\mathrm{atol} + \mathrm{rtol}|y|$. |
@@ -121,14 +121,13 @@ solver types expose the same `solve` and `get_solution` workflow.
   therefore the choice for index-1 DAEs.  Remember that the initial conditions
   must satisfy the algebraic constraints of such a problem.
 - `kennedy_carpenter_4`: fourth-order ESDIRK integration for stiff systems,
-    with a third-order embedded error estimate and mass-matrix support.
+    with a third-order embedded error estimate.  It supports systems with a
+    nonsingular mass matrix by incorporating $M$ into each diagonally implicit
+    stage solve; it does not support singular mass matrices.
 - `kennedy_carpenter_5`: fifth-order ESDIRK integration for stiff systems,
-    with a fourth-order embedded error estimate and mass-matrix support.
-
-The `diffeq_multistep` module is retained as the home for the forthcoming
-modern multistep implementations.  No legacy VODE-based multistep solvers are
-included.
-
+    with a fourth-order embedded error estimate.  It supports systems with a
+    nonsingular mass matrix by incorporating $M$ into each diagonally implicit
+    stage solve; it does not support singular mass matrices.
 ## Building DIFFEQ
 DIFFEQ can be built with either [CMake](https://cmake.org/) or the [Fortran
 Package Manager (FPM)](https://github.com/fortran-lang/fpm). Both build systems

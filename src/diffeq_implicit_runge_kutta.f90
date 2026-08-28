@@ -15,7 +15,6 @@ module diffeq_implicit_runge_kutta
     public :: rosenbrock
     public :: kennedy_carpenter_4
     public :: kennedy_carpenter_5
-
     type, abstract, extends(single_step_integrator) :: kennedy_carpenter
         !! Shared implementation for Kennedy--Carpenter ESDIRK methods.
         !!
@@ -748,6 +747,12 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
             base = base + h * a(i,j) * k(:,j)
         end do
 
+        if (usemass) then
+            call kc_mass_stage(sys, x + c(i) * h, base, h * a(i,i), &
+                state, k(:,i), args)
+            cycle
+        end if
+
         ! Use an explicit Euler prediction to start the Newton iteration
         call sys%fcn(x + c(i) * h, base, rhs, args)
         if (usemass) then
@@ -806,6 +811,36 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
 end subroutine
 
 ! ------------------------------------------------------------------------------
+subroutine kc_mass_stage(sys, x, base, diagonal_step, state, derivative, args)
+    !! Solves one Kennedy--Carpenter mass-matrix stage without forming M^{-1}f.
+    class(ode_container), intent(inout) :: sys
+    real(real64), intent(in) :: x, base(:), diagonal_step
+    real(real64), intent(out) :: state(:), derivative(:)
+    class(*), intent(inout), optional :: args
+    real(real64) :: f(size(base)), residual(size(base))
+    real(real64) :: jac(size(base),size(base)), mass(size(base),size(base))
+    real(real64) :: system(size(base),size(base)), delta(size(base))
+    real(real64), allocatable :: qr(:,:), tau(:)
+    integer(int32) :: pivot(size(base)), iteration
+
+    state = base
+    do iteration = 1, 12
+        derivative = (state - base) / diagonal_step
+        call sys%fcn(x, state, f, args)
+        call sys%mass_matrix(x, state, mass, args)
+        residual = matmul(mass, state - base) - diagonal_step * f
+        if (norm2(residual) <= 1.0d-12 * max(1.0d0, norm2(state))) exit
+        call sys%compute_jacobian(x, state, jac, args)
+        system = mass - diagonal_step * jac
+        pivot = 0
+        call qr_factor(system, pivot, tau = tau, qr = qr)
+        delta = solve_qr(qr, tau, pivot, -residual)
+        state = state + delta
+    end do
+    if (iteration > 12) error stop DIFFEQ_CONVERGENCE_ERROR
+    derivative = (state - base) / diagonal_step
+end subroutine
+
 subroutine kc_table(this, a, b, d, c, stages)
     !! Populates the Butcher tableau for the requested integrator.
     class(kennedy_carpenter), intent(in) :: this

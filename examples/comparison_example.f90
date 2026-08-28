@@ -39,7 +39,6 @@ program example
     s5 = integrator_5%get_solution()
     s6 = integrator_6%get_solution()
     s7 = integrator_7%get_solution()
-    s7 = integrator_7%get_solution()
 
     ! Print out the size of each solution
     print "(A, I0, A)", "RUNGE_KUTTA_23: ", size(s1, 1), " Solution Points"
@@ -61,6 +60,6 @@ program example
     print "(A, I0, A)", "KC4: ", size(s5, 1), " Solution Points"
     print "(A, I0, A)", "KC5: ", size(s6, 1), " Solution Points"
 
-    ! Tsitouras Integrators
+    ! Additional Integrators
     print "(A, I0, A)", "TSITOURAS 4/5: ", size(s7, 1), " Solution Points"
 end program

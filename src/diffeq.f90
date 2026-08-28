@@ -4,7 +4,6 @@ module diffeq
     use diffeq_base
     use diffeq_runge_kutta
     use diffeq_implicit_runge_kutta
-    use diffeq_multistep
     implicit none
     private
     
@@ -34,6 +33,4 @@ module diffeq
     public :: kennedy_carpenter_4
     public :: kennedy_carpenter_5
 
-    ! DIFFEQ_MULTISTEP.F90
-    public :: multistep_integrator
 end module
