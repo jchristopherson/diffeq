@@ -291,7 +291,7 @@ subroutine cartesian_pendulum(t, x, dxdt, args)
 
     ! Local Variables
     real(real64), parameter :: gc = 9.81d0
-    real(real64) :: m_ax, m_ay, lambda, m, L
+    real(real64) :: m, L
 
     ! Model Parameters
     select type (args)
@@ -300,24 +300,26 @@ subroutine cartesian_pendulum(t, x, dxdt, args)
         m = args%mass
     end select
 
-    ! Constraint Equation:
-    ! x**2 + y**2 = L**2
+    ! The state vector is [x, dx/dt, y, dy/dt, lambda], where lambda is the
+    ! Lagrange multiplier enforcing the constraint equation
+    ! x**2 + y**2 = L**2.  The constraint force acts along the rod, and is
+    ! given by lambda times the gradient of the constraint equation.
     !
-    ! Need to differentiate twice
-    lambda = (m * (gc * x(3) - x(2)**2 - x(4)**2) / (2.0d0 * L**2))
-
-    ! Compute the inertial forces in the x and y directions
-    m_ax = 2.0d0 * lambda * x(1)
-    m_ay = 2.0d0 * lambda * x(3) - m * gc
-
-    ! Output
+    ! The constraint is differentiated twice with respect to time to reduce
+    ! the system to index 1, which supplies the fifth equation below.  Notice,
+    ! lambda is not computed here.  The fifth equation is written as a
+    ! residual that the solver drives to zero, and the corresponding row of
+    ! the mass matrix is zero.  It is that zero row which makes the system a
+    ! DAE rather than an ODE.
     dxdt(1) = x(2)
-    dxdt(2) = m_ax
+    dxdt(2) = 2.0d0 * x(5) * x(1)
     dxdt(3) = x(4)
-    dxdt(4) = m_ay
-    dxdt(5) = 0.0d0
+    dxdt(4) = 2.0d0 * x(5) * x(3) - m * gc
+    dxdt(5) = 2.0d0 * x(5) * (x(1)**2 + x(3)**2) + &
+        m * (x(2)**2 + x(4)**2 - gc * x(3))
 end subroutine
 
+! ------------------------------------------------------------------------------
 subroutine cartesian_pendulum_mass_matrix(t, x, m, args)
     ! Arguments
     real(real64), intent(in) :: t

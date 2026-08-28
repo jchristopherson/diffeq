@@ -446,13 +446,19 @@ M = \begin{bmatrix}
 \end{bmatrix}.
 $$
 
-The zero in the final diagonal entry is what distinguishes this problem from an ordinary differential equation.  The multiplier has no time derivative of its own, so $M$ is singular and the last row represents an algebraic relationship rather than a differential one.  Differentiating the constraint twice with respect to time and substituting the equations of motion supplies that relationship explicitly,
+The zero in the final diagonal entry is what distinguishes this problem from an ordinary differential equation.  The multiplier has no time derivative of its own, so $M$ is singular and the last row states an algebraic relationship rather than a differential one.  That relationship comes from the constraint itself.  As written, the constraint involves only position, so it must be differentiated twice with respect to time before the multiplier appears in it.  Substituting the equations of motion into the result gives
 
 $$
-\lambda = \frac{m \left( g y - v_x^2 - v_y^2 \right)}{2 L^2}.
+0 = 2 \lambda \left( x^2 + y^2 \right) + m \left( v_x^2 + v_y^2 - g y \right),
 $$
 
-The model routine evaluates this expression directly, and the initial conditions must be chosen such that they satisfy the constraint.
+which is the fifth equation of the system.  Because
+
+$$
+\frac{\partial}{\partial \lambda} \left[ 2 \lambda \left( x^2 + y^2 \right) + m \left( v_x^2 + v_y^2 - g y \right) \right] = 2 \left( x^2 + y^2 \right) = 2 L^2 \neq 0,
+$$
+
+this equation determines $\lambda$, and the problem is therefore of index 1.  The multiplier is not computed by the model.  It is carried as a state and the solver determines it, along with the four differential states, from the coupled system.  Two consequences are worth noting.  The initial conditions must be consistent, meaning they must satisfy both the constraint and the algebraic equation, and because the constraint has been differentiated the position constraint is only enforced to within the accuracy of the integration.  A slow drift in $x^2 + y^2 - L^2$ is expected over a long enough integration.
 
 The model parameters are passed to the solver by means of the optional `args` argument.  A derived type is used to carry both quantities.
 ```fortran
@@ -462,7 +468,7 @@ type cartesian_pendulum_properties
 end type
 ```
 
-The routine defining the equations of motion computes the multiplier from the index-reduced constraint, and then returns the derivatives of each state.  Notice, the fifth equation contributes no dynamics as the multiplier is an algebraic quantity.
+The routine defining the system returns the four derivatives followed by the residual of the algebraic equation.  Notice that $\lambda$, carried as `x(5)`, is used rather than computed.
 ```fortran
 subroutine cartesian_pendulum(t, x, dxdt, args)
     ! Arguments
@@ -473,7 +479,7 @@ subroutine cartesian_pendulum(t, x, dxdt, args)
 
     ! Local Variables
     real(real64), parameter :: gc = 9.81d0
-    real(real64) :: m_ax, m_ay, lambda, m, L
+    real(real64) :: m, L
 
     ! Model Parameters
     select type (args)
@@ -482,22 +488,23 @@ subroutine cartesian_pendulum(t, x, dxdt, args)
         m = args%mass
     end select
 
-    ! Constraint Equation:
-    ! x**2 + y**2 = L**2
+    ! The state vector is [x, dx/dt, y, dy/dt, lambda], where lambda is the
+    ! Lagrange multiplier enforcing the constraint equation
+    ! x**2 + y**2 = L**2.  The constraint force acts along the rod, and is
+    ! given by lambda times the gradient of the constraint equation.
     !
-    ! Need to differentiate twice
-    lambda = (m * (gc * x(3) - x(2)**2 - x(4)**2) / (2.0d0 * L**2))
-
-    ! Compute the inertial forces in the x and y directions
-    m_ax = 2.0d0 * lambda * x(1)
-    m_ay = 2.0d0 * lambda * x(3) - m * gc
-
-    ! Output
+    ! The constraint is differentiated twice with respect to time to reduce
+    ! the system to index 1, which supplies the fifth equation below.  Notice,
+    ! lambda is not computed here.  The fifth equation is written as a
+    ! residual that the solver drives to zero, and the corresponding row of
+    ! the mass matrix is zero.  It is that zero row which makes the system a
+    ! DAE rather than an ODE.
     dxdt(1) = x(2)
-    dxdt(2) = m_ax
+    dxdt(2) = 2.0d0 * x(5) * x(1)
     dxdt(3) = x(4)
-    dxdt(4) = m_ay
-    dxdt(5) = 0.0d0
+    dxdt(4) = 2.0d0 * x(5) * x(3) - m * gc
+    dxdt(5) = 2.0d0 * x(5) * (x(1)**2 + x(3)**2) + &
+        m * (x(2)**2 + x(4)**2 - gc * x(3))
 end subroutine
 ```
 
@@ -529,7 +536,7 @@ subroutine cartesian_pendulum_mass_matrix(t, x, m, args)
 end subroutine
 ```
 
-The mass matrix is supplied to the `ode_container` alongside the routine defining the equations of motion.  The pendulum is released from rest in a horizontal position at $x = L$, $y = 0$, which satisfies the constraint.
+The mass matrix is supplied to the `ode_container` alongside the routine defining the system.  The pendulum is released from rest in a horizontal position at $x = L$, $y = 0$.  These conditions are consistent, as they satisfy the constraint, and with the bob at rest at $y = 0$ the algebraic equation reduces to $2 \lambda L^2 = 0$, so the multiplier begins at zero.
 ```fortran
 program example
     use iso_fortran_env
