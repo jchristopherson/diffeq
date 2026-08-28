@@ -35,8 +35,5 @@ module diffeq
     public :: kennedy_carpenter_5
 
     ! DIFFEQ_MULTISTEP.F90
-    public :: DIFFEQ_ADAMS_METHOD
-    public :: DIFFEQ_BDF_METHOD
-    public :: adams
-    public :: bdf
+    public :: multistep_integrator
 end module

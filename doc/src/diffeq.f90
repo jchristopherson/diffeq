@@ -4,7 +4,6 @@ module diffeq
     use diffeq_base
     use diffeq_runge_kutta
     use diffeq_implicit_runge_kutta
-    use diffeq_vode
     implicit none
     private
     
@@ -31,10 +30,4 @@ module diffeq
     ! DIFFEQ_IMPLICIT_RUNGE_KUTTA.F90
     public :: rosenbrock
 
-    ! DIFFEQ_VODE.F90
-    public :: VODE_ADAMS_METHOD
-    public :: VODE_BDF_METHOD
-    public :: vode
-    public :: adams
-    public :: bdf
 end module

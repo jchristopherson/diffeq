@@ -3,7 +3,6 @@ program test
     use diffeq_jacobian_tests
     use diffeq_test_runge_kutta
     use diffeq_test_implicit_rk
-    use diffeq_test_multistep
     implicit none
 
     ! Local Variables
@@ -19,15 +18,6 @@ program test
 
     rst = test_tsitouras_54_dense()
     if (.not.rst) flag = 2
-
-    rst = test_multistep_method_contract()
-    if (.not.rst) flag = 3
-
-    rst = test_adams_high_order()
-    if (.not.rst) flag = 2
-
-    rst = test_bdf_mass_matrix()
-    if (.not.rst) flag = 3
 
     rst = test_fd_jacobian_1()
     if (.not.rst) flag = 1
@@ -94,18 +84,6 @@ program test
 
     rst = test_runge_kutta_dense_with_args()
     if (.not.rst) flag = 22
-
-    rst = test_adams_1()
-    if (.not.rst) flag = 23
-
-    rst = test_bdf_1()
-    if (.not.rst) flag = 24
-
-    rst = test_adams_with_args()
-    if (.not.rst) flag = 25
-
-    rst = test_bdf_with_args()
-    if (.not.rst) flag = 26
 
     ! Output
     stop flag

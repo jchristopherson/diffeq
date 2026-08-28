@@ -11,16 +11,15 @@ program example
 
     ! Local Variables
     type(rosenbrock) :: integrator_1
-    type(bdf) :: integrator_2
-    type(kennedy_carpenter_4) :: integrator_3
-    type(kennedy_carpenter_5) :: integrator_4
+    type(kennedy_carpenter_4) :: integrator_2
+    type(kennedy_carpenter_5) :: integrator_3
     type(ode_container) :: mdl
     real(real64) :: mu
-    real(real64), allocatable, dimension(:,:) :: sol_1, sol_2, sol_3, sol_4
+    real(real64), allocatable, dimension(:,:) :: sol_1, sol_2, sol_3
 
     ! Plot Variables
     type(plot_2d) :: plt
-    type(plot_data_2d) :: pd1, pd2, pd3, pd4
+    type(plot_data_2d) :: pd1, pd2, pd3
     class(plot_axis), pointer :: xAxis, yAxis
     class(legend), pointer :: lgnd
 
@@ -38,8 +37,6 @@ program example
     call integrator_3%solve(mdl, x, ic, args = mu)
     sol_3 = integrator_3%get_solution()
 
-    call integrator_4%solve(mdl, x, ic, args = mu)
-    sol_4 = integrator_4%get_solution()
 
     ! Plot the results
     call plt%initialize()
@@ -61,22 +58,16 @@ program example
     call plt%push(pd1)
 
     call pd2%define_data(sol_2(:,1), sol_2(:,2))
-    call pd2%set_name("BDF")
+    call pd2%set_name("KC4")
     call pd2%set_line_width(2.0)
     call pd2%set_line_style(LINE_DASHED)
     call plt%push(pd2)
 
     call pd3%define_data(sol_3(:,1), sol_3(:,2))
-    call pd3%set_name("KC4")
+    call pd3%set_name("KC5")
     call pd3%set_line_width(2.0)
     call pd3%set_line_style(LINE_DASH_DOTTED)
     call plt%push(pd3)
-
-    call pd4%define_data(sol_4(:,1), sol_4(:,2))
-    call pd4%set_name("KC5")
-    call pd4%set_line_width(2.0)
-    call pd4%set_line_style(LINE_DASH_DOT_DOT)
-    call plt%push(pd4)
 
     call plt%draw()
 end program

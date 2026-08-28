@@ -16,8 +16,6 @@ The documentation can be found [here](https://jchristopherson.github.io/diffeq/)
 - Rosenbrock, 4th Order
 - Kennedy-Carpenter ESDIRK, 4th Order with 3rd-Order Embedded Estimate
 - Kennedy-Carpenter ESDIRK, 5th Order with 4th-Order Embedded Estimate
-- Adams (VODE)
-- Backward Differentiation Formula (VODE)
 
 ## Getting Started
 DIFFEQ solves an initial-value problem of the form
@@ -71,9 +69,8 @@ M(x,y) \frac{dy}{dx} = f(x,y),
 $$
 
 where $M$ couples the derivatives to one another. Supplying a routine for $M$
-through `model%mass_matrix` is all that is required, as the `rosenbrock`,
-`kennedy_carpenter_4`, `kennedy_carpenter_5`, `adams`, and `bdf` integrators
-account for it internally. If the matrix is constant, calling
+through `model%mass_matrix` is supported by the `rosenbrock` and
+Kennedy-Carpenter integrators. If the matrix is constant, calling
 `model%set_is_mass_matrix_dependent(.false.)` avoids recomputing it at every
 step.
 
@@ -97,10 +94,10 @@ integrators:
 
 | API | Purpose |
 | --- | --- |
-| `ode_container` | Stores the right-hand-side callback and optional Jacobian or mass-matrix callbacks. |
+| `ode_container` | Stores the right-hand-side callback, optional Jacobian, and optional mass-matrix callbacks. |
 | `model%fcn` | Defines $f(x,y)$ for the problem. This callback is required. |
 | `model%jacobian` | Supplies $J = \partial f / \partial y$. If omitted, DIFFEQ estimates it by finite differences where needed. |
-| `model%mass_matrix` | Supplies $M(x,y)$ for a system written as $M y' = f(x,y)$. It is supported by the Rosenbrock, Kennedy-Carpenter, Adams, and BDF solvers; only the Rosenbrock solver accommodates a singular $M$. |
+| `model%mass_matrix` | Supplies $M(x,y)$ for a system written as $M y' = f(x,y)$. It is supported by the Rosenbrock and Kennedy-Carpenter solvers; only the Rosenbrock solver accommodates a singular $M$. |
 | `integrator%solve(model, x, y0)` | Integrates from `x(1)` to `x(size(x))` using initial state `y0`. |
 | `integrator%get_solution()` | Returns an $N \times (n+1)$ array with the independent variable in column 1 and state values in columns 2 through $n+1$. |
 | `set_absolute_tolerance` / `set_relative_tolerance` | Control the local error scale, approximately $\mathrm{atol} + \mathrm{rtol}|y|$. |
@@ -127,10 +124,10 @@ solver types expose the same `solve` and `get_solution` workflow.
     with a third-order embedded error estimate and mass-matrix support.
 - `kennedy_carpenter_5`: fifth-order ESDIRK integration for stiff systems,
     with a fourth-order embedded error estimate and mass-matrix support.
-- `adams`: variable-order VODE method for smooth, non-stiff systems, including
-    supported mass-matrix problems.
-- `bdf`: variable-order VODE method for stiff systems, including supported
-    mass-matrix problems.
+
+The `diffeq_multistep` module is retained as the home for the forthcoming
+modern multistep implementations.  No legacy VODE-based multistep solvers are
+included.
 
 ## Building DIFFEQ
 DIFFEQ can be built with either [CMake](https://cmake.org/) or the [Fortran
@@ -336,14 +333,11 @@ program example
     type(runge_kutta_45) :: integrator_2
     type(runge_kutta_853) :: integrator_3
     type(rosenbrock) :: integrator_4
-    type(bdf) :: integrator_5
-    type(adams) :: integrator_6
-    type(kennedy_carpenter_4) :: integrator_7
-    type(kennedy_carpenter_5) :: integrator_8
-    type(tsitouras_54) :: integrator_9
+    type(kennedy_carpenter_4) :: integrator_5
+    type(kennedy_carpenter_5) :: integrator_6
+    type(tsitouras_54) :: integrator_7
     type(ode_container) :: mdl
-    real(real64), allocatable, dimension(:,:) :: s1, s2, s2a, s3, s4, s5, s6, &
-        s7, s8, s9
+    real(real64), allocatable, dimension(:,:) :: s1, s2, s2a, s3, s4, s5, s6, s7
 
     ! Define the model
     mdl%fcn => vanderpol
@@ -356,8 +350,6 @@ program example
     call integrator_5%solve(mdl, t, ic)
     call integrator_6%solve(mdl, t, ic)
     call integrator_7%solve(mdl, t, ic)
-    call integrator_8%solve(mdl, t, ic)
-    call integrator_9%solve(mdl, t, ic)
 
     ! Retrieve the solution from each integrator
     s1 = integrator_1%get_solution()
@@ -367,8 +359,7 @@ program example
     s5 = integrator_5%get_solution()
     s6 = integrator_6%get_solution()
     s7 = integrator_7%get_solution()
-    s8 = integrator_8%get_solution()
-    s9 = integrator_9%get_solution()
+    s7 = integrator_7%get_solution()
 
     ! Print out the size of each solution
     print "(A, I0, A)", "RUNGE_KUTTA_23: ", size(s1, 1), " Solution Points"
@@ -386,16 +377,12 @@ program example
     s2a = integrator_2%get_solution()
     print "(A, I0 ,A)", "RUNGE_KUTTA_45 w/ PI Controller: ", size(s2a, 1), " Solution Points"
 
-    ! VODE Integrators
-    print "(A, I0, A)", "BDF: ", size(s5, 1), " Solution Points"
-    print "(A, I0, A)", "ADAMS: ", size(s6, 1), " Solution Points"
-
     ! Kennedy-Carpenter Integrators
-    print "(A, I0, A)", "KC4: ", size(s7, 1), " Solution Points"
-    print "(A, I0, A)", "KC5: ", size(s8, 1), " Solution Points"
+    print "(A, I0, A)", "KC4: ", size(s5, 1), " Solution Points"
+    print "(A, I0, A)", "KC5: ", size(s6, 1), " Solution Points"
 
     ! Tsitouras Integrators
-    print "(A, I0, A)", "TSITOURAS 4/5: ", size(s9, 1), " Solution Points"
+    print "(A, I0, A)", "TSITOURAS 4/5: ", size(s7, 1), " Solution Points"
 end program
 ```
 ```txt
@@ -404,8 +391,6 @@ RUNGE_KUTTA_45: 583 Solution Points
 RUNGE_KUTTA_853: 925 Solution Points
 ROSENBROCK: 1185 Solution Points
 RUNGE_KUTTA_45 w/ PI Controller: 1107 Solution Points
-BDF: 1527 Solution Points
-ADAMS: 1865 Solution Points
 KC4: 483 Solution Points
 KC5: 245 Solution Points
 TSITOURAS 4/5: 522 Solution Points
@@ -413,7 +398,7 @@ TSITOURAS 4/5: 522 Solution Points
 
 Because the integration range is supplied as just its two end points, each solver returns one point per accepted step; the counts above are therefore essentially step counts.  They offer a useful first look at relative efficiency, but they are not a direct measure of cost.  The work performed per step differs considerably from one method to the next.  An explicit Runge-Kutta method requires one evaluation of the model per stage, whereas the implicit methods must also form a Jacobian, factor it, and iterate to convergence at each step.  A method that accepts fewer steps is not necessarily the faster method in terms of wall-clock time.
 
-With $\mu = 5$ the Van der Pol oscillator is only mildly stiff, so the explicit integrators remain competitive.  The low-order `runge_kutta_23` requires by far the most steps because its step size is limited by accuracy rather than by stability; the higher-order `tsitouras_54` and `runge_kutta_45` traverse the same interval in roughly a fifth as many steps.  The Kennedy-Carpenter methods accept the fewest steps of any integrator here, and `kennedy_carpenter_5` accepts the fewest of all, but each of those steps carries the cost of the Newton iteration noted above.  The VODE-based `adams` and `bdf` integrators sit at the opposite end, taking more steps that are individually inexpensive.
+With $\mu = 5$ the Van der Pol oscillator is only mildly stiff, so the explicit integrators remain competitive.  The low-order `runge_kutta_23` requires by far the most steps because its step size is limited by accuracy rather than by stability; the higher-order `tsitouras_54` and `runge_kutta_45` traverse the same interval in roughly a fifth as many steps.  The Kennedy-Carpenter methods accept the fewest steps of any integrator here, and `kennedy_carpenter_5` accepts the fewest of all, but each of those steps carries the cost of the Newton iteration noted above.  The implicit methods may accept fewer steps while doing more work per step than the explicit methods.
 
 The final result illustrates the PI step-size controller.  Applying it to `runge_kutta_45` raises the step count from 583 to 1107 for this problem.  That is the expected trade: the controller smooths the sequence of step sizes, which can be valuable when the error estimate is noisy or when stability rather than accuracy is limiting the step, but it costs efficiency when neither of those conditions applies.  Stability is not a concern for this problem, so the controller is shown here purely for illustration.  This is why PI control is disabled by default for every solver in the library and must be requested explicitly.
 
