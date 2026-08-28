@@ -63,6 +63,34 @@ The example solves $y' = y$ with $y(0) = 1$, so the final value is close to
 $y(1) = e$. The callback must fill every element of `dydx`; its `args`
 argument can be used to pass model parameters to `solve`.
 
+Not every problem arrives in the explicit form shown above. Many mechanical
+and electrical systems are more naturally written with a mass matrix,
+
+$$
+M(x,y) \frac{dy}{dx} = f(x,y),
+$$
+
+where $M$ couples the derivatives to one another. Supplying a routine for $M$
+through `model%mass_matrix` is all that is required, as the `rosenbrock`,
+`kennedy_carpenter_4`, `kennedy_carpenter_5`, `adams`, and `bdf` integrators
+account for it internally. If the matrix is constant, calling
+`model%set_is_mass_matrix_dependent(.false.)` avoids recomputing it at every
+step.
+
+So long as $M$ is nonsingular the problem remains an ordinary differential
+equation. If $M$ is singular, however, one or more of its rows carry no
+derivative at all and instead impose an algebraic relationship among the
+states. The system is then a differential-algebraic equation (DAE) rather
+than an ODE. The `rosenbrock` integrator forms and factors
+$\frac{1}{\gamma h} M - J$ by means of a QR factorization with column
+pivoting, so it is able to accommodate a singular $M$ and solve index-1
+DAEs. The [Differential-Algebraic Equations](#differential-algebraic-equations)
+example works such a problem. Two points are worth noting when doing so. The
+initial conditions handed to `solve` must satisfy the algebraic constraints,
+and a problem of index greater than one must first be reduced to index 1,
+typically by differentiating its constraint equations with respect to the
+independent variable.
+
 ## API Overview
 The public API is organized around a model container and interchangeable
 integrators:
@@ -72,7 +100,7 @@ integrators:
 | `ode_container` | Stores the right-hand-side callback and optional Jacobian or mass-matrix callbacks. |
 | `model%fcn` | Defines $f(x,y)$ for the problem. This callback is required. |
 | `model%jacobian` | Supplies $J = \partial f / \partial y$. If omitted, DIFFEQ estimates it by finite differences where needed. |
-| `model%mass_matrix` | Supplies $M(x,y)$ for a system written as $M y' = f(x,y)$. It is supported by the Rosenbrock, Kennedy-Carpenter, and BDF solvers. |
+| `model%mass_matrix` | Supplies $M(x,y)$ for a system written as $M y' = f(x,y)$. It is supported by the Rosenbrock, Kennedy-Carpenter, Adams, and BDF solvers; only the Rosenbrock solver accommodates a singular $M$. |
 | `integrator%solve(model, x, y0)` | Integrates from `x(1)` to `x(size(x))` using initial state `y0`. |
 | `integrator%get_solution()` | Returns an $N \times (n+1)$ array with the independent variable in column 1 and state values in columns 2 through $n+1$. |
 | `set_absolute_tolerance` / `set_relative_tolerance` | Control the local error scale, approximately $\mathrm{atol} + \mathrm{rtol}|y|$. |
@@ -90,12 +118,17 @@ solver types expose the same `solve` and `get_solution` workflow.
 - `tsitouras_54`: efficient fifth-order adaptive integration for non-stiff systems; its FSAL tableau uses a fourth-order embedded error estimate.
 - `runge_kutta_853`: high-order integration for smooth, non-stiff problems.
 - `rosenbrock`: linearly implicit integration for stiff systems and supported
-  mass-matrix problems.
+  mass-matrix problems.  It is the only integrator offered here that
+  accommodates a singular mass matrix, as it factors
+  $\frac{1}{\gamma h} M - J$ rather than inverting $M$ on its own, and is
+  therefore the choice for index-1 DAEs.  Remember that the initial conditions
+  must satisfy the algebraic constraints of such a problem.
 - `kennedy_carpenter_4`: fourth-order ESDIRK integration for stiff systems,
     with a third-order embedded error estimate and mass-matrix support.
 - `kennedy_carpenter_5`: fifth-order ESDIRK integration for stiff systems,
     with a fourth-order embedded error estimate and mass-matrix support.
-- `adams`: variable-order VODE method for smooth, non-stiff systems.
+- `adams`: variable-order VODE method for smooth, non-stiff systems, including
+    supported mass-matrix problems.
 - `bdf`: variable-order VODE method for stiff systems, including supported
     mass-matrix problems.
 
@@ -183,7 +216,22 @@ LINALG and BLAS/LAPACK requirements are resolved through the consuming
 project's FPM and system toolchain configuration.
 
 ## Examples
-The following example illustrates solving the Van der Pol equation using a 4th-order Rosenbrock solver, but other solvers can be used in an identical manner.  The example also utilizes the [FPLOT](https://github.com/jchristopherson/fplot) library to plot the solution.
+### The Van der Pol Equation
+The Van der Pol equation describes a self-sustaining oscillator, and is written as the second-order equation
+
+$$
+\frac{d^2 y}{dx^2} - \mu \left( 1 - y^2 \right) \frac{dy}{dx} + y = 0.
+$$
+
+The quantity $\mu \left( 1 - y^2 \right)$ acts as a damping coefficient whose sign depends upon the amplitude of the solution.  When $\left| y \right| > 1$ the quantity is negative and energy is removed from the system, and when $\left| y \right| < 1$ it is positive and energy is returned.  The consequence is that every non-trivial solution is drawn onto the same closed orbit, or limit cycle, regardless of the conditions from which it started.  The parameter $\mu$ governs how abruptly that exchange of energy takes place.  As $\mu$ increases the solution lingers longer on the slow portions of the cycle and transitions between them ever more rapidly, and the problem becomes increasingly stiff.
+
+The integrators in this library operate on systems of first-order equations, so the equation is recast as a pair of first-order equations by letting $y_1 = y$ and $y_2 = dy/dx$.
+
+$$
+\dot{y}_1 = y_2, \qquad \dot{y}_2 = \mu \left( 1 - y_1^2 \right) y_2 - y_1.
+$$
+
+The following example solves this system for $\mu = 5$ over $0 \le x \le 50$ with $y_1(0) = 2$ and $y_2(0) = 0$ using a 4th-order Rosenbrock solver, but other solvers can be used in an identical manner.  The example also utilizes the [FPLOT](https://github.com/jchristopherson/fplot) library to plot the solution.
 ```fortran
 program example
     use iso_fortran_env
@@ -268,9 +316,10 @@ end subroutine
 ```
 ![](images/rosenbrock_example.png?raw=true)
 
+The limit cycle is readily apparent in the results.  The solution $y(x)$ remains near $\pm 2$ while drifting slowly, and then reverses sign over a comparatively short span of the independent variable.  Each reversal appears in the derivative $y'(x)$ as a sharp spike whose magnitude is several times the amplitude of $y(x)$ itself.  This disparity between the slow and fast portions of the solution is precisely the behavior that an adaptive step-size algorithm is meant to accommodate, as the integrator must take small steps through each transition while being free to take much larger steps elsewhere.  It is also what makes the equation a useful problem against which to compare integrators, which is the subject of the next example.
 
-
-Here's another example comparing the behavior of several integrators for the same Van der Pol problem illustrated in the previous example.  In this example it can be seen that all of the integrators can be utilized in an identical manner.  Additionally, this example illustrates the use of a PI-type controller for step-size control.  Such a controller can be beneficial in the event stability issues are encountered during solution; however, this benefit usually comes with a drawback of decreased efficiency.  For this reason, the default behavior for any of the solvers is to not utilize any PI control; however, it is available if needed.
+### Comparing Integrators
+Here's another example comparing the behavior of several integrators on the same Van der Pol problem illustrated in the previous example.  Each of the integrators offered by the library is applied to the problem, which illustrates that they are all utilized in an identical manner; only the declared type of the integrator changes.  The number of solution points produced by each is reported so that their relative efficiency can be compared, and the example additionally illustrates the use of a PI-type controller for step-size control.
 ```fortran
 program example
     use iso_fortran_env
@@ -293,7 +342,7 @@ program example
     type(kennedy_carpenter_5) :: integrator_8
     type(tsitouras_54) :: integrator_9
     type(ode_container) :: mdl
-    real(real64), allocatable, dimension(:,:) :: s1, s2, s3, s4, s4a, s5, s6, &
+    real(real64), allocatable, dimension(:,:) :: s1, s2, s2a, s3, s4, s5, s6, &
         s7, s8, s9
 
     ! Define the model
@@ -331,11 +380,11 @@ program example
     ! increase the number of steps (loss of efficiency), but if there were
     ! any stability issues, stability will likely improve.  Stability is likely
     ! not relevant on this problem, but it's here for illustration purposes.
-    call integrator_4%clear_buffer()
-    call integrator_4%set_step_size_control_parameter(0.1d0)
-    call integrator_4%solve(mdl, t, ic)
-    s4a = integrator_4%get_solution()
-    print "(A, I0 ,A)", "ROSENBROCK w/ PI Controller: ", size(s4a, 1), " Solution Points"
+    call integrator_2%clear_buffer()
+    call integrator_2%set_step_size_control_parameter(0.1d0)
+    call integrator_2%solve(mdl, t, ic)
+    s2a = integrator_2%get_solution()
+    print "(A, I0 ,A)", "RUNGE_KUTTA_45 w/ PI Controller: ", size(s2a, 1), " Solution Points"
 
     ! VODE Integrators
     print "(A, I0, A)", "BDF: ", size(s5, 1), " Solution Points"
@@ -353,14 +402,210 @@ end program
 RUNGE_KUTTA_23: 2465 Solution Points
 RUNGE_KUTTA_45: 583 Solution Points
 RUNGE_KUTTA_853: 925 Solution Points
-ROSENBROCK: 1187 Solution Points
-ROSENBROCK w/ PI Controller: 1187 Solution Points
+ROSENBROCK: 1185 Solution Points
+RUNGE_KUTTA_45 w/ PI Controller: 1107 Solution Points
 BDF: 1527 Solution Points
 ADAMS: 1865 Solution Points
 KC4: 483 Solution Points
 KC5: 245 Solution Points
 TSITOURAS 4/5: 522 Solution Points
 ```
+
+Because the integration range is supplied as just its two end points, each solver returns one point per accepted step; the counts above are therefore essentially step counts.  They offer a useful first look at relative efficiency, but they are not a direct measure of cost.  The work performed per step differs considerably from one method to the next.  An explicit Runge-Kutta method requires one evaluation of the model per stage, whereas the implicit methods must also form a Jacobian, factor it, and iterate to convergence at each step.  A method that accepts fewer steps is not necessarily the faster method in terms of wall-clock time.
+
+With $\mu = 5$ the Van der Pol oscillator is only mildly stiff, so the explicit integrators remain competitive.  The low-order `runge_kutta_23` requires by far the most steps because its step size is limited by accuracy rather than by stability; the higher-order `tsitouras_54` and `runge_kutta_45` traverse the same interval in roughly a fifth as many steps.  The Kennedy-Carpenter methods accept the fewest steps of any integrator here, and `kennedy_carpenter_5` accepts the fewest of all, but each of those steps carries the cost of the Newton iteration noted above.  The VODE-based `adams` and `bdf` integrators sit at the opposite end, taking more steps that are individually inexpensive.
+
+The final result illustrates the PI step-size controller.  Applying it to `runge_kutta_45` raises the step count from 583 to 1107 for this problem.  That is the expected trade: the controller smooths the sequence of step sizes, which can be valuable when the error estimate is noisy or when stability rather than accuracy is limiting the step, but it costs efficiency when neither of those conditions applies.  Stability is not a concern for this problem, so the controller is shown here purely for illustration.  This is why PI control is disabled by default for every solver in the library and must be requested explicitly.
+
+### Differential-Algebraic Equations
+This final example illustrates the solution of a differential-algebraic equation (DAE) by means of a singular mass matrix.  The model is a simple pendulum expressed in Cartesian coordinates.  A bob of mass $m$ swings from a pivot at the origin on a rigid, massless rod of length $L$, so the position of the bob $(x, y)$ must satisfy the constraint
+
+$$
+x^2 + y^2 = L^2.
+$$
+
+Introducing a Lagrange multiplier $\lambda$ to account for the constraint force, the equations of motion are
+
+$$
+\dot{x} = v_x, \qquad m \dot{v}_x = 2 \lambda x,
+$$
+
+$$
+\dot{y} = v_y, \qquad m \dot{v}_y = 2 \lambda y - m g.
+$$
+
+Collecting the state into $z = \left[ x, v_x, y, v_y, \lambda \right]^T$, the system takes the mass matrix form $M \dot{z} = f(t, z)$ where
+
+$$
+M = \begin{bmatrix}
+1 & 0 & 0 & 0 & 0 \\
+0 & m & 0 & 0 & 0 \\
+0 & 0 & 1 & 0 & 0 \\
+0 & 0 & 0 & m & 0 \\
+0 & 0 & 0 & 0 & 0
+\end{bmatrix}.
+$$
+
+The zero in the final diagonal entry is what distinguishes this problem from an ordinary differential equation.  The multiplier has no time derivative of its own, so $M$ is singular and the last row represents an algebraic relationship rather than a differential one.  Differentiating the constraint twice with respect to time and substituting the equations of motion supplies that relationship explicitly,
+
+$$
+\lambda = \frac{m \left( g y - v_x^2 - v_y^2 \right)}{2 L^2}.
+$$
+
+The model routine evaluates this expression directly, and the initial conditions must be chosen such that they satisfy the constraint.
+
+The model parameters are passed to the solver by means of the optional `args` argument.  A derived type is used to carry both quantities.
+```fortran
+type cartesian_pendulum_properties
+    real(real64) :: mass
+    real(real64) :: length
+end type
+```
+
+The routine defining the equations of motion computes the multiplier from the index-reduced constraint, and then returns the derivatives of each state.  Notice, the fifth equation contributes no dynamics as the multiplier is an algebraic quantity.
+```fortran
+subroutine cartesian_pendulum(t, x, dxdt, args)
+    ! Arguments
+    real(real64), intent(in) :: t
+    real(real64), intent(in), dimension(:) :: x
+    real(real64), intent(out), dimension(:) :: dxdt
+    class(*), intent(inout), optional :: args
+
+    ! Local Variables
+    real(real64), parameter :: gc = 9.81d0
+    real(real64) :: m_ax, m_ay, lambda, m, L
+
+    ! Model Parameters
+    select type (args)
+    class is (cartesian_pendulum_properties)
+        L = args%length
+        m = args%mass
+    end select
+
+    ! Constraint Equation:
+    ! x**2 + y**2 = L**2
+    !
+    ! Need to differentiate twice
+    lambda = (m * (gc * x(3) - x(2)**2 - x(4)**2) / (2.0d0 * L**2))
+
+    ! Compute the inertial forces in the x and y directions
+    m_ax = 2.0d0 * lambda * x(1)
+    m_ay = 2.0d0 * lambda * x(3) - m * gc
+
+    ! Output
+    dxdt(1) = x(2)
+    dxdt(2) = m_ax
+    dxdt(3) = x(4)
+    dxdt(4) = m_ay
+    dxdt(5) = 0.0d0
+end subroutine
+```
+
+The mass matrix routine returns $M$.  The matrix is constant for this model, so the solver can be told that it need only be evaluated once.
+```fortran
+subroutine cartesian_pendulum_mass_matrix(t, x, m, args)
+    ! Arguments
+    real(real64), intent(in) :: t
+    real(real64), intent(in), dimension(:) :: x
+    real(real64), intent(out), dimension(:,:) :: m
+    class(*), intent(inout), optional :: args
+
+    ! Parameters
+    real(real64) :: mass, L
+
+    ! Model Parameters
+    select type (args)
+    class is (cartesian_pendulum_properties)
+        L = args%length
+        mass = args%mass
+    end select
+
+    m = 0.0d0
+    m(1,1) = 1.0d0
+    m(2,2) = mass
+    m(3,3) = 1.0d0
+    m(4,4) = mass
+    m(5,5) = 0.0d0  ! algebraic constraint equation
+end subroutine
+```
+
+The mass matrix is supplied to the `ode_container` alongside the routine defining the equations of motion.  The pendulum is released from rest in a horizontal position at $x = L$, $y = 0$, which satisfies the constraint.
+```fortran
+program example
+    use iso_fortran_env
+    use diffeq
+    use diffeq_models
+    use fplot_core
+    implicit none
+
+    ! Model Parameters
+    real(real64), parameter :: length = 1.5d0
+    real(real64), parameter :: mass = 2.0d0
+
+    ! Local Variables
+    type(rosenbrock) :: integrator
+    type(ode_container) :: mdl
+    type(cartesian_pendulum_properties) :: args
+    real(real64), allocatable, dimension(:,:) :: sol
+
+    ! Plot Variables
+    type(plot_2d) :: plt
+    type(plot_data_2d) :: pd1, pd2
+    class(plot_axis), pointer :: xAxis, yAxis, y2Axis
+    class(legend), pointer :: lgnd
+
+    ! Pass in the model parameters
+    args%length = length
+    args%mass = mass
+
+    ! Define the model
+    mdl%fcn => cartesian_pendulum
+    mdl%mass_matrix => cartesian_pendulum_mass_matrix
+    call mdl%set_is_mass_matrix_dependent(.false.)
+
+    ! Compute the solution
+    call integrator%solve( &
+        mdl, &                                  ! model to solve
+        [0.0d0, 1.0d1], &                       ! time bounds
+        [length, 0.0d0, 0.0d0, 0.0d0, 0.0d0], & ! initial conditions - must satisfy algebraic constraints
+        args = args &                           ! arguments to pass to the model
+    )
+    sol = integrator%get_solution()
+
+    ! Plot the results
+    call plt%initialize()
+    xAxis => plt%get_x_axis()
+    yAxis => plt%get_y_axis()
+    y2Axis => plt%get_y2_axis()
+    lgnd => plt%get_legend()
+    call plt%set_use_y2_axis(.true.)
+    call xAxis%set_title("t")
+    call yAxis%set_title("x(t)")
+    call y2Axis%set_title("y(t)")
+    call lgnd%set_is_visible(.true.)
+    call lgnd%set_draw_border(.false.)
+    call lgnd%set_draw_inside_axes(.false.)
+    call lgnd%set_vertical_position(LEGEND_BOTTOM)
+    call lgnd%set_horizontal_position(LEGEND_CENTER)
+    call lgnd%set_layout(LEGEND_ARRANGE_HORIZONTALLY)
+
+    call pd1%define_data(sol(:,1), sol(:,2))
+    call pd1%set_name("x(t)")
+    call pd1%set_line_width(2.0)
+    call plt%push(pd1)
+
+    call pd2%define_data(sol(:,1), sol(:,4))
+    call pd2%set_name("y(t)")
+    call pd2%set_line_width(2.0)
+    call pd2%set_draw_against_y2(.true.)
+    call plt%push(pd2)
+
+    call plt%draw()
+end program
+```
+![](images/dae_results.png?raw=true)
+
+The bob swings between $x = \pm L$ while $y$ remains at or below the pivot, which is the expected behavior for a pendulum released from rest in a horizontal position.
 
 ## External Libraries
 Here is a list of external code libraries utilized by this library.  The CMake build script will include these dependencies automatically; however, it is highly recommended that an optimized BLAS and LAPACK already reside on your system for best performance (used by LINALG for linear algebra calculations).

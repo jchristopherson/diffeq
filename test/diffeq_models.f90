@@ -1,6 +1,12 @@
 module diffeq_models
     use iso_fortran_env
     implicit none
+
+    type cartesian_pendulum_properties
+        real(real64) :: mass
+        real(real64) :: length
+    end type
+
 contains
 ! Van Der Pol Equation
 pure subroutine vanderpol(x, y, dydx, args)
@@ -273,6 +279,68 @@ subroutine parametric_model(t, x, dxdt, args)
     ! m x" + b x' + k x = sign(y) kappa y**2 / (1 - x / d)**2
     dxdt(1) = x(2)
     dxdt(2) = (F - b * x(2) - k * x(1)) / m
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine cartesian_pendulum(t, x, dxdt, args)
+    ! Arguments
+    real(real64), intent(in) :: t
+    real(real64), intent(in), dimension(:) :: x
+    real(real64), intent(out), dimension(:) :: dxdt
+    class(*), intent(inout), optional :: args
+
+    ! Local Variables
+    real(real64), parameter :: gc = 9.81d0
+    real(real64) :: m_ax, m_ay, lambda, m, L
+
+    ! Model Parameters
+    select type (args)
+    class is (cartesian_pendulum_properties)
+        L = args%length
+        m = args%mass
+    end select
+
+    ! Constraint Equation:
+    ! x**2 + y**2 = L**2
+    !
+    ! Need to differentiate twice
+    lambda = (m * (gc * x(3) - x(2)**2 - x(4)**2) / (2.0d0 * L**2))
+
+    ! Compute the inertial forces in the x and y directions
+    m_ax = 2.0d0 * lambda * x(1)
+    m_ay = 2.0d0 * lambda * x(3) - m * gc
+
+    ! Output
+    dxdt(1) = x(2)
+    dxdt(2) = m_ax
+    dxdt(3) = x(4)
+    dxdt(4) = m_ay
+    dxdt(5) = 0.0d0
+end subroutine
+
+subroutine cartesian_pendulum_mass_matrix(t, x, m, args)
+    ! Arguments
+    real(real64), intent(in) :: t
+    real(real64), intent(in), dimension(:) :: x
+    real(real64), intent(out), dimension(:,:) :: m
+    class(*), intent(inout), optional :: args
+
+    ! Parameters
+    real(real64) :: mass, L
+
+    ! Model Parameters
+    select type (args)
+    class is (cartesian_pendulum_properties)
+        L = args%length
+        mass = args%mass
+    end select
+
+    m = 0.0d0
+    m(1,1) = 1.0d0
+    m(2,2) = mass
+    m(3,3) = 1.0d0
+    m(4,4) = mass
+    m(5,5) = 0.0d0  ! algebraic constraint equation
 end subroutine
 
 ! ------------------------------------------------------------------------------

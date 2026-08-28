@@ -53,6 +53,14 @@ add_executable(
 )
 target_link_libraries(parametric_example diffeq ${fplot_LIBRARY})
 
+# DAE Example
+add_executable(
+    dae_example
+    dae_example.f90
+    ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
+)
+target_link_libraries(dae_example diffeq ${fplot_LIBRARY})
+
 # Stiff Integrator Comparison Example
 add_executable(
     stiff_integrator_example
