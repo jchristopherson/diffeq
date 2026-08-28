@@ -9,7 +9,7 @@ module diffeq_implicit_runge_kutta
     use iso_fortran_env
     use diffeq_base
     use diffeq_errors
-    use linalg, only : solve_qr, qr_factor, identity
+    use linalg, only : solve_qr, qr_factor, identity, svd
     implicit none
     private
     public :: rosenbrock
@@ -21,7 +21,8 @@ module diffeq_implicit_runge_kutta
         !! The stage equations are solved with Newton iteration.  A supplied
         !! mass matrix is incorporated in each stage system as
         !! \(M-h a_{ii}J\), while the embedded tableau supplies the error
-        !! estimate used by the inherited adaptive driver.
+        !! estimate used by the inherited adaptive driver.  These solvers use
+        !! the inherited configurable PI step-size controller.
     contains
         procedure, public :: pre_step_action => kc_pre_step
             !! Performs any pre-step actions.
@@ -40,6 +41,8 @@ module diffeq_implicit_runge_kutta
 
     type, extends(kennedy_carpenter) :: kennedy_carpenter_4
         !! Fourth-order ARK4(3)6L[2]SA ESDIRK method.
+        !! The inherited PI step-size controller uses the embedded error
+        !! estimate to select the next step size.
     contains
         procedure, public :: get_order => kc4_get_order
             !! Gets the order of the integrator.
@@ -47,6 +50,8 @@ module diffeq_implicit_runge_kutta
 
     type, extends(kennedy_carpenter) :: kennedy_carpenter_5
         !! Fifth-order ARK5(4)8L[2]SA ESDIRK method.
+        !! The inherited PI step-size controller uses the embedded error
+        !! estimate to select the next step size.
     contains
         procedure, public :: get_order => kc5_get_order
             !! Gets the order of the integrator.
@@ -69,7 +74,9 @@ module diffeq_implicit_runge_kutta
         !! The method is appropriate for stiff problems where explicit
         !! Runge--Kutta methods would require prohibitively small steps.
         !! A mass matrix may be constant or state-dependent; state-dependent
-        !! matrices are recomputed as needed.
+        !! matrices are recomputed as needed.  Step sizes are selected by the
+        !! Rosenbrock-specific controller rather than the inherited PI
+        !! controller.
         real(real64), private, allocatable, dimension(:,:) :: jac
             ! The Jacobian matrix.
         real(real64), private, allocatable, dimension(:,:) :: mass
@@ -734,7 +741,7 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     k = 0.0d0
     if (usemass) then
         call sys%mass_matrix(x, y, mass, args)
-        call solve_kc_system(mass, f, k(:,1))
+        call kc_consistent_derivative(sys, x, y, f, mass, k(:,1), args)
     else
         k(:,1) = f
     end if
@@ -755,13 +762,7 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
 
         ! Use an explicit Euler prediction to start the Newton iteration
         call sys%fcn(x + c(i) * h, base, rhs, args)
-        if (usemass) then
-            call sys%mass_matrix(x + c(i) * h, base, mass, args)
-            call solve_kc_system(mass, rhs, deriv)
-            state = base + h * a(i,i) * deriv
-        else
-            state = base + h * a(i,i) * rhs
-        end if
+        state = base + h * a(i,i) * rhs
 
         ! Solve the stage equation
         do iteration = 1, maxiter
@@ -770,12 +771,12 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
                 call sys%mass_matrix(x + c(i) * h, state, mass, args)
                 call sys%compute_jacobian(x + c(i) * h, state, jac, args)
                 residual = matmul(mass, state - base) - h * a(i,i) * rhs
-                call solve_kc_system(mass - h * a(i,i) * jac, -residual, delta)
+                delta = solve_kc_system(mass - h * a(i,i) * jac, -residual)
             else
                 call sys%compute_jacobian(x + c(i) * h, state, jac, args)
                 residual = state - base - h * a(i,i) * rhs
-                call solve_kc_system(identity(n) - h * a(i,i) * jac, &
-                    -residual, delta)
+                delta = solve_kc_system(identity(n) - h * a(i,i) * jac, &
+                    -residual)
             end if
             if (norm2(residual) <= tol * max(1.0d0, norm2(state))) exit
             state = state + delta
@@ -786,7 +787,7 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         call sys%fcn(x + c(i) * h, state, rhs, args)
         if (usemass) then
             call sys%mass_matrix(x + c(i) * h, state, mass, args)
-            call solve_kc_system(mass, rhs, k(:,i))
+            k(:,i) = solve_kc_system(mass, rhs)
         else
             k(:,i) = rhs
         end if
@@ -801,16 +802,53 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     end do
     yerr = yn - embedded
 
-    ! Compute the derivatives at the end of the step
-    call sys%fcn(x + h, yn, fn, args)
-    if (usemass) then
-        call sys%mass_matrix(x + h, yn, mass, args)
-        call solve_kc_system(mass, fn, deriv)
-        fn = deriv
-    end if
+    ! Both tableaus are stiffly accurate.  The final stage derivative is
+    ! therefore the derivative at the accepted state, even when M is singular.
+    fn = k(:, stages)
 end subroutine
 
 ! ------------------------------------------------------------------------------
+subroutine kc_consistent_derivative(sys, x, y, f, mass, derivative, args)
+    !! Computes a consistent initial derivative for an index-1 DAE.
+    class(ode_container), intent(inout) :: sys
+    real(real64), intent(in) :: x, y(:), f(:), mass(:,:)
+    real(real64), intent(out) :: derivative(:)
+    class(*), intent(inout), optional :: args
+    real(real64), allocatable :: singular_values(:), left_vectors(:,:), &
+        jac(:,:), fplus(:), augmented(:,:), rhs(:)
+    real(real64) :: fdstep, rank_tolerance, scale
+    integer(int32) :: n, rank, nullity, i
+
+    n = size(y)
+    call svd(mass, singular_values, left_vectors)
+    scale = max(1.0d0, singular_values(1))
+    rank_tolerance = 100.0d0 * epsilon(1.0d0) * scale
+    rank = count(singular_values > rank_tolerance)
+
+    if (rank == n) then
+        derivative = solve_kc_system(mass, f)
+        return
+    end if
+
+    nullity = n - rank
+    allocate(jac(n,n), fplus(n), augmented(n,n), rhs(n))
+    call sys%compute_jacobian(x, y, jac, args)
+    fdstep = sys%get_finite_difference_step()
+    call sys%fcn(x + fdstep, y, fplus, args)
+    fplus = (fplus - f) / fdstep
+
+    augmented = 0.0d0
+    rhs = 0.0d0
+    augmented(1:rank,:) = matmul(transpose(left_vectors(:,1:rank)), mass)
+    rhs(1:rank) = matmul(transpose(left_vectors(:,1:rank)), f)
+    do i = 1, nullity
+        augmented(rank+i,:) = matmul(left_vectors(:,rank+i), jac)
+        rhs(rank+i) = -dot_product(left_vectors(:,rank+i), fplus)
+    end do
+
+    derivative = solve_kc_system(augmented, rhs)
+end subroutine
+
 subroutine kc_mass_stage(sys, x, base, diagonal_step, state, derivative, args)
     !! Solves one Kennedy--Carpenter mass-matrix stage without forming M^{-1}f.
     class(ode_container), intent(inout) :: sys
@@ -819,9 +857,10 @@ subroutine kc_mass_stage(sys, x, base, diagonal_step, state, derivative, args)
     class(*), intent(inout), optional :: args
     real(real64) :: f(size(base)), residual(size(base))
     real(real64) :: jac(size(base),size(base)), mass(size(base),size(base))
+    real(real64) :: mass_perturbed(size(base),size(base))
     real(real64) :: system(size(base),size(base)), delta(size(base))
-    real(real64), allocatable :: qr(:,:), tau(:)
-    integer(int32) :: pivot(size(base)), iteration
+    real(real64) :: fdstep
+    integer(int32) :: i, iteration
 
     state = base
     do iteration = 1, 12
@@ -832,9 +871,15 @@ subroutine kc_mass_stage(sys, x, base, diagonal_step, state, derivative, args)
         if (norm2(residual) <= 1.0d-12 * max(1.0d0, norm2(state))) exit
         call sys%compute_jacobian(x, state, jac, args)
         system = mass - diagonal_step * jac
-        pivot = 0
-        call qr_factor(system, pivot, tau = tau, qr = qr)
-        delta = solve_qr(qr, tau, pivot, -residual)
+        fdstep = sys%get_finite_difference_step()
+        do i = 1, size(base)
+            state(i) = state(i) + fdstep
+            call sys%mass_matrix(x, state, mass_perturbed, args)
+            state(i) = state(i) - fdstep
+            system(:,i) = system(:,i) + &
+                matmul((mass_perturbed - mass) / fdstep, state - base)
+        end do
+        delta = solve_kc_system(system, -residual)
         state = state + delta
     end do
     if (iteration > 12) error stop DIFFEQ_CONVERGENCE_ERROR
@@ -977,30 +1022,38 @@ subroutine kc_table(this, a, b, d, c, stages)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine solve_kc_system(a, b, x)
+function solve_kc_system(a, b) result(x)
     !! Solves the linear system \( A x = b \) by means of a QR factorization
     !! with column pivoting.
     real(real64), intent(in), dimension(:,:) :: a
         !! The N-by-N system matrix.
     real(real64), intent(in), dimension(:) :: b
         !! An N-element array containing the right-hand side.
-    real(real64), intent(out), dimension(:) :: x
-        !! An N-element array where the solution will be written.
+    real(real64), allocatable, dimension(:) :: x
+        !! An N-element array containing the solution.
 
     ! Local Variables
-    integer(int32) :: n
+    integer(int32) :: n, rank
     integer(int32), allocatable, dimension(:) :: pivot
     real(real64), allocatable, dimension(:) :: tau
     real(real64), allocatable, dimension(:,:) :: qr
+    real(real64), allocatable, dimension(:) :: singular_values
+    real(real64) :: rank_tolerance
 
     ! Initialization
     n = size(a, 2)
     allocate(pivot(n), source = 0)
 
+    call svd(a, singular_values)
+    rank_tolerance = 100.0d0 * epsilon(1.0d0) * &
+        max(1.0d0, singular_values(1))
+    rank = count(singular_values > rank_tolerance)
+    if (rank /= n) error stop DIFFEQ_SINGULAR_MATRIX_ERROR
+
     ! Process
     call qr_factor(a, pivot, tau = tau, qr = qr)
     x = solve_qr(qr, tau, pivot, b)
-end subroutine
+end function
 
 ! ------------------------------------------------------------------------------
 subroutine kc_interpolate(this, x, xn, yn, fn, xn1, yn1, fn1, y)

@@ -81,12 +81,15 @@ states. The system is then a differential-algebraic equation (DAE) rather
 than an ODE. The `rosenbrock` integrator forms and factors
 $\frac{1}{\gamma h} M - J$ by means of a QR factorization with column
 pivoting, so it is able to accommodate a singular $M$ and solve index-1
-DAEs. The [Differential-Algebraic Equations](#differential-algebraic-equations)
-example works such a problem. Two points are worth noting when doing so. The
-initial conditions handed to `solve` must satisfy the algebraic constraints,
-and a problem of index greater than one must first be reduced to index 1,
-typically by differentiating its constraint equations with respect to the
-independent variable.
+DAEs. The Kennedy-Carpenter ESDIRK integrators use implicit stage solves
+and a consistent-derivative calculation. Consequently, all three integrators
+can accommodate a singular $M$ and solve index-1 DAEs. The
+[Differential-Algebraic Equations](#differential-algebraic-equations) example
+works such a problem. Two points are worth noting when doing so. The initial
+conditions handed to `solve` must satisfy the algebraic constraints, and a
+problem of index greater than one must first be reduced to index 1, typically
+by differentiating its constraint equations with respect to the independent
+variable.
 
 ## API Overview
 The public API is organized around a model container and interchangeable
@@ -101,6 +104,7 @@ integrators:
 | `integrator%solve(model, x, y0)` | Integrates from `x(1)` to `x(size(x))` using initial state `y0`. |
 | `integrator%get_solution()` | Returns an $N \times (n+1)$ array with the independent variable in column 1 and state values in columns 2 through $n+1$. |
 | `set_absolute_tolerance` / `set_relative_tolerance` | Control the local error scale, approximately $\mathrm{atol} + \mathrm{rtol}|y|$. |
+| `set_step_size_control_parameter` | Sets the PI controller parameter used by the Kennedy-Carpenter solvers. Rosenbrock uses its own step-size estimator. |
 | `set_maximum_step_size` / `set_minimum_step_size` | Bound adaptive step sizes. |
 | `set_allow_overshoot` | Controls whether a final integration step may pass the requested endpoint and be interpolated back. |
 
@@ -110,24 +114,49 @@ the solver returns values at those requested points using dense output. All
 solver types expose the same `solve` and `get_solution` workflow.
 
 ### Choosing an Integrator
-- `runge_kutta_23`: inexpensive, lower-order integration for modest accuracy.
-- `runge_kutta_45`: general-purpose adaptive integration for non-stiff systems.
-- `tsitouras_54`: efficient fifth-order adaptive integration for non-stiff systems; its FSAL tableau uses a fourth-order embedded error estimate.
-- `runge_kutta_853`: high-order integration for smooth, non-stiff problems.
-- `rosenbrock`: linearly implicit integration for stiff systems and supported
-  mass-matrix problems.  It is the only integrator offered here that
-  accommodates a singular mass matrix, as it factors
-  $\frac{1}{\gamma h} M - J$ rather than inverting $M$ on its own, and is
-  therefore the choice for index-1 DAEs.  Remember that the initial conditions
-  must satisfy the algebraic constraints of such a problem.
-- `kennedy_carpenter_4`: fourth-order ESDIRK integration for stiff systems,
-    with a third-order embedded error estimate.  It supports systems with a
-    nonsingular mass matrix by incorporating $M$ into each diagonally implicit
-    stage solve; it does not support singular mass matrices.
-- `kennedy_carpenter_5`: fifth-order ESDIRK integration for stiff systems,
-    with a fourth-order embedded error estimate.  It supports systems with a
-    nonsingular mass matrix by incorporating $M$ into each diagonally implicit
-    stage solve; it does not support singular mass matrices.
+- `runge_kutta_23`
+    - Capabilities: inexpensive, lower-order adaptive integration for modest
+        accuracy and non-stiff systems.
+    - Limitations: explicit method; not intended for stiff systems or
+        mass-matrix DAEs.
+- `runge_kutta_45`
+    - Capabilities: general-purpose adaptive integration for non-stiff systems;
+        uses an embedded error estimate and FSAL stage reuse.
+    - Limitations: explicit method; not intended for stiff systems or
+        mass-matrix DAEs.
+- `tsitouras_54`
+    - Capabilities: efficient fifth-order adaptive integration for non-stiff
+        systems; its FSAL tableau uses a fourth-order embedded error estimate.
+    - Limitations: explicit method; not intended for stiff systems or
+        mass-matrix DAEs.
+- `runge_kutta_853`
+    - Capabilities: high-order adaptive integration for smooth, non-stiff
+        problems, with fifth- and third-order embedded estimates.
+    - Limitations: explicit method; not intended for stiff systems or
+        mass-matrix DAEs.
+- `rosenbrock`
+    - Capabilities: linearly implicit integration for stiff systems and supported
+        mass-matrix problems. It accommodates singular mass matrices by factoring
+        $\frac{1}{\gamma h} M - J$ rather than inverting $M$ on its own, and can
+        solve index-1 DAEs when the initial conditions satisfy the algebraic
+        constraints.
+    - Limitations: uses a Rosenbrock-specific step-size estimator rather than
+        the inherited PI controller; higher-index DAEs must first be reduced to
+        index 1.
+- `kennedy_carpenter_4`
+    - Capabilities: fourth-order ESDIRK integration for stiff systems, with a
+        third-order embedded error estimate. Supports nonsingular and singular
+        mass matrices through diagonally implicit stage solves and the configurable
+        inherited PI step-size controller.
+    - Limitations: singular-mass problems require consistent initial conditions
+        and must be index 1.
+- `kennedy_carpenter_5`
+    - Capabilities: fifth-order ESDIRK integration for stiff systems, with a
+        fourth-order embedded error estimate. Supports nonsingular and singular
+        mass matrices through diagonally implicit stage solves and the configurable
+        inherited PI step-size controller.
+    - Limitations: singular-mass problems require consistent initial conditions
+        and must be index 1.
 ## Building DIFFEQ
 DIFFEQ can be built with either [CMake](https://cmake.org/) or the [Fortran
 Package Manager (FPM)](https://github.com/fortran-lang/fpm). Both build systems
@@ -402,7 +431,7 @@ With $\mu = 5$ the Van der Pol oscillator is only mildly stiff, so the explicit 
 The final result illustrates the PI step-size controller.  Applying it to `runge_kutta_45` raises the step count from 583 to 1107 for this problem.  That is the expected trade: the controller smooths the sequence of step sizes, which can be valuable when the error estimate is noisy or when stability rather than accuracy is limiting the step, but it costs efficiency when neither of those conditions applies.  Stability is not a concern for this problem, so the controller is shown here purely for illustration.  This is why PI control is disabled by default for every solver in the library and must be requested explicitly.
 
 ### Differential-Algebraic Equations
-This final example illustrates the solution of a differential-algebraic equation (DAE) by means of a singular mass matrix.  The model is a simple pendulum expressed in Cartesian coordinates.  A bob of mass $m$ swings from a pivot at the origin on a rigid, massless rod of length $L$, so the position of the bob $(x, y)$ must satisfy the constraint
+This final example illustrates the solution of a differential-algebraic equation (DAE) by means of a singular mass matrix.  The model is a simple pendulum expressed in Cartesian coordinates.  A mass $m$ swings from a pivot at the origin on a rigid, massless rod of length $L$, so the position of the mass $(x, y)$ must satisfy the constraint
 
 $$
 x^2 + y^2 = L^2.
@@ -520,7 +549,7 @@ subroutine cartesian_pendulum_mass_matrix(t, x, m, args)
 end subroutine
 ```
 
-The mass matrix is supplied to the `ode_container` alongside the routine defining the system.  The pendulum is released from rest in a horizontal position at $x = L$, $y = 0$.  These conditions are consistent, as they satisfy the constraint, and with the bob at rest at $y = 0$ the algebraic equation reduces to $2 \lambda L^2 = 0$, so the multiplier begins at zero.
+The mass matrix is supplied to the `ode_container` alongside the routine defining the system.  The pendulum is released from rest in a horizontal position at $x = L$, $y = 0$.  These conditions are consistent, as they satisfy the constraint, and with the mass at rest at $y = 0$ the algebraic equation reduces to $2 \lambda L^2 = 0$, so the multiplier begins at zero.
 ```fortran
 program example
     use iso_fortran_env
@@ -596,7 +625,7 @@ end program
 ```
 ![](images/dae_results.png?raw=true)
 
-The bob swings between $x = \pm L$ while $y$ remains at or below the pivot, which is the expected behavior for a pendulum released from rest in a horizontal position.
+The mass swings between $x = \pm L$ while $y$ remains at or below the pivot, which is the expected behavior for a pendulum released from rest in a horizontal position.
 
 ## External Libraries
 Here is a list of external code libraries utilized by this library.  The CMake build script will include these dependencies automatically; however, it is highly recommended that an optimized BLAS and LAPACK already reside on your system for best performance (used by LINALG for linear algebra calculations).

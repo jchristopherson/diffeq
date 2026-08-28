@@ -82,8 +82,11 @@ program test
     rst = test_kennedy_carpenter_mass_matrix()
     if (.not.rst) flag = 21
 
-    rst = test_runge_kutta_dense_with_args()
+    rst = test_kennedy_carpenter_singular_mass_matrix()
     if (.not.rst) flag = 22
+
+    rst = test_runge_kutta_dense_with_args()
+    if (.not.rst) flag = 23
 
     ! Output
     stop flag
