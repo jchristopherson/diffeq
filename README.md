@@ -16,6 +16,8 @@ The documentation can be found [here](https://jchristopherson.github.io/diffeq/)
 - Rosenbrock, 4th Order
 - Kennedy-Carpenter ESDIRK, 4th Order with 3rd-Order Embedded Estimate
 - Kennedy-Carpenter ESDIRK, 5th Order with 4th-Order Embedded Estimate
+- Backward Differentiation Formula (BDF), Variable Order (1-5)
+- Adams-Bashforth-Moulton Predictor-Corrector (PECE), Variable Order (1-12)
 
 ## Getting Started
 DIFFEQ solves an initial-value problem of the form
@@ -69,10 +71,10 @@ M(x,y) \frac{dy}{dx} = f(x,y),
 $$
 
 where $M$ couples the derivatives to one another. Supplying a routine for $M$
-through `model%mass_matrix` is supported by the `rosenbrock` and
-Kennedy-Carpenter integrators. If the matrix is constant, calling
-`model%set_is_mass_matrix_dependent(.false.)` avoids recomputing it at every
-step.
+through `model%mass_matrix` is supported by the `rosenbrock`,
+Kennedy-Carpenter, `bdf`, and `adams` integrators. If the matrix is constant,
+calling `model%set_is_mass_matrix_dependent(.false.)` avoids recomputing it at
+every step.
 
 So long as $M$ is nonsingular the problem remains an ordinary differential
 equation. If $M$ is singular, however, one or more of its rows carry no
@@ -82,14 +84,21 @@ than an ODE. The `rosenbrock` integrator forms and factors
 $\frac{1}{\gamma h} M - J$ by means of a QR factorization with column
 pivoting, so it is able to accommodate a singular $M$ and solve index-1
 DAEs. The Kennedy-Carpenter ESDIRK integrators use implicit stage solves
-and a consistent-derivative calculation. Consequently, all three integrators
-can accommodate a singular $M$ and solve index-1 DAEs. The
+and a consistent-derivative calculation, and `bdf` factors
+$\frac{\alpha_0}{h} M - J$ in the same spirit. Consequently, all of these
+integrators can accommodate a singular $M$ and solve index-1 DAEs. The
 [Differential-Algebraic Equations](#differential-algebraic-equations) example
 works such a problem. Two points are worth noting when doing so. The initial
 conditions handed to `solve` must satisfy the algebraic constraints, and a
 problem of index greater than one must first be reduced to index 1, typically
 by differentiating its constraint equations with respect to the independent
 variable.
+
+The `adams` integrator is the exception. It integrates $y'$ directly, so it
+must resolve the mass matrix rather than merely carry it along as a factor.
+It therefore requires $M$ to be nonsingular and reports
+`DIFFEQ_SINGULAR_MATRIX_ERROR` if it is not. A DAE must be given to one of
+the other integrators.
 
 ## API Overview
 The public API is organized around a model container and interchangeable
@@ -100,11 +109,13 @@ integrators:
 | `ode_container` | Stores the right-hand-side callback, optional Jacobian, and optional mass-matrix callbacks. |
 | `model%fcn` | Defines $f(x,y)$ for the problem. This callback is required. |
 | `model%jacobian` | Supplies $J = \partial f / \partial y$. If omitted, DIFFEQ estimates it by finite differences where needed. |
-| `model%mass_matrix` | Supplies $M(x,y)$ for a system written as $M y' = f(x,y)$. It is supported by the Rosenbrock and Kennedy-Carpenter solvers. |
+| `model%mass_matrix` | Supplies $M(x,y)$ for a system written as $M y' = f(x,y)$. It is supported by the Rosenbrock, Kennedy-Carpenter, BDF, and Adams solvers. Only Adams requires $M$ to be nonsingular. |
 | `integrator%solve(model, x, y0)` | Integrates from `x(1)` to `x(size(x))` using initial state `y0`. |
 | `integrator%get_solution()` | Returns an $N \times (n+1)$ array with the independent variable in column 1 and state values in columns 2 through $n+1$. |
 | `set_absolute_tolerance` / `set_relative_tolerance` | Control the local error scale, approximately $\mathrm{atol} + \mathrm{rtol}|y|$. |
-| `set_step_size_control_parameter` | Sets the PI controller parameter used by the Kennedy-Carpenter solvers. Rosenbrock uses its own step-size estimator. |
+| `set_step_size_control_parameter` | Sets the PI controller parameter used by the Kennedy-Carpenter solvers. Rosenbrock and the multi-step solvers use their own step-size estimators. |
+| `set_maximum_order` / `get_maximum_order` | Bound the order of a multi-step solver. A request above what the method supports is clamped rather than rejected. |
+| `set_newton_step_limit` / `set_newton_tolerance` | Govern the Newton iteration used by the implicit multi-step solvers, such as `bdf`. |
 | `set_maximum_step_size` / `set_minimum_step_size` | Bound adaptive step sizes. |
 | `set_allow_overshoot` | Controls whether a final integration step may pass the requested endpoint and be interpolated back. |
 
@@ -157,6 +168,36 @@ solver types expose the same `solve` and `get_solution` workflow.
         inherited PI step-size controller.
     - Limitations: singular-mass problems require consistent initial conditions
         and must be index 1.
+- `bdf`
+    - Capabilities: variable step-size, variable order (1-5) backward
+        differentiation formulae for stiff systems and index-1 DAEs. The
+        coefficients are formed from the actual spacing of the stored solution
+        points, so a change of step size is handled exactly. Accommodates
+        singular mass matrices by factoring $\frac{\alpha_0}{h} M - J$ rather
+        than inverting $M$. Being a multi-step method, it reaches a given order
+        on far fewer derivative evaluations than a Runge-Kutta method of the
+        same order, and its dense output costs no extra evaluations at all.
+    - Limitations: the order is capped at five, as BDF formulae lose zero
+        stability beyond six. Each step requires a Jacobian and the solution of
+        a linear system. The method restarts at first order, so problems with
+        frequent discontinuities forfeit much of its advantage. Singular-mass
+        problems require consistent initial conditions and must be index 1.
+- `adams`
+    - Capabilities: variable step-size, variable order (1-12)
+        Adams-Bashforth-Moulton predictor-corrector in PECE mode, for non-stiff
+        systems. Each step costs exactly two derivative evaluations and needs
+        neither a Jacobian nor a linear solve, which makes it the most
+        economical choice when the problem is not stiff and the tolerances are
+        tight. Its high order ceiling pays off there: on a smooth problem at a
+        tolerance of $10^{-12}$ it reached order nine and used less than half
+        the steps the same method restricted to order five required.
+    - Limitations: the corrector is applied once rather than iterated, so it is
+        contractive only while $hL < 1$ and is unsuited to stiff problems; it
+        will still hold its accuracy on one, but only by taking orders of
+        magnitude more steps than an implicit method needs. A mass matrix must
+        be nonsingular, so DAEs are out of reach. The method restarts at first
+        order.
+
 ## Building DIFFEQ
 DIFFEQ can be built with either [CMake](https://cmake.org/) or the [Fortran
 Package Manager (FPM)](https://github.com/fortran-lang/fpm). Both build systems
@@ -626,6 +667,8 @@ end program
 ![](images/dae_results.png?raw=true)
 
 The mass swings between $x = \pm L$ while $y$ remains at or below the pivot, which is the expected behavior for a pendulum released from rest in a horizontal position.
+
+The example uses `rosenbrock`, but any integrator that tolerates a singular mass matrix will serve.  Substituting `type(bdf)`, `type(kennedy_carpenter_4)`, or `type(kennedy_carpenter_5)` for the declared integrator type is the only change required, as every solver exposes the same `solve` and `get_solution` interface.
 
 ## External Libraries
 Here is a list of external code libraries utilized by this library.  The CMake build script will include these dependencies automatically; however, it is highly recommended that an optimized BLAS and LAPACK already reside on your system for best performance (used by LINALG for linear algebra calculations).
