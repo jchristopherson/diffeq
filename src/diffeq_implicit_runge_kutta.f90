@@ -9,7 +9,8 @@ module diffeq_implicit_runge_kutta
     use iso_fortran_env
     use diffeq_base
     use diffeq_errors
-    use linalg, only : solve_qr, qr_factor, identity, svd
+    use linalg, only : solve_qr, qr_factor, identity, solve_least_squares_full, &
+        svd
     implicit none
     private
     public :: rosenbrock
@@ -1032,27 +1033,8 @@ function solve_kc_system(a, b) result(x)
     real(real64), allocatable, dimension(:) :: x
         !! An N-element array containing the solution.
 
-    ! Local Variables
-    integer(int32) :: n, rank
-    integer(int32), allocatable, dimension(:) :: pivot
-    real(real64), allocatable, dimension(:) :: tau
-    real(real64), allocatable, dimension(:,:) :: qr
-    real(real64), allocatable, dimension(:) :: singular_values
-    real(real64) :: rank_tolerance
-
-    ! Initialization
-    n = size(a, 2)
-    allocate(pivot(n), source = 0)
-
-    call svd(a, singular_values)
-    rank_tolerance = 100.0d0 * epsilon(1.0d0) * &
-        max(1.0d0, singular_values(1))
-    rank = count(singular_values > rank_tolerance)
-    if (rank /= n) error stop DIFFEQ_SINGULAR_MATRIX_ERROR
-
     ! Process
-    call qr_factor(a, pivot, tau = tau, qr = qr)
-    x = solve_qr(qr, tau, pivot, b)
+    x = solve_least_squares_full(a, b)
 end function
 
 ! ------------------------------------------------------------------------------

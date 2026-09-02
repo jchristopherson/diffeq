@@ -3,6 +3,7 @@ program test
     use diffeq_jacobian_tests
     use diffeq_test_runge_kutta
     use diffeq_test_implicit_rk
+    use diffeq_test_bdf
     implicit none
 
     ! Local Variables
@@ -87,6 +88,33 @@ program test
 
     rst = test_runge_kutta_dense_with_args()
     if (.not.rst) flag = 23
+
+    rst = test_bdf_1()
+    if (.not.rst) flag = 24
+
+    rst = test_bdf_2()
+    if (.not.rst) flag = 25
+
+    rst = test_bdf_dense()
+    if (.not.rst) flag = 26
+
+    rst = test_bdf_all_steps()
+    if (.not.rst) flag = 27
+
+    rst = test_bdf_mass_matrix()
+    if (.not.rst) flag = 28
+
+    rst = test_bdf_singular_mass_matrix()
+    if (.not.rst) flag = 29
+
+    rst = test_bdf_singular_mass_matrix_dense()
+    if (.not.rst) flag = 30
+
+    rst = test_bdf_with_args()
+    if (.not.rst) flag = 31
+
+    rst = test_bdf_order_range()
+    if (.not.rst) flag = 32
 
     ! Output
     stop flag

@@ -4,6 +4,8 @@ module diffeq
     use diffeq_base
     use diffeq_runge_kutta
     use diffeq_implicit_runge_kutta
+    use diffeq_multistep
+    use diffeq_bdf
     implicit none
     private
     
@@ -32,5 +34,15 @@ module diffeq
     public :: rosenbrock
     public :: kennedy_carpenter_4
     public :: kennedy_carpenter_5
+
+    ! DIFFEQ_MULTISTEP.F90
+    public :: multistep_integrator
+    public :: build_linearized_system
+    public :: predictor_step
+    public :: multistep_integer_inquiry
+    public :: multistep_error_constant
+
+    ! DIFFEQ_BDF.F90
+    public :: bdf
 
 end module
