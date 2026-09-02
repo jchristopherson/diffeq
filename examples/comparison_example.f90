@@ -17,8 +17,9 @@ program example
     type(kennedy_carpenter_5) :: integrator_6
     type(tsitouras_54) :: integrator_7
     type(bdf) :: integrator_8
+    type(adams) :: integrator_9
     type(ode_container) :: mdl
-    real(real64), allocatable, dimension(:,:) :: s1, s2, s2a, s3, s4, s5, s6, s7, s8
+    real(real64), allocatable, dimension(:,:) :: s1, s2, s2a, s3, s4, s5, s6, s7, s8, s9
 
     ! Define the model
     mdl%fcn => vanderpol
@@ -32,6 +33,7 @@ program example
     call integrator_6%solve(mdl, t, ic)
     call integrator_7%solve(mdl, t, ic)
     call integrator_8%solve(mdl, t, ic)
+    call integrator_9%solve(mdl, t, ic)
 
     ! Retrieve the solution from each integrator
     s1 = integrator_1%get_solution()
@@ -42,6 +44,7 @@ program example
     s6 = integrator_6%get_solution()
     s7 = integrator_7%get_solution()
     s8 = integrator_8%get_solution()
+    s9 = integrator_9%get_solution()
 
     ! Print out the size of each solution
     print "(A, I0, A)", "RUNGE_KUTTA_23: ", size(s1, 1), " Solution Points"
@@ -66,4 +69,5 @@ program example
     ! Additional Integrators
     print "(A, I0, A)", "TSITOURAS 4/5: ", size(s7, 1), " Solution Points"
     print "(A, I0, A)", "BDF: ", size(s8, 1), " Solution Points"
+    print "(A, I0, A)", "ADAMS: ", size(s9, 1), " Solution Points"
 end program

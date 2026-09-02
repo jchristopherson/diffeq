@@ -15,6 +15,7 @@ set(DIFFEQ_SOURCES
     ${dir}/diffeq_implicit_runge_kutta.f90
     ${dir}/diffeq_multistep.f90
     ${dir}/diffeq_bdf.f90
+    ${dir}/diffeq_pece.f90
 )
 
 # Dependencies

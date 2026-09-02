@@ -28,7 +28,7 @@ module diffeq_bdf
         ! order formula has so small a region of stability as to be of little
         ! practical use.  The order is therefore capped at five.
 
-    type, extends(multistep_integrator) :: bdf
+    type, extends(newton_multistep_integrator) :: bdf
         !! A variable step-size, variable order (1-5) BDF integrator for stiff
         !! systems and index-1 differential-algebraic equations.
         !!
@@ -71,6 +71,8 @@ module diffeq_bdf
             !! Gets the highest order the method is permitted to use.
         procedure, public :: get_error_constant => bdf_error_constant
             !! Gets the error constant for the requested order.
+        procedure, public :: get_truncation_constant => bdf_error_constant
+            !! Gets the truncation error constant for the requested order.
         procedure, private :: initialize_workspace => bdf_init_workspace
             !! Allocates the internal workspace arrays.
     end type
@@ -94,6 +96,11 @@ pure function bdf_error_constant(this, k) result(rst)
     !! The predictor of order \(k\) and the corrector of order \(k\) differ by
     !! a quantity proportional to the leading error term of the formula, and
     !! for a BDF method that constant of proportionality is \(1/(k+1)\).
+    !!
+    !! For a BDF method the predictor is precisely the extrapolation of the
+    !! solution history, so that same constant also relates the \((k+1)\)-th
+    !! difference of the solution to the truncation error.  One routine
+    !! therefore serves as both the error and the truncation constant.
     class(bdf), intent(in) :: this
         !! The bdf object.
     integer(int32), intent(in) :: k

@@ -5,6 +5,7 @@ set(diffeq_test_sources
     diffeq_test_runge_kutta.f90
     diffeq_test_implicit_rk.f90
     diffeq_test_bdf.f90
+    diffeq_test_pece.f90
 )
 
 find_package(fortran_test_helper QUIET)

@@ -4,6 +4,7 @@ program test
     use diffeq_test_runge_kutta
     use diffeq_test_implicit_rk
     use diffeq_test_bdf
+    use diffeq_test_pece
     implicit none
 
     ! Local Variables
@@ -115,6 +116,33 @@ program test
 
     rst = test_bdf_order_range()
     if (.not.rst) flag = 32
+
+    rst = test_adams_1()
+    if (.not.rst) flag = 33
+
+    rst = test_adams_2()
+    if (.not.rst) flag = 34
+
+    rst = test_adams_dense()
+    if (.not.rst) flag = 35
+
+    rst = test_adams_all_steps()
+    if (.not.rst) flag = 36
+
+    rst = test_adams_mass_matrix()
+    if (.not.rst) flag = 37
+
+    rst = test_adams_with_args()
+    if (.not.rst) flag = 38
+
+    rst = test_adams_order_range()
+    if (.not.rst) flag = 39
+
+    rst = test_adams_matches_bdf()
+    if (.not.rst) flag = 40
+
+    rst = test_adams_high_order()
+    if (.not.rst) flag = 41
 
     ! Output
     stop flag

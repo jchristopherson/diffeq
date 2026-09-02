@@ -6,6 +6,7 @@ module diffeq
     use diffeq_implicit_runge_kutta
     use diffeq_multistep
     use diffeq_bdf
+    use diffeq_pece
     implicit none
     private
     
@@ -37,12 +38,17 @@ module diffeq
 
     ! DIFFEQ_MULTISTEP.F90
     public :: multistep_integrator
+    public :: newton_multistep_integrator
     public :: build_linearized_system
     public :: predictor_step
+    public :: multistep_corrector
     public :: multistep_integer_inquiry
     public :: multistep_error_constant
 
     ! DIFFEQ_BDF.F90
     public :: bdf
+
+    ! DIFFEQ_PECE.F90
+    public :: adams
 
 end module
