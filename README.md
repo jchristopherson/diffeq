@@ -405,8 +405,10 @@ program example
     type(kennedy_carpenter_4) :: integrator_5
     type(kennedy_carpenter_5) :: integrator_6
     type(tsitouras_54) :: integrator_7
+    type(bdf) :: integrator_8
+    type(adams) :: integrator_9
     type(ode_container) :: mdl
-    real(real64), allocatable, dimension(:,:) :: s1, s2, s2a, s3, s4, s5, s6, s7
+    real(real64), allocatable, dimension(:,:) :: s1, s2, s2a, s3, s4, s5, s6, s7, s8, s9
 
     ! Define the model
     mdl%fcn => vanderpol
@@ -419,6 +421,8 @@ program example
     call integrator_5%solve(mdl, t, ic)
     call integrator_6%solve(mdl, t, ic)
     call integrator_7%solve(mdl, t, ic)
+    call integrator_8%solve(mdl, t, ic)
+    call integrator_9%solve(mdl, t, ic)
 
     ! Retrieve the solution from each integrator
     s1 = integrator_1%get_solution()
@@ -428,7 +432,8 @@ program example
     s5 = integrator_5%get_solution()
     s6 = integrator_6%get_solution()
     s7 = integrator_7%get_solution()
-    s7 = integrator_7%get_solution()
+    s8 = integrator_8%get_solution()
+    s9 = integrator_9%get_solution()
 
     ! Print out the size of each solution
     print "(A, I0, A)", "RUNGE_KUTTA_23: ", size(s1, 1), " Solution Points"
@@ -450,8 +455,10 @@ program example
     print "(A, I0, A)", "KC4: ", size(s5, 1), " Solution Points"
     print "(A, I0, A)", "KC5: ", size(s6, 1), " Solution Points"
 
-    ! Tsitouras Integrators
+    ! Additional Integrators
     print "(A, I0, A)", "TSITOURAS 4/5: ", size(s7, 1), " Solution Points"
+    print "(A, I0, A)", "BDF: ", size(s8, 1), " Solution Points"
+    print "(A, I0, A)", "ADAMS: ", size(s9, 1), " Solution Points"
 end program
 ```
 ```txt
@@ -463,13 +470,19 @@ RUNGE_KUTTA_45 w/ PI Controller: 1107 Solution Points
 KC4: 483 Solution Points
 KC5: 245 Solution Points
 TSITOURAS 4/5: 522 Solution Points
+BDF: 1584 Solution Points
+ADAMS: 1133 Solution Points
 ```
 
 Because the integration range is supplied as just its two end points, each solver returns one point per accepted step; the counts above are therefore essentially step counts.  They offer a useful first look at relative efficiency, but they are not a direct measure of cost.  The work performed per step differs considerably from one method to the next.  An explicit Runge-Kutta method requires one evaluation of the model per stage, whereas the implicit methods must also form a Jacobian, factor it, and iterate to convergence at each step.  A method that accepts fewer steps is not necessarily the faster method in terms of wall-clock time.
 
 With $\mu = 5$ the Van der Pol oscillator is only mildly stiff, so the explicit integrators remain competitive.  The low-order `runge_kutta_23` requires by far the most steps because its step size is limited by accuracy rather than by stability; the higher-order `tsitouras_54` and `runge_kutta_45` traverse the same interval in roughly a fifth as many steps.  The Kennedy-Carpenter methods accept the fewest steps of any integrator here, and `kennedy_carpenter_5` accepts the fewest of all, but each of those steps carries the cost of the Newton iteration noted above.  The implicit methods may accept fewer steps while doing more work per step than the explicit methods.
 
-The final result illustrates the PI step-size controller.  Applying it to `runge_kutta_45` raises the step count from 583 to 1107 for this problem.  That is the expected trade: the controller smooths the sequence of step sizes, which can be valuable when the error estimate is noisy or when stability rather than accuracy is limiting the step, but it costs efficiency when neither of those conditions applies.  Stability is not a concern for this problem, so the controller is shown here purely for illustration.  This is why PI control is disabled by default for every solver in the library and must be requested explicitly.
+The two multi-step methods make a useful counterpoint, because this problem is close to their worst case.  Van der Pol at $\mu = 5$ is a relaxation oscillator: long, smooth excursions punctuated by abrupt transitions.  A multi-step method earns its efficiency by carrying a history of accepted points and raising its order as that history proves reliable, and both `bdf` and `adams` restart at first order whenever the step is disturbed.  Repeated sharp transitions therefore deny them the sustained high order at which they excel, which is why `bdf` records the largest step count of any implicit method here.  Their advantage appears instead on smooth problems held to tight tolerances, where high order is sustainable; the order-selection study behind the `adams` entry above is a better illustration of that regime than this example is.
+
+Step counts are especially misleading for `adams`.  Its 1133 steps cost two derivative evaluations apiece and require neither a Jacobian nor a linear solve, so roughly 2300 model evaluations account for nearly the whole of its work.  The 245 steps taken by `kennedy_carpenter_5` are, individually, far more expensive: eight stages per step, each driving a Newton iteration that forms and factors a matrix.  The ranking by step count and the ranking by wall-clock time need not agree, and on a problem of this kind they generally will not.
+
+The final result illustrates the PI step-size controller.  Applying it to `runge_kutta_45` raises the step count from 583 to 1107 for this problem.  That is the expected trade: the controller smooths the sequence of step sizes, which can be valuable when the error estimate is noisy or when stability rather than accuracy is limiting the step, but it costs efficiency when neither of those conditions applies.  Stability is not a concern for this problem, so the controller is shown here purely for illustration.  This is why PI control is disabled by default for every solver in the library and must be requested explicitly.  Note that the controller applies to the single-step integrators; `rosenbrock` and the two multi-step methods use step-size estimators of their own.
 
 ### Differential-Algebraic Equations
 This final example illustrates the solution of a differential-algebraic equation (DAE) by means of a singular mass matrix.  The model is a simple pendulum expressed in Cartesian coordinates.  A mass $m$ swings from a pivot at the origin on a rigid, massless rod of length $L$, so the position of the mass $(x, y)$ must satisfy the constraint
