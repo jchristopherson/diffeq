@@ -198,6 +198,21 @@ solver types expose the same `solve` and `get_solution` workflow.
         be nonsingular, so DAEs are out of reach. The method restarts at first
         order.
 
+### Step Size and Order Control in the Multi-Step Solvers
+`bdf` and `adams` share a single controller, so what follows applies equally to both; only the error constants belonging to each family of formulae differ.
+
+The predictor and the corrector are of the same order, so their difference is proportional to the local truncation error of the step.  Scaling that difference by the tolerances and taking a root-mean-square norm gives a normalized error $e$, and the step is accepted when $e \le 1$.
+
+The order is reconsidered after every accepted step.  Divided differences of the stored solution supply the error the method would have committed at orders $k-1$, $k$, and $k+1$, and each is converted into the step-size ratio it would permit,
+
+$$
+\rho_j = \left( \frac{1}{e_j} \right)^{1/(j+1)}.
+$$
+
+Whichever order offers the largest $\rho$ is adopted.  Measuring all three candidates the same way matters here: a comparison drawn between differently scaled estimates would favor one order for no better reason than its constant.  An increase in order is withheld until the current order has survived $k+1$ consecutive steps, which keeps the method from chasing transients, and the order can never exceed the history on hand.  Both solvers therefore begin at first order, which is also why neither requires a starting procedure or a consistent initial derivative.
+
+The step size for the next step is the $\rho$ belonging to the chosen order, multiplied by the safety factor.  Growth is capped at tenfold and reduction at one tenth, and a ratio falling between one and two is treated as no change at all: a multi-step formula interpolates its own history, so its stability suffers when the spacing of that history is disturbed without something to gain.  A step failing the error test is retried at between one half and one tenth of its size, a corrector that fails outright quarters it, and three consecutive failures of either kind return the order to one.
+
 ## Building DIFFEQ
 DIFFEQ can be built with either [CMake](https://cmake.org/) or the [Fortran
 Package Manager (FPM)](https://github.com/fortran-lang/fpm). Both build systems
