@@ -13,13 +13,14 @@ program example
     type(rosenbrock) :: integrator_1
     type(kennedy_carpenter_4) :: integrator_2
     type(kennedy_carpenter_5) :: integrator_3
+    type(bdf) :: integrator_4
     type(ode_container) :: mdl
     real(real64) :: mu
-    real(real64), allocatable, dimension(:,:) :: sol_1, sol_2, sol_3
+    real(real64), allocatable, dimension(:,:) :: sol_1, sol_2, sol_3, sol_4
 
     ! Plot Variables
     type(plot_2d) :: plt
-    type(plot_data_2d) :: pd1, pd2, pd3
+    type(plot_data_2d) :: pd1, pd2, pd3, pd4
     class(plot_axis), pointer :: xAxis, yAxis
     class(legend), pointer :: lgnd
 
@@ -36,6 +37,9 @@ program example
 
     call integrator_3%solve(mdl, x, ic, args = mu)
     sol_3 = integrator_3%get_solution()
+
+    call integrator_4%solve(mdl, x, ic, args = mu)
+    sol_4 = integrator_4%get_solution()
 
 
     ! Plot the results
@@ -68,6 +72,12 @@ program example
     call pd3%set_line_width(2.0)
     call pd3%set_line_style(LINE_DASH_DOTTED)
     call plt%push(pd3)
+
+    call pd4%define_data(sol_4(:,1), sol_4(:,2))
+    call pd4%set_name("BDF")
+    call pd4%set_line_width(3.0)
+    call pd4%set_line_style(LINE_DOTTED)
+    call plt%push(pd4)
 
     call plt%draw()
 end program
