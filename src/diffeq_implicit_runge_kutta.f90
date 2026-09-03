@@ -869,7 +869,7 @@ subroutine kc_mass_stage(sys, x, base, diagonal_step, state, derivative, args)
         call sys%fcn(x, state, f, args)
         call sys%mass_matrix(x, state, mass, args)
         residual = matmul(mass, state - base) - diagonal_step * f
-        if (norm2(residual) <= 1.0d-12 * max(1.0d0, norm2(state))) exit
+        if (norm2(residual) <= 1.0d-14 * max(1.0d0, norm2(state))) exit
         call sys%compute_jacobian(x, state, jac, args)
         system = mass - diagonal_step * jac
         fdstep = sys%get_finite_difference_step()
