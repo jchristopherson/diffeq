@@ -7,6 +7,87 @@ module diffeq_test_implicit_rk
 
 contains
 ! ------------------------------------------------------------------------------
+function test_kennedy_carpenter_4() result(rst)
+    logical :: rst
+    type(kennedy_carpenter_4) :: integrator
+    type(ode_container) :: mdl
+    real(real64), allocatable :: sol(:,:), ans(:)
+    mdl%fcn => test_1dof_1
+    call integrator%set_absolute_tolerance(1.0d-10)
+    call integrator%set_relative_tolerance(1.0d-10)
+    call integrator%solve(mdl, [0.0d0, 1.0d0], [2.0d0])
+    sol = integrator%get_solution()
+    ans = test_1dof_solution_1(sol(:,1))
+    rst = assert(ans, sol(:,2), 1.0d-5)
+end function
+
+! ------------------------------------------------------------------------------
+function test_kennedy_carpenter_5() result(rst)
+    logical :: rst
+    type(kennedy_carpenter_5) :: integrator
+    type(ode_container) :: mdl
+    real(real64), allocatable :: sol(:,:), ans(:)
+    mdl%fcn => test_1dof_1
+    call integrator%set_absolute_tolerance(1.0d-10)
+    call integrator%set_relative_tolerance(1.0d-10)
+    call integrator%solve(mdl, [0.0d0, 1.0d0], [2.0d0])
+    sol = integrator%get_solution()
+    ans = test_1dof_solution_1(sol(:,1))
+    rst = assert(ans, sol(:,2), 1.0d-6)
+end function
+
+! ------------------------------------------------------------------------------
+function test_kennedy_carpenter_mass_matrix() result(rst)
+    logical :: rst
+    type(kennedy_carpenter_4) :: integrator
+    type(ode_container) :: mdl
+    real(real64), allocatable :: sol(:,:)
+    mdl%fcn => rosenbrock_mass_ode
+    mdl%mass_matrix => rosenbrock_mass_matrix
+    call mdl%set_is_mass_matrix_dependent(.false.)
+    call integrator%set_absolute_tolerance(1.0d-9)
+    call integrator%set_relative_tolerance(1.0d-9)
+    call integrator%solve(mdl, [0.0d0, 1.0d0], [1.0d0, 1.0d0])
+    sol = integrator%get_solution()
+    rst = abs(sol(size(sol,1),2) - exp(-1.0d0)) < 1.0d-7 .and. &
+        abs(sol(size(sol,1),3) - exp(-2.0d0)) < 1.0d-7
+end function
+
+! ------------------------------------------------------------------------------
+function test_kennedy_carpenter_singular_mass_matrix() result(rst)
+    logical :: rst
+    type(kennedy_carpenter_4) :: integrator4
+    type(kennedy_carpenter_5) :: integrator5
+    type(ode_container) :: mdl
+    type(cartesian_pendulum_properties) :: args
+    real(real64), allocatable :: sol4(:,:), sol5(:,:)
+    real(real64) :: length
+
+    length = 1.5d0
+    args%length = length
+    args%mass = 2.0d0
+    mdl%fcn => cartesian_pendulum
+    mdl%mass_matrix => cartesian_pendulum_mass_matrix
+    call mdl%set_is_mass_matrix_dependent(.false.)
+    call integrator4%set_absolute_tolerance(1.0d-9)
+    call integrator4%set_relative_tolerance(1.0d-9)
+    call integrator5%set_absolute_tolerance(1.0d-9)
+    call integrator5%set_relative_tolerance(1.0d-9)
+
+    call integrator4%solve(mdl, [0.0d0, 0.1d0], &
+        [length, 0.0d0, 0.0d0, 0.0d0, 0.0d0], args)
+    call integrator5%solve(mdl, [0.0d0, 0.1d0], &
+        [length, 0.0d0, 0.0d0, 0.0d0, 0.0d0], args)
+    sol4 = integrator4%get_solution()
+    sol5 = integrator5%get_solution()
+
+    rst = abs(sol4(size(sol4,1),2)**2 + sol4(size(sol4,1),4)**2 - &
+        length**2) < 1.0d-7 .and. &
+        abs(sol5(size(sol5,1),2)**2 + sol5(size(sol5,1),4)**2 - &
+        length**2) < 1.0d-7
+end function
+
+! ------------------------------------------------------------------------------
 function test_rosenbrock_1() result(rst)
     ! Arguments
     logical :: rst

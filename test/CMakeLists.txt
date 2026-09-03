@@ -4,7 +4,8 @@ set(diffeq_test_sources
     diffeq_jacobian_tests.f90
     diffeq_test_runge_kutta.f90
     diffeq_test_implicit_rk.f90
-    diffeq_test_vode.f90
+    diffeq_test_bdf.f90
+    diffeq_test_pece.f90
 )
 
 find_package(fortran_test_helper QUIET)
@@ -15,7 +16,10 @@ if (NOT fortran_test_helper_FOUND)
         GIT_TAG "origin/main"
         GIT_REPOSITORY https://github.com/jchristopherson/fortran_test_helper
     )
+    set(_linalg_build_testing ${BUILD_TESTING})
+    set(BUILD_TESTING OFF)
     FetchContent_MakeAvailable(fortran_test_helper)
+    set(BUILD_TESTING ${_linalg_build_testing})
     set(FTH_LIBRARIES fortran_test_helper)
 else()
     set(FTH_LIBRARIES fortran_test_helper::fortran_test_helper)
@@ -43,3 +47,4 @@ if (${BUILD_SHARED_LIBS} AND WIN32)
         COMMAND_EXPAND_LISTS
     )
 endif()
+

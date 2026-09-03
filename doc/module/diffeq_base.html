@@ -12,29 +12,14 @@
 
     <title>diffeq_base &ndash; DIFFEQ</title>
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <!-- Font Awesome -->
-    <link href="../css/fontawesome.min.css" rel="stylesheet">
-    <link href="../css/brands.min.css" rel="stylesheet">
-    <link href="../css/regular.min.css" rel="stylesheet">
-    <link href="../css/solid.min.css" rel="stylesheet">
-    <link href="../css/v4-font-face.min.css" rel="stylesheet">
-    <link href="../css/v4-shims.min.css" rel="stylesheet">
-    <!-- MathJax -->
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Config({
-        TeX: { equationNumbers: { autoNumber: "AMS" } }
-      });
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
-            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
-    <!-- Other scripts and stylesheets -->
-    <link href="../css/local.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
@@ -87,8 +72,9 @@
         <ul class="list-inline" style="margin-bottom:0px;display:inline">
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
-              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="29.6% of total for modules and submodules.">532 statements</a>
+              <a data-bs-toggle="tooltip"
+                 data-bs-placement="bottom" data-html="true"
+                 title="18.9% of total for modules and submodules.">533 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -108,11 +94,9 @@
     </div>
   </div>
   <script>
-    // Enable Bootstrap tooltips
-    (function () {
-      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-    })();
+    $(function () {
+    $('[data-bs-toggle="tooltip"]').tooltip()
+    })
   </script>
 
   </div>
@@ -189,8 +173,8 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
                   <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
               </ul>
             </li>
         </ul>
@@ -232,7 +216,7 @@
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~43"></span>
+              <span class="anchor" id="variable-this~29"></span>
               class(<a href='..\type\single_step_integrator.html'>single_step_integrator</a>),
             </td>
 <td>intent(inout)</td>
@@ -247,7 +231,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-sys~15"></span>
+              <span class="anchor" id="variable-sys~8"></span>
               class(<a href='..\type\ode_container.html'>ode_container</a>),
             </td>
 <td>intent(inout)</td>
@@ -262,7 +246,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-h~16"></span>
+              <span class="anchor" id="variable-h~7"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -277,7 +261,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~23"></span>
+              <span class="anchor" id="variable-x~18"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -292,7 +276,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~25"></span>
+              <span class="anchor" id="variable-y~12"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -307,7 +291,7 @@
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-f~14"></span>
+              <span class="anchor" id="variable-f~4"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -323,7 +307,7 @@ at x.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-yn~13"></span>
+              <span class="anchor" id="variable-yn~3"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -339,7 +323,7 @@ solution estimate at x + h.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-fn~13"></span>
+              <span class="anchor" id="variable-fn~3"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -355,7 +339,7 @@ derivative estimate at x + h.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-yerr~6"></span>
+              <span class="anchor" id="variable-yerr~2"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -371,7 +355,7 @@ of the error in each equation.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-k~9"></span>
+              <span class="anchor" id="variable-k~4"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -387,7 +371,7 @@ stage.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~21"></span>
+              <span class="anchor" id="variable-args~11"></span>
               class(*),
             </td>
 <td>intent(inout),</td>
@@ -436,7 +420,7 @@ in and out of the differential equation subroutine.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~44"></span>
+              <span class="anchor" id="variable-this~30"></span>
               class(<a href='..\type\single_step_integrator.html'>single_step_integrator</a>),
             </td>
 <td>intent(in)</td>
@@ -490,7 +474,7 @@ ODE's to integrate.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~19"></span>
+              <span class="anchor" id="variable-x~14"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -505,7 +489,7 @@ ODE's to integrate.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~22"></span>
+              <span class="anchor" id="variable-y~9"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -521,7 +505,7 @@ dependent variables.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dydx"></span>
+              <span class="anchor" id="variable-dydx~2"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -537,7 +521,7 @@ written.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~17"></span>
+              <span class="anchor" id="variable-args~7"></span>
               class(*),
             </td>
 <td>intent(inout),</td>
@@ -586,7 +570,7 @@ in and out of the routine.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~42"></span>
+              <span class="anchor" id="variable-this~28"></span>
               class(<a href='..\type\ode_integrator.html'>ode_integrator</a>),
             </td>
 <td>intent(in)</td>
@@ -640,7 +624,7 @@ matrix of a system of first order ODE's.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~20"></span>
+              <span class="anchor" id="variable-x~15"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -655,7 +639,7 @@ matrix of a system of first order ODE's.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~23"></span>
+              <span class="anchor" id="variable-y~10"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -671,7 +655,7 @@ dependent variables.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-jac~4"></span>
+              <span class="anchor" id="variable-jac"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -686,7 +670,7 @@ dependent variables.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~18"></span>
+              <span class="anchor" id="variable-args~8"></span>
               class(*),
             </td>
 <td>intent(inout),</td>
@@ -736,7 +720,7 @@ for a system of differential equations.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~21"></span>
+              <span class="anchor" id="variable-x~16"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -751,7 +735,7 @@ for a system of differential equations.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~24"></span>
+              <span class="anchor" id="variable-y~11"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -767,7 +751,7 @@ dependent variables.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-m"></span>
+              <span class="anchor" id="variable-m~4"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -782,7 +766,7 @@ dependent variables.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~19"></span>
+              <span class="anchor" id="variable-args~9"></span>
               class(*),
             </td>
 <td>intent(inout),</td>
@@ -831,7 +815,7 @@ in and out of the routine.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~41"></span>
+              <span class="anchor" id="variable-this~27"></span>
               class(<a href='..\type\ode_integrator.html'>ode_integrator</a>),
             </td>
 <td>intent(inout)</td>
@@ -846,7 +830,7 @@ in and out of the routine.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-sys~14"></span>
+              <span class="anchor" id="variable-sys~7"></span>
               class(<a href='..\type\ode_container.html'>ode_container</a>),
             </td>
 <td>intent(inout)</td>
@@ -861,7 +845,7 @@ in and out of the routine.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~22"></span>
+              <span class="anchor" id="variable-x~17"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -895,7 +879,7 @@ values.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~20"></span>
+              <span class="anchor" id="variable-args~10"></span>
               class(*),
             </td>
 <td>intent(inout),</td>
@@ -944,7 +928,7 @@ in and out of the differential equation subroutine.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~48"></span>
+              <span class="anchor" id="variable-this~34"></span>
               class(<a href='..\type\single_step_integrator.html'>single_step_integrator</a>),
             </td>
 <td>intent(in)</td>
@@ -997,7 +981,7 @@ in and out of the differential equation subroutine.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~46"></span>
+              <span class="anchor" id="variable-this~32"></span>
               class(<a href='..\type\single_step_integrator.html'>single_step_integrator</a>),
             </td>
 <td>intent(in)</td>
@@ -1012,7 +996,7 @@ in and out of the differential equation subroutine.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~25"></span>
+              <span class="anchor" id="variable-x~20"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -1028,7 +1012,7 @@ the interpolation.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-xn~10"></span>
+              <span class="anchor" id="variable-xn~3"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -1044,7 +1028,7 @@ solution is computed.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-yn~15"></span>
+              <span class="anchor" id="variable-yn~5"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -1059,7 +1043,7 @@ solution is computed.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-fn~15"></span>
+              <span class="anchor" id="variable-fn~5"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -1074,7 +1058,7 @@ solution is computed.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-xn1~5"></span>
+              <span class="anchor" id="variable-xn1"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -1089,7 +1073,7 @@ solution is computed.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-yn1~5"></span>
+              <span class="anchor" id="variable-yn1"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -1104,7 +1088,7 @@ solution is computed.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-fn1~5"></span>
+              <span class="anchor" id="variable-fn1"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -1119,7 +1103,7 @@ solution is computed.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~27"></span>
+              <span class="anchor" id="variable-y~14"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -1169,7 +1153,7 @@ up interpolation, after successful completion of a step.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~45"></span>
+              <span class="anchor" id="variable-this~31"></span>
               class(<a href='..\type\single_step_integrator.html'>single_step_integrator</a>),
             </td>
 <td>intent(inout)</td>
@@ -1184,7 +1168,7 @@ up interpolation, after successful completion of a step.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-sys~16"></span>
+              <span class="anchor" id="variable-sys~9"></span>
               class(<a href='..\type\ode_container.html'>ode_container</a>),
             </td>
 <td>intent(inout)</td>
@@ -1199,7 +1183,7 @@ up interpolation, after successful completion of a step.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dense~5"></span>
+              <span class="anchor" id="variable-dense~2"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -1214,7 +1198,7 @@ up interpolation, after successful completion of a step.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~24"></span>
+              <span class="anchor" id="variable-x~19"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -1229,7 +1213,7 @@ up interpolation, after successful completion of a step.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-xn~9"></span>
+              <span class="anchor" id="variable-xn~2"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -1244,7 +1228,7 @@ up interpolation, after successful completion of a step.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~26"></span>
+              <span class="anchor" id="variable-y~13"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -1259,7 +1243,7 @@ up interpolation, after successful completion of a step.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-yn~14"></span>
+              <span class="anchor" id="variable-yn~4"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -1274,7 +1258,7 @@ up interpolation, after successful completion of a step.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-f~15"></span>
+              <span class="anchor" id="variable-f~5"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -1289,7 +1273,7 @@ up interpolation, after successful completion of a step.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-fn~14"></span>
+              <span class="anchor" id="variable-fn~4"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -1304,7 +1288,7 @@ up interpolation, after successful completion of a step.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-k~10"></span>
+              <span class="anchor" id="variable-k~5"></span>
               real(kind=real64),
             </td>
 <td>intent(inout),</td>
@@ -1320,7 +1304,7 @@ stage.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~22"></span>
+              <span class="anchor" id="variable-args~12"></span>
               class(*),
             </td>
 <td>intent(inout),</td>
@@ -1370,7 +1354,7 @@ up Jacobian calculations.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~47"></span>
+              <span class="anchor" id="variable-this~33"></span>
               class(<a href='..\type\single_step_integrator.html'>single_step_integrator</a>),
             </td>
 <td>intent(inout)</td>
@@ -1385,7 +1369,7 @@ up Jacobian calculations.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-prevs~5"></span>
+              <span class="anchor" id="variable-prevs"></span>
               logical,
             </td>
 <td>intent(in)</td>
@@ -1402,7 +1386,7 @@ previous step failed.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-sys~17"></span>
+              <span class="anchor" id="variable-sys~10"></span>
               class(<a href='..\type\ode_container.html'>ode_container</a>),
             </td>
 <td>intent(inout)</td>
@@ -1417,7 +1401,7 @@ previous step failed.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-h~17"></span>
+              <span class="anchor" id="variable-h~8"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -1432,7 +1416,7 @@ previous step failed.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~26"></span>
+              <span class="anchor" id="variable-x~21"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -1447,7 +1431,7 @@ previous step failed.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~28"></span>
+              <span class="anchor" id="variable-y~15"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -1462,7 +1446,7 @@ previous step failed.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-f~16"></span>
+              <span class="anchor" id="variable-f~6"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -1478,7 +1462,7 @@ at x.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~23"></span>
+              <span class="anchor" id="variable-args~13"></span>
               class(*),
             </td>
 <td>intent(inout),</td>
@@ -1531,7 +1515,7 @@ in and out of the differential equation subroutine.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-fcn~2"></span>
+              <span class="anchor" id="variable-fcn"></span>
               procedure(<a href='..\interface\ode.html'>ode</a>),
             </td>
               <td>public,</td>
@@ -1596,32 +1580,32 @@ will be assumed.</p>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-compute_jacobian'>compute_jacobian</a></strong> => oc_jacobian</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-get_finite_difference_step'>get_finite_difference_step</a></strong> => oc_get_fd_step</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-get_is_mass_matrix_dependent'>get_is_mass_matrix_dependent</a></strong> => oc_get_is_mass_dependent</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-get_is_ode_defined'>get_is_ode_defined</a></strong> => oc_get_is_ode_defined</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-set_finite_difference_step'>set_finite_difference_step</a></strong> => oc_set_fd_step</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-set_is_mass_matrix_dependent'>set_is_mass_matrix_dependent</a></strong> => oc_set_is_mass_dependent</td>
-                  <td></td>
+                <td></td>
               </tr>
           </tbody>
         </table>
@@ -1632,7 +1616,7 @@ will be assumed.</p>
     <div class="card-header codesum">
       <span class="anchor" id="type-ode_integrator"></span>
       <h3>
-        type, public, abstract&nbsp;::&nbsp;
+        type, public&nbsp;::&nbsp;
         <a href='..\type\ode_integrator.html'>ode_integrator</a>
         
       </h3>
@@ -1649,125 +1633,125 @@ will be assumed.</p>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-append_to_buffer'>append_to_buffer</a></strong> => oi_append_to_buffer</td>
-                  <td><p>Appends the supplied solution point to the internal solution 
-buffer.</p></td>
+                <td>..\..\<p>Appends the supplied solution point to the internal solution 
+buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-clear_buffer'>clear_buffer</a></strong> => oi_clear_buffer</td>
-                  <td><p>Clears the contents of the buffer.</p></td>
+                <td>..\..\<p>Clears the contents of the buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
-                  <td><p>Computes the norm of the scaled error estimate.</p></td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm'>compute_error_norm</a></strong> => oi_estimate_error</td>
+                <td>..\..\<p>Computes the norm of the scaled error estimate.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_inital_step_size'>estimate_inital_step_size</a></strong> => oi_initial_step</td>
-                  <td><p>Computes an estimate of an initial step size.</p></td>
+                <td>..\..\<p>Computes an estimate of an initial step size.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
-                  <td><p>Estimates the next step size.</p></td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size'>estimate_next_step_size</a></strong> => oi_next_step</td>
+                <td>..\..\<p>Estimates the next step size.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_absolute_tolerance'>get_absolute_tolerance</a></strong> => oi_get_abs_tol</td>
-                  <td><p>Gets the absolute error tolerance.</p></td>
+                <td>..\..\<p>Gets the absolute error tolerance.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_allow_overshoot'>get_allow_overshoot</a></strong> => oi_get_allow_overshoot</td>
-                  <td><p>Gets a value determining if the solver is allowed to overshoot 
-the final value in the integration range.</p></td>
+                <td>..\..\<p>Gets a value determining if the solver is allowed to overshoot 
+the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_maximum_step_size'>get_maximum_step_size</a></strong> => oi_get_max_step</td>
-                  <td><p>Gets the magnitude of the maximum allowed step size.</p></td>
+                <td>..\..\<p>Gets the magnitude of the maximum allowed step size.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_minimum_step_size'>get_minimum_step_size</a></strong> => oi_get_min_step</td>
-                  <td><p>Gets the magnitude of the minimum allowed step size.</p></td>
+                <td>..\..\<p>Gets the magnitude of the minimum allowed step size.<\p></td>
               </tr>
               <tr>
                 <td>  procedure(<a href='..\interface\ode_integer_inquiry.html'>ode_integer_inquiry</a>), public, deferred, pass ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_order~6'>get_order</a></strong></td>
-                  <td><p>Returns the order of the integrator.</p></td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_order~2'>get_order</a></strong></td>
+                <td>..\..\<p>Returns the order of the integrator.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_relative_tolerance'>get_relative_tolerance</a></strong> => oi_get_abs_tol</td>
-                  <td><p>Gets the relative error tolerance.</p></td>
+                <td>..\..\<p>Gets the relative error tolerance.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_solution'>get_solution</a></strong> => oi_get_solution</td>
-                  <td><p>Returns the solution computed by the integrator.</p></td>
+                <td>..\..\<p>Returns the solution computed by the integrator.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_limit'>get_step_limit</a></strong> => oi_get_step_limit</td>
-                  <td><p>Gets the limit on the number of integration steps.</p></td>
+                <td>..\..\<p>Gets the limit on the number of integration steps.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_size_control_parameter'>get_step_size_control_parameter</a></strong> => oi_get_control_parameter</td>
-                  <td><p>Gets the step size PI control parameter.</p></td>
+                <td>..\..\<p>Gets the step size PI control parameter.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_size_factor'>get_step_size_factor</a></strong> => oi_get_safety_factor</td>
-                  <td><p>Gets the step size safety factor.</p></td>
+                <td>..\..\<p>Gets the step size safety factor.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_absolute_tolerance'>set_absolute_tolerance</a></strong> => oi_set_abs_tol</td>
-                  <td><p>Sets the absolute error tolerance.</p></td>
+                <td>..\..\<p>Sets the absolute error tolerance.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_allow_overshoot'>set_allow_overshoot</a></strong> => oi_set_allow_overshoot</td>
-                  <td><p>Sets a value determining if the solver is allowed to overshoot 
-the final value in the integration range.</p></td>
+                <td>..\..\<p>Sets a value determining if the solver is allowed to overshoot 
+the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_maximum_step_size'>set_maximum_step_size</a></strong> => oi_set_max_step</td>
-                  <td><p>Sets the magnitude of the maximum allowed step size.</p></td>
+                <td>..\..\<p>Sets the magnitude of the maximum allowed step size.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_minimum_step_size'>set_minimum_step_size</a></strong> => oi_set_min_step</td>
-                  <td><p>Sets the magnitude of the minimum allowed step size.</p></td>
+                <td>..\..\<p>Sets the magnitude of the minimum allowed step size.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_relative_tolerance'>set_relative_tolerance</a></strong> => oi_set_abs_tol</td>
-                  <td><p>Sets the relative error tolerance.</p></td>
+                <td>..\..\<p>Sets the relative error tolerance.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_limit'>set_step_limit</a></strong> => oi_set_step_limit</td>
-                  <td><p>Sets the limit on the number of integration steps.</p></td>
+                <td>..\..\<p>Sets the limit on the number of integration steps.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_size_control_parameter'>set_step_size_control_parameter</a></strong> => oi_set_control_parameter</td>
-                  <td><p>Sets the step size PI control parameter.</p></td>
+                <td>..\..\<p>Sets the step size PI control parameter.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_size_factor'>set_step_size_factor</a></strong> => oi_set_safety_factor</td>
-                  <td><p>Sets the step size safety factor.</p></td>
+                <td>..\..\<p>Sets the step size safety factor.<\p></td>
               </tr>
               <tr>
                 <td>  procedure(<a href='..\interface\ode_solver.html'>ode_solver</a>), public, deferred, pass ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-solve~2'>solve</a></strong></td>
-                  <td><p>Solves the supplied system of ODE's.</p></td>
+                <td>..\..\<p>Solves the supplied system of ODE's.<\p></td>
               </tr>
           </tbody>
         </table>
@@ -1778,7 +1762,7 @@ the final value in the integration range.</p></td>
     <div class="card-header codesum">
       <span class="anchor" id="type-single_step_integrator"></span>
       <h3>
-        type, public, abstract, extends(<a href='..\type\ode_integrator.html'>ode_integrator</a>)&nbsp;::&nbsp;
+        type, public, extends(<a href='..\type\ode_integrator.html'>ode_integrator</a>)&nbsp;::&nbsp;
         <a href='..\type\single_step_integrator.html'>single_step_integrator</a>
         
       </h3>
@@ -1796,159 +1780,159 @@ systems of ODE's.</p>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-append_to_buffer'>append_to_buffer</a></strong> => oi_append_to_buffer</td>
-                  <td><p>Appends the supplied solution point to the internal solution 
-buffer.</p></td>
+                <td>..\..\<p>Appends the supplied solution point to the internal solution 
+buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure(<a href='..\interface\attempt_single_step.html'>attempt_single_step</a>), public, deferred, pass ::
-  <strong><a href='..\type\single_step_integrator.html#boundprocedure-attempt_step~5'>attempt_step</a></strong></td>
-                  <td><p>Attempts an integration step for a single-step integrator.</p></td>
+  <strong><a href='..\type\single_step_integrator.html#boundprocedure-attempt_step'>attempt_step</a></strong></td>
+                <td>..\..\<p>Attempts an integration step for a single-step integrator.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-clear_buffer'>clear_buffer</a></strong> => oi_clear_buffer</td>
-                  <td><p>Clears the contents of the buffer.</p></td>
+                <td>..\..\<p>Clears the contents of the buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
-                  <td><p>Computes the norm of the scaled error estimate.</p></td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm'>compute_error_norm</a></strong> => oi_estimate_error</td>
+                <td>..\..\<p>Computes the norm of the scaled error estimate.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_inital_step_size'>estimate_inital_step_size</a></strong> => oi_initial_step</td>
-                  <td><p>Computes an estimate of an initial step size.</p></td>
+                <td>..\..\<p>Computes an estimate of an initial step size.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
-                  <td><p>Estimates the next step size.</p></td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size'>estimate_next_step_size</a></strong> => oi_next_step</td>
+                <td>..\..\<p>Estimates the next step size.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_absolute_tolerance'>get_absolute_tolerance</a></strong> => oi_get_abs_tol</td>
-                  <td><p>Gets the absolute error tolerance.</p></td>
+                <td>..\..\<p>Gets the absolute error tolerance.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_allow_overshoot'>get_allow_overshoot</a></strong> => oi_get_allow_overshoot</td>
-                  <td><p>Gets a value determining if the solver is allowed to overshoot 
-the final value in the integration range.</p></td>
+                <td>..\..\<p>Gets a value determining if the solver is allowed to overshoot 
+the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure(<a href='..\interface\get_single_step_logical_parameter.html'>get_single_step_logical_parameter</a>), public, deferred, pass ::
-  <strong><a href='..\type\single_step_integrator.html#boundprocedure-get_is_fsal~5'>get_is_fsal</a></strong></td>
-                  <td><p>Gets a logical parameter stating if this is a first-same-as-last
-(FSAL) integrator.</p></td>
+  <strong><a href='..\type\single_step_integrator.html#boundprocedure-get_is_fsal'>get_is_fsal</a></strong></td>
+                <td>..\..\<p>Gets a logical parameter stating if this is a first-same-as-last
+(FSAL) integrator.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_maximum_step_size'>get_maximum_step_size</a></strong> => oi_get_max_step</td>
-                  <td><p>Gets the magnitude of the maximum allowed step size.</p></td>
+                <td>..\..\<p>Gets the magnitude of the maximum allowed step size.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_minimum_step_size'>get_minimum_step_size</a></strong> => oi_get_min_step</td>
-                  <td><p>Gets the magnitude of the minimum allowed step size.</p></td>
+                <td>..\..\<p>Gets the magnitude of the minimum allowed step size.<\p></td>
               </tr>
               <tr>
                 <td>  procedure(<a href='..\interface\ode_integer_inquiry.html'>ode_integer_inquiry</a>), public, deferred, pass ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_order~6'>get_order</a></strong></td>
-                  <td><p>Returns the order of the integrator.</p></td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_order~2'>get_order</a></strong></td>
+                <td>..\..\<p>Returns the order of the integrator.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_relative_tolerance'>get_relative_tolerance</a></strong> => oi_get_abs_tol</td>
-                  <td><p>Gets the relative error tolerance.</p></td>
+                <td>..\..\<p>Gets the relative error tolerance.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_solution'>get_solution</a></strong> => oi_get_solution</td>
-                  <td><p>Returns the solution computed by the integrator.</p></td>
+                <td>..\..\<p>Returns the solution computed by the integrator.<\p></td>
               </tr>
               <tr>
                 <td>  procedure(<a href='..\interface\single_step_integer_inquiry.html'>single_step_integer_inquiry</a>), public, deferred, pass ::
-  <strong><a href='..\type\single_step_integrator.html#boundprocedure-get_stage_count~5'>get_stage_count</a></strong></td>
-                  <td><p>Gets the number of stages used by the integrator.</p></td>
+  <strong><a href='..\type\single_step_integrator.html#boundprocedure-get_stage_count'>get_stage_count</a></strong></td>
+                <td>..\..\<p>Gets the number of stages used by the integrator.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_limit'>get_step_limit</a></strong> => oi_get_step_limit</td>
-                  <td><p>Gets the limit on the number of integration steps.</p></td>
+                <td>..\..\<p>Gets the limit on the number of integration steps.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_size_control_parameter'>get_step_size_control_parameter</a></strong> => oi_get_control_parameter</td>
-                  <td><p>Gets the step size PI control parameter.</p></td>
+                <td>..\..\<p>Gets the step size PI control parameter.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_size_factor'>get_step_size_factor</a></strong> => oi_get_safety_factor</td>
-                  <td><p>Gets the step size safety factor.</p></td>
+                <td>..\..\<p>Gets the step size safety factor.<\p></td>
               </tr>
               <tr>
                 <td>  procedure(<a href='..\interface\single_step_interpolate.html'>single_step_interpolate</a>), public, deferred, pass ::
-  <strong><a href='..\type\single_step_integrator.html#boundprocedure-interpolate~5'>interpolate</a></strong></td>
-                  <td><p>Performs an interpolation to estimate the solution at the
-requested point.</p></td>
+  <strong><a href='..\type\single_step_integrator.html#boundprocedure-interpolate~2'>interpolate</a></strong></td>
+                <td>..\..\<p>Performs an interpolation to estimate the solution at the
+requested point.<\p></td>
               </tr>
               <tr>
                 <td>  procedure(<a href='..\interface\single_step_post_step_routine.html'>single_step_post_step_routine</a>), public, deferred, pass ::
-  <strong><a href='..\type\single_step_integrator.html#boundprocedure-post_step_action~5'>post_step_action</a></strong></td>
-                  <td><p>Performs actions such as setting up interpolation after 
-completion of a successful integration step.</p></td>
+  <strong><a href='..\type\single_step_integrator.html#boundprocedure-post_step_action'>post_step_action</a></strong></td>
+                <td>..\..\<p>Performs actions such as setting up interpolation after 
+completion of a successful integration step.<\p></td>
               </tr>
               <tr>
                 <td>  procedure(<a href='..\interface\single_step_pre_step_routine.html'>single_step_pre_step_routine</a>), public, deferred, pass ::
-  <strong><a href='..\type\single_step_integrator.html#boundprocedure-pre_step_action~5'>pre_step_action</a></strong></td>
-                  <td><p>Provides a routine for performing any actions, such as setting
-up Jacobian calculations.</p></td>
+  <strong><a href='..\type\single_step_integrator.html#boundprocedure-pre_step_action'>pre_step_action</a></strong></td>
+                <td>..\..\<p>Provides a routine for performing any actions, such as setting
+up Jacobian calculations.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_absolute_tolerance'>set_absolute_tolerance</a></strong> => oi_set_abs_tol</td>
-                  <td><p>Sets the absolute error tolerance.</p></td>
+                <td>..\..\<p>Sets the absolute error tolerance.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_allow_overshoot'>set_allow_overshoot</a></strong> => oi_set_allow_overshoot</td>
-                  <td><p>Sets a value determining if the solver is allowed to overshoot 
-the final value in the integration range.</p></td>
+                <td>..\..\<p>Sets a value determining if the solver is allowed to overshoot 
+the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_maximum_step_size'>set_maximum_step_size</a></strong> => oi_set_max_step</td>
-                  <td><p>Sets the magnitude of the maximum allowed step size.</p></td>
+                <td>..\..\<p>Sets the magnitude of the maximum allowed step size.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_minimum_step_size'>set_minimum_step_size</a></strong> => oi_set_min_step</td>
-                  <td><p>Sets the magnitude of the minimum allowed step size.</p></td>
+                <td>..\..\<p>Sets the magnitude of the minimum allowed step size.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_relative_tolerance'>set_relative_tolerance</a></strong> => oi_set_abs_tol</td>
-                  <td><p>Sets the relative error tolerance.</p></td>
+                <td>..\..\<p>Sets the relative error tolerance.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_limit'>set_step_limit</a></strong> => oi_set_step_limit</td>
-                  <td><p>Sets the limit on the number of integration steps.</p></td>
+                <td>..\..\<p>Sets the limit on the number of integration steps.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_size_control_parameter'>set_step_size_control_parameter</a></strong> => oi_set_control_parameter</td>
-                  <td><p>Sets the step size PI control parameter.</p></td>
+                <td>..\..\<p>Sets the step size PI control parameter.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_step_size_factor'>set_step_size_factor</a></strong> => oi_set_safety_factor</td>
-                  <td><p>Sets the step size safety factor.</p></td>
+                <td>..\..\<p>Sets the step size safety factor.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\single_step_integrator.html#boundprocedure-solve~3'>solve</a></strong> => ssi_ode_solver</td>
-                  <td><p>Solves the supplied system of ODE's.</p></td>
+                <td>..\..\<p>Solves the supplied system of ODE's.<\p></td>
               </tr>
           </tbody>
         </table>
@@ -1970,21 +1954,40 @@ the final value in the integration range.</p></td>
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col">
-            <p>
-              DIFFEQ
- was developed by Jason Christopherson<br>              &copy; 2026 
+          <div class="col"><p>DIFFEQ was developed by Jason Christopherson<br>&copy; 2026 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-08-18 10:20 -0500             </p>
+ on 2026-09-02 18:59              </p>
           </div>
         </div>
         <br>
       </div> <!-- /container -->
     </footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
+
+    <!-- MathJax JavaScript
+             ================================================== -->
+             <!-- Placed at the end of the document so the pages load faster -->
+        <script type="text/x-mathjax-config">
+          MathJax.Hub.Config({
+          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+          });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+          <script src="../tipuesearch/tipuesearch_content.js"></script>
+          <script src="../tipuesearch/tipuesearch_set.js"></script>
+          <script src="../tipuesearch/tipuesearch.js"></script>
+
   </body>
 </html>

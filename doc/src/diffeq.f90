@@ -4,7 +4,9 @@ module diffeq
     use diffeq_base
     use diffeq_runge_kutta
     use diffeq_implicit_runge_kutta
-    use diffeq_vode
+    use diffeq_multistep
+    use diffeq_bdf
+    use diffeq_pece
     implicit none
     private
     
@@ -27,14 +29,26 @@ module diffeq
     public :: runge_kutta_45
     public :: runge_kutta_23
     public :: runge_kutta_853
+    public :: tsitouras_54
 
     ! DIFFEQ_IMPLICIT_RUNGE_KUTTA.F90
     public :: rosenbrock
+    public :: kennedy_carpenter_4
+    public :: kennedy_carpenter_5
 
-    ! DIFFEQ_VODE.F90
-    public :: VODE_ADAMS_METHOD
-    public :: VODE_BDF_METHOD
-    public :: vode
-    public :: adams
+    ! DIFFEQ_MULTISTEP.F90
+    public :: multistep_integrator
+    public :: newton_multistep_integrator
+    public :: build_linearized_system
+    public :: predictor_step
+    public :: multistep_corrector
+    public :: multistep_integer_inquiry
+    public :: multistep_error_constant
+
+    ! DIFFEQ_BDF.F90
     public :: bdf
+
+    ! DIFFEQ_PECE.F90
+    public :: adams
+
 end module

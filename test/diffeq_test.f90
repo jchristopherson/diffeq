@@ -3,7 +3,8 @@ program test
     use diffeq_jacobian_tests
     use diffeq_test_runge_kutta
     use diffeq_test_implicit_rk
-    use diffeq_test_vode
+    use diffeq_test_bdf
+    use diffeq_test_pece
     implicit none
 
     ! Local Variables
@@ -14,6 +15,12 @@ program test
     flag = 0
 
     ! Tests
+    rst = test_tsitouras_54()
+    if (.not.rst) flag = 1
+
+    rst = test_tsitouras_54_dense()
+    if (.not.rst) flag = 2
+
     rst = test_fd_jacobian_1()
     if (.not.rst) flag = 1
 
@@ -68,20 +75,74 @@ program test
     rst = test_rosenbrock_with_args()
     if (.not.rst) flag = 18
 
-    rst = test_runge_kutta_dense_with_args()
+    rst = test_kennedy_carpenter_4()
     if (.not.rst) flag = 19
 
-    rst = test_adams_1()
+    rst = test_kennedy_carpenter_5()
     if (.not.rst) flag = 20
 
-    rst = test_bdf_1()
+    rst = test_kennedy_carpenter_mass_matrix()
     if (.not.rst) flag = 21
 
-    rst = test_adams_with_args()
+    rst = test_kennedy_carpenter_singular_mass_matrix()
     if (.not.rst) flag = 22
 
-    rst = test_bdf_with_args()
+    rst = test_runge_kutta_dense_with_args()
     if (.not.rst) flag = 23
+
+    rst = test_bdf_1()
+    if (.not.rst) flag = 24
+
+    rst = test_bdf_2()
+    if (.not.rst) flag = 25
+
+    rst = test_bdf_dense()
+    if (.not.rst) flag = 26
+
+    rst = test_bdf_all_steps()
+    if (.not.rst) flag = 27
+
+    rst = test_bdf_mass_matrix()
+    if (.not.rst) flag = 28
+
+    rst = test_bdf_singular_mass_matrix()
+    if (.not.rst) flag = 29
+
+    rst = test_bdf_singular_mass_matrix_dense()
+    if (.not.rst) flag = 30
+
+    rst = test_bdf_with_args()
+    if (.not.rst) flag = 31
+
+    rst = test_bdf_order_range()
+    if (.not.rst) flag = 32
+
+    rst = test_adams_1()
+    if (.not.rst) flag = 33
+
+    rst = test_adams_2()
+    if (.not.rst) flag = 34
+
+    rst = test_adams_dense()
+    if (.not.rst) flag = 35
+
+    rst = test_adams_all_steps()
+    if (.not.rst) flag = 36
+
+    rst = test_adams_mass_matrix()
+    if (.not.rst) flag = 37
+
+    rst = test_adams_with_args()
+    if (.not.rst) flag = 38
+
+    rst = test_adams_order_range()
+    if (.not.rst) flag = 39
+
+    rst = test_adams_matches_bdf()
+    if (.not.rst) flag = 40
+
+    rst = test_adams_high_order()
+    if (.not.rst) flag = 41
 
     ! Output
     stop flag

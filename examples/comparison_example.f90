@@ -13,10 +13,13 @@ program example
     type(runge_kutta_45) :: integrator_2
     type(runge_kutta_853) :: integrator_3
     type(rosenbrock) :: integrator_4
-    type(bdf) :: integrator_5
-    type(adams) :: integrator_6
+    type(kennedy_carpenter_4) :: integrator_5
+    type(kennedy_carpenter_5) :: integrator_6
+    type(tsitouras_54) :: integrator_7
+    type(bdf) :: integrator_8
+    type(adams) :: integrator_9
     type(ode_container) :: mdl
-    real(real64), allocatable, dimension(:,:) :: s1, s2, s3, s4, s4a, s5, s6
+    real(real64), allocatable, dimension(:,:) :: s1, s2, s2a, s3, s4, s5, s6, s7, s8, s9
 
     ! Define the model
     mdl%fcn => vanderpol
@@ -28,6 +31,9 @@ program example
     call integrator_4%solve(mdl, t, ic)
     call integrator_5%solve(mdl, t, ic)
     call integrator_6%solve(mdl, t, ic)
+    call integrator_7%solve(mdl, t, ic)
+    call integrator_8%solve(mdl, t, ic)
+    call integrator_9%solve(mdl, t, ic)
 
     ! Retrieve the solution from each integrator
     s1 = integrator_1%get_solution()
@@ -36,6 +42,9 @@ program example
     s4 = integrator_4%get_solution()
     s5 = integrator_5%get_solution()
     s6 = integrator_6%get_solution()
+    s7 = integrator_7%get_solution()
+    s8 = integrator_8%get_solution()
+    s9 = integrator_9%get_solution()
 
     ! Print out the size of each solution
     print "(A, I0, A)", "RUNGE_KUTTA_23: ", size(s1, 1), " Solution Points"
@@ -47,13 +56,18 @@ program example
     ! increase the number of steps (loss of efficiency), but if there were
     ! any stability issues, stability will likely improve.  Stability is likely
     ! not relevant on this problem, but it's here for illustration purposes.
-    call integrator_4%clear_buffer()
-    call integrator_4%set_step_size_control_parameter(0.1d0)
-    call integrator_4%solve(mdl, t, ic)
-    s4a = integrator_4%get_solution()
-    print "(A, I0 ,A)", "ROSENBROCK w/ PI Controller: ", size(s4a, 1), " Solution Points"
+    call integrator_2%clear_buffer()
+    call integrator_2%set_step_size_control_parameter(0.1d0)
+    call integrator_2%solve(mdl, t, ic)
+    s2a = integrator_2%get_solution()
+    print "(A, I0 ,A)", "RUNGE_KUTTA_45 w/ PI Controller: ", size(s2a, 1), " Solution Points"
 
-    ! VODE Integrators
-    print "(A, I0, A)", "BDF: ", size(s5, 1), " Solution Points"
-    print "(A, I0, A)", "ADAMS: ", size(s6, 1), " Solution Points"
+    ! Kennedy-Carpenter Integrators
+    print "(A, I0, A)", "KC4: ", size(s5, 1), " Solution Points"
+    print "(A, I0, A)", "KC5: ", size(s6, 1), " Solution Points"
+
+    ! Additional Integrators
+    print "(A, I0, A)", "TSITOURAS 4/5: ", size(s7, 1), " Solution Points"
+    print "(A, I0, A)", "BDF: ", size(s8, 1), " Solution Points"
+    print "(A, I0, A)", "ADAMS: ", size(s9, 1), " Solution Points"
 end program

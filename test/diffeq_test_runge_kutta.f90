@@ -7,6 +7,38 @@ module diffeq_test_runge_kutta
 
 contains
 ! ------------------------------------------------------------------------------
+function test_tsitouras_54() result(rst)
+    logical :: rst
+    type(tsitouras_54) :: integrator
+    type(ode_container) :: mdl
+    real(real64), allocatable :: sol(:,:), ans(:)
+    mdl%fcn => test_1dof_1
+    call integrator%set_absolute_tolerance(1.0d-9)
+    call integrator%set_relative_tolerance(1.0d-9)
+    call integrator%solve(mdl, [0.0d0, 1.0d0], [2.0d0])
+    sol = integrator%get_solution()
+    ans = test_1dof_solution_1(sol(:,1))
+    rst = integrator%get_order() == 5 .and. integrator%get_is_fsal() .and. &
+        integrator%get_stage_count() == 7 .and. assert(ans, sol(:,2), 1.0d-5)
+end function
+
+! ------------------------------------------------------------------------------
+function test_tsitouras_54_dense() result(rst)
+    logical :: rst
+    type(tsitouras_54) :: integrator
+    type(ode_container) :: mdl
+    real(real64), allocatable :: sol(:,:), ans(:)
+    real(real64) :: x(101)
+    integer :: i
+    mdl%fcn => test_2dof_1
+    x = [(real(i, real64) / 100.0d0, i = 0, 100)]
+    call integrator%solve(mdl, x, [1.0d0, 0.5d0])
+    sol = integrator%get_solution()
+    ans = test_2dof_solution_1(sol(:,1))
+    rst = assert(ans, sol(:,2), 1.0d-4)
+end function
+
+! ------------------------------------------------------------------------------
 function test_runge_kutta_45_1() result(rst)
     ! Arguments
     logical :: rst
