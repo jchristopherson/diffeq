@@ -7,6 +7,41 @@ module diffeq_test_implicit_rk
 
 contains
 ! ------------------------------------------------------------------------------
+function test_implicit_rk_state_tolerances() result(rst)
+    logical :: rst
+    type(rosenbrock) :: rosenbrock_integrator
+    type(kennedy_carpenter_4) :: kc_integrator
+    type(ode_container) :: mdl
+    real(real64) :: rosenbrock_error, kc_error
+    real(real64), allocatable :: rosenbrock_sol(:,:), kc_sol(:,:), ans(:)
+
+    call rosenbrock_integrator%set_absolute_tolerance([1.0d0, 2.0d0])
+    call rosenbrock_integrator%set_relative_tolerance([1.0d-1, 2.0d-1])
+    call kc_integrator%set_absolute_tolerance([1.0d0, 2.0d0])
+    call kc_integrator%set_relative_tolerance([1.0d-1, 2.0d-1])
+    rosenbrock_error = rosenbrock_integrator%compute_error_norm( &
+        [1.0d1, 2.0d1], [1.0d1, 2.0d1], [2.0d0, 6.0d0])
+    kc_error = kc_integrator%compute_error_norm([1.0d1, 2.0d1], &
+        [1.0d1, 2.0d1], [2.0d0, 6.0d0])
+    rst = abs(rosenbrock_error - 1.0d0) < epsilon(1.0d0) .and. &
+        abs(kc_error - 1.0d0) < epsilon(1.0d0)
+
+    mdl%fcn => test_2dof_1
+    call rosenbrock_integrator%set_absolute_tolerance([1.0d-10, 1.0d-11])
+    call rosenbrock_integrator%set_relative_tolerance([1.0d-11, 1.0d-10])
+    call kc_integrator%set_absolute_tolerance([1.0d-10, 1.0d-11])
+    call kc_integrator%set_relative_tolerance([1.0d-11, 1.0d-10])
+    call rosenbrock_integrator%solve(mdl, [0.0d0, 1.0d0], [1.0d0, 0.5d0])
+    call kc_integrator%solve(mdl, [0.0d0, 1.0d0], [1.0d0, 0.5d0])
+    rosenbrock_sol = rosenbrock_integrator%get_solution()
+    kc_sol = kc_integrator%get_solution()
+    ans = test_2dof_solution_1(rosenbrock_sol(:,1))
+    rst = rst .and. assert(ans, rosenbrock_sol(:,2), 1.0d-5)
+    ans = test_2dof_solution_1(kc_sol(:,1))
+    rst = rst .and. assert(ans, kc_sol(:,2), 1.0d-5)
+end function
+
+! ------------------------------------------------------------------------------
 function test_kennedy_carpenter_4() result(rst)
     logical :: rst
     type(kennedy_carpenter_4) :: integrator

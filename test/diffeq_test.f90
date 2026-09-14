@@ -15,6 +15,18 @@ program test
     flag = 0
 
     ! Tests
+    rst = test_state_variable_tolerances()
+    if (.not.rst) flag = 42
+
+    rst = test_implicit_rk_state_tolerances()
+    if (.not.rst) flag = 43
+
+    rst = test_bdf_state_tolerances()
+    if (.not.rst) flag = 44
+
+    rst = test_adams_state_tolerances()
+    if (.not.rst) flag = 45
+
     rst = test_tsitouras_54()
     if (.not.rst) flag = 1
 
