@@ -12,10 +12,11 @@ set(DIFFEQ_SOURCES
     ${dir}/diffeq_bsrk32_constants.f90
     ${dir}/diffeq_rk853_constants.f90
     ${dir}/diffeq_rosenbrock_constants.f90
-    ${dir}/diffeq_implicit_runge_kutta.f90
     ${dir}/diffeq_multistep.f90
     ${dir}/diffeq_bdf.f90
     ${dir}/diffeq_pece.f90
+    ${dir}/diffeq_rosenbrock.f90
+    ${dir}/diffeq_kennedy_carpenter.f90
 )
 
 # Dependencies
