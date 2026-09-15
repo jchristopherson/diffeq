@@ -979,6 +979,7 @@ subroutine oi_initial_step(this, sys, xo, xf, yo, fo, h, args)
     else
         h = abs(dx)
     end if
+    h = min(h, this%get_maximum_step_size())
     h = sign(h, dx)
 end subroutine
 

@@ -77,6 +77,24 @@ function test_state_variable_tolerances() result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
+function test_step_size_limits() result(rst)
+    logical :: rst
+    type(runge_kutta_45) :: integrator
+    type(ode_container) :: mdl
+    real(real64), allocatable :: sol(:,:)
+    real(real64) :: max_step
+
+    mdl%fcn => test_1dof_1
+    call integrator%set_absolute_tolerance(1.0d0)
+    call integrator%set_relative_tolerance(1.0d0)
+    call integrator%set_maximum_step_size(5.0d-2)
+    call integrator%solve(mdl, [0.0d0, 1.0d0], [2.0d0])
+    sol = integrator%get_solution()
+    max_step = maxval(abs(sol(2:,1) - sol(:size(sol,1)-1,1)))
+    rst = max_step <= 5.0d-2 * (1.0d0 + 10.0d0 * epsilon(1.0d0))
+end function
+
+! ------------------------------------------------------------------------------
 function test_tsitouras_54() result(rst)
     logical :: rst
     type(tsitouras_54) :: integrator
@@ -98,14 +116,21 @@ function test_tsitouras_54_dense() result(rst)
     type(tsitouras_54) :: integrator
     type(ode_container) :: mdl
     real(real64), allocatable :: sol(:,:), ans(:)
-    real(real64) :: x(101)
+    real(real64) :: state(2), x(101)
     integer :: i
     mdl%fcn => test_2dof_1
     x = [(real(i, real64) / 100.0d0, i = 0, 100)]
     call integrator%solve(mdl, x, [1.0d0, 0.5d0])
     sol = integrator%get_solution()
+    rst = size(sol, 1) == size(x) .and. &
+        assert(x, sol(:,1), 1.0d-12)
+    allocate(ans(size(sol,1)))
     ans = test_2dof_solution_1(sol(:,1))
-    rst = assert(ans, sol(:,2), 1.0d-4)
+    rst = rst .and. assert(ans, sol(:,2), 1.0d-4)
+    do i = 1, size(sol, 1)
+        call test_2dof_state_solution_1(sol(i,1), state)
+        if (abs(sol(i,3) - state(2)) > 1.0d-3) rst = .false.
+    end do
 end function
 
 ! ------------------------------------------------------------------------------

@@ -5,7 +5,112 @@ module diffeq_test_implicit_rk
     use diffeq_models
     implicit none
 
+    type jacobian_counter
+        integer :: calls = 0
+        integer :: mass_calls = 0
+    end type
+
 contains
+! ------------------------------------------------------------------------------
+function test_analytical_jacobian_usage() result(rst)
+    logical :: rst
+    type(rosenbrock) :: integrator
+    type(rosenbrock) :: mass_integrator
+    type(ode_container) :: mdl
+    type(jacobian_counter) :: counter
+    real(real64), allocatable :: sol(:,:)
+
+    mdl%fcn => counted_linear_ode
+    mdl%jacobian => counted_linear_jacobian
+    call integrator%set_absolute_tolerance(1.0d-9)
+    call integrator%set_relative_tolerance(1.0d-9)
+    call integrator%solve(mdl, [0.0d0, 1.0d0], [1.0d0, 1.0d0], counter)
+    sol = integrator%get_solution()
+    rst = counter%calls > 0 .and. &
+        abs(sol(size(sol,1),2) - exp(-1.0d0)) < 1.0d-6 .and. &
+        abs(sol(size(sol,1),3) - exp(-2.0d0)) < 1.0d-6
+
+    counter%calls = 0
+    counter%mass_calls = 0
+    mdl%fcn => counted_mass_ode
+    mdl%mass_matrix => counted_mass_matrix
+    call mdl%set_is_mass_matrix_dependent(.false.)
+    call mass_integrator%set_absolute_tolerance(1.0d-9)
+    call mass_integrator%set_relative_tolerance(1.0d-9)
+    call mass_integrator%solve(mdl, [0.0d0, 1.0d0], [1.0d0, 1.0d0], counter)
+    sol = mass_integrator%get_solution()
+    rst = rst .and. counter%mass_calls == 1 .and. &
+        abs(sol(size(sol,1),2) - exp(-1.0d0)) < 1.0d-6 .and. &
+        abs(sol(size(sol,1),3) - exp(-2.0d0)) < 1.0d-6
+end function
+
+! ------------------------------------------------------------------------------
+function test_stiff_vanderpol() result(rst)
+    logical :: rst
+    type(rosenbrock) :: integrator
+    type(ode_container) :: mdl
+    real(real64) :: mu
+    real(real64), allocatable :: sol(:,:)
+
+    mu = 1.0d2
+    mdl%fcn => vanderpol_args
+    call integrator%set_absolute_tolerance(1.0d-8)
+    call integrator%set_relative_tolerance(1.0d-8)
+    call integrator%solve(mdl, [0.0d0, 2.0d0], [2.0d0, 0.0d0], mu)
+    sol = integrator%get_solution()
+    rst = size(sol, 1) > 2 .and. all(sol == sol)
+end function
+
+! ------------------------------------------------------------------------------
+subroutine counted_linear_ode(x, y, dydx, args)
+    real(real64), intent(in) :: x, y(:)
+    real(real64), intent(out) :: dydx(:)
+    class(*), intent(inout), optional :: args
+
+    dydx(1) = -y(1)
+    dydx(2) = -2.0d0 * y(2)
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine counted_linear_jacobian(x, y, jac, args)
+    real(real64), intent(in) :: x, y(:)
+    real(real64), intent(out) :: jac(:,:)
+    class(*), intent(inout), optional :: args
+
+    select type (args)
+    type is (jacobian_counter)
+        args%calls = args%calls + 1
+    end select
+    jac = 0.0d0
+    jac(1,1) = -1.0d0
+    jac(2,2) = -2.0d0
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine counted_mass_ode(x, y, dydx, args)
+    real(real64), intent(in) :: x, y(:)
+    real(real64), intent(out) :: dydx(:)
+    class(*), intent(inout), optional :: args
+
+    dydx(1) = -2.0d0 * y(1)
+    dydx(2) = -6.0d0 * y(2)
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine counted_mass_matrix(x, y, mass, args)
+    real(real64), intent(in) :: x, y(:)
+    real(real64), intent(out) :: mass(:,:)
+    class(*), intent(inout), optional :: args
+
+    select type (args)
+    type is (jacobian_counter)
+        args%mass_calls = args%mass_calls + 1
+    end select
+    mass = 0.0d0
+    mass(1,1) = 2.0d0
+    mass(2,2) = 3.0d0
+end subroutine
+
 ! ------------------------------------------------------------------------------
 function test_implicit_rk_state_tolerances() result(rst)
     logical :: rst

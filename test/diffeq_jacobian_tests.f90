@@ -6,6 +6,15 @@ module diffeq_jacobian_tests
     implicit none
 contains
 ! ------------------------------------------------------------------------------
+function test_fd_step_setting() result(rst)
+    logical :: rst
+    type(ode_container) :: obj
+
+    call obj%set_finite_difference_step(1.0d-7)
+    rst = abs(obj%get_finite_difference_step() - 1.0d-7) < epsilon(1.0d0)
+end function
+
+! ------------------------------------------------------------------------------
 function test_fd_jacobian_1() result(rst)
     ! Arguments
     logical :: rst

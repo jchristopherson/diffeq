@@ -18,8 +18,17 @@ program test
     rst = test_state_variable_tolerances()
         if (.not.rst) flag = max(flag, 42)
 
+    rst = test_step_size_limits()
+    if (.not.rst) flag = max(flag, 48)
+
     rst = test_implicit_rk_state_tolerances()
         if (.not.rst) flag = max(flag, 43)
+
+    rst = test_analytical_jacobian_usage()
+    if (.not.rst) flag = max(flag, 49)
+
+    rst = test_stiff_vanderpol()
+    if (.not.rst) flag = max(flag, 51)
 
     rst = test_bdf_state_tolerances()
         if (.not.rst) flag = max(flag, 44)
@@ -41,6 +50,9 @@ program test
 
     rst = test_fd_jacobian_1()
         if (.not.rst) flag = max(flag, 1)
+
+    rst = test_fd_step_setting()
+    if (.not.rst) flag = max(flag, 50)
 
     rst = test_fd_jacobian_2()
         if (.not.rst) flag = max(flag, 2)
