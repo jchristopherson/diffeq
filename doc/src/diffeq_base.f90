@@ -129,6 +129,10 @@ module diffeq_base
             ! The absolute tolerance value applied to each equation.
         real(real64), private :: m_reltol = 1.0d-6
             ! The relative tolerance value applied to each equation.
+        real(real64), private, allocatable, dimension(:) :: m_abstols
+            ! Per-equation absolute tolerances, when defined.
+        real(real64), private, allocatable, dimension(:) :: m_reltols
+            ! Per-equation relative tolerances, when defined.
         real(real64), private :: m_minStep = 1.0d1 * epsilon(1.0d0)
             ! The minimum allowable step size.
         real(real64), private :: m_maxStep = huge(1.0d0)
@@ -162,11 +166,17 @@ module diffeq_base
             !! Clears the contents of the buffer.
         procedure, public :: get_absolute_tolerance => oi_get_abs_tol
             !! Gets the absolute error tolerance.
-        procedure, public :: set_absolute_tolerance => oi_set_abs_tol
+        procedure, private :: oi_set_abs_tol
+        procedure, private :: oi_set_abs_tols
+        generic, public :: set_absolute_tolerance => oi_set_abs_tol, &
+            oi_set_abs_tols
             !! Sets the absolute error tolerance.
-        procedure, public :: get_relative_tolerance => oi_get_abs_tol
+        procedure, public :: get_relative_tolerance => oi_get_rel_tol
             !! Gets the relative error tolerance.
-        procedure, public :: set_relative_tolerance => oi_set_abs_tol
+        procedure, private :: oi_set_rel_tol
+        procedure, private :: oi_set_rel_tols
+        generic, public :: set_relative_tolerance => oi_set_rel_tol, &
+            oi_set_rel_tols
             !! Sets the relative error tolerance.
         procedure, public :: compute_error_norm => oi_estimate_error
             !! Computes the norm of the scaled error estimate.
@@ -640,13 +650,19 @@ subroutine oi_clear_buffer(this)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-pure function oi_get_abs_tol(this) result(rst)
+pure function oi_get_abs_tol(this, equation) result(rst)
     !! Gets the absolute error tolerance.
     class(ode_integrator), intent(in) :: this
         !! The ode_integrator object.
+    integer(int32), intent(in), optional :: equation
+        !! The equation index. If omitted, the scalar tolerance is returned.
     real(real64) :: rst
         !! The tolerance value.
-    rst = this%m_abstol
+    if (present(equation) .and. allocated(this%m_abstols)) then
+        rst = this%m_abstols(equation)
+    else
+        rst = this%m_abstol
+    end if
 end function
 
 ! --------------------
@@ -657,16 +673,33 @@ subroutine oi_set_abs_tol(this, x)
     real(real64), intent(in) :: x
         !! The tolerance value.
     this%m_abstol = x
+    if (allocated(this%m_abstols)) deallocate(this%m_abstols)
+end subroutine
+
+! --------------------
+subroutine oi_set_abs_tols(this, x)
+    !! Sets the absolute error tolerance for each equation.
+    class(ode_integrator), intent(inout) :: this
+        !! The ode_integrator object.
+    real(real64), intent(in), dimension(:) :: x
+        !! The tolerance values.
+    this%m_abstols = x
 end subroutine
 
 ! ------------------------------------------------------------------------------
-pure function oi_get_rel_tol(this) result(rst)
+pure function oi_get_rel_tol(this, equation) result(rst)
     !! Gets the relative error tolerance.
     class(ode_integrator), intent(in) :: this
         !! The ode_integrator object.
+    integer(int32), intent(in), optional :: equation
+        !! The equation index. If omitted, the scalar tolerance is returned.
     real(real64) :: rst
         !! The tolerance value.
-    rst = this%m_reltol
+    if (present(equation) .and. allocated(this%m_reltols)) then
+        rst = this%m_reltols(equation)
+    else
+        rst = this%m_reltol
+    end if
 end function
 
 ! --------------------
@@ -677,6 +710,17 @@ subroutine oi_set_rel_tol(this, x)
     real(real64), intent(in) :: x
         !! The tolerance value.
     this%m_reltol = x
+    if (allocated(this%m_reltols)) deallocate(this%m_reltols)
+end subroutine
+
+! --------------------
+subroutine oi_set_rel_tols(this, x)
+    !! Sets the relative error tolerance for each equation.
+    class(ode_integrator), intent(inout) :: this
+        !! The ode_integrator object.
+    real(real64), intent(in), dimension(:) :: x
+        !! The tolerance values.
+    this%m_reltols = x
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -702,12 +746,18 @@ pure function oi_estimate_error(this, y, yest, yerr) result(rst)
 
     ! Initialization
     n = size(y)
-    atol = this%get_absolute_tolerance()
-    rtol = this%get_relative_tolerance()
+    if (allocated(this%m_abstols)) then
+        if (size(this%m_abstols) /= n) error stop DIFFEQ_ARRAY_SIZE_ERROR
+    end if
+    if (allocated(this%m_reltols)) then
+        if (size(this%m_reltols) /= n) error stop DIFFEQ_ARRAY_SIZE_ERROR
+    end if
 
     ! Process
     rst = 0.0d0
     do i = 1, n
+        atol = this%get_absolute_tolerance(i)
+        rtol = this%get_relative_tolerance(i)
         sf = atol + rtol * max(abs(y(i)), abs(yest(i)))
         rst = rst + (yerr(i) / sf)**2
     end do
@@ -903,16 +953,32 @@ subroutine oi_initial_step(this, sys, xo, xf, yo, fo, h, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    real(real64) :: e, dx
+    integer(int32) :: i, n
+    real(real64) :: dx, derivative_norm
+    real(real64), dimension(size(yo)) :: tol
 
     ! Use a very basic estimate of an initial step size.  The catch is that a
     ! single function evaluation must be made; however, this is likely needed
     ! in the first place, so no real extra work is necessary.
+    n = size(yo)
+    if (allocated(this%m_abstols)) then
+        if (size(this%m_abstols) /= n) error stop DIFFEQ_ARRAY_SIZE_ERROR
+    end if
+    if (allocated(this%m_reltols)) then
+        if (size(this%m_reltols) /= n) error stop DIFFEQ_ARRAY_SIZE_ERROR
+    end if
     dx = 0.1d0 * (xf - xo)
-    e = max(this%get_absolute_tolerance(), this%get_relative_tolerance())
+    do i = 1, n
+        tol(i) = max(this%get_absolute_tolerance(i), &
+            this%get_relative_tolerance(i))
+    end do
     call sys%fcn(xo, yo, fo, args)
-    h = 2.0d0 * e / norm2(fo)
-    h = min(abs(dx), h)
+    derivative_norm = norm2(fo / tol)
+    if (derivative_norm > 0.0d0) then
+        h = min(abs(dx), 2.0d0 / derivative_norm)
+    else
+        h = abs(dx)
+    end if
     h = sign(h, dx)
 end subroutine
 
