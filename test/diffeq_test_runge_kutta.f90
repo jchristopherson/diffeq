@@ -33,10 +33,10 @@ function test_reverse_and_overshoot() result(rst)
 
     call integrator%clear_buffer()
     call integrator%set_allow_overshoot(.false.)
-    call integrator%solve(mdl, [0.0d0, 3.1d-1], [2.0d0])
+    call integrator%solve(mdl, [0.0d0, 1.0d-1, 2.0d-1, 3.1d-1], [2.0d0])
     sol = integrator%get_solution()
     rst = rst .and. abs(sol(size(sol,1),1) - 3.1d-1) < 1.0d-12 .and. &
-        maxval(sol(:,1)) > 3.1d-1
+        size(sol,1) == 4
 end function
 
 ! ------------------------------------------------------------------------------

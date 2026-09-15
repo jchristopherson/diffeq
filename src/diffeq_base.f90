@@ -1049,7 +1049,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    logical :: dense, success
+    logical :: dense, success, forward
     integer(int32) :: i, j, n, neqn, nsteps, nstages
     real(real64) :: h, xo, xn, xmax, ei, eold
     real(real64), allocatable, dimension(:) :: f, y, yn, fn, yerr, yi
@@ -1067,6 +1067,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
     neqn = size(iv)
     xo = x(1)
     xmax = x(n)
+    forward = xmax >= xo
     j = 2
     eold = 1.0d-4
     dense = (n > 2)
@@ -1122,7 +1123,9 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
         ! values and move on
         if (dense) then
             ! Perform the interpolation as needed until a new step is required
-            interp : do while (abs(x(j)) <= abs(xn))
+            interp : do while (j <= n .and. &
+                ((forward .and. x(j) <= xn) .or. &
+                (.not.forward .and. x(j) >= xn)))
                 call this%interpolate(x(j), xo, y, f, xn, yn, fn, yi)
                 call this%append_to_buffer(x(j), yi)
                 j = j + 1
@@ -1140,8 +1143,10 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
             if ((xmax - x(1)) * (xn - xmax) > 0.0d0) then
                 ! Interpolate to get the solution at xmax
                 call this%post_step_action(sys, .true., xo, xn, y, yn, f, fn, k)
-                call this%interpolate(xmax, xo, y, f, xn, yn, fn, yi)
-                call this%append_to_buffer(xmax, yi)
+                if (j <= n) then
+                    call this%interpolate(xmax, xo, y, f, xn, yn, fn, yi)
+                    call this%append_to_buffer(xmax, yi)
+                end if
             end if
             
             ! We're done

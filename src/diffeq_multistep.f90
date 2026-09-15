@@ -820,7 +820,7 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    logical :: dense, converged
+    logical :: dense, converged, forward
     integer(int32) :: i, j, n, neqn, nsteps, k, nfail
     real(real64) :: h, xo, xn, xmax, e, minstep
     real(real64), allocatable, dimension(:) :: f, y, yn, fn, fnew, ypred, &
@@ -837,6 +837,7 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
     neqn = size(iv)
     xo = x(1)
     xmax = x(n)
+    forward = xmax >= xo
     j = 2
     dense = (n > 2)
     nsteps = this%get_step_limit()
@@ -939,7 +940,9 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
         ! Store the results
         if (dense) then
             ! Interpolate to each requested point falling within this step
-            interp : do while ((xn - x(1)) * (x(j) - xn) <= 0.0d0)
+            interp : do while (j <= n .and. &
+                ((forward .and. x(j) <= xn) .or. &
+                (.not.forward .and. x(j) >= xn)))
                 call this%interpolate(x(j), yi)
                 call this%append_to_buffer(x(j), yi)
                 j = j + 1
@@ -948,8 +951,10 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
         else if ((xmax - x(1)) * (xn - xmax) > 0.0d0) then
             ! The step carried past the end of the range, so report the
             ! solution interpolated back onto the requested end point
-            call this%interpolate(xmax, yi)
-            call this%append_to_buffer(xmax, yi)
+            if (j <= n) then
+                call this%interpolate(xmax, yi)
+                call this%append_to_buffer(xmax, yi)
+            end if
         else
             ! Report every successful step
             call this%append_to_buffer(xn, yn)
