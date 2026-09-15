@@ -21,7 +21,7 @@ set(DIFFEQ_SOURCES
 
 # Dependencies
 include(FetchContent)
-find_package(linalg 2.1.0 QUIET)
+find_package(linalg 2.2.0 QUIET)
 
 if (NOT linalg_FOUND)
     message(STATUS "LINALG could not be found.  A reference version will be employed.")
