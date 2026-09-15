@@ -886,7 +886,9 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
         ! Do not overshoot the end of the integration range if the solver has
         ! been asked to terminate on it exactly
         if (.not.this%get_allow_overshoot()) then
-            if (abs(xo + h) > abs(xmax)) h = xmax - xo
+            if ((xmax - x(1)) * (xo + h - xmax) > 0.0d0) then
+                h = xmax - xo
+            end if
         end if
 
         ! Predict, then correct
@@ -937,13 +939,13 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
         ! Store the results
         if (dense) then
             ! Interpolate to each requested point falling within this step
-            interp : do while (abs(x(j)) <= abs(xn))
+            interp : do while ((xn - x(1)) * (x(j) - xn) <= 0.0d0)
                 call this%interpolate(x(j), yi)
                 call this%append_to_buffer(x(j), yi)
                 j = j + 1
                 if (j > n) exit interp
             end do interp
-        else if (abs(xn) > abs(xmax)) then
+        else if ((xmax - x(1)) * (xn - xmax) > 0.0d0) then
             ! The step carried past the end of the range, so report the
             ! solution interpolated back onto the requested end point
             call this%interpolate(xmax, yi)
@@ -954,7 +956,7 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
         end if
 
         ! Are we done?
-        if (abs(xn) >= abs(xmax)) return
+        if ((xmax - x(1)) * (xn - xmax) >= 0.0d0) return
 
         ! Choose the order and step size for the next step
         call this%adjust_order_and_step(y, yn, e, h)

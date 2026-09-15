@@ -7,6 +7,23 @@ module diffeq_test_bdf
 
 contains
 ! ------------------------------------------------------------------------------
+function test_bdf_reverse() result(rst)
+    logical :: rst
+    type(bdf) :: integrator
+    type(ode_container) :: mdl
+    real(real64), allocatable :: sol(:,:)
+
+    mdl%fcn => test_1dof_1
+    call integrator%set_absolute_tolerance(1.0d-10)
+    call integrator%set_relative_tolerance(1.0d-10)
+    call integrator%solve(mdl, [1.0d0, 0.0d0], &
+        [test_1dof_solution_1(1.0d0)])
+    sol = integrator%get_solution()
+    rst = abs(sol(size(sol,1),1)) < 1.0d-12 .and. &
+        abs(sol(size(sol,1),2) - 2.0d0) < 1.0d-7
+end function
+
+! ------------------------------------------------------------------------------
 function test_bdf_state_tolerances() result(rst)
     logical :: rst
     type(bdf) :: integrator

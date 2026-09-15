@@ -1134,10 +1134,10 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
         end if
 
         ! Are we done?
-        if (abs(xn) >= abs(xmax)) then
+        if ((xmax - x(1)) * (xn - xmax) >= 0.0d0) then
             ! Deal with the case where output is only returned at the
             ! integration points and the solver oversteps the endpoint.
-            if (abs(xn) > abs(xmax)) then
+            if ((xmax - x(1)) * (xn - xmax) > 0.0d0) then
                 ! Interpolate to get the solution at xmax
                 call this%post_step_action(sys, .true., xo, xn, y, yn, f, fn, k)
                 call this%interpolate(xmax, xo, y, f, xn, yn, fn, yi)
@@ -1149,7 +1149,8 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
         end if
 
         ! Do we need to limit the step size to not overshoot the terminal value?
-        if (this%get_allow_overshoot() .and. abs(xn + h) > abs(xmax)) then
+        if (this%get_allow_overshoot() .and. &
+            (xmax - x(1)) * (xn + h - xmax) > 0.0d0) then
             ! Limit the step size
             h = xmax - xn
         end if

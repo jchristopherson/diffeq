@@ -37,6 +37,18 @@ add_test(
     COMMAND $<TARGET_FILE:diffeq_tests>
 )
 
+add_executable(diffeq_error_tests diffeq_error_tests.f90)
+target_link_libraries(diffeq_error_tests diffeq)
+
+foreach(error_case missing_ode short_grid step_limit tolerance_size)
+    add_test(
+        NAME diffeq_error_${error_case}
+        WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+        COMMAND $<TARGET_FILE:diffeq_error_tests> ${error_case}
+    )
+    set_tests_properties(diffeq_error_${error_case} PROPERTIES WILL_FAIL TRUE)
+endforeach()
+
 if (${BUILD_SHARED_LIBS} AND WIN32)
     add_custom_command(
         TARGET diffeq_tests

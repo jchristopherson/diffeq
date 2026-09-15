@@ -16,145 +16,151 @@ program test
 
     ! Tests
     rst = test_state_variable_tolerances()
-    if (.not.rst) flag = 42
+        if (.not.rst) flag = max(flag, 42)
 
     rst = test_implicit_rk_state_tolerances()
-    if (.not.rst) flag = 43
+        if (.not.rst) flag = max(flag, 43)
 
     rst = test_bdf_state_tolerances()
-    if (.not.rst) flag = 44
+        if (.not.rst) flag = max(flag, 44)
 
     rst = test_adams_state_tolerances()
-    if (.not.rst) flag = 45
+        if (.not.rst) flag = max(flag, 45)
+
+    rst = test_reverse_and_overshoot()
+        if (.not.rst) flag = max(flag, 46)
+
+    rst = test_bdf_reverse()
+        if (.not.rst) flag = max(flag, 47)
 
     rst = test_tsitouras_54()
-    if (.not.rst) flag = 1
+        if (.not.rst) flag = max(flag, 1)
 
     rst = test_tsitouras_54_dense()
-    if (.not.rst) flag = 2
+        if (.not.rst) flag = max(flag, 2)
 
     rst = test_fd_jacobian_1()
-    if (.not.rst) flag = 1
+        if (.not.rst) flag = max(flag, 1)
 
     rst = test_fd_jacobian_2()
-    if (.not.rst) flag = 2
+        if (.not.rst) flag = max(flag, 2)
 
     rst = test_fd_jacobian_3()
-    if (.not.rst) flag = 3
+        if (.not.rst) flag = max(flag, 3)
 
     rst = test_fd_jacobian_4()
-    if (.not.rst) flag = 4
+        if (.not.rst) flag = max(flag, 4)
 
     rst = test_runge_kutta_45_1()
-    if (.not.rst) flag = 5
+        if (.not.rst) flag = max(flag, 5)
 
     rst = test_runge_kutta_45_2()
-    if (.not.rst) flag = 6
+        if (.not.rst) flag = max(flag, 6)
 
     rst = test_runge_kutta_45_3()
-    if (.not.rst) flag = 7
+        if (.not.rst) flag = max(flag, 7)
 
     rst = test_runge_kutta_23_1()
-    if (.not.rst) flag = 8
+        if (.not.rst) flag = max(flag, 8)
 
     rst = test_runge_kutta_23_2()
-    if (.not.rst) flag = 9
+        if (.not.rst) flag = max(flag, 9)
 
     rst = test_runge_kutta_23_3()
-    if (.not.rst) flag = 10
+        if (.not.rst) flag = max(flag, 10)
 
     rst = test_runge_kutta_853_1()
-    if (.not.rst) flag = 11
+        if (.not.rst) flag = max(flag, 11)
 
     rst = test_runge_kutta_853_2()
-    if (.not.rst) flag = 12
+        if (.not.rst) flag = max(flag, 12)
 
     rst = test_runge_kutta_853_3()
-    if (.not.rst) flag = 13
+        if (.not.rst) flag = max(flag, 13)
 
     rst = test_rosenbrock_1()
-    if (.not.rst) flag = 14
+        if (.not.rst) flag = max(flag, 14)
 
     rst = test_rosenbrock_2()
-    if (.not.rst) flag = 15
+        if (.not.rst) flag = max(flag, 15)
 
     rst = test_rosenbrock_3()
-    if (.not.rst) flag = 16
+        if (.not.rst) flag = max(flag, 16)
 
     rst = test_rosenbrock_mass_matrix()
-    if (.not.rst) flag = 17
+        if (.not.rst) flag = max(flag, 17)
 
     rst = test_rosenbrock_with_args()
-    if (.not.rst) flag = 18
+        if (.not.rst) flag = max(flag, 18)
 
     rst = test_kennedy_carpenter_4()
-    if (.not.rst) flag = 19
+        if (.not.rst) flag = max(flag, 19)
 
     rst = test_kennedy_carpenter_5()
-    if (.not.rst) flag = 20
+        if (.not.rst) flag = max(flag, 20)
 
     rst = test_kennedy_carpenter_mass_matrix()
-    if (.not.rst) flag = 21
+        if (.not.rst) flag = max(flag, 21)
 
     rst = test_kennedy_carpenter_singular_mass_matrix()
-    if (.not.rst) flag = 22
+        if (.not.rst) flag = max(flag, 22)
 
     rst = test_runge_kutta_dense_with_args()
-    if (.not.rst) flag = 23
+        if (.not.rst) flag = max(flag, 23)
 
     rst = test_bdf_1()
-    if (.not.rst) flag = 24
+        if (.not.rst) flag = max(flag, 24)
 
     rst = test_bdf_2()
-    if (.not.rst) flag = 25
+        if (.not.rst) flag = max(flag, 25)
 
     rst = test_bdf_dense()
-    if (.not.rst) flag = 26
+        if (.not.rst) flag = max(flag, 26)
 
     rst = test_bdf_all_steps()
-    if (.not.rst) flag = 27
+        if (.not.rst) flag = max(flag, 27)
 
     rst = test_bdf_mass_matrix()
-    if (.not.rst) flag = 28
+        if (.not.rst) flag = max(flag, 28)
 
     rst = test_bdf_singular_mass_matrix()
-    if (.not.rst) flag = 29
+        if (.not.rst) flag = max(flag, 29)
 
     rst = test_bdf_singular_mass_matrix_dense()
-    if (.not.rst) flag = 30
+        if (.not.rst) flag = max(flag, 30)
 
     rst = test_bdf_with_args()
-    if (.not.rst) flag = 31
+        if (.not.rst) flag = max(flag, 31)
 
     rst = test_bdf_order_range()
-    if (.not.rst) flag = 32
+        if (.not.rst) flag = max(flag, 32)
 
     rst = test_adams_1()
-    if (.not.rst) flag = 33
+        if (.not.rst) flag = max(flag, 33)
 
     rst = test_adams_2()
-    if (.not.rst) flag = 34
+        if (.not.rst) flag = max(flag, 34)
 
     rst = test_adams_dense()
-    if (.not.rst) flag = 35
+        if (.not.rst) flag = max(flag, 35)
 
     rst = test_adams_all_steps()
-    if (.not.rst) flag = 36
+        if (.not.rst) flag = max(flag, 36)
 
     rst = test_adams_mass_matrix()
-    if (.not.rst) flag = 37
+        if (.not.rst) flag = max(flag, 37)
 
     rst = test_adams_with_args()
-    if (.not.rst) flag = 38
+        if (.not.rst) flag = max(flag, 38)
 
     rst = test_adams_order_range()
-    if (.not.rst) flag = 39
+        if (.not.rst) flag = max(flag, 39)
 
     rst = test_adams_matches_bdf()
-    if (.not.rst) flag = 40
+        if (.not.rst) flag = max(flag, 40)
 
     rst = test_adams_high_order()
-    if (.not.rst) flag = 41
+        if (.not.rst) flag = max(flag, 41)
 
     ! Output
     stop flag

@@ -7,6 +7,39 @@ module diffeq_test_runge_kutta
 
 contains
 ! ------------------------------------------------------------------------------
+function test_reverse_and_overshoot() result(rst)
+    logical :: rst
+    type(runge_kutta_45) :: integrator
+    type(ode_container) :: mdl
+    real(real64), allocatable :: sol(:,:)
+
+    mdl%fcn => test_1dof_1
+    call integrator%set_absolute_tolerance(1.0d-10)
+    call integrator%set_relative_tolerance(1.0d-10)
+    call integrator%solve(mdl, [1.0d0, 0.0d0], &
+        [test_1dof_solution_1(1.0d0)])
+    sol = integrator%get_solution()
+    rst = abs(sol(size(sol,1),1)) < 1.0d-12 .and. &
+        abs(sol(size(sol,1),2) - 2.0d0) < 1.0d-8
+
+    call integrator%clear_buffer()
+    call integrator%set_absolute_tolerance(1.0d0)
+    call integrator%set_relative_tolerance(1.0d0)
+    call integrator%set_maximum_step_size(2.0d-1)
+    call integrator%set_allow_overshoot(.true.)
+    call integrator%solve(mdl, [0.0d0, 3.1d-1], [2.0d0])
+    sol = integrator%get_solution()
+    rst = rst .and. abs(sol(size(sol,1),1) - 3.1d-1) < 1.0d-12
+
+    call integrator%clear_buffer()
+    call integrator%set_allow_overshoot(.false.)
+    call integrator%solve(mdl, [0.0d0, 3.1d-1], [2.0d0])
+    sol = integrator%get_solution()
+    rst = rst .and. abs(sol(size(sol,1),1) - 3.1d-1) < 1.0d-12 .and. &
+        maxval(sol(:,1)) > 3.1d-1
+end function
+
+! ------------------------------------------------------------------------------
 function test_state_variable_tolerances() result(rst)
     logical :: rst
     type(tsitouras_54) :: integrator
