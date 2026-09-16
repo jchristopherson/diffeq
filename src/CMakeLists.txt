@@ -12,15 +12,16 @@ set(DIFFEQ_SOURCES
     ${dir}/diffeq_bsrk32_constants.f90
     ${dir}/diffeq_rk853_constants.f90
     ${dir}/diffeq_rosenbrock_constants.f90
-    ${dir}/diffeq_implicit_runge_kutta.f90
     ${dir}/diffeq_multistep.f90
     ${dir}/diffeq_bdf.f90
     ${dir}/diffeq_pece.f90
+    ${dir}/diffeq_rosenbrock.f90
+    ${dir}/diffeq_kennedy_carpenter.f90
 )
 
 # Dependencies
 include(FetchContent)
-find_package(linalg 2.0.0 QUIET)
+find_package(linalg 2.2.0 QUIET)
 
 if (NOT linalg_FOUND)
     message(STATUS "LINALG could not be found.  A reference version will be employed.")

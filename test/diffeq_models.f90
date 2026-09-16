@@ -159,6 +159,16 @@ pure elemental function test_2dof_solution_1(x) result(rst)
     rst = sin(wn * x) / 2.0d0 / wn + cos(wn * x)
 end function
 
+pure subroutine test_2dof_state_solution_1(x, y)
+    real(real64), intent(in) :: x
+    real(real64), intent(out) :: y(:)
+
+    real(real64), parameter :: wn = 2.0d1
+
+    y(1) = sin(wn * x) / 2.0d0 / wn + cos(wn * x)
+    y(2) = 0.5d0 * cos(wn * x) - wn * sin(wn * x)
+end subroutine
+
 ! ------------------------------------------------------------------------------
 ! 1 DOF Test Problem
 ! y' + y * sin(x)**2 = 0

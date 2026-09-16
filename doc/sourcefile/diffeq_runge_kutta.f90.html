@@ -74,7 +74,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title="19.6% of total for source files.">552 statements</a>
+                 title="19.4% of total for source files.">552 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -1322,13 +1322,13 @@
 <a id="ln-1169" name="ln-1169" href="#ln-1169"></a>
 <a id="ln-1170" name="ln-1170" href="#ln-1170"></a><span class="w">    </span><span class="c">! Initialization</span>
 <a id="ln-1171" name="ln-1171" href="#ln-1171"></a><span class="w">    </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-<a id="ln-1172" name="ln-1172" href="#ln-1172"></a><span class="w">    </span><span class="n">atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">this</span><span class="p">%</span><span class="n">get_absolute_tolerance</span><span class="p">()</span>
-<a id="ln-1173" name="ln-1173" href="#ln-1173"></a><span class="w">    </span><span class="n">rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">this</span><span class="p">%</span><span class="n">get_relative_tolerance</span><span class="p">()</span>
-<a id="ln-1174" name="ln-1174" href="#ln-1174"></a><span class="w">    </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0d0</span>
-<a id="ln-1175" name="ln-1175" href="#ln-1175"></a><span class="w">    </span><span class="n">err2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0d0</span>
-<a id="ln-1176" name="ln-1176" href="#ln-1176"></a><span class="w">    </span>
-<a id="ln-1177" name="ln-1177" href="#ln-1177"></a><span class="w">    </span><span class="c">! Process</span>
-<a id="ln-1178" name="ln-1178" href="#ln-1178"></a><span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<a id="ln-1172" name="ln-1172" href="#ln-1172"></a><span class="w">    </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0d0</span>
+<a id="ln-1173" name="ln-1173" href="#ln-1173"></a><span class="w">    </span><span class="n">err2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0d0</span>
+<a id="ln-1174" name="ln-1174" href="#ln-1174"></a><span class="w">    </span>
+<a id="ln-1175" name="ln-1175" href="#ln-1175"></a><span class="w">    </span><span class="c">! Process</span>
+<a id="ln-1176" name="ln-1176" href="#ln-1176"></a><span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<a id="ln-1177" name="ln-1177" href="#ln-1177"></a><span class="w">        </span><span class="n">atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">this</span><span class="p">%</span><span class="n">get_absolute_tolerance</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<a id="ln-1178" name="ln-1178" href="#ln-1178"></a><span class="w">        </span><span class="n">rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">this</span><span class="p">%</span><span class="n">get_relative_tolerance</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 <a id="ln-1179" name="ln-1179" href="#ln-1179"></a><span class="w">        </span><span class="n">sf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">atol</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">rtol</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">y</span><span class="p">(</span><span class="n">i</span><span class="p">)),</span><span class="w"> </span><span class="nb">abs</span><span class="p">(</span><span class="n">yest</span><span class="p">(</span><span class="n">i</span><span class="p">)))</span>
 <a id="ln-1180" name="ln-1180" href="#ln-1180"></a><span class="w">        </span><span class="n">err2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">err2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">yerr</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">sf</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
 <a id="ln-1181" name="ln-1181" href="#ln-1181"></a><span class="w">        </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">yerr2</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">sf</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
@@ -1358,7 +1358,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-09-02 18:59              </p>
+ on 2026-09-15 05:40              </p>
           </div>
         </div>
         <br>

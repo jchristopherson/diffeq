@@ -1169,13 +1169,13 @@ pure function rk853_estimate_error(this, y, yest, yerr) result(rst)
 
     ! Initialization
     n = size(y)
-    atol = this%get_absolute_tolerance()
-    rtol = this%get_relative_tolerance()
     err = 0.0d0
     err2 = 0.0d0
     
     ! Process
     do i = 1, n
+        atol = this%get_absolute_tolerance(i)
+        rtol = this%get_relative_tolerance(i)
         sf = atol + rtol * max(abs(y(i)), abs(yest(i)))
         err2 = err2 + (yerr(i) / sf)**2
         err = err + (this%yerr2(i) / sf)**2

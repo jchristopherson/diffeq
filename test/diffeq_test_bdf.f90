@@ -7,6 +7,46 @@ module diffeq_test_bdf
 
 contains
 ! ------------------------------------------------------------------------------
+function test_bdf_reverse() result(rst)
+    logical :: rst
+    type(bdf) :: integrator
+    type(ode_container) :: mdl
+    real(real64), allocatable :: sol(:,:)
+
+    mdl%fcn => test_1dof_1
+    call integrator%set_absolute_tolerance(1.0d-10)
+    call integrator%set_relative_tolerance(1.0d-10)
+    call integrator%solve(mdl, [1.0d0, 0.0d0], &
+        [test_1dof_solution_1(1.0d0)])
+    sol = integrator%get_solution()
+    rst = abs(sol(size(sol,1),1)) < 1.0d-12 .and. &
+        abs(sol(size(sol,1),2) - 2.0d0) < 1.0d-7
+end function
+
+! ------------------------------------------------------------------------------
+function test_bdf_state_tolerances() result(rst)
+    logical :: rst
+    type(bdf) :: integrator
+    type(ode_container) :: mdl
+    real(real64) :: err
+    real(real64), allocatable :: sol(:,:), ans(:)
+
+    call integrator%set_absolute_tolerance([1.0d0, 2.0d0])
+    call integrator%set_relative_tolerance([1.0d-1, 2.0d-1])
+    err = integrator%compute_error_norm([1.0d1, 2.0d1], &
+        [1.0d1, 2.0d1], [2.0d0, 6.0d0])
+    rst = abs(err - 1.0d0) < epsilon(1.0d0)
+
+    mdl%fcn => test_2dof_1
+    call integrator%set_absolute_tolerance([1.0d-10, 1.0d-11])
+    call integrator%set_relative_tolerance([1.0d-11, 1.0d-10])
+    call integrator%solve(mdl, [0.0d0, 1.0d0], [1.0d0, 0.5d0])
+    sol = integrator%get_solution()
+    ans = test_2dof_solution_1(sol(:,1))
+    rst = rst .and. assert(ans, sol(:,2), 1.0d-5)
+end function
+
+! ------------------------------------------------------------------------------
 function test_bdf_1() result(rst)
     ! Arguments
     logical :: rst

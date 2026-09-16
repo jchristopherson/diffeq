@@ -119,6 +119,19 @@ integrators:
 | `set_maximum_step_size` / `set_minimum_step_size` | Bound adaptive step sizes. |
 | `set_allow_overshoot` | Controls whether a final integration step may pass the requested endpoint and be interpolated back. |
 
+Tolerance setters accept either a scalar applied to every state variable or
+an array containing one value per state variable:
+
+```fortran
+call integrator%set_absolute_tolerance(1.0d-8)
+call integrator%set_relative_tolerance([1.0d-6, 1.0d-9])
+```
+
+An array must have the same size as the initial state passed to `solve`.
+Calling the same setter later with a scalar restores the blanket tolerance.
+Per-state tolerances apply to every adaptive solver, including Rosenbrock,
+Kennedy-Carpenter, BDF, and Adams when they select their next step or order.
+
 The `x` argument may contain only the start and end points, in which case the
 solver returns accepted step endpoints. When it contains more than two values,
 the solver returns values at those requested points using dense output. All

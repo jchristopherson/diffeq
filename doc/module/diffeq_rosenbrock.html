@@ -10,7 +10,7 @@
     <meta name="author" content="Jason Christopherson" >
     <link rel="icon" href="../favicon.png">
 
-    <title>diffeq_bdf &ndash; DIFFEQ</title>
+    <title>diffeq_rosenbrock &ndash; DIFFEQ</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
@@ -62,7 +62,7 @@
 
     <div class="container">
   <div class="row">
-    <h1>diffeq_bdf
+    <h1>diffeq_rosenbrock
       <small>Module</small>
       
     </h1>
@@ -74,20 +74,20 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title=" 5.1% of total for modules and submodules.">145 statements</a>
+                 title=" 9.2% of total for modules and submodules.">263 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/diffeq_bdf.f90"> Source File</a>
+              <a href="../src/diffeq_rosenbrock.f90"> Source File</a>
             </li>
         </ul>
       </div>
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='..\sourcefile\diffeq_bdf.f90.html'>diffeq_bdf.f90</a></li>
-            <li class="breadcrumb-item active" aria-current="page">diffeq_bdf</li>
+                <li class="breadcrumb-item"><a href='..\sourcefile\diffeq_rosenbrock.f90.html'>diffeq_rosenbrock.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">diffeq_rosenbrock</li>
           </ol>
         </nav>
       </div>
@@ -122,7 +122,7 @@
       </a>
       <div id="types-0" class="collapse">
         <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../module/diffeq_bdf.html#type-bdf">bdf</a>
+            <a class="list-group-item" href="../module/diffeq_rosenbrock.html#type-rosenbrock">rosenbrock</a>
         </div>
       </div>
     </div>
@@ -143,21 +143,7 @@
     </div>
 
     <div class="col-md-9" id='text'>
-      <p>Implicit BDF solvers.</p>
-<p>Backward differentiation formulae replace the derivative in
-<script type="math/tex; mode=display">
-M(x,y) y' = f(x,y)
-</script>
-with the derivative, evaluated at <script type="math/tex">x_{n+1}</script>, of the polynomial that
-interpolates the new solution point together with the <script type="math/tex">k</script> points
-preceding it.  The resulting formula
-<script type="math/tex; mode=display">
-M(x_{n+1},y_{n+1}) \sum_{j=0}^{k} c_j y_{n+1-j} = f(x_{n+1},y_{n+1})
-</script>
-is implicit in <script type="math/tex">y_{n+1}</script> and is solved by Newton iteration.  Because
-the coefficients are derived from the actual spacing of the stored
-points, a change of step size is handled exactly rather than by
-interpolating the history onto a uniform grid.</p>
+      
 <br>          <div class="card mb-4">
       <h3 class="card-header card-title bg-light">Uses</h3>
       <div class="card-body">
@@ -166,7 +152,7 @@ interpolating the history onto a uniform grid.</p>
               <ul class="list-inline">
                   <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item"><a href='diffeq_multistep.html'>diffeq_multistep</a></li>
+                  <li class="list-inline-item">linalg</li>
                   <li class="list-inline-item"><a href='diffeq_base.html'>diffeq_base</a></li>
               </ul>
             </li>
@@ -186,16 +172,15 @@ interpolating the history onto a uniform grid.</p>
           <h2>Derived Types</h2>
               <div class="card">
     <div class="card-header codesum">
-      <span class="anchor" id="type-bdf"></span>
+      <span class="anchor" id="type-rosenbrock"></span>
       <h3>
-        type, public, extends(<a href='..\type\newton_multistep_integrator.html'>newton_multistep_integrator</a>)&nbsp;::&nbsp;
-        <a href='..\type\bdf.html'>bdf</a>
+        type, public, extends(<a href='..\type\single_step_integrator.html'>single_step_integrator</a>)&nbsp;::&nbsp;
+        <a href='..\type\rosenbrock.html'>rosenbrock</a>
         
       </h3>
     </div>
     <div class="card-body">
-      <p>A variable step-size, variable order (1-5) BDF integrator for stiff
-systems and index-1 differential-algebraic equations.</p><a href="../type/bdf.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+      <p>A fourth-order Rosenbrock integrator for stiff systems.</p><a href="../type/rosenbrock.html" class="pull-right"><emph>Read more&hellip;</emph></a>
 
 
 
@@ -211,8 +196,8 @@ buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\bdf.html#boundprocedure-build_linear_system~2'>build_linear_system</a></strong> => bdf_build_linear_system</td>
-                <td>..\..\<p>Builds the linearized system for the implicit corrector.<\p></td>
+  <strong><a href='..\type\rosenbrock.html#boundprocedure-attempt_step~5'>attempt_step</a></strong> => rbrk_attempt_step</td>
+                <td>..\..\<p>Attempts an integration step for this integrator.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
@@ -226,23 +211,13 @@ buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-correct~3'>correct</a></strong> => mi_newton_iteration</td>
-                <td>..\..\<p>Performs the Newton iteration process.<\p></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_inital_step_size'>estimate_inital_step_size</a></strong> => oi_initial_step</td>
                 <td>..\..\<p>Computes an estimate of an initial step size.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
+  <strong><a href='..\type\rosenbrock.html#boundprocedure-estimate_next_step_size'>estimate_next_step_size</a></strong> => rbrk_next_step</td>
                 <td>..\..\<p>Estimates the next step size.<\p></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-evaluate_derivative~2'>evaluate_derivative</a></strong> => mi_evaluate_derivative</td>
-                <td>..\..\<p>Evaluates the derivative stored in the solution history.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
@@ -257,13 +232,9 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\bdf.html#boundprocedure-get_error_constant~3'>get_error_constant</a></strong> => bdf_error_constant</td>
-                <td>..\..\<p>Gets the error constant for the requested order.<\p></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_maximum_order'>get_maximum_order</a></strong> => mi_get_max_order</td>
-                <td>..\..\<p>Gets the upper limit on the order of the method.<\p></td>
+  <strong><a href='..\type\rosenbrock.html#boundprocedure-get_is_fsal~5'>get_is_fsal</a></strong> => rbrk_get_is_fsal</td>
+                <td>..\..\<p>Gets a logical parameter stating if this is a first-same-as-last
+(FSAL) integrator.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
@@ -272,28 +243,13 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\bdf.html#boundprocedure-get_maximum_supported_order~3'>get_maximum_supported_order</a></strong> => bdf_max_order</td>
-                <td>..\..\<p>Gets the highest order the method is permitted to use.<\p></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_minimum_step_size'>get_minimum_step_size</a></strong> => oi_get_min_step</td>
                 <td>..\..\<p>Gets the magnitude of the minimum allowed step size.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-get_newton_step_limit'>get_newton_step_limit</a></strong> => mi_get_newton_step_limit</td>
-                <td>..\..\<p>Gets the maximum number of Newton iterations allowed.<\p></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-get_newton_tolerance'>get_newton_tolerance</a></strong> => mi_get_newton_tolerance</td>
-                <td>..\..\<p>Gets the Newton iteration convergence tolerance.<\p></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_order~9'>get_order</a></strong> => mi_get_order</td>
-                <td>..\..\<p>Gets the order currently in use.<\p></td>
+  <strong><a href='..\type\rosenbrock.html#boundprocedure-get_order~5'>get_order</a></strong> => rbrk_get_order</td>
+                <td>..\..\<p>Gets the order of the integrator.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
@@ -304,6 +260,11 @@ the final value in the integration range.<\p></td>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_solution'>get_solution</a></strong> => oi_get_solution</td>
                 <td>..\..\<p>Returns the solution computed by the integrator.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\rosenbrock.html#boundprocedure-get_stage_count~5'>get_stage_count</a></strong> => rbrk_get_stage_count</td>
+                <td>..\..\<p>Gets the stage count for this integrator.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
@@ -322,57 +283,22 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_stored_derivative'>get_stored_derivative</a></strong> => mi_get_stored_f</td>
-                <td>..\..\<p>Gets a stored derivative vector.<\p></td>
+  <strong><a href='..\type\rosenbrock.html#boundprocedure-interpolate~5'>interpolate</a></strong> => rbrk_interp</td>
+                <td>..\..\<p>Performs the interpolation.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_stored_solution'>get_stored_solution</a></strong> => mi_get_stored_y</td>
-                <td>..\..\<p>Gets a stored solution vector.<\p></td>
+  <strong><a href='..\type\rosenbrock.html#boundprocedure-post_step_action~5'>post_step_action</a></strong> => rbrk_set_up_interp</td>
+                <td>..\..\<p>Sets up the interpolation process as the post-step action.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_stored_step_count'>get_stored_step_count</a></strong> => mi_get_stored_count</td>
-                <td>..\..\<p>Gets the number of solution points held in the history.<\p></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_stored_variable'>get_stored_variable</a></strong> => mi_get_stored_x</td>
-                <td>..\..\<p>Gets a stored independent variable value.<\p></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='..\type\bdf.html#boundprocedure-get_truncation_constant~3'>get_truncation_constant</a></strong> => bdf_error_constant</td>
-                <td>..\..\<p>Gets the truncation error constant for the requested order.<\p></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-interpolate~8'>interpolate</a></strong> => mi_interpolate</td>
-                <td>..\..\<p>Interpolates the solution history to the requested point.<\p></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-newton_iteration'>newton_iteration</a></strong> => mi_newton_iteration</td>
-                <td>..\..\<p>Performs the Newton iteration process.<\p></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='..\type\bdf.html#boundprocedure-predictor~3'>predictor</a></strong> => bdf_predictor</td>
-                <td>..\..\<p>Evaluates the predictor and forms the coefficients of the step.<\p></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-prepare_for_solve~2'>prepare_for_solve</a></strong> => mi_prepare_for_solve</td>
-                <td>..\..\<p>Prepares internal state for the beginning of an integration.<\p></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-reset_history'>reset_history</a></strong> => mi_reset_history</td>
-                <td>..\..\<p>Clears the stored solution history.<\p></td>
+  <strong><a href='..\type\rosenbrock.html#boundprocedure-pre_step_action~5'>pre_step_action</a></strong> => rbrk_form_matrix</td>
+                <td>..\..\<p>Constructs the system matrix.<\p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='..\type\bdf.html#boundprocedure-set_absolute_tolerance~14'>set_absolute_tolerance</a></strong> => oi_set_abs_tol, oi_set_abs_tols</td>
+  <strong><a href='..\type\rosenbrock.html#boundprocedure-set_absolute_tolerance~7'>set_absolute_tolerance</a></strong> => oi_set_abs_tol, oi_set_abs_tols</td>
                 <td>..\..\<p>Sets the absolute error tolerance.<\p></td>
               </tr>
               <tr>
@@ -380,11 +306,6 @@ the final value in the integration range.<\p></td>
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_allow_overshoot'>set_allow_overshoot</a></strong> => oi_set_allow_overshoot</td>
                 <td>..\..\<p>Sets a value determining if the solver is allowed to overshoot 
 the final value in the integration range.<\p></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-set_maximum_order'>set_maximum_order</a></strong> => mi_set_max_order</td>
-                <td>..\..\<p>Sets the upper limit on the order of the method.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
@@ -397,18 +318,8 @@ the final value in the integration range.<\p></td>
                 <td>..\..\<p>Sets the magnitude of the minimum allowed step size.<\p></td>
               </tr>
               <tr>
-                <td>  procedure, public ::
-  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-set_newton_step_limit'>set_newton_step_limit</a></strong> => mi_set_newton_step_limit</td>
-                <td>..\..\<p>Sets the maximum number of Newton iterations allowed.<\p></td>
-              </tr>
-              <tr>
-                <td>  procedure, public ::
-  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-set_newton_tolerance'>set_newton_tolerance</a></strong> => mi_set_newton_tolerance</td>
-                <td>..\..\<p>Sets the Newton iteration convergence tolerance.<\p></td>
-              </tr>
-              <tr>
                 <td>  generic, public ::
-  <strong><a href='..\type\bdf.html#boundprocedure-set_relative_tolerance~14'>set_relative_tolerance</a></strong> => oi_set_rel_tol, oi_set_rel_tols</td>
+  <strong><a href='..\type\rosenbrock.html#boundprocedure-set_relative_tolerance~7'>set_relative_tolerance</a></strong> => oi_set_rel_tol, oi_set_rel_tols</td>
                 <td>..\..\<p>Sets the relative error tolerance.<\p></td>
               </tr>
               <tr>
@@ -428,7 +339,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-solve~3'>solve</a></strong> => mi_ode_solver</td>
+  <strong><a href='..\type\single_step_integrator.html#boundprocedure-solve~2'>solve</a></strong> => ssi_ode_solver</td>
                 <td>..\..\<p>Solves the supplied system of ODE's.<\p></td>
               </tr>
           </tbody>
