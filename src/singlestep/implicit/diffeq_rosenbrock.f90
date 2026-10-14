@@ -148,12 +148,14 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
 
     ! Local Variables
     integer :: i, n, flag
+    logical :: usemass
     real(real64) :: fac
     real(real64), allocatable, dimension(:,:) :: lu
     
     ! Initialization
     n = size(y)
-    call this%initialize_matrices(n, .true.)
+    usemass = sys%has_mass_matrix()
+    call this%initialize_matrices(n, usemass)
 
     ! Compute the Jacobian matrix - only need to update if the previous step
     ! was successful
@@ -167,18 +169,26 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
         end if
 
         ! Compute the mass matrix
-        if (.not.this%m_massComputed .or. &
-            sys%get_is_mass_matrix_dependent()) &
-        then
-            ! We need to compute the mass matrix
-            call sys%compute_mass_matrix(x, y, this%mass, args)
-            this%m_massComputed = .true.
+        if (usemass) then
+            if (.not.this%m_massComputed .or. &
+                sys%get_is_mass_matrix_dependent()) &
+            then
+                call sys%compute_mass_matrix(x, y, this%mass, args)
+                this%m_massComputed = .true.
+            end if
         end if
     end if
 
     ! Form the system matrix, and then factor it accordingly
     fac = 1.0d0 / (gam * h)
-    this%a = fac * this%mass - this%jac
+    if (usemass) then
+        this%a = fac * this%mass - this%jac
+    else
+        this%a = -this%jac
+        do i = 1, n
+            this%a(i,i) = this%a(i,i) + fac
+        end do
+    end if
 
     ! Factor the equations
     this%pivot = 0
@@ -205,7 +215,10 @@ subroutine rbrk_init_matrices(this, n, usemass)
     ! Process
     if (allocated(this%jac)) then
         if (size(this%jac, 1) == n .and. size(this%jac, 2) == n) then
-            if (.not.usemass .and. allocated(this%mass)) then
+            if (usemass .and. .not.allocated(this%mass)) then
+                allocate(this%mass(n, n))
+                this%m_massComputed = .false.
+            else if (.not.usemass .and. allocated(this%mass)) then
                 deallocate(this%mass)
                 this%m_massComputed = .false.
             end if

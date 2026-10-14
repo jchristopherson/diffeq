@@ -130,6 +130,7 @@ module diffeq_base
             oc_use_finite_difference_jacobian
         procedure, public :: compute_rhs => oc_eval_rhs
         procedure, public :: compute_mass_matrix => oc_eval_mass_matrix
+        procedure, public :: has_mass_matrix => oc_has_mass_matrix
     end type
 
 ! ------------------------------------------------------------------------------
@@ -449,6 +450,14 @@ subroutine oc_eval_rhs(this, x, y, dydx, args)
     if (.not.this%get_is_ode_defined()) error stop DIFFEQ_NULL_POINTER_ERROR
     call this%fcn(x, y, dydx, args = args)
 end subroutine
+
+! ------------------------------------------------------------------------------
+function oc_has_mass_matrix(this) result(rst)
+    class(ode_container), intent(in) :: this
+    logical :: rst
+
+    rst = associated(this%mass_matrix)
+end function
 
 ! ------------------------------------------------------------------------------
 subroutine oc_eval_mass_matrix(this, x, y, m, args)

@@ -147,6 +147,9 @@ program test
     rst = test_kennedy_carpenter_singular_mass_matrix()
         if (.not.rst) flag = max(flag, 22)
 
+    rst = test_solver_mass_dispatch()
+        if (.not.rst) flag = max(flag, 57)
+
     rst = test_runge_kutta_dense_with_args()
         if (.not.rst) flag = max(flag, 23)
 

@@ -25,7 +25,86 @@ module diffeq_test_implicit_rk
         integer :: mass_calls = 0
     end type
 
+    type, extends(ode_container) :: mass_dispatch_model
+        logical :: mass_enabled = .false.
+        integer :: mass_calls = 0
+    contains
+        procedure :: has_mass_matrix => dispatch_has_mass_matrix
+        procedure :: compute_mass_matrix => dispatch_mass_matrix
+    end type
+
 contains
+! ------------------------------------------------------------------------------
+function dispatch_has_mass_matrix(this) result(rst)
+    class(mass_dispatch_model), intent(in) :: this
+    logical :: rst
+
+    rst = this%mass_enabled
+end function
+
+subroutine dispatch_mass_matrix(this, x, y, m, args)
+    class(mass_dispatch_model), intent(inout) :: this
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:,:) :: m
+    class(*), intent(inout), optional :: args
+
+    if (.not.this%mass_enabled) error stop "ODE path evaluated a mass matrix"
+    this%mass_calls = this%mass_calls + 1
+    m = 0.0d0
+    m(1,1) = 2.0d0
+    m(2,2) = 3.0d0
+end subroutine
+
+function check_mass_dispatch(integrator) result(rst)
+    class(ode_integrator), intent(inout) :: integrator
+    logical :: rst
+    type(mass_dispatch_model) :: mdl
+    integer :: mode
+    real(real64), dimension(2) :: expected
+    real(real64), allocatable, dimension(:,:) :: sol
+
+    rst = .true.
+    mdl%fcn => counted_mass_ode
+    call integrator%set_absolute_tolerance(1.0d-9)
+    call integrator%set_relative_tolerance(1.0d-9)
+    do mode = 1, 4
+        mdl%mass_enabled = mode == 2 .or. mode == 3
+        mdl%mass_calls = 0
+        call mdl%set_is_mass_matrix_dependent(mode == 3)
+        call integrator%clear_buffer()
+        call integrator%solve(mdl, [0.0d0, 0.1d0], [1.0d0, 1.0d0])
+        sol = integrator%get_solution()
+        if (mdl%mass_enabled) then
+            expected = [exp(-0.1d0), exp(-0.2d0)]
+            if (mode == 2) rst = rst .and. mdl%mass_calls == 1
+            if (mode == 3) rst = rst .and. mdl%mass_calls > 1
+        else
+            expected = [exp(-0.2d0), exp(-0.6d0)]
+            rst = rst .and. mdl%mass_calls == 0
+        end if
+        rst = rst .and. all(abs(sol(size(sol,1),2:3) - expected) < 1.0d-7)
+    end do
+end function
+
+function test_solver_mass_dispatch() result(rst)
+    logical :: rst
+    logical, dimension(5) :: results
+    type(bdf) :: bdf_integrator
+    type(adams) :: adams_integrator
+    type(rosenbrock) :: rosenbrock_integrator
+    type(kennedy_carpenter_4) :: kc4_integrator
+    type(kennedy_carpenter_5) :: kc5_integrator
+
+    results(1) = check_mass_dispatch(bdf_integrator)
+    results(2) = check_mass_dispatch(adams_integrator)
+    results(3) = check_mass_dispatch(rosenbrock_integrator)
+    results(4) = check_mass_dispatch(kc4_integrator)
+    results(5) = check_mass_dispatch(kc5_integrator)
+    rst = all(results)
+    if (.not.rst) print *, "TEST FAILED: test_solver_mass_dispatch", results
+end function
+
 ! ------------------------------------------------------------------------------
 function test_analytical_jacobian_usage() result(rst)
     logical :: rst

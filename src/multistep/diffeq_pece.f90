@@ -240,6 +240,8 @@ subroutine adams_evaluate_derivative(this, sys, x, y, dydx, args)
     call sys%compute_rhs(x, y, dydx, args)
     call this%log_function_evaluation()
 
+    if (.not.sys%has_mass_matrix()) return
+
     ! Factor the mass matrix
     if (.not.this%m_massFactored .or. sys%get_is_mass_matrix_dependent()) then
         call sys%compute_mass_matrix(x, y, this%m_lu, args)
@@ -304,9 +306,6 @@ subroutine adams_predictor(this, sys, h, x, y, f, yn, fn, args)
     n = size(y)
     k = max(1, min(this%get_order(), this%get_stored_step_count()))
     call this%initialize_workspace(n)
-
-    ! The mass matrix is refreshed once per step attempt
-    this%m_massFactored = .false.
 
     ! Gather the derivative history, most recent point first
     allocate(xv(k), fv(n, k), dd(n, k))

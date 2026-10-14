@@ -89,6 +89,7 @@ module diffeq_bdf
             !! Evaluates the predictor and forms the coefficients of the step.
         procedure, public :: build_linear_system => bdf_build_linear_system
             !! Builds the linearized system for the implicit corrector.
+        procedure, public :: prepare_for_solve => bdf_prepare_for_solve
         procedure, public :: get_maximum_supported_order => bdf_max_order
             !! Gets the highest order the method is permitted to use.
         procedure, public :: get_error_constant => bdf_error_constant
@@ -156,6 +157,14 @@ subroutine bdf_init_workspace(this, n)
         this%m_ydot(n), &
         this%m_histTerm(n) &
     )
+    this%m_massComputed = .false.
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine bdf_prepare_for_solve(this)
+    class(bdf), intent(inout) :: this
+
+    this%m_massComputed = .false.
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -233,7 +242,6 @@ subroutine bdf_predictor(this, sys, h, x, y, f, yn, fn, args)
     do i = 1, k
         this%m_histTerm = this%m_histTerm + c(i+1) * yv(:,i)
     end do
-    this%m_massComputed = .false.
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -327,14 +335,22 @@ subroutine bdf_build_linear_system(this, sys, h, x, y, A, b, args)
     ! matrix; the dependence of a state-dependent mass matrix upon y is
     ! neglected, which affects the rate of convergence but not the solution
     ! the iteration converges upon.
-    if (.not.this%m_massComputed .or. &
-        sys%get_is_mass_matrix_dependent()) &
-    then
-        call sys%compute_mass_matrix(x, y, this%m_mass, args)
-        this%m_massComputed = .true.
+    if (sys%has_mass_matrix()) then
+        if (.not.this%m_massComputed .or. &
+            sys%get_is_mass_matrix_dependent()) &
+        then
+            call sys%compute_mass_matrix(x, y, this%m_mass, args)
+            this%m_massComputed = .true.
+        end if
+        A = this%m_c0 * this%m_mass - this%m_jac
+        b = this%m_rhs - matmul(this%m_mass, this%m_ydot)
+    else
+        A = -this%m_jac
+        do i = 1, n
+            A(i,i) = A(i,i) + this%m_c0
+        end do
+        b = this%m_rhs - this%m_ydot
     end if
-    A = this%m_c0 * this%m_mass - this%m_jac
-    b = this%m_rhs - matmul(this%m_mass, this%m_ydot)
 end subroutine
 
 ! ------------------------------------------------------------------------------
