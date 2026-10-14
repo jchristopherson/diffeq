@@ -30,4 +30,5 @@ module diffeq
     use diffeq_pece
     use diffeq_rosenbrock
     use diffeq_kennedy_carpenter
+    use diffeq_containers
 end module

@@ -17,6 +17,7 @@ set(DIFFEQ_SOURCES
     ${dir}/diffeq_pece.f90
     ${dir}/diffeq_rosenbrock.f90
     ${dir}/diffeq_kennedy_carpenter.f90
+    ${dir}/diffeq_containers.f90
 )
 
 # Dependencies
