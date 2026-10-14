@@ -86,6 +86,13 @@ add_executable(
 )
 target_link_libraries(stabilized_pendulum_example diffeq ${fplot_LIBRARY})
 
+# ODE Results to File Example
+add_executable(
+    ode_results_to_file_example
+    ode_results_to_file_example.f90
+)
+target_link_libraries(ode_results_to_file_example diffeq)
+
 if (${BUILD_SHARED_LIBS} AND WIN32)
     add_custom_command(
         TARGET stiff_integrator_example
