@@ -49,6 +49,30 @@ foreach(error_case missing_ode short_grid step_limit tolerance_size)
     set_tests_properties(diffeq_error_${error_case} PROPERTIES WILL_FAIL TRUE)
 endforeach()
 
+add_executable(diffeq_container_tests diffeq_container_tests.f90)
+target_link_libraries(diffeq_container_tests diffeq)
+add_test(
+    NAME diffeq_container_tests
+    WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+    COMMAND $<TARGET_FILE:diffeq_container_tests>
+)
+
+foreach(error_case
+    init_zero_states init_negative_states init_zero_capacity init_negative_capacity
+    capacity_uninitialized capacity_zero capacity_negative push_size
+    point_uninitialized point_low point_high point_size
+    whole_uninitialized whole_grid_size whole_rows whole_columns
+    vector_uninitialized vector_low vector_high vector_size
+    matrix_uninitialized
+)
+    add_test(
+        NAME diffeq_container_error_${error_case}
+        WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+        COMMAND $<TARGET_FILE:diffeq_container_tests> ${error_case}
+    )
+    set_tests_properties(diffeq_container_error_${error_case} PROPERTIES WILL_FAIL TRUE)
+endforeach()
+
 if (${BUILD_SHARED_LIBS} AND WIN32)
     add_custom_command(
         TARGET diffeq_tests
