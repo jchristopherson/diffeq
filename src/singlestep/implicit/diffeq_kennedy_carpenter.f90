@@ -23,6 +23,7 @@
 module diffeq_kennedy_carpenter
     use iso_fortran_env
     use diffeq_base
+    use diffeq_singlestep
     use diffeq_errors
     use linalg
     implicit none
@@ -39,7 +40,11 @@ module diffeq_kennedy_carpenter
         !! \(M-h a_{ii}J\), while the embedded tableau supplies the error
         !! estimate used by the inherited adaptive driver.  These solvers use
         !! the inherited configurable PI step-size controller.
+        real(real64), private, allocatable, dimension(:,:) :: m_mass
+        real(real64), private, allocatable, dimension(:) :: m_startDerivative
+        logical, private :: m_massComputed = .false.
     contains
+        procedure, public :: solve => kc_solve
         procedure, public :: pre_step_action => kc_pre_step
             !! Performs any pre-step actions.
         procedure, public :: attempt_step => kc_attempt_step
@@ -75,6 +80,19 @@ module diffeq_kennedy_carpenter
 
 contains
 ! ------------------------------------------------------------------------------
+subroutine kc_solve(this, sys, x, iv, args)
+    class(kennedy_carpenter), intent(inout) :: this
+    class(ode_container), intent(inout) :: sys
+    real(real64), intent(in), dimension(:) :: x, iv
+    class(*), intent(inout), optional, target :: args
+
+    this%m_massComputed = .false.
+    if (allocated(this%m_mass)) deallocate(this%m_mass)
+    if (allocated(this%m_startDerivative)) deallocate(this%m_startDerivative)
+    call ssi_ode_solver(this, sys, x, iv, args)
+end subroutine
+
+! ------------------------------------------------------------------------------
 subroutine kc_pre_step(this, prevs, sys, h, x, y, f, args)
     !! Placeholder routine for any pre-step actions.
     !!
@@ -107,11 +125,11 @@ end subroutine
 
 ! ------------------------------------------------------------------------------
 subroutine kc_post_step(this, sys, dense, x, xn, y, yn, f, fn, k, args)
-    !! Placeholder routine for any post-step actions.
+    !! Retains the first-stage derivative for cubic Hermite interpolation.
     !!
-    !! The interpolation for these integrators requires only the solution and
-    !! derivative values at each end of the step, so no additional storage is
-    !! required here.
+    !! For a mass-matrix problem, the driver's f is a raw RHS rather than a
+    !! derivative. The first stage supplies the consistent left-end slope;
+    !! the stiffly accurate final stage already supplies the right-end slope.
     class(kennedy_carpenter), intent(inout) :: this
         !! The kennedy_carpenter object.
     class(ode_container), intent(inout) :: sys
@@ -136,8 +154,7 @@ subroutine kc_post_step(this, sys, dense, x, xn, y, yn, f, fn, k, args)
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
-    ! Process
-    return
+    this%m_startDerivative = k(:,1)
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -156,7 +173,7 @@ pure function kc_get_stage_count(this) result(rst)
     !! Gets the stage count for this integrator.
     class(kennedy_carpenter), intent(in) :: this
         !! The kennedy_carpenter object.
-    integer(int32) :: rst
+    integer :: rst
         !! The stage count.
     select type (this)
     type is (kennedy_carpenter_4)
@@ -173,7 +190,7 @@ pure function kc4_get_order(this) result(rst)
     !! Gets the order of the integrator.
     class(kennedy_carpenter_4), intent(in) :: this
         !! The kennedy_carpenter_4 object.
-    integer(int32) :: rst
+    integer :: rst
         !! The order.
     rst = 4
 end function
@@ -183,7 +200,7 @@ pure function kc5_get_order(this) result(rst)
     !! Gets the order of the integrator.
     class(kennedy_carpenter_5), intent(in) :: this
         !! The kennedy_carpenter_5 object.
-    integer(int32) :: rst
+    integer :: rst
         !! The order.
     rst = 5
 end function
@@ -227,40 +244,45 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
-    ! Parameters
-    integer(int32), parameter :: maxiter = 12
-    real(real64), parameter :: tol = 1.0d-12
-
     ! Local Variables
-    logical :: usemass
-    integer(int32) :: i, j, n, stages, iteration
+    integer :: i, j, n, stages, njac
+    logical :: usemass, massDependent
     real(real64) :: a(8,8), b(8), d(8), c(8)
-    real(real64), allocatable, dimension(:) :: base, state, rhs, deriv, &
-        residual, delta, embedded
-    real(real64), allocatable, dimension(:,:) :: jac, mass
+    real(real64), allocatable, dimension(:) :: base, state, embedded
 
     ! Initialization
     n = size(y)
-    usemass = associated(sys%mass_matrix)
+    usemass = sys%has_mass_matrix()
+    massDependent = sys%get_is_mass_matrix_dependent()
     call kc_table(this, a, b, d, c, stages)
     allocate( &
         base(n), &
         state(n), &
-        rhs(n), &
-        deriv(n), &
-        residual(n), &
-        delta(n), &
-        embedded(n), &
-        jac(n, n), &
-        mass(n, n) &
+        embedded(n) &
     )
 
     ! Process
     ! The first stage of an ESDIRK method is explicit
     k = 0.0d0
     if (usemass) then
-        call sys%mass_matrix(x, y, mass, args)
-        call kc_consistent_derivative(sys, x, y, f, mass, k(:,1), args)
+        if (allocated(this%m_mass)) then
+            if (size(this%m_mass, 1) /= n) then
+                deallocate(this%m_mass)
+                this%m_massComputed = .false.
+            end if
+        end if
+        if (.not.allocated(this%m_mass)) allocate(this%m_mass(n, n))
+        if (.not.this%m_massComputed .or. massDependent) then
+            call sys%compute_mass_matrix(x, y, this%m_mass, args)
+            this%m_massComputed = .true.
+        end if
+        call kc_consistent_derivative(sys, x, y, f, this%m_mass, k(:,1), args)
+        call this%log_jacobian_evaluation()
+        call this%log_function_evaluation()
+        call this%log_matrix_factorization()
+        if (sys%use_finite_difference_jacobian()) then
+            call this%log_function_evaluation(n + 1)
+        end if
     else
         k(:,1) = f
     end if
@@ -275,40 +297,17 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
 
         if (usemass) then
             call kc_mass_stage(sys, x + c(i) * h, base, h * a(i,i), &
-                state, k(:,i), args)
-            cycle
-        end if
-
-        ! Use an explicit Euler prediction to start the Newton iteration
-        call sys%fcn(x + c(i) * h, base, rhs, args)
-        state = base + h * a(i,i) * rhs
-
-        ! Solve the stage equation
-        do iteration = 1, maxiter
-            call sys%fcn(x + c(i) * h, state, rhs, args)
-            if (usemass) then
-                call sys%mass_matrix(x + c(i) * h, state, mass, args)
-                call sys%compute_jacobian(x + c(i) * h, state, jac, args)
-                residual = matmul(mass, state - base) - h * a(i,i) * rhs
-                delta = solve_kc_system(mass - h * a(i,i) * jac, -residual)
-            else
-                call sys%compute_jacobian(x + c(i) * h, state, jac, args)
-                residual = state - base - h * a(i,i) * rhs
-                delta = solve_kc_system(identity(n) - h * a(i,i) * jac, &
-                    -residual)
-            end if
-            if (norm2(residual) <= tol * max(1.0d0, norm2(state))) exit
-            state = state + delta
-        end do
-        if (iteration > maxiter) error stop DIFFEQ_CONVERGENCE_ERROR
-
-        ! Store the derivative for this stage
-        call sys%fcn(x + c(i) * h, state, rhs, args)
-        if (usemass) then
-            call sys%mass_matrix(x + c(i) * h, state, mass, args)
-            k(:,i) = solve_kc_system(mass, rhs)
+                this%m_mass, massDependent, state, k(:,i), njac, args)
+            call this%log_function_evaluation(njac + 1)
         else
-            k(:,i) = rhs
+            call kc_ode_stage(sys, x + c(i) * h, base, h * a(i,i), &
+                state, k(:,i), njac, args)
+            call this%log_function_evaluation(njac + 2)
+        end if
+        call this%log_jacobian_evaluation(njac)
+        call this%log_matrix_factorization(njac)
+        if (sys%use_finite_difference_jacobian()) then
+            call this%log_function_evaluation(njac * (n + 1))
         end if
     end do
 
@@ -336,7 +335,7 @@ subroutine kc_consistent_derivative(sys, x, y, f, mass, derivative, args)
     real(real64), allocatable :: singular_values(:), left_vectors(:,:), &
         jac(:,:), fplus(:), augmented(:,:), rhs(:)
     real(real64) :: fdstep, rank_tolerance, scale
-    integer(int32) :: n, rank, nullity, i
+    integer :: n, rank, nullity, i
 
     n = size(y)
     call svd(mass, singular_values, left_vectors)
@@ -353,7 +352,7 @@ subroutine kc_consistent_derivative(sys, x, y, f, mass, derivative, args)
     allocate(jac(n,n), fplus(n), augmented(n,n), rhs(n))
     call sys%compute_jacobian(x, y, jac, args)
     fdstep = sys%get_finite_difference_step()
-    call sys%fcn(x + fdstep, y, fplus, args)
+    call sys%compute_rhs(x + fdstep, y, fplus, args)
     fplus = (fplus - f) / fdstep
 
     augmented = 0.0d0
@@ -368,36 +367,75 @@ subroutine kc_consistent_derivative(sys, x, y, f, mass, derivative, args)
     derivative = solve_kc_system(augmented, rhs)
 end subroutine
 
-subroutine kc_mass_stage(sys, x, base, diagonal_step, state, derivative, args)
+subroutine kc_ode_stage(sys, x, base, diagonal_step, state, derivative, njac, args)
+    class(ode_container), intent(inout) :: sys
+    real(real64), intent(in) :: x, diagonal_step
+    real(real64), intent(in), dimension(:) :: base
+    real(real64), intent(out), dimension(:) :: state, derivative
+    integer, intent(out) :: njac
+    class(*), intent(inout), optional :: args
+    real(real64), dimension(size(base)) :: rhs, residual, delta
+    real(real64), dimension(size(base),size(base)) :: jac, system
+    integer :: equation, iteration
+
+    call sys%compute_rhs(x, base, rhs, args)
+    state = base + diagonal_step * rhs
+    njac = 0
+    do iteration = 1, 12
+        call sys%compute_rhs(x, state, rhs, args)
+        residual = state - base - diagonal_step * rhs
+        if (norm2(residual) <= 1.0d-12 * max(1.0d0, norm2(state))) exit
+        call sys%compute_jacobian(x, state, jac, args)
+        njac = njac + 1
+        system = -diagonal_step * jac
+        do equation = 1, size(base)
+            system(equation,equation) = system(equation,equation) + 1.0d0
+        end do
+        delta = solve_kc_system(system, -residual)
+        state = state + delta
+    end do
+    if (iteration > 12) error stop DIFFEQ_CONVERGENCE_ERROR
+    derivative = rhs
+end subroutine
+
+subroutine kc_mass_stage(sys, x, base, diagonal_step, mass, massDependent, &
+    state, derivative, njac, args)
     !! Solves one Kennedy--Carpenter mass-matrix stage without forming M^{-1}f.
     class(ode_container), intent(inout) :: sys
     real(real64), intent(in) :: x, base(:), diagonal_step
+    real(real64), intent(inout), dimension(:,:) :: mass
+    logical, intent(in) :: massDependent
     real(real64), intent(out) :: state(:), derivative(:)
+    integer, intent(out) :: njac
     class(*), intent(inout), optional :: args
     real(real64) :: f(size(base)), residual(size(base))
-    real(real64) :: jac(size(base),size(base)), mass(size(base),size(base))
+    real(real64) :: jac(size(base),size(base))
     real(real64) :: mass_perturbed(size(base),size(base))
     real(real64) :: system(size(base),size(base)), delta(size(base))
     real(real64) :: fdstep
-    integer(int32) :: i, iteration
+    integer :: i, iteration
 
     state = base
+    njac = 0
     do iteration = 1, 12
         derivative = (state - base) / diagonal_step
-        call sys%fcn(x, state, f, args)
-        call sys%mass_matrix(x, state, mass, args)
+        call sys%compute_rhs(x, state, f, args)
+        if (massDependent) call sys%compute_mass_matrix(x, state, mass, args)
         residual = matmul(mass, state - base) - diagonal_step * f
         if (norm2(residual) <= 1.0d-14 * max(1.0d0, norm2(state))) exit
         call sys%compute_jacobian(x, state, jac, args)
+        njac = njac + 1
         system = mass - diagonal_step * jac
-        fdstep = sys%get_finite_difference_step()
-        do i = 1, size(base)
-            state(i) = state(i) + fdstep
-            call sys%mass_matrix(x, state, mass_perturbed, args)
-            state(i) = state(i) - fdstep
-            system(:,i) = system(:,i) + &
-                matmul((mass_perturbed - mass) / fdstep, state - base)
-        end do
+        if (massDependent) then
+            fdstep = sys%get_finite_difference_step()
+            do i = 1, size(base)
+                state(i) = state(i) + fdstep
+                call sys%compute_mass_matrix(x, state, mass_perturbed, args)
+                state(i) = state(i) - fdstep
+                system(:,i) = system(:,i) + &
+                    matmul((mass_perturbed - mass) / fdstep, state - base)
+            end do
+        end if
         delta = solve_kc_system(system, -residual)
         state = state + delta
     end do
@@ -418,7 +456,7 @@ subroutine kc_table(this, a, b, d, c, stages)
         !! The array of weights defining the embedded solution.
     real(real64), intent(out) :: c(8)
         !! The array of nodes at which each stage is evaluated.
-    integer(int32), intent(out) :: stages
+    integer, intent(out) :: stages
         !! The number of stages used by the integrator.
 
     ! Initialization
@@ -592,9 +630,13 @@ subroutine kc_interpolate(this, x, xn, yn, fn, xn1, yn1, fn1, y)
 
     ! Process
     y = (2.0d0 * s**3 - 3.0d0 * s**2 + 1.0d0) * yn + &
-        (s**3 - 2.0d0 * s**2 + s) * h * fn + &
         (-2.0d0 * s**3 + 3.0d0 * s**2) * yn1 + &
         (s**3 - s**2) * h * fn1
+    if (allocated(this%m_startDerivative)) then
+        y = y + (s**3 - 2.0d0 * s**2 + s) * h * this%m_startDerivative
+    else
+        y = y + (s**3 - 2.0d0 * s**2 + s) * h * fn
+    end if
 end subroutine
 
 ! ------------------------------------------------------------------------------

@@ -23,13 +23,28 @@ program test
     implicit none
 
     ! Local Variables
-    integer(int32) :: flag
+    integer :: flag
     logical :: rst
 
     ! Initialization
     flag = 0
 
     ! Tests
+    rst = test_bdf_stiff_relaxation()
+        if (.not.rst) flag = max(flag, 53)
+
+    rst = test_bdf_nonlinear_reaction()
+        if (.not.rst) flag = max(flag, 56)
+
+    rst = test_bdf_robustness()
+        if (.not.rst) flag = max(flag, 54)
+
+    rst = test_adams_robustness()
+        if (.not.rst) flag = max(flag, 55)
+
+    rst = test_integrator_buffers()
+        if (.not.rst) flag = max(flag, 52)
+
     rst = test_state_variable_tolerances()
         if (.not.rst) flag = max(flag, 42)
 
@@ -131,6 +146,15 @@ program test
 
     rst = test_kennedy_carpenter_singular_mass_matrix()
         if (.not.rst) flag = max(flag, 22)
+
+    rst = test_solver_mass_dispatch()
+        if (.not.rst) flag = max(flag, 57)
+
+    rst = test_ggl_container()
+        if (.not.rst) flag = max(flag, 58)
+
+    rst = test_ggl_integration()
+        if (.not.rst) flag = max(flag, 59)
 
     rst = test_runge_kutta_dense_with_args()
         if (.not.rst) flag = max(flag, 23)

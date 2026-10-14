@@ -25,7 +25,285 @@ module diffeq_test_implicit_rk
         integer :: mass_calls = 0
     end type
 
+    type, extends(ode_container) :: mass_dispatch_model
+        logical :: mass_enabled = .false.
+        integer :: mass_calls = 0
+    contains
+        procedure :: has_mass_matrix => dispatch_has_mass_matrix
+        procedure :: compute_mass_matrix => dispatch_mass_matrix
+    end type
+
 contains
+! ------------------------------------------------------------------------------
+subroutine configure_ggl_test_model(mdl)
+    type(ggl_container), intent(out) :: mdl
+
+    call mdl%initialize(2, 1, alpha = 2.0d0, beta = 3.0d0)
+    mdl%fcn => ggl_pendulum_force
+    mdl%mass_matrix => ggl_pendulum_mass
+    mdl%constraints => ggl_pendulum_constraint
+    mdl%constraint_jacobian => ggl_pendulum_gradient
+    mdl%constraint_curvature => ggl_pendulum_curvature
+end subroutine
+
+subroutine ggl_pendulum_force(x, y, force, args)
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:) :: force
+    class(*), intent(inout), optional :: args
+
+    select type (args)
+    type is (cartesian_pendulum_properties)
+        force = [0.0d0, -args%mass * 9.81d0]
+    class default
+        error stop "Missing pendulum properties"
+    end select
+end subroutine
+
+subroutine ggl_pendulum_mass(x, q, mass, args)
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: q
+    real(real64), intent(out), dimension(:,:) :: mass
+    class(*), intent(inout), optional :: args
+
+    select type (args)
+    type is (cartesian_pendulum_properties)
+        mass = 0.0d0
+        mass(1,1) = args%mass
+        mass(2,2) = args%mass
+    class default
+        error stop "Missing pendulum properties"
+    end select
+end subroutine
+
+subroutine ggl_pendulum_variable_mass(x, q, mass, args)
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: q
+    real(real64), intent(out), dimension(:,:) :: mass
+    class(*), intent(inout), optional :: args
+
+    call ggl_pendulum_mass(x, q, mass, args)
+    mass = mass * (1.0d0 + x)
+end subroutine
+
+subroutine ggl_pendulum_constraint(x, q, g, args)
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: q
+    real(real64), intent(out), dimension(:) :: g
+    class(*), intent(inout), optional :: args
+
+    select type (args)
+    type is (cartesian_pendulum_properties)
+        g(1) = dot_product(q, q) - args%length**2
+    class default
+        error stop "Missing pendulum properties"
+    end select
+end subroutine
+
+subroutine ggl_pendulum_gradient(x, q, gradient, args)
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: q
+    real(real64), intent(out), dimension(:,:) :: gradient
+    class(*), intent(inout), optional :: args
+
+    gradient(1,:) = 2.0d0 * q
+end subroutine
+
+subroutine ggl_pendulum_curvature(x, q, direction, v, curvature, args)
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: q, direction, v
+    real(real64), intent(out), dimension(:) :: curvature
+    class(*), intent(inout), optional :: args
+
+    curvature(1) = 2.0d0 * dot_product(direction, v)
+end subroutine
+
+function test_ggl_container() result(rst)
+    logical :: rst
+    type(ggl_container) :: mdl
+    type(cartesian_pendulum_properties) :: args
+    real(real64), dimension(6) :: state, rhs
+    real(real64), dimension(6,6) :: mass, jac
+
+    rst = mdl%has_mass_matrix() .and. .not.mdl%get_is_ode_defined()
+    rst = rst .and. mdl%get_state_count() == 0
+    call mdl%initialize(2, 1)
+    mdl%fcn => ggl_pendulum_force
+    mdl%constraints => ggl_pendulum_constraint
+    mdl%constraint_jacobian => ggl_pendulum_gradient
+    rst = rst .and. .not.mdl%get_is_ode_defined()
+    mdl%constraint_curvature => ggl_pendulum_curvature
+    rst = rst .and. mdl%get_is_ode_defined() .and. mdl%get_state_count() == 6
+    args%length = 1.5d0
+    args%mass = 2.0d0
+    state = [args%length, 0.0d0, 0.0d0, 0.5d0, 0.0d0, 0.0d0]
+    call mdl%compute_mass_matrix(0.0d0, state, mass, args)
+    rst = rst .and. all(abs(mass(5:6,:)) < epsilon(1.0d0))
+    rst = rst .and. all(abs(mass(:,5:6)) < epsilon(1.0d0))
+    rst = rst .and. mass(1,1) == 1.0d0 .and. mass(3,3) == 1.0d0
+    call mdl%initialize_multipliers(0.0d0, state, args)
+    rst = rst .and. abs(state(5) - 0.25d0 / (2.0d0 * args%length**2)) < 1.0d-12
+    rst = rst .and. mdl%validate_initial_conditions(0.0d0, state, 1.0d-12, args)
+    mdl%mass_matrix => ggl_pendulum_mass
+    call mdl%initialize_multipliers(0.0d0, state, args)
+    call mdl%compute_mass_matrix(0.0d0, state, mass, args)
+    rst = rst .and. mass(3,3) == args%mass .and. mass(4,4) == args%mass
+    rst = rst .and. abs(state(5) - args%mass * 0.25d0 / &
+        (2.0d0 * args%length**2)) < 1.0d-12
+    call mdl%compute_rhs(0.0d0, state, rhs, args)
+    rst = rst .and. maxval(abs(rhs(5:6))) < 1.0d-12
+    rst = rst .and. all(state(1:4) == [args%length, 0.0d0, 0.0d0, 0.5d0])
+    call mdl%compute_jacobian(0.0d0, state, jac, args)
+    rst = rst .and. abs(jac(5,6) - 4.0d0 * args%length**2) < 1.0d-6
+    rst = rst .and. abs(jac(6,5) + 4.0d0 * args%length**2 / args%mass) < 1.0d-6
+    state(3) = 0.01d0
+    rst = rst .and. .not.mdl%validate_initial_conditions(0.0d0, state, 1.0d-6, args)
+    state(3) = 0.0d0
+    state(1) = state(1) + 0.01d0
+    rst = rst .and. .not.mdl%validate_initial_conditions(0.0d0, state, 1.0d-6, args)
+    if (.not.rst) print *, "TEST FAILED: test_ggl_container"
+end function
+
+function check_ggl_solver(integrator) result(rst)
+    class(ode_integrator), intent(inout) :: integrator
+    logical :: rst
+    type(ggl_container) :: mdl
+    type(cartesian_pendulum_properties) :: args
+    real(real64), dimension(6) :: state, rhs
+    real(real64), dimension(5) :: times
+    real(real64) :: initial_position, initial_velocity, alpha, beta, position, velocity
+    real(real64), allocatable, dimension(:,:) :: sol
+    integer :: scenario, point
+
+    rst = .true.
+    args%length = 1.5d0
+    args%mass = 2.0d0
+    times = [0.0d0, 0.025d0, 0.05d0, 0.075d0, 0.1d0]
+    call integrator%set_absolute_tolerance(1.0d-9)
+    call integrator%set_relative_tolerance(1.0d-9)
+    call integrator%set_maximum_step_size(0.01d0)
+    do scenario = 1, 4
+        call configure_ggl_test_model(mdl)
+        alpha = 2.0d0
+        beta = 3.0d0
+        state = [args%length, 0.0d0, 0.0d0, 0.2d0, 0.0d0, 0.0d0]
+        if (scenario > 1) then
+            state(1) = state(1) + 0.01d0
+            state(3) = 0.01d0
+        end if
+        if (scenario == 3) then
+            alpha = 0.0d0
+            beta = 0.0d0
+        end if
+        if (scenario == 4) then
+            mdl%mass_matrix => ggl_pendulum_variable_mass
+            call mdl%set_is_mass_matrix_dependent(.true.)
+        end if
+        call mdl%set_stabilization_parameters(alpha, beta)
+        initial_position = dot_product(state(1:2), state(1:2)) - args%length**2
+        initial_velocity = 2.0d0 * dot_product(state(1:2), state(3:4))
+        call mdl%initialize_multipliers(times(1), state, args)
+        call mdl%compute_rhs(times(1), state, rhs, args)
+        rst = rst .and. maxval(abs(rhs(5:6))) < 1.0d-12
+        call integrator%clear_buffer()
+        call integrator%solve(mdl, times, state, args)
+        sol = integrator%get_solution()
+        do point = 1, size(sol,1)
+            position = dot_product(sol(point,2:3), sol(point,2:3)) - args%length**2
+            velocity = 2.0d0 * dot_product(sol(point,2:3), sol(point,4:5))
+            rst = rst .and. abs(position - initial_position * exp(-alpha * sol(point,1))) < 2.0d-6
+            rst = rst .and. abs(velocity - initial_velocity * exp(-beta * sol(point,1))) < 2.0d-6
+        end do
+    end do
+end function
+
+function test_ggl_integration() result(rst)
+    logical :: rst
+    logical, dimension(4) :: results
+    type(bdf) :: bdf_integrator
+    type(rosenbrock) :: rosenbrock_integrator
+    type(kennedy_carpenter_4) :: kc4_integrator
+    type(kennedy_carpenter_5) :: kc5_integrator
+
+    results(1) = check_ggl_solver(bdf_integrator)
+    results(2) = check_ggl_solver(rosenbrock_integrator)
+    results(3) = check_ggl_solver(kc4_integrator)
+    results(4) = check_ggl_solver(kc5_integrator)
+    rst = all(results)
+    if (.not.rst) print *, "TEST FAILED: test_ggl_integration", results
+end function
+
+! ------------------------------------------------------------------------------
+function dispatch_has_mass_matrix(this) result(rst)
+    class(mass_dispatch_model), intent(in) :: this
+    logical :: rst
+
+    rst = this%mass_enabled
+end function
+
+subroutine dispatch_mass_matrix(this, x, y, m, args)
+    class(mass_dispatch_model), intent(inout) :: this
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:,:) :: m
+    class(*), intent(inout), optional :: args
+
+    if (.not.this%mass_enabled) error stop "ODE path evaluated a mass matrix"
+    this%mass_calls = this%mass_calls + 1
+    m = 0.0d0
+    m(1,1) = 2.0d0
+    m(2,2) = 3.0d0
+end subroutine
+
+function check_mass_dispatch(integrator) result(rst)
+    class(ode_integrator), intent(inout) :: integrator
+    logical :: rst
+    type(mass_dispatch_model) :: mdl
+    integer :: mode
+    real(real64), dimension(2) :: expected
+    real(real64), allocatable, dimension(:,:) :: sol
+
+    rst = .true.
+    mdl%fcn => counted_mass_ode
+    call integrator%set_absolute_tolerance(1.0d-9)
+    call integrator%set_relative_tolerance(1.0d-9)
+    do mode = 1, 4
+        mdl%mass_enabled = mode == 2 .or. mode == 3
+        mdl%mass_calls = 0
+        call mdl%set_is_mass_matrix_dependent(mode == 3)
+        call integrator%clear_buffer()
+        call integrator%solve(mdl, [0.0d0, 0.1d0], [1.0d0, 1.0d0])
+        sol = integrator%get_solution()
+        if (mdl%mass_enabled) then
+            expected = [exp(-0.1d0), exp(-0.2d0)]
+            if (mode == 2) rst = rst .and. mdl%mass_calls == 1
+            if (mode == 3) rst = rst .and. mdl%mass_calls > 1
+        else
+            expected = [exp(-0.2d0), exp(-0.6d0)]
+            rst = rst .and. mdl%mass_calls == 0
+        end if
+        rst = rst .and. all(abs(sol(size(sol,1),2:3) - expected) < 1.0d-7)
+    end do
+end function
+
+function test_solver_mass_dispatch() result(rst)
+    logical :: rst
+    logical, dimension(5) :: results
+    type(bdf) :: bdf_integrator
+    type(adams) :: adams_integrator
+    type(rosenbrock) :: rosenbrock_integrator
+    type(kennedy_carpenter_4) :: kc4_integrator
+    type(kennedy_carpenter_5) :: kc5_integrator
+
+    results(1) = check_mass_dispatch(bdf_integrator)
+    results(2) = check_mass_dispatch(adams_integrator)
+    results(3) = check_mass_dispatch(rosenbrock_integrator)
+    results(4) = check_mass_dispatch(kc4_integrator)
+    results(5) = check_mass_dispatch(kc5_integrator)
+    rst = all(results)
+    if (.not.rst) print *, "TEST FAILED: test_solver_mass_dispatch", results
+end function
+
 ! ------------------------------------------------------------------------------
 function test_analytical_jacobian_usage() result(rst)
     logical :: rst
@@ -310,14 +588,14 @@ function test_rosenbrock_3() result(rst)
     logical :: rst
 
     ! Parameters
-    integer(int32), parameter :: npts = 1000
+    integer, parameter :: npts = 1000
     real(real64), parameter :: h = 1.0d-4
     real(real64), parameter :: tol = 1.0d-3
 
     ! Local Variables
     type(rosenbrock) :: integrator
     type(ode_container) :: mdl
-    integer(int32) :: i
+    integer :: i
     real(real64) :: x(npts)
     real(real64), allocatable :: sol(:,:), ans(:)
 
@@ -349,11 +627,11 @@ function test_rosenbrock_mass_matrix() result(rst)
 
     ! Parameters
     real(real64), parameter :: tol = 1.0d-5
-    integer(int32), parameter :: npts = 1000
+    integer, parameter :: npts = 1000
     real(real64), parameter :: tmax = 1.0d1
 
     ! Local Variables
-    integer(int32) :: i
+    integer :: i
     real(real64) :: dt, t(npts)
     type(rosenbrock) :: integrator
     type(ode_container) :: mass_mdl, ref_mdl
@@ -380,6 +658,14 @@ function test_rosenbrock_mass_matrix() result(rst)
     if (.not.assert(sol, refsol, tol)) then
         rst = .false.
         print "(A)", "TEST FAILED: test_rosenbrock_mass_matrix -1"
+    end if
+
+    call integrator%clear_buffer()
+    call integrator%solve(mass_mdl, t, [1.0d0, 1.0d0])
+    sol = integrator%get_solution()
+    if (.not.assert(sol, refsol, tol)) then
+        rst = .false.
+        print "(A)", "TEST FAILED: test_rosenbrock_mass_matrix -2"
     end if
 end function
 
@@ -427,11 +713,11 @@ function test_rosenbrock_with_args() result(rst)
 
     ! Parameters
     real(real64), parameter :: tol = 1.0d-3
-    integer(int32), parameter :: npts = 1000
+    integer, parameter :: npts = 1000
     real(real64), parameter :: tmax = 5.0d1
 
     ! Local Variables
-    integer(int32) :: i
+    integer :: i
     real(real64) :: mu, dt, t(npts)
     type(rosenbrock) :: integrator
     type(ode_container) :: mdl, ref

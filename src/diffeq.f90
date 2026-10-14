@@ -19,15 +19,20 @@
 ! LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 ! OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ! SOFTWARE.
-
-!> @brief This module contains several ODE solvers and associated types.
 module diffeq
     use iso_fortran_env
     use diffeq_base
-    use diffeq_runge_kutta
     use diffeq_multistep
     use diffeq_bdf
     use diffeq_pece
     use diffeq_rosenbrock
     use diffeq_kennedy_carpenter
+    use diffeq_index_reduction
+    use diffeq_containers
+    use diffeq_container_io
+    use diffeq_singlestep
+    use diffeq_tsitouras
+    use diffeq_rk45
+    use diffeq_rk23
+    use diffeq_rk853
 end module

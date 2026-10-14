@@ -45,7 +45,7 @@ module diffeq_bdf
     private
     public :: bdf
 
-    integer(int32), parameter :: bdf_order_limit = 5
+    integer, parameter :: bdf_order_limit = 5
         ! BDF formulae are only zero-stable through order six, and the sixth
         ! order formula has so small a region of stability as to be of little
         ! practical use.  The order is therefore capped at five.
@@ -89,6 +89,7 @@ module diffeq_bdf
             !! Evaluates the predictor and forms the coefficients of the step.
         procedure, public :: build_linear_system => bdf_build_linear_system
             !! Builds the linearized system for the implicit corrector.
+        procedure, public :: prepare_for_solve => bdf_prepare_for_solve
         procedure, public :: get_maximum_supported_order => bdf_max_order
             !! Gets the highest order the method is permitted to use.
         procedure, public :: get_error_constant => bdf_error_constant
@@ -105,7 +106,7 @@ pure function bdf_max_order(this) result(rst)
     !! Gets the highest order this integrator is permitted to use.
     class(bdf), intent(in) :: this
         !! The bdf object.
-    integer(int32) :: rst
+    integer :: rst
         !! The order limit.
     rst = bdf_order_limit
 end function
@@ -125,7 +126,7 @@ pure function bdf_error_constant(this, k) result(rst)
     !! therefore serves as both the error and the truncation constant.
     class(bdf), intent(in) :: this
         !! The bdf object.
-    integer(int32), intent(in) :: k
+    integer, intent(in) :: k
         !! The order of interest.
     real(real64) :: rst
         !! The error constant.
@@ -137,7 +138,7 @@ subroutine bdf_init_workspace(this, n)
     !! Allocates the internal workspace arrays.
     class(bdf), intent(inout) :: this
         !! The bdf object.
-    integer(int32), intent(in) :: n
+    integer, intent(in) :: n
         !! The number of equations being integrated.
 
     ! Process
@@ -156,6 +157,14 @@ subroutine bdf_init_workspace(this, n)
         this%m_ydot(n), &
         this%m_histTerm(n) &
     )
+    this%m_massComputed = .false.
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine bdf_prepare_for_solve(this)
+    class(bdf), intent(inout) :: this
+
+    this%m_massComputed = .false.
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -191,7 +200,7 @@ subroutine bdf_predictor(this, sys, h, x, y, f, yn, fn, args)
         !! of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: i, k, n, nc, np
+    integer :: i, k, n, nc, np
     real(real64), allocatable, dimension(:) :: xv, c, nodes
     real(real64), allocatable, dimension(:,:) :: yv, dd
 
@@ -218,7 +227,8 @@ subroutine bdf_predictor(this, sys, h, x, y, f, yn, fn, args)
         call newton_divided_differences(xv, yv, dd)
         call evaluate_newton_polynomial(xv, dd, x + h, yn)
     end if
-    call sys%fcn(x + h, yn, fn, args)
+    call sys%compute_rhs(x + h, yn, fn, args)
+    call this%log_function_evaluation()
 
     ! Form the coefficients of the formula from the actual node locations
     allocate(nodes(k + 1), c(k + 1))
@@ -232,7 +242,6 @@ subroutine bdf_predictor(this, sys, h, x, y, f, yn, fn, args)
     do i = 1, k
         this%m_histTerm = this%m_histTerm + c(i+1) * yv(:,i)
     end do
-    this%m_massComputed = .false.
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -249,7 +258,7 @@ pure subroutine bdf_coefficients(t, c)
         !! An array where the coefficients will be written.
 
     ! Local Variables
-    integer(int32) :: j, m, np
+    integer :: j, m, np
     real(real64) :: p
 
     ! Process
@@ -300,13 +309,11 @@ subroutine bdf_build_linear_system(this, sys, h, x, y, A, b, args)
         !! of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: i, n
-    logical :: usemass
+    integer :: i, n
 
     ! Initialization
     n = size(y)
     call this%initialize_workspace(n)
-    usemass = associated(sys%mass_matrix)
 
     ! Input Checking
     if (size(A, 1) /= n .or. size(A, 2) /= n) error stop DIFFEQ_MATRIX_SIZE_ERROR
@@ -314,18 +321,25 @@ subroutine bdf_build_linear_system(this, sys, h, x, y, A, b, args)
 
     ! Evaluate the model
     call sys%compute_jacobian(x, y, this%m_jac, args)
-    call sys%fcn(x, y, this%m_rhs, args)
+    call sys%compute_rhs(x, y, this%m_rhs, args)
     this%m_ydot = this%m_c0 * y + this%m_histTerm
+    call this%log_jacobian_evaluation()
+    call this%log_function_evaluation()
+    if (sys%use_finite_difference_jacobian()) then
+        ! The forward difference algorithm requires another n + 1 
+        ! function evaluations
+        call this%log_function_evaluation(n + 1)
+    end if
 
     ! Form the system.  Only the derivative of f contributes to the iteration
     ! matrix; the dependence of a state-dependent mass matrix upon y is
     ! neglected, which affects the rate of convergence but not the solution
     ! the iteration converges upon.
-    if (usemass) then
+    if (sys%has_mass_matrix()) then
         if (.not.this%m_massComputed .or. &
             sys%get_is_mass_matrix_dependent()) &
         then
-            call sys%mass_matrix(x, y, this%m_mass, args)
+            call sys%compute_mass_matrix(x, y, this%m_mass, args)
             this%m_massComputed = .true.
         end if
         A = this%m_c0 * this%m_mass - this%m_jac

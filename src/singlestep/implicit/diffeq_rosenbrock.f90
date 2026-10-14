@@ -23,6 +23,7 @@
 module diffeq_rosenbrock
     use iso_fortran_env
     use diffeq_base
+    use diffeq_singlestep
     use diffeq_errors
     use linalg
     implicit none
@@ -53,7 +54,7 @@ module diffeq_rosenbrock
             ! The Jacobian matrix.
         real(real64), private, allocatable, dimension(:,:) :: mass
             ! The mass matrix.
-        integer(int32), private, allocatable, dimension(:) :: pivot
+        integer, private, allocatable, dimension(:) :: pivot
             ! QR factorization pivot tracking array
         real(real64), private, allocatable, dimension(:) :: tau
             ! QR factorization scalar factors array
@@ -80,6 +81,7 @@ module diffeq_rosenbrock
         real(real64), private :: m_hOld = 0.0d0
             ! The previous step size.
     contains
+        procedure, public :: solve => rbrk_solve
         procedure, private :: initialize_matrices => rbrk_init_matrices
             !! Allocates internal storage for the system matrices.
         procedure, private :: initialize_interp => rbrk_init_interp
@@ -104,6 +106,20 @@ module diffeq_rosenbrock
     end type
 
 contains
+! ------------------------------------------------------------------------------
+subroutine rbrk_solve(this, sys, x, iv, args)
+    class(rosenbrock), intent(inout) :: this
+    class(ode_container), intent(inout) :: sys
+    real(real64), intent(in), dimension(:) :: x, iv
+    class(*), intent(inout), optional, target :: args
+
+    this%m_massComputed = .false.
+    this%m_firstStep = .true.
+    this%m_rejectStep = .false.
+    this%m_hOld = 0.0d0
+    call ssi_ode_solver(this, sys, x, iv, args)
+end subroutine
+
 ! ------------------------------------------------------------------------------
 subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
     use diffeq_rosenbrock_constants
@@ -131,28 +147,33 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: i, n, flag
-    logical :: useMass
+    integer :: i, n, flag
+    logical :: usemass
     real(real64) :: fac
     real(real64), allocatable, dimension(:,:) :: lu
     
     ! Initialization
     n = size(y)
-    useMass = associated(sys%mass_matrix)
-    call this%initialize_matrices(n, useMass)
+    usemass = sys%has_mass_matrix()
+    call this%initialize_matrices(n, usemass)
 
     ! Compute the Jacobian matrix - only need to update if the previous step
     ! was successful
     if (prevs) then
         call sys%compute_jacobian(x, y, this%jac, args = args)
+        call this%log_jacobian_evaluation()
+        if (sys%use_finite_difference_jacobian()) then
+            ! The forward difference algorithm requires another n + 1 
+            ! function evaluations
+            call this%log_function_evaluation(n + 1)
+        end if
 
         ! Compute the mass matrix
-        if (useMass) then
+        if (usemass) then
             if (.not.this%m_massComputed .or. &
                 sys%get_is_mass_matrix_dependent()) &
             then
-                ! We need to compute the mass matrix
-                call sys%mass_matrix(x, y, this%mass, args)
+                call sys%compute_mass_matrix(x, y, this%mass, args)
                 this%m_massComputed = .true.
             end if
         end if
@@ -160,7 +181,7 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
 
     ! Form the system matrix, and then factor it accordingly
     fac = 1.0d0 / (gam * h)
-    if (useMass) then
+    if (usemass) then
         this%a = fac * this%mass - this%jac
     else
         this%a = -this%jac
@@ -172,10 +193,12 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
     ! Factor the equations
     this%pivot = 0
     call qr_factor(this%a, this%pivot, tau = this%tau, qr = this%qr)
+    call this%log_matrix_factorization()
 
     ! Compute df/dx
     fac = sys%get_finite_difference_step()
-    call sys%fcn(x + fac, y, this%dfdx, args)
+    call sys%compute_rhs(x + fac, y, this%dfdx, args)
+    call this%log_function_evaluation()
     this%dfdx = (this%dfdx - f) / h ! forward differencing
 end subroutine
 
@@ -184,7 +207,7 @@ subroutine rbrk_init_matrices(this, n, usemass)
     !! Allocates internal storage for the system matrices.
     class(rosenbrock), intent(inout) :: this
         !! The rosenbrock object.
-    integer(int32), intent(in) :: n
+    integer, intent(in) :: n
         !! The number of equations being integrated.
     logical, intent(in) :: usemass
         !! True if a mass matrix is used; else, false.
@@ -192,7 +215,10 @@ subroutine rbrk_init_matrices(this, n, usemass)
     ! Process
     if (allocated(this%jac)) then
         if (size(this%jac, 1) == n .and. size(this%jac, 2) == n) then
-            if (.not.usemass .and. allocated(this%mass)) then
+            if (usemass .and. .not.allocated(this%mass)) then
+                allocate(this%mass(n, n))
+                this%m_massComputed = .false.
+            else if (.not.usemass .and. allocated(this%mass)) then
                 deallocate(this%mass)
                 this%m_massComputed = .false.
             end if
@@ -264,7 +290,7 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: n
+    integer :: n
     real(real64), allocatable, dimension(:) :: rhs
 
     ! Initialization
@@ -276,7 +302,7 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     k(:,1) = solve_qr(this%qr, this%tau, this%pivot, rhs)
 
     yn = y + a21 * k(:,1)
-    call sys%fcn(x + c2 * h, yn, fn, args)
+    call sys%compute_rhs(x + c2 * h, yn, fn, args)
 
     rhs = c21 * k(:,1) / h
     if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
@@ -284,7 +310,7 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     k(:,2) = solve_qr(this%qr, this%tau, this%pivot, rhs)
 
     yn = y + a31 * k(:,1) + a32 * k(:,2)
-    call sys%fcn(x + c3 * h, yn, fn, args)
+    call sys%compute_rhs(x + c3 * h, yn, fn, args)
 
     rhs = (c31 * k(:,1) + c32 * k(:,2)) / h
     if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
@@ -292,7 +318,7 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     k(:,3) = solve_qr(this%qr, this%tau, this%pivot, rhs)
 
     yn = y + a41 * k(:,1) + a42 * k(:,2) + a43 * k(:,3)
-    call sys%fcn(x + c4 * h, yn, fn, args)
+    call sys%compute_rhs(x + c4 * h, yn, fn, args)
 
     rhs = (c41 * k(:,1) + c42 * k(:,2) + c43 * k(:,3)) / h
     if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
@@ -300,7 +326,7 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     k(:,4) = solve_qr(this%qr, this%tau, this%pivot, rhs)
 
     yn = y + a51 * k(:,1) + a52 * k(:,2) + a53 * k(:,3) + a54 * k(:,4)
-    call sys%fcn(x + h, yn, fn, args)
+    call sys%compute_rhs(x + h, yn, fn, args)
 
     rhs = (c51 * k(:,1) + c52 * k(:,2) + c53 * k(:,3) + &
         c54 * k(:,4)) / h
@@ -310,7 +336,9 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
 
 
     yn = yn + k(:,5)
-    call sys%fcn(x + h, yn, fn, args) ! updated derivative
+    call sys%compute_rhs(x + h, yn, fn, args) ! updated derivative
+
+    call this%log_function_evaluation(5)
 
     rhs = (c61 * k(:,1) + c62 * k(:,2) + c63 * k(:,3) + &
         c64 * k(:,4) + c65 * k(:,5)) / h
@@ -326,7 +354,7 @@ subroutine rbrk_init_interp(this, neqn)
     !! Allocates storage for the interpolation process.
     class(rosenbrock), intent(inout) :: this
         !! The rosenbrock object.
-    integer(int32), intent(in) :: neqn
+    integer, intent(in) :: neqn
         !! The number of equations being integrated.
 
     ! Process
@@ -379,7 +407,7 @@ subroutine rbrk_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: i, n
+    integer :: i, n
 
     ! Quick Return
     if (.not.dense) return
@@ -439,7 +467,7 @@ pure function rbrk_get_order(this) result(rst)
     !! Gets the order of the integrator.
     class(rosenbrock), intent(in) :: this
         !! The rosenbrock object.
-    integer(int32) :: rst
+    integer :: rst
         !! The order.
     rst = 4
 end function
@@ -460,7 +488,7 @@ pure function rbrk_get_stage_count(this) result(rst)
     !! Gets the stage count for this integrator.
     class(rosenbrock), intent(in) :: this
         !! The rosenbrock object.
-    integer(int32) :: rst
+    integer :: rst
         !! The stage count.
     rst = 6
 end function

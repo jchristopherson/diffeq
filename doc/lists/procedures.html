@@ -48,6 +48,9 @@
                   <a class="nav-link" href="../lists/procedures.html">Procedures</a>
                 </li>
                 <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
                   <a class="nav-link" href="../lists/types.html">Derived Types</a>
                 </li>
             </ul>
@@ -70,7 +73,7 @@
 			 <tbody>
 			   <tr>
                  <td><a href='..\interface\attempt_single_step.html'>attempt_single_step</a></td>
-                 <td><a href='..\module\diffeq_base.html'>diffeq_base</a></td>
+                 <td><a href='..\module\diffeq_singlestep.html'>diffeq_singlestep</a></td>
                  <td>Interface</td>
                  <td></td>
                </tr>
@@ -88,7 +91,7 @@
                </tr>
 			   <tr>
                  <td><a href='..\interface\get_single_step_logical_parameter.html'>get_single_step_logical_parameter</a></td>
-                 <td><a href='..\module\diffeq_base.html'>diffeq_base</a></td>
+                 <td><a href='..\module\diffeq_singlestep.html'>diffeq_singlestep</a></td>
                  <td>Interface</td>
                  <td></td>
                </tr>
@@ -142,6 +145,12 @@ interpolating the supplied points.</p><a href="../proc/newton_divided_difference
                  <td></td>
                </tr>
 			   <tr>
+                 <td><a href='..\interface\ode_results.html'>ode_results</a></td>
+                 <td><a href='..\module\diffeq_containers.html'>diffeq_containers</a></td>
+                 <td>Interface</td>
+                 <td></td>
+               </tr>
+			   <tr>
                  <td><a href='..\interface\ode_solver.html'>ode_solver</a></td>
                  <td><a href='..\module\diffeq_base.html'>diffeq_base</a></td>
                  <td>Interface</td>
@@ -155,27 +164,50 @@ interpolating the supplied points.</p><a href="../proc/newton_divided_difference
                </tr>
 			   <tr>
                  <td><a href='..\interface\single_step_integer_inquiry.html'>single_step_integer_inquiry</a></td>
-                 <td><a href='..\module\diffeq_base.html'>diffeq_base</a></td>
+                 <td><a href='..\module\diffeq_singlestep.html'>diffeq_singlestep</a></td>
                  <td>Interface</td>
                  <td></td>
                </tr>
 			   <tr>
                  <td><a href='..\interface\single_step_interpolate.html'>single_step_interpolate</a></td>
-                 <td><a href='..\module\diffeq_base.html'>diffeq_base</a></td>
+                 <td><a href='..\module\diffeq_singlestep.html'>diffeq_singlestep</a></td>
                  <td>Interface</td>
                  <td></td>
                </tr>
 			   <tr>
                  <td><a href='..\interface\single_step_post_step_routine.html'>single_step_post_step_routine</a></td>
-                 <td><a href='..\module\diffeq_base.html'>diffeq_base</a></td>
+                 <td><a href='..\module\diffeq_singlestep.html'>diffeq_singlestep</a></td>
                  <td>Interface</td>
                  <td></td>
                </tr>
 			   <tr>
                  <td><a href='..\interface\single_step_pre_step_routine.html'>single_step_pre_step_routine</a></td>
-                 <td><a href='..\module\diffeq_base.html'>diffeq_base</a></td>
+                 <td><a href='..\module\diffeq_singlestep.html'>diffeq_singlestep</a></td>
                  <td>Interface</td>
                  <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\size.html'>size</a></td>
+                 <td><a href='..\module\diffeq_containers.html'>diffeq_containers</a></td>
+                 <td>Interface</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\ssi_ode_solver.html'>ssi_ode_solver</a></td>
+                 <td><a href='..\module\diffeq_singlestep.html'>diffeq_singlestep</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Solves the supplied system of ODE's.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\write_ode_results.html'>write_ode_results</a></td>
+                 <td><a href='..\module\diffeq_container_io.html'>diffeq_container_io</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Writes the contents of a <a href="..\type\ode_results.html">ode_results</a> container to a delimited text
+file, replacing any existing file.  Each row contains the independent
+variable followed by the state variables, without a header.  An
+initialized empty container produces an empty file.  Invalid delimiters
+cause DIFFEQ_INVALID_INPUT_ERROR; uninitialized containers and file I/O
+failures cause DIFFEQ_INVALID_OPERATION_ERROR.</p></td>
                </tr>
 			 </tbody></table>
              
@@ -193,7 +225,7 @@ interpolating the supplied points.</p><a href="../proc/newton_divided_difference
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-09-15 05:40              </p>
+ on 2026-10-14 15:56              </p>
           </div>
         </div>
         <br>
