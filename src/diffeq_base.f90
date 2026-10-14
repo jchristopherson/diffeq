@@ -386,7 +386,7 @@ subroutine oc_jacobian(this, x, y, jac, args)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-pure function oc_use_finite_difference_jacobian(this) result(rst)
+function oc_use_finite_difference_jacobian(this) result(rst)
     !! States if a finite difference approximation to the Jacobian is utilized.
     class(ode_container), intent(in) :: this
         !! The [[ode_container]] object.
