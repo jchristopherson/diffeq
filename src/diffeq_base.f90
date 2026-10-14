@@ -183,6 +183,8 @@ module diffeq_base
             !! buffer.
         procedure, public :: get_solution => oi_get_solution
             !! Returns the solution computed by the integrator.
+        procedure, public :: get_ode_results => oi_get_ode_results
+            !! Returns the solution stored within an [[ode_results]] object.
         procedure, public :: clear_buffer => oi_clear_buffer
             !! Clears the contents of the buffer.
         procedure, public :: get_absolute_tolerance => oi_get_abs_tol
@@ -620,6 +622,18 @@ pure function oi_get_solution(this) result(rst)
     else
         rst = this%m_buffer%to_matrix()
     end if
+end function
+
+! ------------------------------------------------------------------------------
+pure function oi_get_ode_results(this) result(rst)
+    !! Returns a copy of the solution computed as a [[ode_results]] container.
+    !! The integrator retains the original copy.
+    class(ode_integrator), intent(in) :: this
+        !! The ode_integrator object.
+    type(ode_results) :: rst
+        !! The [[ode_results]] container.
+
+    rst = this%m_buffer
 end function
 
 ! ------------------------------------------------------------------------------
