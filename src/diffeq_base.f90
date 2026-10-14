@@ -453,8 +453,11 @@ end subroutine
 
 ! ------------------------------------------------------------------------------
 function oc_has_mass_matrix(this) result(rst)
+    !! Returns true if the problem utilizes a mass matrix.
     class(ode_container), intent(in) :: this
+        !! The [[ode_container]] object.
     logical :: rst
+        !! True if a mass matrix is utilized; else, false.
 
     rst = associated(this%mass_matrix)
 end function
