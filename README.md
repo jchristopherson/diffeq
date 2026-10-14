@@ -633,7 +633,7 @@ Step counts are especially misleading for `adams`, which uses neither a Jacobian
 The final result illustrates the PI step-size controller.  Applying it to `runge_kutta_45` raises the successful-step count from 582 to 1106, but reduces failed steps from 87 to zero for this problem.  Function evaluations nevertheless increase from 4015 to 6637.  The statistics make this tradeoff explicit: a smoother sequence of step sizes can avoid retries while still requiring more accepted steps and more model evaluations overall.  This can be valuable when the error estimate is noisy or when stability rather than accuracy is limiting the step, but fewer failed steps alone do not establish greater efficiency.  Stability is not a concern for this problem, so the controller is shown here purely for illustration.  PI control is disabled by default and must be requested explicitly.  Note that the controller applies to the single-step integrators; `rosenbrock` and the two multi-step methods use step-size estimators of their own.
 
 ### Differential-Algebraic Equations
-This final example illustrates the solution of a differential-algebraic equation (DAE) by means of a singular mass matrix.  The model is a simple pendulum expressed in Cartesian coordinates.  A mass $m$ swings from a pivot at the origin on a rigid, massless rod of length $L$, so the position of the mass $(x, y)$ must satisfy the constraint
+This example illustrates the solution of a differential-algebraic equation (DAE) by means of a singular mass matrix.  The model is a simple pendulum expressed in Cartesian coordinates.  A mass $m$ swings from a pivot at the origin on a rigid, massless rod of length $L$, so the position of the mass $(x, y)$ must satisfy the constraint
 
 $$
 x^2 + y^2 = L^2.
@@ -907,19 +907,37 @@ but does not repair physically inconsistent position or velocity inputs.
 Here is a complete pendulum example with $g(q)=q^Tq-L^2$, $G=2q^T$, and
 $DG(q)[\dot q]v=2\dot q^Tv$. Its state ordering differs from the preceding
 acceleration-level pendulum example: `[qx,qy,vx,vy,lambda,mu]`.
+The complete source is available in
+[stabilized_pendulum_example.f90](examples/stabilized_pendulum_example.f90).
+It uses FPLOT to plot the Cartesian position and pendulum angle over 10 seconds.
 
 ```fortran
 program stabilized_pendulum
     use iso_fortran_env, only : real64
     use diffeq, only : ggl_container, bdf
+    use fplot_core
     implicit none
 
-    real(real64), parameter :: length = 1.5d0, body_mass = 2.0d0
+    ! Parameters
+    real(real64), parameter :: pi = 2.0d0 * acos(0.0d0)
+
+    ! Model Parameters
+    real(real64), parameter :: length = 1.5d0
+    real(real64), parameter :: body_mass = 2.0d0
+
+    ! Local Variables
     type(ggl_container) :: model
     type(bdf) :: solver
     real(real64), dimension(6) :: initial_state
-    real(real64), allocatable, dimension(:,:) :: solution
+    real(real64), allocatable, dimension(:) :: theta
+    real(real64), allocatable, dimension(:,:) :: sol
 
+    ! Plot Variables
+    type(multiplot) :: plt
+    type(plot_2d) :: pltxy, plttheta
+    class(legend), pointer :: lgnd
+
+    ! Set up the model and constraints
     call model%initialize(2, 1, alpha = 2.0d0, beta = 3.0d0)
     model%fcn => force
     model%mass_matrix => physical_mass
@@ -927,16 +945,56 @@ program stabilized_pendulum
     model%constraint_jacobian => constraint_gradient
     model%constraint_curvature => constraint_curvature
     call model%set_is_mass_matrix_dependent(.false.)
+
+    ! Define the initial conditions and validate against the constraints.  The
+    ! initial conditions must satisfy the constraints.
     initial_state = [length, 0.0d0, 0.0d0, 0.0d0, 0.0d0, 0.0d0]
     if (.not.model%validate_initial_conditions(0.0d0, initial_state, 1.0d-10)) &
         error stop "Inconsistent physical initial conditions"
     call model%initialize_multipliers(0.0d0, initial_state)
+
+    ! Set up the solver and adjust tolerances.  Utilize the same tolerance for
+    ! every equation.
     call solver%set_absolute_tolerance(1.0d-9)
     call solver%set_relative_tolerance(1.0d-9)
-    call solver%solve(model, [0.0d0, 1.0d0], initial_state)
-    solution = solver%get_solution()
-    print *, solution(size(solution,1),:)
 
+    ! Solve the model and retrieve the results
+    call solver%solve(model, [0.0d0, 1.0d1], initial_state)
+    sol = solver%get_solution()
+
+    ! Compute the angular representation of the solution
+    theta = atan2(sol(:,3), sol(:,2)) * 1.8d2 / pi
+
+! ------------------------------------------------------------------------------
+    ! Set up the plot
+    call plt%initialize(1, 2, width = 1200)
+
+    ! Plot the X-Y results
+    call pltxy%initialize()
+    lgnd => pltxy%get_legend()
+    call pltxy%set_x_axis_title("t")
+    call pltxy%set_y_axis_title("x(t), y(t)")
+    call lgnd%set_is_visible(.true.)
+    call lgnd%set_draw_border(.false.)
+    call lgnd%set_draw_inside_axes(.false.)
+    call lgnd%set_vertical_position(LEGEND_BOTTOM)
+    call lgnd%set_horizontal_position(LEGEND_CENTER)
+    call lgnd%set_layout(LEGEND_ARRANGE_HORIZONTALLY)
+
+    call pltxy%push(sol(:,1), sol(:,2), name = "x(t)")
+    call pltxy%push(sol(:,1), sol(:,3), name = "y(t)")
+
+    call plt%set(1, 1, pltxy)
+
+    ! Plot the angular results
+    call plttheta%initialize()
+    call plttheta%set_x_axis_title("t")
+    call plttheta%set_y_axis_title("{/Symbol q} [deg]")
+    call plttheta%push(sol(:,1), theta)
+    
+    call plt%set(1, 2, plttheta)
+
+    call plt%draw()
 contains
     subroutine force(x, y, applied_force, args)
         real(real64), intent(in) :: x
@@ -987,6 +1045,43 @@ Adams and explicit Runge-Kutta methods are unsuitable for its singular augmented
 matrix. The regression suite checks constraint preservation and exponential
 decay for all four supported implicit solvers, including dense output and a
 time-dependent physical mass.
+
+The stabilized formulation produces the following response. The left panel
+shows the horizontal coordinate oscillating between $-L$ and $L$, while the
+vertical coordinate stays between $-L$ and zero. The mass passes its lowest
+point twice per complete horizontal oscillation, so the vertical motion repeats
+twice as often. The right panel shows
+$\theta=\operatorname{atan2}(q_y,q_x)$, measured from the positive horizontal
+axis: the release point is $0^\circ$, the lowest point is $-90^\circ$, and
+the opposite horizontal turning point is $-180^\circ$.
+
+![Stabilized GGL pendulum Cartesian coordinates and angle over 10 seconds](images/stabilized_pendulum_example.png?raw=true)
+
+For comparison, the preceding acceleration-level formulation produces:
+
+![Acceleration-level pendulum Cartesian coordinates and angle over 10 seconds](images/dae_results.png?raw=true)
+
+At the resolution of these plots, the two formulations show closely matching
+amplitudes and oscillation timing, with no obvious decay of the swing amplitude
+over the displayed interval. This is the expected agreement for the same
+undamped pendulum released from consistent initial conditions. The GGL gains
+are not physical damping coefficients: they act on constraint violations,
+not on the intended pendulum motion.
+
+The distinction is how departures from the constraint surface are treated.
+The earlier model enforces the acceleration-level constraint, but does not
+explicitly damp position or velocity constraint errors. The stabilized variant
+instead gives the residuals
+$r_p=q_x^2+q_y^2-L^2$ and $r_v=2(q_xv_x+q_yv_y)$ the evolution laws
+$\dot r_p=-2r_p$ and $\dot r_v=-3r_v$ in the exact solution for the gains
+used here. These laws provide restoring behavior for violations, without
+projecting the numerical state onto the constraint surface.
+
+The motion plots alone cannot quantify that benefit or establish that one
+formulation is more accurate or efficient. A numerical comparison should also
+plot $r_p$ and $r_v$, measure energy drift, and compare solver work at matched
+tolerances. Small constraint violations or accumulated phase errors can remain
+invisible on the position and angle scales shown here.
 
 ## External Libraries
 Here is a list of external code libraries utilized by this library.  The CMake build script will include these dependencies automatically; however, it is highly recommended that an optimized BLAS and LAPACK already reside on your system for best performance (used by LINALG for linear algebra calculations).

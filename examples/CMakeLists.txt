@@ -70,6 +70,13 @@ add_executable(
 )
 target_link_libraries(stiff_integrator_example diffeq ${fplot_LIBRARY})
 
+# Stabilized Pendulum Example
+add_executable(
+    stabilized_pendulum_example
+    stabilized_pendulum_example.f90
+)
+target_link_libraries(stabilized_pendulum_example diffeq ${fplot_LIBRARY})
+
 if (${BUILD_SHARED_LIBS} AND WIN32)
     add_custom_command(
         TARGET stiff_integrator_example
