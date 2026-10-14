@@ -147,6 +147,11 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
     if (prevs) then
         call sys%compute_jacobian(x, y, this%jac, args = args)
         call this%log_jacobian_evaluation()
+        if (sys%use_finite_difference_jacobian()) then
+            ! The forward difference algorithm requires another n + 1 
+            ! function evaluations
+            call this%log_function_evaluation(n + 1)
+        end if
 
         ! Compute the mass matrix
         if (useMass) then
@@ -178,6 +183,7 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
     ! Compute df/dx
     fac = sys%get_finite_difference_step()
     call sys%fcn(x + fac, y, this%dfdx, args)
+    call this%log_function_evaluation()
     this%dfdx = (this%dfdx - f) / h ! forward differencing
 end subroutine
 
@@ -313,6 +319,8 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
 
     yn = yn + k(:,5)
     call sys%fcn(x + h, yn, fn, args) ! updated derivative
+
+    call this%log_function_evaluation(5)
 
     rhs = (c61 * k(:,1) + c62 * k(:,2) + c63 * k(:,3) + &
         c64 * k(:,4) + c65 * k(:,5)) / h

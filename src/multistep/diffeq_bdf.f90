@@ -219,6 +219,7 @@ subroutine bdf_predictor(this, sys, h, x, y, f, yn, fn, args)
         call evaluate_newton_polynomial(xv, dd, x + h, yn)
     end if
     call sys%fcn(x + h, yn, fn, args)
+    call this%log_function_evaluation()
 
     ! Form the coefficients of the formula from the actual node locations
     allocate(nodes(k + 1), c(k + 1))
@@ -317,6 +318,12 @@ subroutine bdf_build_linear_system(this, sys, h, x, y, A, b, args)
     call sys%fcn(x, y, this%m_rhs, args)
     this%m_ydot = this%m_c0 * y + this%m_histTerm
     call this%log_jacobian_evaluation()
+    call this%log_function_evaluation()
+    if (sys%use_finite_difference_jacobian()) then
+        ! The forward difference algorithm requires another n + 1 
+        ! function evaluations
+        call this%log_function_evaluation(n + 1)
+    end if
 
     ! Form the system.  Only the derivative of f contributes to the iteration
     ! matrix; the dependence of a state-dependent mass matrix upon y is

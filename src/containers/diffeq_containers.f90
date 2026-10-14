@@ -38,6 +38,8 @@ module diffeq_containers
             !! The number of unsuccessful steps taken by the integrator.
         integer :: jacobian_evaluations = 0
             !! The number of Jacobian matrix evaluations.
+        integer :: function_evaluations = 0
+            !! The number of function evaluations.
     end type
 
     type ode_results

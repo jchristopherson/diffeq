@@ -418,8 +418,9 @@ Here's another example comparing the behavior of several integrators on the same
 - `statistics%successful_steps`: the number of successful integration steps.
 - `statistics%failed_steps`: the number of unsuccessful step attempts.
 - `statistics%jacobian_evaluations`: the number of Jacobian matrix evaluations, relevant to methods that use a Jacobian.
+- `statistics%function_evaluations`: the number of evaluations of the ODE model function.
 
-The example reports solution points and step statistics for every method, along with Jacobian evaluations for the implicit methods.  It also compares `runge_kutta_45` with and without a PI-type step-size controller.  The complete source is available in [comparison_example.f90](examples/comparison_example.f90).
+The example reports solution points, step statistics, and function evaluations for every method, along with Jacobian evaluations for the implicit methods.  It also compares `runge_kutta_45` with and without a PI-type step-size controller.  The complete source is available in [comparison_example.f90](examples/comparison_example.f90).
 ```fortran
 program example
     use iso_fortran_env
@@ -474,22 +475,26 @@ program example
     print "(A, I0, A)", achar(9), size(s1, 1), " Solution Points"
     print "(A, I0, A)", achar(9), s1%statistics%successful_steps, " Successful Steps"
     print "(A, I0, A)", achar(9), s1%statistics%failed_steps, " Failed Steps"
+    print "(A, I0, A)", achar(9), s1%statistics%function_evaluations, " Function Evaluations"
 
     print "(A)", "RUNGE_KUTTA_45: "
     print "(A, I0, A)", achar(9), size(s2, 1), " Solution Points"
     print "(A, I0, A)", achar(9), s2%statistics%successful_steps, " Successful Steps"
     print "(A, I0, A)", achar(9), s2%statistics%failed_steps, " Failed Steps"
+    print "(A, I0, A)", achar(9), s2%statistics%function_evaluations, " Function Evaluations"
 
     print "(A)", "RUNGE_KUTTA_853: "
     print "(A, I0, A)", achar(9), size(s3, 1), " Solution Points"
     print "(A, I0, A)", achar(9), s3%statistics%successful_steps, " Successful Steps"
     print "(A, I0, A)", achar(9), s3%statistics%failed_steps, " Failed Steps"
+    print "(A, I0, A)", achar(9), s3%statistics%function_evaluations, " Function Evaluations"
 
     print "(A)", "ROSENBROCK: "
     print "(A, I0, A)", achar(9), size(s4, 1), " Solution Points"
     print "(A, I0, A)", achar(9), s4%statistics%successful_steps, " Successful Steps"
     print "(A, I0, A)", achar(9), s4%statistics%failed_steps, " Failed Steps"
     print "(A, I0, A)", achar(9), s4%statistics%jacobian_evaluations, " Jacobian Evaluations"
+    print "(A, I0, A)", achar(9), s4%statistics%function_evaluations, " Function Evaluations"
 
     ! Now, implement a PI controller and check its effect.  This will likely
     ! increase the number of steps (loss of efficiency), but if there were
@@ -503,6 +508,7 @@ program example
     print "(A, I0, A)", achar(9), size(s2a, 1), " Solution Points"
     print "(A, I0, A)", achar(9), s2a%statistics%successful_steps, " Successful Steps"
     print "(A, I0, A)", achar(9), s2a%statistics%failed_steps, " Failed Steps"
+    print "(A, I0, A)", achar(9), s2a%statistics%function_evaluations, " Function Evaluations"
 
     ! Kennedy-Carpenter Integrators
     print "(A)", "KC4: "
@@ -510,29 +516,34 @@ program example
     print "(A, I0, A)", achar(9), s5%statistics%successful_steps, " Successful Steps"
     print "(A, I0, A)", achar(9), s5%statistics%failed_steps, " Failed Steps"
     print "(A, I0, A)", achar(9), s5%statistics%jacobian_evaluations, " Jacobian Evaluations"
+    print "(A, I0, A)", achar(9), s5%statistics%function_evaluations, " Function Evaluations"
 
     print "(A)", "KC5: "
     print "(A, I0, A)", achar(9), size(s6, 1), " Solution Points"
     print "(A, I0, A)", achar(9), s6%statistics%successful_steps, " Successful Steps"
     print "(A, I0, A)", achar(9), s6%statistics%failed_steps, " Failed Steps"
     print "(A, I0, A)", achar(9), s6%statistics%jacobian_evaluations, " Jacobian Evaluations"
+    print "(A, I0, A)", achar(9), s6%statistics%function_evaluations, " Function Evaluations"
 
     ! Additional Integrators
     print "(A)", "TSITOURAS 4/5: "
     print "(A, I0, A)", achar(9), size(s7, 1), " Solution Points"
     print "(A, I0, A)", achar(9), s7%statistics%successful_steps, " Successful Steps"
     print "(A, I0, A)", achar(9), s7%statistics%failed_steps, " Failed Steps"
+    print "(A, I0, A)", achar(9), s7%statistics%function_evaluations, " Function Evaluations"
 
     print "(A)", "BDF: "
     print "(A, I0, A)", achar(9), size(s8, 1), " Solution Points"
     print "(A, I0, A)", achar(9), s8%statistics%successful_steps, " Successful Steps"
     print "(A, I0, A)", achar(9), s8%statistics%failed_steps, " Failed Steps"
     print "(A, I0, A)", achar(9), s8%statistics%jacobian_evaluations, " Jacobian Evaluations"
+    print "(A, I0, A)", achar(9), s8%statistics%function_evaluations, " Function Evaluations"
 
     print "(A)", "ADAMS: "
     print "(A, I0, A)", achar(9), size(s9, 1), " Solution Points"
     print "(A, I0, A)", achar(9), s9%statistics%successful_steps, " Successful Steps"
     print "(A, I0, A)", achar(9), s9%statistics%failed_steps, " Failed Steps"
+    print "(A, I0, A)", achar(9), s9%statistics%function_evaluations, " Function Evaluations"
 end program
 ```
 ```txt
@@ -540,59 +551,69 @@ RUNGE_KUTTA_23:
     2465 Solution Points
     2464 Successful Steps
     26 Failed Steps
+    7471 Function Evaluations
 RUNGE_KUTTA_45:
     583 Solution Points
     582 Successful Steps
     87 Failed Steps
+    4015 Function Evaluations
 RUNGE_KUTTA_853:
     925 Solution Points
     924 Successful Steps
     84 Failed Steps
+    12097 Function Evaluations
 ROSENBROCK:
     1185 Solution Points
     1184 Successful Steps
     94 Failed Steps
     1184 Jacobian Evaluations
+    11221 Function Evaluations
 RUNGE_KUTTA_45 w/ PI Controller:
     1107 Solution Points
     1106 Successful Steps
     0 Failed Steps
+    6637 Function Evaluations
 KC4:
     483 Solution Points
     482 Successful Steps
     145 Failed Steps
     9379 Jacobian Evaluations
+    41133 Function Evaluations
 KC5:
     245 Solution Points
     244 Successful Steps
     73 Failed Steps
     7059 Jacobian Evaluations
+    30699 Function Evaluations
 TSITOURAS 4/5:
     522 Solution Points
     521 Successful Steps
     102 Failed Steps
+    4362 Function Evaluations
 BDF:
     1584 Solution Points
     1583 Successful Steps
     59 Failed Steps
     3276 Jacobian Evaluations
+    16331 Function Evaluations
 ADAMS:
     1133 Solution Points
     1132 Successful Steps
     70 Failed Steps
+    2336 Function Evaluations
 ```
 
 Because the integration range is supplied as just its two end points, each solver stores the initial condition and one point per accepted step.  The solution-point count is therefore one larger than `statistics%successful_steps` in this example.  With dense output, the stored points instead follow the requested output grid, so their count need not reflect the number of internal integration steps at all.  The statistics report the solver's work independently of that grid: successful steps show how many steps advanced the integration, failed steps expose retries that produced no solution point, and Jacobian evaluations reveal additional work performed by implicit methods.
 
-These counters offer a useful first look at relative efficiency, but they are not a direct measure of cost.  The work performed per step differs considerably from one method to the next.  Explicit Runge-Kutta methods evaluate the model at multiple stages; implicit methods may also form Jacobians, factor matrices, and iterate to convergence.  The statistics do not count model evaluations, matrix factorizations, or elapsed time, so a method that accepts fewer steps is not necessarily faster in wall-clock time.
+Function evaluations make the cost comparison more informative because the work performed per step differs considerably from one method to the next.  Explicit Runge-Kutta methods evaluate the model at multiple stages; implicit methods may also form Jacobians, factor matrices, and iterate to convergence.  Comparing `function_evaluations` alongside step counts reveals how many model evaluations a method required, rather than inferring that work from its accepted steps.  The statistics still do not count matrix factorizations or elapsed time, so fewer function evaluations do not necessarily imply a shorter wall-clock time, especially when comparing explicit and implicit methods.
 
 With $\mu = 5$ the Van der Pol oscillator is only mildly stiff, so the explicit integrators remain competitive.  The low-order `runge_kutta_23` requires by far the most steps because its step size is limited by accuracy rather than by stability; the higher-order `tsitouras_54` and `runge_kutta_45` traverse the same interval in roughly a fifth as many steps.  The Kennedy-Carpenter methods accept the fewest steps of any integrator here, and `kennedy_carpenter_5` accepts the fewest of all, but each of those steps carries the cost of the Newton iteration noted above.  The implicit methods may accept fewer steps while doing more work per step than the explicit methods.
 
 The two multi-step methods make a useful counterpoint, because this problem is close to their worst case.  Van der Pol at $\mu = 5$ is a relaxation oscillator: long, smooth excursions punctuated by abrupt transitions.  A multi-step method earns its efficiency by carrying a history of accepted points and raising its order as that history proves reliable, and both `bdf` and `adams` restart at first order whenever the step is disturbed.  Repeated sharp transitions therefore deny them the sustained high order at which they excel, which is why `bdf` records the largest step count of any implicit method here.  Their advantage appears instead on smooth problems held to tight tolerances, where high order is sustainable; the order-selection study behind the `adams` entry above is a better illustration of that regime than this example is.
 
-Step counts are especially misleading for `adams`, which uses neither a Jacobian nor a linear solve.  Its predictor-corrector steps have a different cost from those of `kennedy_carpenter_5`, whose implicit stages require Newton iteration.  Comparing failed steps as well as successful steps makes retries visible, while the reported Jacobian evaluations distinguish some of the extra work done by the implicit methods.  Neither counter alone establishes a ranking by wall-clock time; that requires timing the same problem at comparable accuracy.
+Step counts are especially misleading for `adams`, which uses neither a Jacobian nor a linear solve.  It takes 1132 successful steps and 2336 function evaluations here, whereas `kennedy_carpenter_5` takes only 244 successful steps but requires 30699 function evaluations and 7059 Jacobian evaluations.  The function-evaluation count makes this difference visible without assuming a fixed number of evaluations per step.  Comparing failed steps as well as successful steps exposes retries, while Jacobian evaluations distinguish some of the extra work done by the implicit methods.  These counters complement one another, but a ranking by wall-clock time still requires timing the same problem at comparable accuracy.
 
-The final result illustrates the PI step-size controller.  Applying it to `runge_kutta_45` raises the successful-step count from 582 to 1106, but reduces failed steps from 87 to zero for this problem.  The statistics make this tradeoff explicit: a smoother sequence of step sizes can avoid retries while still requiring more accepted steps overall.  This can be valuable when the error estimate is noisy or when stability rather than accuracy is limiting the step, but fewer failed steps alone do not establish greater efficiency.  Stability is not a concern for this problem, so the controller is shown here purely for illustration.  PI control is disabled by default and must be requested explicitly.  Note that the controller applies to the single-step integrators; `rosenbrock` and the two multi-step methods use step-size estimators of their own.
+The final result illustrates the PI step-size controller.  Applying it to `runge_kutta_45` raises the successful-step count from 582 to 1106, but reduces failed steps from 87 to zero for this problem.  Function evaluations nevertheless increase from 4015 to 6637.  The statistics make this tradeoff explicit: a smoother sequence of step sizes can avoid retries while still requiring more accepted steps and more model evaluations overall.  This can be valuable when the error estimate is noisy or when stability rather than accuracy is limiting the step, but fewer failed steps alone do not establish greater efficiency.  Stability is not a concern for this problem, so the controller is shown here purely for illustration.  PI control is disabled by default and must be requested explicitly.  Note that the controller applies to the single-step integrators; `rosenbrock` and the two multi-step methods use step-size estimators of their own.
 
 ### Differential-Algebraic Equations
 This final example illustrates the solution of a differential-algebraic equation (DAE) by means of a singular mass matrix.  The model is a simple pendulum expressed in Cartesian coordinates.  A mass $m$ swings from a pivot at the origin on a rigid, massless rod of length $L$, so the position of the mass $(x, y)$ must satisfy the constraint

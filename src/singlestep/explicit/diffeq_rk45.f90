@@ -217,6 +217,8 @@ subroutine rk45_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     yn = y + h * (a71 * f + a73 * k(:,3) + a74 * k(:,4) + a75 * k(:,5) + a76 * k(:,6))
     call sys%fcn(x + h * c7, yn, fn, args)
 
+    call this%log_function_evaluation(6)
+
     ! Compute the error estimate
     yerr = h * (e1 * f + e2 * k(:,2) + e3 * k(:,3) + e4 * k(:,4) + &
         e5 * k(:,5) + e6 * k(:,6) + e7 * fn)

@@ -234,7 +234,7 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
 
     ! Local Variables
     logical :: usemass
-    integer :: i, j, jj, n, stages, iteration, njac
+    integer :: i, j, n, stages, iteration, njac
     real(real64) :: a(8,8), b(8), d(8), c(8)
     real(real64), allocatable, dimension(:) :: base, state, rhs, deriv, &
         residual, delta, embedded
@@ -263,6 +263,12 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         call sys%mass_matrix(x, y, mass, args)
         call kc_consistent_derivative(sys, x, y, f, mass, k(:,1), args)
         call this%log_jacobian_evaluation()
+        call this%log_function_evaluation()
+        if (sys%use_finite_difference_jacobian()) then
+            ! The forward difference algorithm requires another n + 1 
+            ! function evaluations
+            call this%log_function_evaluation(n + 1)
+        end if
     else
         k(:,1) = f
     end if
@@ -278,31 +284,39 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         if (usemass) then
             call kc_mass_stage(sys, x + c(i) * h, base, h * a(i,i), &
                 state, k(:,i), njac, args)
-            do jj = 1, njac
-                call this%log_jacobian_evaluation()
-            end do
+            call this%log_jacobian_evaluation(njac)
+            call this%log_function_evaluation(njac)
+            if (sys%use_finite_difference_jacobian()) then
+                call this%log_function_evaluation(njac * (n + 1))
+            end if
             cycle
         end if
 
         ! Use an explicit Euler prediction to start the Newton iteration
         call sys%fcn(x + c(i) * h, base, rhs, args)
+        call this%log_function_evaluation()
         state = base + h * a(i,i) * rhs
 
         ! Solve the stage equation
         do iteration = 1, maxiter
             call sys%fcn(x + c(i) * h, state, rhs, args)
+            call this%log_function_evaluation()
             if (usemass) then
                 call sys%mass_matrix(x + c(i) * h, state, mass, args)
                 call sys%compute_jacobian(x + c(i) * h, state, jac, args)
-                call this%log_jacobian_evaluation()
                 residual = matmul(mass, state - base) - h * a(i,i) * rhs
                 delta = solve_kc_system(mass - h * a(i,i) * jac, -residual)
             else
                 call sys%compute_jacobian(x + c(i) * h, state, jac, args)
-                call this%log_jacobian_evaluation()
                 residual = state - base - h * a(i,i) * rhs
                 delta = solve_kc_system(identity(n) - h * a(i,i) * jac, &
                     -residual)
+            end if
+            call this%log_jacobian_evaluation()
+            if (sys%use_finite_difference_jacobian()) then
+                ! The forward difference algorithm requires another n + 1 
+                ! function evaluations
+                call this%log_function_evaluation(n + 1)
             end if
             if (norm2(residual) <= tol * max(1.0d0, norm2(state))) exit
             state = state + delta

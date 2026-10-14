@@ -358,6 +358,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
         else
             ! Update the derivative estimates
             call sys%fcn(xn, yn, f, args) ! write to f, not fn
+            call this%log_function_evaluation()
         end if
     end do
 

@@ -402,6 +402,7 @@ subroutine mi_evaluate_derivative(this, sys, x, y, dydx, args)
         !! An optional argument that can be used to pass information in and out
         !! of the differential equation subroutine.
     call sys%fcn(x, y, dydx, args)
+    call this%log_function_evaluation()
 end subroutine
 
 ! ------------------------------------------------------------------------------

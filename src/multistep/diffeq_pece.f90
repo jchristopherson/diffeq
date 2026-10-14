@@ -238,6 +238,7 @@ subroutine adams_evaluate_derivative(this, sys, x, y, dydx, args)
 
     ! Evaluate the right-hand side
     call sys%fcn(x, y, dydx, args)
+    call this%log_function_evaluation()
     if (.not.associated(sys%mass_matrix)) return
 
     ! Factor the mass matrix

@@ -126,6 +126,8 @@ module diffeq_base
             oc_set_is_mass_dependent
         procedure, public :: compute_jacobian => oc_jacobian
         procedure, public :: get_is_ode_defined => oc_get_is_ode_defined
+        procedure, public :: use_finite_difference_jacobian => &
+            oc_use_finite_difference_jacobian
     end type
 
 ! ------------------------------------------------------------------------------
@@ -234,6 +236,8 @@ module diffeq_base
             !! Logs a successful integration step.
         procedure, public :: log_jacobian_evaluation => oi_log_jacobian_eval
             !! Logs a Jacobian matrix evaluation.
+        procedure, public :: log_function_evaluation => oi_log_function_eval
+            !! Logs a function evaluation.
     end type
 
     interface
@@ -380,6 +384,18 @@ subroutine oc_jacobian(this, x, y, jac, args)
 end subroutine
 
 ! ------------------------------------------------------------------------------
+pure function oc_use_finite_difference_jacobian(this) result(rst)
+    !! States if a finite difference approximation to the Jacobian is utilized.
+    class(ode_container), intent(in) :: this
+        !! The [[ode_container]] object.
+    logical :: rst
+        !! True if a finite difference approximation is being utilized; else,
+        !! false.
+
+    rst = .not.associated(this%jacobian)
+end function
+
+! ------------------------------------------------------------------------------
 subroutine oc_alloc_workspace(this, ndof)
     ! Use to allocate internal workspaces.  This routine only takes action
     ! if the workspace array(s) are not sized properly for the application.
@@ -467,6 +483,7 @@ subroutine oi_clear_buffer(this)
     this%m_buffer%statistics%failed_steps = 0
     this%m_buffer%statistics%successful_steps = 0
     this%m_buffer%statistics%jacobian_evaluations = 0
+    this%m_buffer%statistics%function_evaluations = 0
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -754,7 +771,7 @@ end function
 ! ------------------------------------------------------------------------------
 subroutine oi_initial_step(this, sys, xo, xf, yo, fo, h, args)
     !! Computes an estimate of an initial step size.
-    class(ode_integrator), intent(in) :: this
+    class(ode_integrator), intent(inout) :: this
         !! The ode_integrator object.
     class(ode_container), intent(in) :: sys
         !! The ode_container object containing the ODE's to integrate.
@@ -801,6 +818,7 @@ subroutine oi_initial_step(this, sys, xo, xf, yo, fo, h, args)
     end if
     h = min(h, this%get_maximum_step_size())
     h = sign(h, dx)
+    call this%log_function_evaluation()
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -852,33 +870,76 @@ subroutine oi_set_allow_overshoot(this, x)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine oi_log_failed_step(this)
+subroutine oi_log_failed_step(this, n)
     !! Logs a failed integration step.
     class(ode_integrator), intent(inout) :: this
         !! The [[ode_integrator]] object.
+    integer, intent(in), optional :: n
+        !! An optional input useful for logging more than one step.  If not
+        !! supplied, this routine will log a single step.
 
-    this%m_buffer%statistics%failed_steps = &
-        this%m_buffer%statistics%failed_steps + 1
+    if (present(n)) then
+        this%m_buffer%statistics%failed_steps = &
+            this%m_buffer%statistics%failed_steps + n
+    else
+        this%m_buffer%statistics%failed_steps = &
+            this%m_buffer%statistics%failed_steps + 1
+    end if
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine oi_log_successful_step(this)
+subroutine oi_log_successful_step(this, n)
     !! Logs a successful integration step.
     class(ode_integrator), intent(inout) :: this
         !! The [[ode_integrator]] object.
+    integer, intent(in), optional :: n
+        !! An optional input useful for logging more than one step.  If not
+        !! supplied, this routine will log a single step.
 
-    this%m_buffer%statistics%successful_steps = &
-        this%m_buffer%statistics%successful_steps + 1
+    if (present(n)) then
+        this%m_buffer%statistics%successful_steps = &
+            this%m_buffer%statistics%successful_steps + n
+    else
+        this%m_buffer%statistics%successful_steps = &
+            this%m_buffer%statistics%successful_steps + 1
+    end if
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine oi_log_jacobian_eval(this)
+subroutine oi_log_jacobian_eval(this, n)
     !! Logs a Jacobian matrix evaluation.
     class(ode_integrator), intent(inout) :: this
         !! The [[ode_integrator]] object.
+    integer, intent(in), optional :: n
+        !! An optional input useful for logging more than one Jacobian matrix
+        !! evaluation.  If not supplied, this routine will log a single
+        !! Jacobian evaluation.
 
-    this%m_buffer%statistics%jacobian_evaluations = &
-        this%m_buffer%statistics%jacobian_evaluations + 1
+    if (present(n)) then
+        this%m_buffer%statistics%jacobian_evaluations = &
+            this%m_buffer%statistics%jacobian_evaluations + n
+    else
+        this%m_buffer%statistics%jacobian_evaluations = &
+            this%m_buffer%statistics%jacobian_evaluations + 1
+    end if
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine oi_log_function_eval(this, n)
+    !! Logs a function evaluation, or evaluations.
+    class(ode_integrator), intent(inout) :: this
+        !! The [[ode_integrator]] object.
+    integer, intent(in), optional :: n
+        !! An optional input useful for logging more than one function 
+        !! evaluation.  If not supplied, this routine will log a single 
+        !! function evaluation.
+    if (present(n)) then
+        this%m_buffer%statistics%function_evaluations = &
+            this%m_buffer%statistics%function_evaluations + n
+    else
+        this%m_buffer%statistics%function_evaluations = &
+            this%m_buffer%statistics%function_evaluations + 1
+    end if
 end subroutine
 
 ! ------------------------------------------------------------------------------

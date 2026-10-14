@@ -259,6 +259,8 @@ subroutine rk853_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     yn = y + h * k(:,4)
     call sys%fcn(x + h, yn, fn, args)
 
+    call this%log_function_evaluation(12)
+
     yerr = k(:,4) - bhh1 * f - bhh2 * k(:,9) - bhh3 * k(:,3)
     this%yerr2 = er1 * f + er6 * k(:,6) + er7 * k(:,7) + er8 * k(:,8) + &
         er9 * k(:,9) + er10 * k(:,10) + er11 * k(:,2) + er12 * k(:,3)
@@ -341,6 +343,8 @@ subroutine rk853_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k, args)
         a168 * k(:,8) + a169 * k(:,9) + a1613 * fn + a1614 * k(:,10) + &
         a1615 * k(:,2))
     call sys%fcn(x + c16 * h, this%work, k(:,3), args)
+
+    call this%log_function_evaluation(3)
 
     do i = 1, n
         this%rc5(i) = h * (this%rc5(i) + d413 * fn(i) + d414 * k(i,10) + &

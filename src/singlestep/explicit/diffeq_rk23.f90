@@ -198,6 +198,8 @@ subroutine rk23_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     yn = y + h * (a41 * f + a42 * k(:,2) + a43 * k(:,3))
     call sys%fcn(x + h * c4, yn, fn, args)
 
+    call this%log_function_evaluation(3)
+
     ! Compute the error estimate
     yerr = h * (e1 * f + e2 * k(:,2) + e3 * k(:,3) + e4 * fn)
 end subroutine
