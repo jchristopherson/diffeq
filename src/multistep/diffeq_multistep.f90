@@ -368,6 +368,7 @@ subroutine mi_newton_iteration(this, sys, h, x, ypred, ynew, converged, args)
 
         ! Solve the system
         delta = solve_least_squares_full(A, b)
+        call this%log_matrix_factorization()
 
         ! Update the solution and test for convergence.  The tolerance is
         ! applied relative to the size of the solution so that the test

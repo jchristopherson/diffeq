@@ -238,6 +238,8 @@ module diffeq_base
             !! Logs a Jacobian matrix evaluation.
         procedure, public :: log_function_evaluation => oi_log_function_eval
             !! Logs a function evaluation.
+        procedure, public :: log_matrix_factorization => oi_log_matrix_factorization
+            !! Logs a matrix factorization.
     end type
 
     interface
@@ -484,6 +486,7 @@ subroutine oi_clear_buffer(this)
     this%m_buffer%statistics%successful_steps = 0
     this%m_buffer%statistics%jacobian_evaluations = 0
     this%m_buffer%statistics%function_evaluations = 0
+    this%m_buffer%statistics%matrix_factorizations = 0
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -939,6 +942,24 @@ subroutine oi_log_function_eval(this, n)
     else
         this%m_buffer%statistics%function_evaluations = &
             this%m_buffer%statistics%function_evaluations + 1
+    end if
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine oi_log_matrix_factorization(this, n)
+    !! Logs a matrix factorization.
+    class(ode_integrator), intent(inout) :: this
+        !! The [[ode_integrator]] object.
+    integer, intent(in), optional :: n
+        !! An optional input useful for logging more than one matrix 
+        !! factorization.  If not supplied, this routine will log a single
+        !! factorization.
+    if (present(n)) then
+        this%m_buffer%statistics%matrix_factorizations = &
+            this%m_buffer%statistics%matrix_factorizations + n
+    else
+        this%m_buffer%statistics%matrix_factorizations = &
+            this%m_buffer%statistics%matrix_factorizations + 1
     end if
 end subroutine
 

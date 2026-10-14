@@ -86,6 +86,7 @@ program example
     print "(A, I0, A)", achar(9), s4%statistics%failed_steps, " Failed Steps"
     print "(A, I0, A)", achar(9), s4%statistics%jacobian_evaluations, " Jacobian Evaluations"
     print "(A, I0, A)", achar(9), s4%statistics%function_evaluations, " Function Evaluations"
+    print "(A, I0, A)", achar(9), s4%statistics%matrix_factorizations, " Matrix Factorizations"
 
     ! Now, implement a PI controller and check its effect.  This will likely
     ! increase the number of steps (loss of efficiency), but if there were
@@ -108,6 +109,7 @@ program example
     print "(A, I0, A)", achar(9), s5%statistics%failed_steps, " Failed Steps"
     print "(A, I0, A)", achar(9), s5%statistics%jacobian_evaluations, " Jacobian Evaluations"
     print "(A, I0, A)", achar(9), s5%statistics%function_evaluations, " Function Evaluations"
+    print "(A, I0, A)", achar(9), s5%statistics%matrix_factorizations, " Matrix Factorizations"
 
     print "(A)", "KC5: "
     print "(A, I0, A)", achar(9), size(s6, 1), " Solution Points"
@@ -115,6 +117,7 @@ program example
     print "(A, I0, A)", achar(9), s6%statistics%failed_steps, " Failed Steps"
     print "(A, I0, A)", achar(9), s6%statistics%jacobian_evaluations, " Jacobian Evaluations"
     print "(A, I0, A)", achar(9), s6%statistics%function_evaluations, " Function Evaluations"
+    print "(A, I0, A)", achar(9), s6%statistics%matrix_factorizations, " Matrix Factorizations"
 
     ! Additional Integrators
     print "(A)", "TSITOURAS 4/5: "
@@ -129,6 +132,7 @@ program example
     print "(A, I0, A)", achar(9), s8%statistics%failed_steps, " Failed Steps"
     print "(A, I0, A)", achar(9), s8%statistics%jacobian_evaluations, " Jacobian Evaluations"
     print "(A, I0, A)", achar(9), s8%statistics%function_evaluations, " Function Evaluations"
+    print "(A, I0, A)", achar(9), s8%statistics%matrix_factorizations, " Matrix Factorizations"
 
     print "(A)", "ADAMS: "
     print "(A, I0, A)", achar(9), size(s9, 1), " Solution Points"

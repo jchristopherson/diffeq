@@ -179,6 +179,7 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
     ! Factor the equations
     this%pivot = 0
     call qr_factor(this%a, this%pivot, tau = this%tau, qr = this%qr)
+    call this%log_matrix_factorization()
 
     ! Compute df/dx
     fac = sys%get_finite_difference_step()

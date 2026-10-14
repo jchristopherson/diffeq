@@ -40,6 +40,8 @@ module diffeq_containers
             !! The number of Jacobian matrix evaluations.
         integer :: function_evaluations = 0
             !! The number of function evaluations.
+        integer :: matrix_factorizations = 0
+            !! The number of matrix factorizations.
     end type
 
     type ode_results

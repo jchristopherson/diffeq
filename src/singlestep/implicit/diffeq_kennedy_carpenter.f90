@@ -264,6 +264,7 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         call kc_consistent_derivative(sys, x, y, f, mass, k(:,1), args)
         call this%log_jacobian_evaluation()
         call this%log_function_evaluation()
+        call this%log_matrix_factorization()
         if (sys%use_finite_difference_jacobian()) then
             ! The forward difference algorithm requires another n + 1 
             ! function evaluations
@@ -286,6 +287,7 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
                 state, k(:,i), njac, args)
             call this%log_jacobian_evaluation(njac)
             call this%log_function_evaluation(njac)
+            call this%log_matrix_factorization(njac)
             if (sys%use_finite_difference_jacobian()) then
                 call this%log_function_evaluation(njac * (n + 1))
             end if
@@ -312,6 +314,7 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
                 delta = solve_kc_system(identity(n) - h * a(i,i) * jac, &
                     -residual)
             end if
+            call this%log_matrix_factorization()
             call this%log_jacobian_evaluation()
             if (sys%use_finite_difference_jacobian()) then
                 ! The forward difference algorithm requires another n + 1 
@@ -328,6 +331,7 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         if (usemass) then
             call sys%mass_matrix(x + c(i) * h, state, mass, args)
             k(:,i) = solve_kc_system(mass, rhs)
+            call this%log_matrix_factorization()
         else
             k(:,i) = rhs
         end if
