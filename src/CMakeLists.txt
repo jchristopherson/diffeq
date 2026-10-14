@@ -6,22 +6,22 @@ set(DIFFEQ_SOURCES
     ${dir}/diffeq.f90
     ${dir}/diffeq_base.f90
     ${dir}/diffeq_errors.f90
-    ${dir}/diffeq_dprk45_constants.f90
-    ${dir}/diffeq_tsit45_constants.f90
-    ${dir}/diffeq_bsrk32_constants.f90
-    ${dir}/diffeq_rk853_constants.f90
-    ${dir}/diffeq_rosenbrock_constants.f90
-    ${dir}/diffeq_multistep.f90
-    ${dir}/diffeq_bdf.f90
-    ${dir}/diffeq_pece.f90
-    ${dir}/diffeq_rosenbrock.f90
-    ${dir}/diffeq_kennedy_carpenter.f90
     ${dir}/diffeq_containers.f90
-    ${dir}/diffeq_singlestep.f90
-    ${dir}/diffeq_tsitouras.f90
-    ${dir}/diffeq_rk45.f90
-    ${dir}/diffeq_rk23.f90
-    ${dir}/diffeq_rk853.f90
+    ${dir}/singlestep/diffeq_singlestep.f90
+    ${dir}/singlestep/explicit/diffeq_dprk45_constants.f90
+    ${dir}/singlestep/explicit/diffeq_tsit45_constants.f90
+    ${dir}/singlestep/explicit/diffeq_bsrk32_constants.f90
+    ${dir}/singlestep/explicit/diffeq_rk853_constants.f90
+    ${dir}/singlestep/explicit/diffeq_tsitouras.f90
+    ${dir}/singlestep/explicit/diffeq_rk45.f90
+    ${dir}/singlestep/explicit/diffeq_rk23.f90
+    ${dir}/singlestep/explicit/diffeq_rk853.f90
+    ${dir}/singlestep/implicit/diffeq_rosenbrock_constants.f90
+    ${dir}/singlestep/implicit/diffeq_rosenbrock.f90
+    ${dir}/singlestep/implicit/diffeq_kennedy_carpenter.f90
+    ${dir}/multistep/diffeq_multistep.f90
+    ${dir}/multistep/diffeq_bdf.f90
+    ${dir}/multistep/diffeq_pece.f90
 )
 
 # Dependencies
