@@ -1083,6 +1083,13 @@ plot $r_p$ and $r_v$, measure energy drift, and compare solver work at matched
 tolerances. Small constraint violations or accumulated phase errors can remain
 invisible on the position and angle scales shown here.
 
+For the stabilized GGL implementation, reference 16 describes the original GGL
+construction, while reference 17 provides the constraint-stabilization
+background. References 9 and 10 discuss GGL and index reduction more broadly.
+The first-order residual decay equations documented above define this library's
+index-1 variant; they are not the classical index-2 GGL formulation or the
+standard second-order Baumgarte stabilization equation.
+
 ## External Libraries
 Here is a list of external code libraries utilized by this library.  The CMake build script will include these dependencies automatically; however, it is highly recommended that an optimized BLAS and LAPACK already reside on your system for best performance (used by LINALG for linear algebra calculations).
 - [LINALG](https://github.com/jchristopherson/linalg)
@@ -1103,3 +1110,5 @@ Here is a list of external code libraries utilized by this library.  The CMake b
 13. Gear, C. W. (1971). Numerical initial value problems in ordinary differential equations. Prentice-Hall.
 14. Hairer, E., Nørsett, S. P., & Wanner, G. (1993). Solving ordinary differential equations I: Nonstiff problems (2nd revised ed.). Springer.
 15. Hairer, E., & Wanner, G. (1996). Solving ordinary differential equations II: Stiff and differential-algebraic problems (2nd revised ed.). Springer.
+16. Gear, C. W., Leimkuhler, B., & Gupta, G. K. (1985). Automatic integration of Euler-Lagrange equations with constraints. Journal of Computational and Applied Mathematics, 12-13, 77-90. https://doi.org/10.1016/0377-0427(85)90008-1.
+17. Baumgarte, J. (1972). Stabilization of constraints and integrals of motion in dynamical systems. Computer Methods in Applied Mechanics and Engineering, 1(1), 1-16. https://doi.org/10.1016/0045-7825(72)90018-7.
