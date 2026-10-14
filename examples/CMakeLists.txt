@@ -14,61 +14,70 @@ else()
     set(fplot_LIBRARY fplot)
 endif()
 
+# Shared model module used by the examples.
+set(DIFFEQ_EXAMPLE_MODEL_MOD_DIR ${CMAKE_CURRENT_BINARY_DIR}/model_mod_files)
+add_library(
+    diffeq_example_models
+    STATIC
+    ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
+)
+set_target_properties(
+    diffeq_example_models PROPERTIES
+    Fortran_MODULE_DIRECTORY ${DIFFEQ_EXAMPLE_MODEL_MOD_DIR}
+)
+target_include_directories(
+    diffeq_example_models PUBLIC
+    ${DIFFEQ_EXAMPLE_MODEL_MOD_DIR}
+)
+
 # RK45 Example
 add_executable(
     rk45_example
     rk45_example.f90
-    ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
 )
-target_link_libraries(rk45_example diffeq ${fplot_LIBRARY})
+target_link_libraries(rk45_example diffeq diffeq_example_models ${fplot_LIBRARY})
 
 # RK853 Example
 add_executable(
     rk853_example
     rk853_example.f90
-    ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
 )
-target_link_libraries(rk853_example diffeq ${fplot_LIBRARY})
+target_link_libraries(rk853_example diffeq diffeq_example_models ${fplot_LIBRARY})
 
 # Comparison Example
 add_executable(
     comparison_example
     comparison_example.f90
-    ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
 )
-target_link_libraries(comparison_example diffeq ${fplot_LIBRARY})
+target_link_libraries(comparison_example diffeq diffeq_example_models ${fplot_LIBRARY})
 
 # Rosenbrock Example
 add_executable(
     rosenbrock_example
     rosenbrock_example.f90
-    ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
 )
-target_link_libraries(rosenbrock_example diffeq ${fplot_LIBRARY})
+target_link_libraries(rosenbrock_example diffeq diffeq_example_models ${fplot_LIBRARY})
 
 # Parametric Example
 add_executable(
     parametric_example
     parametric_example.f90
-    ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
 )
-target_link_libraries(parametric_example diffeq ${fplot_LIBRARY})
+target_link_libraries(parametric_example diffeq diffeq_example_models ${fplot_LIBRARY})
 
 # DAE Example
 add_executable(
     dae_example
     dae_example.f90
-    ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
 )
-target_link_libraries(dae_example diffeq ${fplot_LIBRARY})
+target_link_libraries(dae_example diffeq diffeq_example_models ${fplot_LIBRARY})
 
 # Stiff Integrator Comparison Example
 add_executable(
     stiff_integrator_example
     stiff_integrator_example.f90
-    ${PROJECT_SOURCE_DIR}/test/diffeq_models.f90
 )
-target_link_libraries(stiff_integrator_example diffeq ${fplot_LIBRARY})
+target_link_libraries(stiff_integrator_example diffeq diffeq_example_models ${fplot_LIBRARY})
 
 # Stabilized Pendulum Example
 add_executable(
