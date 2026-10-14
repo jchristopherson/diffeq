@@ -156,7 +156,7 @@ pure function kc_get_stage_count(this) result(rst)
     !! Gets the stage count for this integrator.
     class(kennedy_carpenter), intent(in) :: this
         !! The kennedy_carpenter object.
-    integer(int32) :: rst
+    integer :: rst
         !! The stage count.
     select type (this)
     type is (kennedy_carpenter_4)
@@ -173,7 +173,7 @@ pure function kc4_get_order(this) result(rst)
     !! Gets the order of the integrator.
     class(kennedy_carpenter_4), intent(in) :: this
         !! The kennedy_carpenter_4 object.
-    integer(int32) :: rst
+    integer :: rst
         !! The order.
     rst = 4
 end function
@@ -183,7 +183,7 @@ pure function kc5_get_order(this) result(rst)
     !! Gets the order of the integrator.
     class(kennedy_carpenter_5), intent(in) :: this
         !! The kennedy_carpenter_5 object.
-    integer(int32) :: rst
+    integer :: rst
         !! The order.
     rst = 5
 end function
@@ -228,12 +228,12 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         !! in and out of the differential equation subroutine.
 
     ! Parameters
-    integer(int32), parameter :: maxiter = 12
+    integer, parameter :: maxiter = 12
     real(real64), parameter :: tol = 1.0d-12
 
     ! Local Variables
     logical :: usemass
-    integer(int32) :: i, j, n, stages, iteration
+    integer :: i, j, n, stages, iteration
     real(real64) :: a(8,8), b(8), d(8), c(8)
     real(real64), allocatable, dimension(:) :: base, state, rhs, deriv, &
         residual, delta, embedded
@@ -336,7 +336,7 @@ subroutine kc_consistent_derivative(sys, x, y, f, mass, derivative, args)
     real(real64), allocatable :: singular_values(:), left_vectors(:,:), &
         jac(:,:), fplus(:), augmented(:,:), rhs(:)
     real(real64) :: fdstep, rank_tolerance, scale
-    integer(int32) :: n, rank, nullity, i
+    integer :: n, rank, nullity, i
 
     n = size(y)
     call svd(mass, singular_values, left_vectors)
@@ -379,7 +379,7 @@ subroutine kc_mass_stage(sys, x, base, diagonal_step, state, derivative, args)
     real(real64) :: mass_perturbed(size(base),size(base))
     real(real64) :: system(size(base),size(base)), delta(size(base))
     real(real64) :: fdstep
-    integer(int32) :: i, iteration
+    integer :: i, iteration
 
     state = base
     do iteration = 1, 12
@@ -418,7 +418,7 @@ subroutine kc_table(this, a, b, d, c, stages)
         !! The array of weights defining the embedded solution.
     real(real64), intent(out) :: c(8)
         !! The array of nodes at which each stage is evaluated.
-    integer(int32), intent(out) :: stages
+    integer, intent(out) :: stages
         !! The number of stages used by the integrator.
 
     ! Initialization

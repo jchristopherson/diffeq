@@ -303,14 +303,14 @@ function test_runge_kutta_45_3() result(rst)
     logical :: rst
 
     ! Parameters
-    integer(int32), parameter :: npts = 1000
+    integer, parameter :: npts = 1000
     real(real64), parameter :: h = 1.0d-4
     real(real64), parameter :: tol = 1.0d-3
 
     ! Local Variables
     type(runge_kutta_45) :: integrator
     type(ode_container) :: mdl
-    integer(int32) :: i
+    integer :: i
     real(real64) :: x(npts)
     real(real64), allocatable :: sol(:,:), ans(:)
 
@@ -403,14 +403,14 @@ function test_runge_kutta_23_3() result(rst)
     logical :: rst
 
     ! Parameters
-    integer(int32), parameter :: npts = 1000
+    integer, parameter :: npts = 1000
     real(real64), parameter :: h = 1.0d-4
     real(real64), parameter :: tol = 1.0d-2
 
     ! Local Variables
     type(runge_kutta_23) :: integrator
     type(ode_container) :: mdl
-    integer(int32) :: i
+    integer :: i
     real(real64) :: x(npts)
     real(real64), allocatable :: sol(:,:), ans(:)
 
@@ -503,14 +503,14 @@ function test_runge_kutta_853_3() result(rst)
     logical :: rst
 
     ! Parameters
-    integer(int32), parameter :: npts = 1000
+    integer, parameter :: npts = 1000
     real(real64), parameter :: h = 1.0d-4
     real(real64), parameter :: tol = 1.0d-6
 
     ! Local Variables
     type(runge_kutta_853) :: integrator
     type(ode_container) :: mdl
-    integer(int32) :: i
+    integer :: i
     real(real64) :: x(npts)
     real(real64), allocatable :: sol(:,:), ans(:)
 
@@ -604,10 +604,10 @@ function test_runge_kutta_dense_with_args() result(rst)
     ! Parameters
     real(real64), parameter :: tol = 1.0d-6
     real(real64), parameter :: maxX = 5.0d1
-    integer(int32), parameter :: npts = 1000
+    integer, parameter :: npts = 1000
 
     ! Local Variables
-    integer(int32) :: i
+    integer :: i
     real(real64) :: mu, dx
     real(real64), allocatable, dimension(:) :: x
     type(runge_kutta_23) :: rk23

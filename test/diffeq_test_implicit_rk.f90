@@ -310,14 +310,14 @@ function test_rosenbrock_3() result(rst)
     logical :: rst
 
     ! Parameters
-    integer(int32), parameter :: npts = 1000
+    integer, parameter :: npts = 1000
     real(real64), parameter :: h = 1.0d-4
     real(real64), parameter :: tol = 1.0d-3
 
     ! Local Variables
     type(rosenbrock) :: integrator
     type(ode_container) :: mdl
-    integer(int32) :: i
+    integer :: i
     real(real64) :: x(npts)
     real(real64), allocatable :: sol(:,:), ans(:)
 
@@ -349,11 +349,11 @@ function test_rosenbrock_mass_matrix() result(rst)
 
     ! Parameters
     real(real64), parameter :: tol = 1.0d-5
-    integer(int32), parameter :: npts = 1000
+    integer, parameter :: npts = 1000
     real(real64), parameter :: tmax = 1.0d1
 
     ! Local Variables
-    integer(int32) :: i
+    integer :: i
     real(real64) :: dt, t(npts)
     type(rosenbrock) :: integrator
     type(ode_container) :: mass_mdl, ref_mdl
@@ -427,11 +427,11 @@ function test_rosenbrock_with_args() result(rst)
 
     ! Parameters
     real(real64), parameter :: tol = 1.0d-3
-    integer(int32), parameter :: npts = 1000
+    integer, parameter :: npts = 1000
     real(real64), parameter :: tmax = 5.0d1
 
     ! Local Variables
-    integer(int32) :: i
+    integer :: i
     real(real64) :: mu, dt, t(npts)
     type(rosenbrock) :: integrator
     type(ode_container) :: mdl, ref

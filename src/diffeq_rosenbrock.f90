@@ -53,7 +53,7 @@ module diffeq_rosenbrock
             ! The Jacobian matrix.
         real(real64), private, allocatable, dimension(:,:) :: mass
             ! The mass matrix.
-        integer(int32), private, allocatable, dimension(:) :: pivot
+        integer, private, allocatable, dimension(:) :: pivot
             ! QR factorization pivot tracking array
         real(real64), private, allocatable, dimension(:) :: tau
             ! QR factorization scalar factors array
@@ -131,7 +131,7 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: i, n, flag
+    integer :: i, n, flag
     logical :: useMass
     real(real64) :: fac
     real(real64), allocatable, dimension(:,:) :: lu
@@ -184,7 +184,7 @@ subroutine rbrk_init_matrices(this, n, usemass)
     !! Allocates internal storage for the system matrices.
     class(rosenbrock), intent(inout) :: this
         !! The rosenbrock object.
-    integer(int32), intent(in) :: n
+    integer, intent(in) :: n
         !! The number of equations being integrated.
     logical, intent(in) :: usemass
         !! True if a mass matrix is used; else, false.
@@ -264,7 +264,7 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: n
+    integer :: n
     real(real64), allocatable, dimension(:) :: rhs
 
     ! Initialization
@@ -326,7 +326,7 @@ subroutine rbrk_init_interp(this, neqn)
     !! Allocates storage for the interpolation process.
     class(rosenbrock), intent(inout) :: this
         !! The rosenbrock object.
-    integer(int32), intent(in) :: neqn
+    integer, intent(in) :: neqn
         !! The number of equations being integrated.
 
     ! Process
@@ -379,7 +379,7 @@ subroutine rbrk_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: i, n
+    integer :: i, n
 
     ! Quick Return
     if (.not.dense) return
@@ -439,7 +439,7 @@ pure function rbrk_get_order(this) result(rst)
     !! Gets the order of the integrator.
     class(rosenbrock), intent(in) :: this
         !! The rosenbrock object.
-    integer(int32) :: rst
+    integer :: rst
         !! The order.
     rst = 4
 end function
@@ -460,7 +460,7 @@ pure function rbrk_get_stage_count(this) result(rst)
     !! Gets the stage count for this integrator.
     class(rosenbrock), intent(in) :: this
         !! The rosenbrock object.
-    integer(int32) :: rst
+    integer :: rst
         !! The stage count.
     rst = 6
 end function

@@ -118,14 +118,14 @@ function test_adams_dense() result(rst)
     logical :: rst
 
     ! Parameters
-    integer(int32), parameter :: npts = 1000
+    integer, parameter :: npts = 1000
     real(real64), parameter :: h = 1.0d-3
     real(real64), parameter :: tol = 1.0d-5
 
     ! Local Variables
     type(adams) :: integrator
     type(ode_container) :: mdl
-    integer(int32) :: i
+    integer :: i
     real(real64) :: x(npts)
     real(real64), allocatable :: sol(:,:), ans(:)
 
@@ -175,7 +175,7 @@ function test_adams_all_steps() result(rst)
     ! Local Variables
     type(adams) :: integrator
     type(ode_container) :: mdl
-    integer(int32) :: i, n
+    integer :: i, n
     real(real64), allocatable :: sol(:,:), ans(:)
 
     ! Initialization
@@ -231,7 +231,7 @@ function test_adams_mass_matrix() result(rst)
     type(adams) :: integrator
     type(ode_container) :: mdl
     real(real64), allocatable :: sol(:,:)
-    integer(int32) :: n
+    integer :: n
 
     ! Initialization
     rst = .true.
@@ -296,7 +296,7 @@ function test_adams_with_args() result(rst)
     type(ode_container) :: mdl, refmdl
     real(real64) :: mu
     real(real64), allocatable :: sol(:,:), ref(:,:)
-    integer(int32) :: i
+    integer :: i
     real(real64) :: x(50)
 
     ! Initialization
@@ -440,14 +440,14 @@ function test_adams_matches_bdf() result(rst)
     logical :: rst
 
     ! Parameters
-    integer(int32), parameter :: npts = 200
+    integer, parameter :: npts = 200
     real(real64), parameter :: tol = 1.0d-6
 
     ! Local Variables
     type(adams) :: pc
     type(bdf) :: implicit
     type(ode_container) :: mdl
-    integer(int32) :: i
+    integer :: i
     real(real64) :: x(npts)
     real(real64), allocatable :: a(:,:), b(:,:)
 

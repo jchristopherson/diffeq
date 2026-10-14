@@ -45,7 +45,7 @@ module diffeq_bdf
     private
     public :: bdf
 
-    integer(int32), parameter :: bdf_order_limit = 5
+    integer, parameter :: bdf_order_limit = 5
         ! BDF formulae are only zero-stable through order six, and the sixth
         ! order formula has so small a region of stability as to be of little
         ! practical use.  The order is therefore capped at five.
@@ -105,7 +105,7 @@ pure function bdf_max_order(this) result(rst)
     !! Gets the highest order this integrator is permitted to use.
     class(bdf), intent(in) :: this
         !! The bdf object.
-    integer(int32) :: rst
+    integer :: rst
         !! The order limit.
     rst = bdf_order_limit
 end function
@@ -125,7 +125,7 @@ pure function bdf_error_constant(this, k) result(rst)
     !! therefore serves as both the error and the truncation constant.
     class(bdf), intent(in) :: this
         !! The bdf object.
-    integer(int32), intent(in) :: k
+    integer, intent(in) :: k
         !! The order of interest.
     real(real64) :: rst
         !! The error constant.
@@ -137,7 +137,7 @@ subroutine bdf_init_workspace(this, n)
     !! Allocates the internal workspace arrays.
     class(bdf), intent(inout) :: this
         !! The bdf object.
-    integer(int32), intent(in) :: n
+    integer, intent(in) :: n
         !! The number of equations being integrated.
 
     ! Process
@@ -191,7 +191,7 @@ subroutine bdf_predictor(this, sys, h, x, y, f, yn, fn, args)
         !! of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: i, k, n, nc, np
+    integer :: i, k, n, nc, np
     real(real64), allocatable, dimension(:) :: xv, c, nodes
     real(real64), allocatable, dimension(:,:) :: yv, dd
 
@@ -249,7 +249,7 @@ pure subroutine bdf_coefficients(t, c)
         !! An array where the coefficients will be written.
 
     ! Local Variables
-    integer(int32) :: j, m, np
+    integer :: j, m, np
     real(real64) :: p
 
     ! Process
@@ -300,7 +300,7 @@ subroutine bdf_build_linear_system(this, sys, h, x, y, A, b, args)
         !! of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: i, n
+    integer :: i, n
     logical :: usemass
 
     ! Initialization

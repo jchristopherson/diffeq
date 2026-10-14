@@ -23,7 +23,7 @@ program test
     implicit none
 
     ! Local Variables
-    integer(int32) :: flag
+    integer :: flag
     logical :: rst
 
     ! Initialization

@@ -213,7 +213,7 @@ pure function tsit_get_order(this) result(rst)
     !! Gets the order of the integrator.
     class(tsitouras_54), intent(in) :: this
         !! The tsitouras_54 object.
-    integer(int32) :: rst
+    integer :: rst
         !! The order.
     rst = 5
 end function
@@ -234,7 +234,7 @@ pure function tsit_get_stage_count(this) result(rst)
     !! Gets the stage count for this integrator.
     class(tsitouras_54), intent(in) :: this
         !! The tsitouras_54 object.
-    integer(int32) :: rst
+    integer :: rst
         !! The stage count.
     rst = 7
 end function
@@ -277,10 +277,10 @@ subroutine tsit_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         !! in and out of the differential equation subroutine.
 
     ! Parameters
-    integer(int32), parameter :: nstages = 7
+    integer, parameter :: nstages = 7
 
     ! Local Variables
-    integer(int32) :: i, j
+    integer :: i, j
     real(real64) :: stage(size(y))
 
     ! Process
@@ -420,7 +420,7 @@ pure function rk45_get_order(this) result(rst)
     !! Gets the order of the integrator.
     class(runge_kutta_45), intent(in) :: this
         !! The runge_kutta_45 object.
-    integer(int32) :: rst
+    integer :: rst
         !! The order.
     rst = 5
 end function
@@ -441,7 +441,7 @@ pure function rk45_get_stage_count(this) result(rst)
     !! Gets the stage count for this integrator.
     class(runge_kutta_45), intent(in) :: this
         !! The runge_kutta_45 object.
-    integer(int32) :: rst
+    integer :: rst
         !! The stage count.
     rst = 7
 end function
@@ -451,7 +451,7 @@ subroutine rk45_init_interp(this, neqn)
     !! Allocates storage for the interpolation process.
     class(runge_kutta_45), intent(inout) :: this
         !! The runge_kutta_45 object.
-    integer(int32), intent(in) :: neqn
+    integer, intent(in) :: neqn
         !! The number of equations being integrated.
 
     ! Process
@@ -510,7 +510,7 @@ subroutine rk45_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: n
+    integer :: n
 
     ! Initialization
     n = size(y)
@@ -572,7 +572,7 @@ subroutine rk45_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: i, n
+    integer :: i, n
     real(real64) :: h, ydiff, bspl
 
     ! Quick Return
@@ -667,7 +667,7 @@ pure function rk23_get_order(this) result(rst)
     !! Gets the order of the integrator.
     class(runge_kutta_23), intent(in) :: this
         !! The runge_kutta_23 object.
-    integer(int32) :: rst
+    integer :: rst
         !! The order.
     rst = 3
 end function
@@ -688,7 +688,7 @@ pure function rk23_get_stage_count(this) result(rst)
     !! Gets the stage count for this integrator.
     class(runge_kutta_23), intent(in) :: this
         !! The runge_kutta_23 object.
-    integer(int32) :: rst
+    integer :: rst
         !! The stage count.
     rst = 4
 end function
@@ -698,7 +698,7 @@ subroutine rk23_init_interp(this, neqn)
     !! Allocates storage for the interpolation process.
     class(runge_kutta_23), intent(inout) :: this
         !! The runge_kutta_23 object.
-    integer(int32), intent(in) :: neqn
+    integer, intent(in) :: neqn
         !! The number of equations being integrated.
 
     ! Process
@@ -753,7 +753,7 @@ subroutine rk23_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: n
+    integer :: n
 
     ! Initialization
     n = size(y)
@@ -804,7 +804,7 @@ subroutine rk23_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: n
+    integer :: n
     real(real64) :: h
 
     ! Quick Return
@@ -884,7 +884,7 @@ subroutine rk853_init_interp(this, neqn)
     !! Allocates storage for the interpolation process.
     class(runge_kutta_853), intent(inout) :: this
         !! The runge_kutta_853 object.
-    integer(int32), intent(in) :: neqn
+    integer, intent(in) :: neqn
         !! The number of equations being integrated.
 
     ! Process
@@ -923,7 +923,7 @@ pure function rk853_get_order(this) result(rst)
     !! Gets the order of the integrator.
     class(runge_kutta_853), intent(in) :: this
         !! The runge_kutta_853 object.
-    integer(int32) :: rst
+    integer :: rst
         !! The order.
     rst = 8
 end function
@@ -944,7 +944,7 @@ pure function rk853_get_stage_count(this) result(rst)
     !! Gets the stage count for this integrator.
     class(runge_kutta_853), intent(in) :: this
         !! The runge_kutta_853 object.
-    integer(int32) :: rst
+    integer :: rst
         !! The stage count.
     rst = 12
 end function
@@ -982,7 +982,7 @@ subroutine rk853_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: n
+    integer :: n
 
     ! Initialization
     n = size(y)
@@ -1072,7 +1072,7 @@ subroutine rk853_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: i, n
+    integer :: i, n
     real(real64) :: ydiff, bspl, h
 
     ! Quick Return
@@ -1186,7 +1186,7 @@ pure function rk853_estimate_error(this, y, yest, yerr) result(rst)
         !! The norm of the scaled error.
 
     ! Local Variables
-    integer(int32) :: i, n
+    integer :: i, n
     real(real64) :: err, err2, sf, denom, atol, rtol
 
     ! Initialization

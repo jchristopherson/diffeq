@@ -44,7 +44,7 @@ module diffeq_pece
     private
     public :: adams
 
-    integer(int32), parameter :: adams_order_limit = 12
+    integer, parameter :: adams_order_limit = 12
         ! The order is capped at twelve so that the tabulated error constants
         ! below span every order the method is permitted to select.
 
@@ -71,7 +71,7 @@ module diffeq_pece
             ! The derivative evaluated at the predicted solution.
         real(real64), private, allocatable, dimension(:,:) :: m_lu
             ! The LU factorization of the mass matrix.
-        integer(int32), private, allocatable, dimension(:) :: m_pivot
+        integer, private, allocatable, dimension(:) :: m_pivot
             ! The pivot array of the mass matrix factorization.
         logical, private :: m_massFactored = .false.
             ! True if the mass matrix factorization is current.
@@ -100,7 +100,7 @@ pure function adams_max_order(this) result(rst)
     !! Gets the highest order this integrator is permitted to use.
     class(adams), intent(in) :: this
         !! The adams object.
-    integer(int32) :: rst
+    integer :: rst
         !! The order limit.
     rst = adams_order_limit
 end function
@@ -121,7 +121,7 @@ pure function adams_error_constant(this, k) result(rst)
     !! from \(\gamma_k^* = \gamma_k - \gamma_{k-1}\).
     class(adams), intent(in) :: this
         !! The adams object.
-    integer(int32), intent(in) :: k
+    integer, intent(in) :: k
         !! The order of interest.
     real(real64) :: rst
         !! The error constant.
@@ -153,7 +153,7 @@ pure function adams_truncation_constant(this, k) result(rst)
     !! of the solution history.
     class(adams), intent(in) :: this
         !! The adams object.
-    integer(int32), intent(in) :: k
+    integer, intent(in) :: k
         !! The order of interest.
     real(real64) :: rst
         !! The truncation error constant.
@@ -179,7 +179,7 @@ subroutine adams_init_workspace(this, n)
     !! Allocates the internal workspace arrays.
     class(adams), intent(inout) :: this
         !! The adams object.
-    integer(int32), intent(in) :: n
+    integer, intent(in) :: n
         !! The number of equations being integrated.
 
     ! Process
@@ -229,7 +229,7 @@ subroutine adams_evaluate_derivative(this, sys, x, y, dydx, args)
         !! of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: i, n, flag
+    integer :: i, n, flag
     real(real64) :: dmax, dmin
 
     ! Initialization
@@ -296,7 +296,7 @@ subroutine adams_predictor(this, sys, h, x, y, f, yn, fn, args)
         !! of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: i, k, n
+    integer :: i, k, n
     real(real64), allocatable, dimension(:) :: xv
     real(real64), allocatable, dimension(:,:) :: fv, dd
 
@@ -354,7 +354,7 @@ subroutine adams_correct(this, sys, h, x, ypred, ynew, converged, args)
         !! of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: i, k, n
+    integer :: i, k, n
     real(real64), allocatable, dimension(:) :: xv
     real(real64), allocatable, dimension(:,:) :: fv, dd
 
@@ -411,7 +411,7 @@ pure subroutine integrate_newton_polynomial(x, d, a, b, y)
         2.223810344533745d-1, 1.012285362903763d-1 ]
 
     ! Local Variables
-    integer(int32) :: i
+    integer :: i
     real(real64) :: c, hw
     real(real64), dimension(size(y)) :: p
 

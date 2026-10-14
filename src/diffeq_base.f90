@@ -164,7 +164,7 @@ module diffeq_base
             ! PI step size controller exponent.
         logical, private :: m_reject = .false.
             ! Internal variable tracking step size acceptance.
-        integer(int32), private :: m_stepLimit = 1000000
+        integer, private :: m_stepLimit = 1000000
             ! A limit on the total number of integration steps.  Exceeding this
             ! value may indicate that a different integrator should be
             ! considered.  Either that, or this is a really large-sized
@@ -264,7 +264,7 @@ module diffeq_base
             import ode_integrator
             class(ode_integrator), intent(in) :: this
                 !! The ode_integrator object.
-            integer(int32) :: rst
+            integer :: rst
                 !! The requested value.
         end function
     end interface
@@ -440,7 +440,7 @@ module diffeq_base
             import single_step_integrator
             class(single_step_integrator), intent(in) :: this
                 !! The single_step_integrator object.
-            integer(int32) :: rst
+            integer :: rst
                 !! The integer value.
         end function
     end interface
@@ -520,7 +520,7 @@ subroutine oc_jacobian(this, x, y, jac, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: i, ndof
+    integer :: i, ndof
     real(real64) :: h
     
     ! Initialization
@@ -562,7 +562,7 @@ subroutine oc_alloc_workspace(this, ndof)
     ! if the workspace array(s) are not sized properly for the application.
     class(ode_container), intent(inout) :: this
         ! The ode_container object.
-    integer(int32), intent(in) :: ndof
+    integer, intent(in) :: ndof
         ! The number of degrees of freedom.
 
     ! Jacobian Workspace Allocation
@@ -636,7 +636,7 @@ pure function oi_get_abs_tol(this, equation) result(rst)
     !! Gets the absolute error tolerance.
     class(ode_integrator), intent(in) :: this
         !! The ode_integrator object.
-    integer(int32), intent(in), optional :: equation
+    integer, intent(in), optional :: equation
         !! The equation index. If omitted, the scalar tolerance is returned.
     real(real64) :: rst
         !! The tolerance value.
@@ -673,7 +673,7 @@ pure function oi_get_rel_tol(this, equation) result(rst)
     !! Gets the relative error tolerance.
     class(ode_integrator), intent(in) :: this
         !! The ode_integrator object.
-    integer(int32), intent(in), optional :: equation
+    integer, intent(in), optional :: equation
         !! The equation index. If omitted, the scalar tolerance is returned.
     real(real64) :: rst
         !! The tolerance value.
@@ -723,7 +723,7 @@ pure function oi_estimate_error(this, y, yest, yerr) result(rst)
         !! The norm of the scaled error.
 
     ! Local Variables
-    integer(int32) :: i, n
+    integer :: i, n
     real(real64) :: sf, atol, rtol
 
     ! Initialization
@@ -869,7 +869,7 @@ function oi_next_step(this, e, eold, h, x) result(rst)
     real(real64), parameter :: maxscale = 1.0d1
 
     ! Local Variables
-    integer(int32) :: k
+    integer :: k
     real(real64) :: alpha, beta, fs, maxstep, minstep, scale
     
     ! Initialization
@@ -935,7 +935,7 @@ subroutine oi_initial_step(this, sys, xo, xf, yo, fo, h, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: i, n
+    integer :: i, n
     real(real64) :: dx, derivative_norm
     real(real64), dimension(size(yo)) :: tol
 
@@ -971,7 +971,7 @@ pure function oi_get_step_limit(this) result(rst)
     !! before the solver terminates.
     class(ode_integrator), intent(in) :: this
         !! The ode_integrator object.
-    integer(int32) :: rst
+    integer :: rst
         !! The step limit.
     rst = this%m_stepLimit
 end function
@@ -982,7 +982,7 @@ subroutine oi_set_step_limit(this, x)
     !! before the solver terminates.
     class(ode_integrator), intent(inout) :: this
         !! The ode_integrator object.
-    integer(int32), intent(in) :: x
+    integer, intent(in) :: x
         !! The step limit.
     this%m_stepLimit = x
 end subroutine
@@ -1033,7 +1033,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
 
     ! Local Variables
     logical :: dense, success, forward
-    integer(int32) :: i, j, n, neqn, nsteps, nstages
+    integer :: i, j, n, neqn, nsteps, nstages
     real(real64) :: h, xo, xn, xmax, ei, eold
     real(real64), allocatable, dimension(:) :: f, y, yn, fn, yerr, yi
     real(real64), allocatable, dimension(:,:) :: k

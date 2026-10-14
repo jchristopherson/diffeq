@@ -136,14 +136,14 @@ function test_bdf_dense() result(rst)
     logical :: rst
 
     ! Parameters
-    integer(int32), parameter :: npts = 1000
+    integer, parameter :: npts = 1000
     real(real64), parameter :: h = 1.0d-3
     real(real64), parameter :: tol = 1.0d-5
 
     ! Local Variables
     type(bdf) :: integrator
     type(ode_container) :: mdl
-    integer(int32) :: i
+    integer :: i
     real(real64) :: x(npts)
     real(real64), allocatable :: sol(:,:), ans(:)
 
@@ -193,7 +193,7 @@ function test_bdf_all_steps() result(rst)
     ! Local Variables
     type(bdf) :: integrator
     type(ode_container) :: mdl
-    integer(int32) :: i, n
+    integer :: i, n
     real(real64), allocatable :: sol(:,:), ans(:)
 
     ! Initialization
@@ -250,7 +250,7 @@ function test_bdf_mass_matrix() result(rst)
     type(bdf) :: integrator
     type(ode_container) :: mdl
     real(real64), allocatable :: sol(:,:)
-    integer(int32) :: n
+    integer :: n
 
     ! Initialization
     rst = .true.
@@ -318,7 +318,7 @@ function test_bdf_singular_mass_matrix() result(rst)
     type(ode_container) :: mdl
     type(cartesian_pendulum_properties) :: args
     real(real64), allocatable :: sol(:,:)
-    integer(int32) :: i, n
+    integer :: i, n
     real(real64) :: r
 
     ! Initialization
@@ -363,7 +363,7 @@ function test_bdf_singular_mass_matrix_dense() result(rst)
     logical :: rst
 
     ! Parameters
-    integer(int32), parameter :: npts = 200
+    integer, parameter :: npts = 200
     real(real64), parameter :: length = 1.5d0
     real(real64), parameter :: tol = 1.0d-5
 
@@ -372,7 +372,7 @@ function test_bdf_singular_mass_matrix_dense() result(rst)
     type(ode_container) :: mdl
     type(cartesian_pendulum_properties) :: args
     real(real64), allocatable :: sol(:,:)
-    integer(int32) :: i
+    integer :: i
     real(real64) :: dt, t(npts), r
 
     ! Initialization
@@ -425,7 +425,7 @@ function test_bdf_with_args() result(rst)
     type(ode_container) :: mdl, refmdl
     real(real64) :: mu
     real(real64), allocatable :: sol(:,:), ref(:,:)
-    integer(int32) :: i
+    integer :: i
     real(real64) :: x(100)
 
     ! Initialization
