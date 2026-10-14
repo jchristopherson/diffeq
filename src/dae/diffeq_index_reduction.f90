@@ -189,6 +189,7 @@ module diffeq_index_reduction
     end type
 
 contains
+! ------------------------------------------------------------------------------
 subroutine ggl_initialize(this, coordinate_count, constraint_count, alpha, beta)
     !! Defines the mechanical dimensions and resets stabilization gains to one
     !! unless supplied. Callback associations and inherited model options are
@@ -216,6 +217,7 @@ subroutine ggl_initialize(this, coordinate_count, constraint_count, alpha, beta)
     call this%set_stabilization_parameters(position_rate, velocity_rate)
 end subroutine
 
+! ------------------------------------------------------------------------------
 subroutine ggl_set_stabilization(this, alpha, beta)
     !! Sets the two independent constraint decay rates. Negative or nonfinite
     !! values cause DIFFEQ_INVALID_INPUT_ERROR. No state projection is performed.
@@ -233,6 +235,7 @@ subroutine ggl_set_stabilization(this, alpha, beta)
     this%m_beta = beta
 end subroutine
 
+! ------------------------------------------------------------------------------
 function ggl_state_count(this) result(rst)
     !! Returns 2N+2M, or zero before dimensions have been initialized.
     class(ggl_container), intent(in) :: this
@@ -243,6 +246,7 @@ function ggl_state_count(this) result(rst)
     rst = 2 * (this%m_coordinates + this%m_constraints)
 end function
 
+! ------------------------------------------------------------------------------
 function ggl_has_mass(this) result(rst)
     !! Always returns true: the augmented matrix is singular even when the
     !! physical matrix defaults to identity. Explicit ODE paths are unsuitable.
@@ -254,6 +258,7 @@ function ggl_has_mass(this) result(rst)
     rst = .true.
 end function
 
+! ------------------------------------------------------------------------------
 function ggl_is_defined(this) result(rst)
     !! Checks configuration and all required callback associations. This does
     !! not evaluate callbacks or certify constraint rank or mass regularity.
@@ -268,6 +273,7 @@ function ggl_is_defined(this) result(rst)
         associated(this%constraint_jacobian) .and. associated(this%constraint_curvature)
 end function
 
+! ------------------------------------------------------------------------------
 subroutine ggl_check_state(this, y)
     !! Checks dimensions and finite state values without invoking callbacks.
     !! Uninitialized dimensions/nonfinite values cause INVALID_INPUT; a wrong
@@ -283,6 +289,7 @@ subroutine ggl_check_state(this, y)
     if (.not.all(ieee_is_finite(y))) error stop DIFFEQ_INVALID_INPUT_ERROR
 end subroutine
 
+! ------------------------------------------------------------------------------
 subroutine ggl_physical_mass(this, x, q, mass, args)
     !! Evaluates the physical mass callback, or supplies identity. This private
     !! helper assumes the caller has checked array dimensions. Singular masses
@@ -305,6 +312,7 @@ subroutine ggl_physical_mass(this, x, q, mass, args)
     end if
 end subroutine
 
+! ------------------------------------------------------------------------------
 subroutine ggl_rhs(this, x, y, dydx, args)
     !! Assembles the four RHS blocks documented on [[ggl_container]]. The
     !! output is a mass-matrix RHS, not the full derivative z'. Only the
@@ -353,6 +361,7 @@ subroutine ggl_rhs(this, x, y, dydx, args)
         this%m_beta * matmul(gradient, y(coordinates+1:physical))
 end subroutine
 
+! ------------------------------------------------------------------------------
 subroutine ggl_mass(this, x, y, m, args)
     !! Assembles diag(I,M,0,0). Both multiplier blocks and their cross blocks
     !! are zero. No constraints or force callbacks are needed for this operation.
@@ -380,6 +389,7 @@ subroutine ggl_mass(this, x, y, m, args)
         m(coordinates+1:2*coordinates,coordinates+1:2*coordinates), args)
 end subroutine
 
+! ------------------------------------------------------------------------------
 function ggl_validate(this, x, y, tolerance, args) result(rst)
     !! Checks max(abs(g)) and max(abs(Gv)) against one absolute tolerance.
     !! This tests physical position/velocity consistency, not the multiplier
@@ -415,6 +425,7 @@ function ggl_validate(this, x, y, tolerance, args) result(rst)
     rst = rst .and. maxval(abs(position)) <= tolerance .and. maxval(abs(velocity)) <= tolerance
 end function
 
+! ------------------------------------------------------------------------------
 subroutine ggl_initialize_multipliers(this, x, y, args)
     !! Computes mu and lambda to satisfy the two stabilized algebraic rows
     !! for the supplied q and v. Coordinates and physical velocities are not
@@ -456,6 +467,7 @@ subroutine ggl_initialize_multipliers(this, x, y, args)
     y(physical+1:physical+constraints) = multiplier(:,1)
 end subroutine
 
+! ------------------------------------------------------------------------------
 subroutine ggl_linear_solve(matrix, rhs)
     !! Resolves a square physical or constraint system by pivoted LU, without
     !! forming an inverse. Nonfinite data/invalid shapes cause INVALID_INPUT;
@@ -487,4 +499,6 @@ subroutine ggl_linear_solve(matrix, rhs)
     rhs = solve_lu(factors, pivots, rhs)
     if (.not.all(ieee_is_finite(rhs))) error stop DIFFEQ_SINGULAR_MATRIX_ERROR
 end subroutine
+
+! ------------------------------------------------------------------------------
 end module
