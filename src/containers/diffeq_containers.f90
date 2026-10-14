@@ -27,6 +27,7 @@ module diffeq_containers
     private
     public :: ode_results_statistics
     public :: ode_results
+    public :: size
 
     integer, parameter :: BUFFER_CAPACITY = 1000
 
@@ -75,7 +76,35 @@ module diffeq_containers
         module procedure :: or_init_empty
     end interface
 
+    interface size
+        module procedure :: or_size
+    end interface
+
 contains
+! ------------------------------------------------------------------------------
+pure function or_size(x, dim) result(rst)
+    !! Returns the size of the requested dimension of a [[ode_results]] object.
+    class(ode_results), intent(in) :: x
+        !! The [[ode_results]] object.
+    integer, intent(in) :: dim
+        !! The dimension.  A value of 1 returns the number of solution points,
+        !! while a value of 2 returns the number of state variables.  Any other
+        !! input is disregarded, and a value of 0 is returned.
+    integer :: rst
+        !! The requested size.
+
+    select case (dim)
+    case (1)
+        rst = x%count()
+    case (2)
+        rst = x%state_variable_count()
+    case default
+        rst = 0
+    end select
+end function
+
+! ******************************************************************************
+! ODE_RESULTS MEMBERS
 ! ------------------------------------------------------------------------------
 pure function or_init_empty(n, capacity) result(rst)
     !! Initializes an empty [[ode_results]] container.
