@@ -28,6 +28,7 @@ module diffeq
     use diffeq_rosenbrock
     use diffeq_kennedy_carpenter
     use diffeq_containers
+    use diffeq_container_io
     use diffeq_singlestep
     use diffeq_tsitouras
     use diffeq_rk45

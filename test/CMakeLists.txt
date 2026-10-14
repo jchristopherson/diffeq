@@ -75,6 +75,23 @@ foreach(error_case
     set_tests_properties(diffeq_container_error_${error_case} PROPERTIES WILL_FAIL TRUE)
 endforeach()
 
+add_executable(diffeq_container_io_tests diffeq_container_io_tests.f90)
+target_link_libraries(diffeq_container_io_tests diffeq)
+add_test(
+    NAME diffeq_container_io_tests
+    WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+    COMMAND $<TARGET_FILE:diffeq_container_io_tests>
+)
+
+foreach(error_case quote carriage_return line_feed uninitialized open_error)
+    add_test(
+        NAME diffeq_container_io_error_${error_case}
+        WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+        COMMAND $<TARGET_FILE:diffeq_container_io_tests> ${error_case}
+    )
+    set_tests_properties(diffeq_container_io_error_${error_case} PROPERTIES WILL_FAIL TRUE)
+endforeach()
+
 if (${BUILD_SHARED_LIBS} AND WIN32)
     add_custom_command(
         TARGET diffeq_tests

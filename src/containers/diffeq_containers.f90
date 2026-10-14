@@ -23,7 +23,6 @@
 
 ! TO DO LIST:
 ! - Add interface for solver statistics (e.g. function evaluations, jacobian evaluations, etc.)
-! - Add a routine for writing a ode_results container to file
 
 module diffeq_containers
     use iso_fortran_env

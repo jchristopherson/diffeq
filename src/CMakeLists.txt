@@ -7,6 +7,7 @@ set(DIFFEQ_SOURCES
     ${dir}/diffeq_base.f90
     ${dir}/diffeq_errors.f90
     ${dir}/containers/diffeq_containers.f90
+    ${dir}/containers/diffeq_container_io.f90
     ${dir}/singlestep/diffeq_singlestep.f90
     ${dir}/singlestep/explicit/diffeq_dprk45_constants.f90
     ${dir}/singlestep/explicit/diffeq_tsit45_constants.f90
