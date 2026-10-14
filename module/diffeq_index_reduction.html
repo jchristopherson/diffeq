@@ -1,0 +1,736 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="DIFFEQ is a modern Fortran library providing an object-oriented approach to solving ordinary differential equations.">
+    <meta name="author" content="Jason Christopherson" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>diffeq_index_reduction &ndash; DIFFEQ</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">DIFFEQ </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>diffeq_index_reduction
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip"
+                 data-bs-placement="bottom" data-html="true"
+                 title=" 6.3% of total for modules and submodules.">222 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/diffeq_index_reduction.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='..\sourcefile\diffeq_index_reduction.f90.html'>diffeq_index_reduction.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">diffeq_index_reduction</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function () {
+    $('[data-bs-toggle="tooltip"]').tooltip()
+    })
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#absints-0"
+         aria-expanded="false" aria-controls="absints-0">
+         <h4 class="card-header bg-primary text-white">Abstract Interfaces</h4>
+      </a>
+      <div id="absints-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/diffeq_index_reduction.html#interface-dae_algebraic_constraints">dae_algebraic_constraints</a>
+            <a class="list-group-item" href="../module/diffeq_index_reduction.html#interface-dae_constraint_curvature">dae_constraint_curvature</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/diffeq_index_reduction.html#type-ggl_container">ggl_container</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>Stabilized index-1 Gear-Gupta-Leimkuhler-inspired (GGL) reduction
+for mechanical systems with autonomous holonomic constraints.</p>
+<p>For autonomous holonomic constraints <script type="math/tex">g(q)=0</script>, this variant uses
+coordinates <script type="math/tex">q</script>, velocities <script type="math/tex">v</script>, force multipliers <script type="math/tex">\lambda</script>,
+and kinematic multipliers <script type="math/tex">\mu</script> in the formulation
+<script type="math/tex; mode=display">
+\dot q = v + G(q)^T\mu, \qquad
+M(q)\dot v = F(x,q,v) - G(q)^T\lambda,
+</script>
+<script type="math/tex; mode=display">
+0 = G\dot q + \alpha g, \qquad
+0 = DG(q)[\dot q]v + GM^{-1}(F-G^T\lambda) + \beta Gv,
+</script>
+where <script type="math/tex">G=\partial g/\partial q</script>. Thus <script type="math/tex">\dot g=-\alpha g</script>
+and <script type="math/tex">d(Gv)/dx=-\beta Gv</script>. Consistent constraints remain zero
+in the exact solution; positive gains damp violations. Numerical
+integration and interpolation do not project onto the constraints.</p>
+<p>Unlike classical index-2 GGL, the original position and velocity
+constraints are replaced by their stabilized evolution equations.
+The algebraic multipliers are locally determined when <script type="math/tex">GG^T</script>
+and <script type="math/tex">GM^{-1}G^T</script> are nonsingular. Independent constraints and a
+symmetric positive-definite mechanical mass matrix suffice. Explicitly
+moving constraints are not supported: the constraint callbacks must
+not depend on the independent variable.</p>
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item">linalg</li>
+                  <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/ieee_arithmetic'>ieee_arithmetic</a></li>
+                  <li class="list-inline-item"><a href='diffeq_base.html'>diffeq_base</a></li>
+              </ul>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      
+      <br>
+
+
+
+
+
+        <section>
+          <h2>Abstract Interfaces</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="interface-dae_algebraic_constraints"></span><h3>abstract interface
+        
+    </h3></div>
+    <ul class="list-group">
+      <li class="list-group-item">
+            <h3>
+    public  subroutine dae_algebraic_constraints(x, y, g, args)  
+
+    </h3>
+  <p>Evaluates algebraic constraint residuals <script type="math/tex">g(x,y)</script>.</p>
+<p>For <script type="math/tex">N</script> input state components and <script type="math/tex">M</script> constraints,
+the callback represents a mapping
+<script type="math/tex; mode=display">
+g : \mathbb{R}\times\mathbb{R}^{N}
+\longrightarrow \mathbb{R}^{M}.
+</script>
+A consistent state satisfies <script type="math/tex">g(x,y)=0</script>. Return the
+residuals themselves, not their derivatives, a Boolean result,
+or a projected state. A nonzero residual is a valid evaluation
+at an inconsistent state, rather than a callback failure.</p>
+<p>The caller supplies the input and output array sizes. The
+implementation must interpret the same state ordering as its
+model and write every output element. This interface performs
+no dimension, rank, or initial-consistency checks. Residual
+ordering and physical units are defined by the model; any
+subsequent consistency tolerance must respect that scaling.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~26"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+            <td>
+                <p>The independent-variable value at which to evaluate the
+constraints, normally time. Autonomous constraints may
+ignore this argument.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-y~19"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              dimension(:)
+            </td>
+            <td>::</td>
+            <td><strong>y</strong></td>
+            <td>
+                <p>An N-element input state in the ordering defined by the
+model. No particular coordinate, velocity, or multiplier
+partition is imposed by this interface. It must not be
+modified by the callback.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-g"></span>
+              real(kind=real64),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              dimension(:)
+            </td>
+            <td>::</td>
+            <td><strong>g</strong></td>
+            <td>
+                <p>An M-element output array receiving the constraint
+residuals in the model's declared constraint order.
+Every element must be assigned on every call; incoming
+contents are undefined. Exact constraint satisfaction
+corresponds to a zero vector.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-args~16"></span>
+              class(*),
+            </td>
+<td>intent(inout),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>args</strong></td>
+            <td>
+                <p>Optional user-owned model parameters or evaluation state.
+Check presence and dynamic type before accessing it.
+The callback may update this object, but repeated calls
+with the same inputs should give the same residuals unless
+the user intentionally changes model parameters. This
+argument is not reserved for index-reduction workspace.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+      </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="interface-dae_constraint_curvature"></span><h3>abstract interface
+        
+    </h3></div>
+    <ul class="list-group">
+      <li class="list-group-item">
+            <h3>
+    public  subroutine dae_constraint_curvature(x, q, direction, v, curvature, args)  
+
+    </h3>
+  <p>Evaluates <script type="math/tex">DG(q)[\mathrm{direction}]v</script>, without including
+<script type="math/tex">G\dot v</script>. Each component is
+<script type="math/tex">\mathrm{direction}^T\nabla^2 g_i(q)v</script>.
+Assign every output element. For linear constraints return
+zeros. The callback must support off-manifold coordinates and
+arbitrary directions used during nonlinear/Jacobian evaluation.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~27"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+            <td>
+                <p>Independent-variable value, provided for callback uniformity;
+autonomous constraints must not depend on it.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-q"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              dimension(:)
+            </td>
+            <td>::</td>
+            <td><strong>q</strong></td>
+            <td>
+                <p>N coordinates, in the same order as the force model.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-direction"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              dimension(:)
+            </td>
+            <td>::</td>
+            <td><strong>direction</strong></td>
+            <td>
+                <p>N components of the coordinate derivative <script type="math/tex">\dot q</script>,
+including the kinematic multiplier correction.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-v"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              dimension(:)
+            </td>
+            <td>::</td>
+            <td><strong>v</strong></td>
+            <td>
+                <p>N physical velocity components; these need not equal direction.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-curvature"></span>
+              real(kind=real64),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              dimension(:)
+            </td>
+            <td>::</td>
+            <td><strong>curvature</strong></td>
+            <td>
+                <p>M curvature terms in the order of the constraint callback.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-args~17"></span>
+              class(*),
+            </td>
+<td>intent(inout),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>args</strong></td>
+            <td>
+                <p>Optional user-owned parameters, forwarded unchanged.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+      </li>
+    </ul>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-ggl_container"></span>
+      <h3>
+        type, public, extends(<a href='..\type\ode_container.html'>ode_container</a>)&nbsp;::&nbsp;
+        <a href='..\type\ggl_container.html'>ggl_container</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>Mechanical model adapter implementing stabilized index-1 GGL.</p><a href="../type/ggl_container.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-constraint_curvature"></span>
+              procedure(<a href='..\interface\dae_constraint_curvature.html'>dae_constraint_curvature</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer, nopass
+            </td>
+            <td>::</td>
+            <td><strong>constraint_curvature</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+<p>Required callback for <script type="math/tex">DG(q)[\dot q]v</script>.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-constraint_jacobian"></span>
+              procedure(<a href='..\interface\ode_jacobian.html'>ode_jacobian</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer, nopass
+            </td>
+            <td>::</td>
+            <td><strong>constraint_jacobian</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+<p>Required callback receiving q and writing the M-by-N matrix
+<script type="math/tex">G=\partial g/\partial q</script>. No finite-difference fallback is used.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-constraints"></span>
+              procedure(<a href='..\interface\dae_algebraic_constraints.html'>dae_algebraic_constraints</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer, nopass
+            </td>
+            <td>::</td>
+            <td><strong>constraints</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+<p>Required callback receiving N coordinates q and writing M
+autonomous position residuals g(q), including off-manifold values.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fcn"></span>
+              procedure(<a href='..\interface\ode.html'>ode</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer, nopass
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+<p>A pointer to the routine containing the ODEs to integrate.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-jacobian"></span>
+              procedure(<a href='..\interface\ode_jacobian.html'>ode_jacobian</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer, nopass
+            </td>
+            <td>::</td>
+            <td><strong>jacobian</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+<p>A pointer to the routine containing the analytical Jacobian.
+If supplied, this routine is utilized; however, if null, a finite
+difference approximation is utilized.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mass_matrix"></span>
+              procedure(<a href='..\interface\ode_mass_matrix.html'>ode_mass_matrix</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer, nopass
+            </td>
+            <td>::</td>
+            <td><strong>mass_matrix</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+<p>A pointer to the routine containing the mass matrix for the
+system.  If set to null (the default), an identity mass matrix 
+will be assumed.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_container.html#boundprocedure-compute_jacobian'>compute_jacobian</a></strong> => oc_jacobian</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ggl_container.html#boundprocedure-compute_mass_matrix'>compute_mass_matrix</a></strong> => ggl_mass</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ggl_container.html#boundprocedure-compute_rhs'>compute_rhs</a></strong> => ggl_rhs</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_container.html#boundprocedure-get_finite_difference_step'>get_finite_difference_step</a></strong> => oc_get_fd_step</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_container.html#boundprocedure-get_is_mass_matrix_dependent'>get_is_mass_matrix_dependent</a></strong> => oc_get_is_mass_dependent</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ggl_container.html#boundprocedure-get_is_ode_defined'>get_is_ode_defined</a></strong> => ggl_is_defined</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ggl_container.html#boundprocedure-get_state_count'>get_state_count</a></strong> => ggl_state_count</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ggl_container.html#boundprocedure-has_mass_matrix'>has_mass_matrix</a></strong> => ggl_has_mass</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ggl_container.html#boundprocedure-initialize'>initialize</a></strong> => ggl_initialize</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ggl_container.html#boundprocedure-initialize_multipliers'>initialize_multipliers</a></strong> => ggl_initialize_multipliers</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_container.html#boundprocedure-set_finite_difference_step'>set_finite_difference_step</a></strong> => oc_set_fd_step</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_container.html#boundprocedure-set_is_mass_matrix_dependent'>set_is_mass_matrix_dependent</a></strong> => oc_set_is_mass_dependent</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ggl_container.html#boundprocedure-set_stabilization_parameters'>set_stabilization_parameters</a></strong> => ggl_set_stabilization</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_container.html#boundprocedure-use_finite_difference_jacobian'>use_finite_difference_jacobian</a></strong> => oc_use_finite_difference_jacobian</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ggl_container.html#boundprocedure-validate_initial_conditions'>validate_initial_conditions</a></strong> => ggl_validate</td>
+                <td></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col"><p>DIFFEQ was developed by Jason Christopherson<br>&copy; 2026 
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-14 15:56              </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
+
+    <!-- MathJax JavaScript
+             ================================================== -->
+             <!-- Placed at the end of the document so the pages load faster -->
+        <script type="text/x-mathjax-config">
+          MathJax.Hub.Config({
+          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+          });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+          <script src="../tipuesearch/tipuesearch_content.js"></script>
+          <script src="../tipuesearch/tipuesearch_set.js"></script>
+          <script src="../tipuesearch/tipuesearch.js"></script>
+
+  </body>
+</html>

@@ -1,22 +1,30 @@
 ! This file is part of diffeq.
-! 
-! diffeq is free software: you can redistribute it and/or modify
-! it under the terms of the GNU Lesser General Public License as published by
-! the Free Software Foundation, either version 3 of the License, or
-! (at your option) any later version.
 !
-! diffeq is distributed in the hope that it will be useful,
-! but WITHOUT ANY WARRANTY; without even the implied warranty of
-! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-! GNU Lesser General Public License for more details.
+! Copyright (c) 2023-2026 Jason Christopherson
 !
-! You should have received a copy of the GNU Lesser General Public License
-! along with diffeq. If not, see <https://www.gnu.org/licenses/>.
+! Permission is hereby granted, free of charge, to any person obtaining a copy
+! of this software and associated documentation files (the "Software"), to deal
+! in the Software without restriction, including without limitation the rights
+! to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+! copies of the Software, and to permit persons to whom the Software is
+! furnished to do so, subject to the following conditions:
+!
+! The above copyright notice and this permission notice shall be included in all
+! copies or substantial portions of the Software.
+!
+! THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+! IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+! FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+! AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+! LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+! OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+! SOFTWARE.
 
 module diffeq_base
     !! A collection of base types for the DIFFEQ library.
     use iso_fortran_env
     use diffeq_errors
+    use diffeq_containers, only : ode_results
     implicit none
     private
     public :: ode
@@ -26,14 +34,7 @@ module diffeq_base
     public :: ode_integrator
     public :: ode_solver
     public :: ode_integer_inquiry
-    public :: attempt_single_step
-    public :: get_single_step_logical_parameter
-    public :: single_step_post_step_routine
-    public :: single_step_pre_step_routine
-    public :: single_step_interpolate
-    public :: single_step_integer_inquiry
-    public :: single_step_integrator
-
+    
 ! ------------------------------------------------------------------------------
     interface
         subroutine ode(x, y, dydx, args)
@@ -96,7 +97,7 @@ module diffeq_base
         !! systems of the form \( M(x,y)y' = f(x,y) \). If no Jacobian is
         !! supplied, DIFFEQ estimates it using finite differences. A null
         !! mass-matrix callback means that \( M = I \).
-        logical, private :: m_massDependent = .true.
+        logical, private :: m_massDependent = .false.
             ! A value determining if the mass matrix is state dependent such 
             ! that it must be recomputed at each step. 
         real(real64), private, allocatable, dimension(:) :: m_jwork
@@ -125,6 +126,11 @@ module diffeq_base
             oc_set_is_mass_dependent
         procedure, public :: compute_jacobian => oc_jacobian
         procedure, public :: get_is_ode_defined => oc_get_is_ode_defined
+        procedure, public :: use_finite_difference_jacobian => &
+            oc_use_finite_difference_jacobian
+        procedure, public :: compute_rhs => oc_eval_rhs
+        procedure, public :: compute_mass_matrix => oc_eval_mass_matrix
+        procedure, public :: has_mass_matrix => oc_has_mass_matrix
     end type
 
 ! ------------------------------------------------------------------------------
@@ -136,10 +142,8 @@ module diffeq_base
         !! scaled local error such as
         !! \( \mathrm{err}_i / (\mathrm{atol} + \mathrm{rtol}|y_i|) \)
         !! to choose their step sizes.
-        real(real64), private, allocatable, dimension(:,:) :: m_buffer
+        type(ode_results), private :: m_buffer
             ! The internal solution buffer.
-        integer(int32), private :: m_bufferCount = 0
-            ! The number of solution points stored in the buffer.
         real(real64), private :: m_abstol = 1.0d-6
             ! The absolute tolerance value applied to each equation.
         real(real64), private :: m_reltol = 1.0d-6
@@ -158,7 +162,7 @@ module diffeq_base
             ! PI step size controller exponent.
         logical, private :: m_reject = .false.
             ! Internal variable tracking step size acceptance.
-        integer(int32), private :: m_stepLimit = 1000000
+        integer, private :: m_stepLimit = 1000000
             ! A limit on the total number of integration steps.  Exceeding this
             ! value may indicate that a different integrator should be
             ! considered.  Either that, or this is a really large-sized
@@ -177,6 +181,8 @@ module diffeq_base
             !! buffer.
         procedure, public :: get_solution => oi_get_solution
             !! Returns the solution computed by the integrator.
+        procedure, public :: get_ode_results => oi_get_ode_results
+            !! Returns the solution stored within an [[ode_results]] object.
         procedure, public :: clear_buffer => oi_clear_buffer
             !! Clears the contents of the buffer.
         procedure, public :: get_absolute_tolerance => oi_get_abs_tol
@@ -227,6 +233,16 @@ module diffeq_base
         procedure, public :: set_allow_overshoot => oi_set_allow_overshoot
             !! Sets a value determining if the solver is allowed to overshoot 
             !! the final value in the integration range.
+        procedure, public :: log_failed_step => oi_log_failed_step
+            !! Logs a failed integration step.
+        procedure, public :: log_successful_step => oi_log_successful_step
+            !! Logs a successful integration step.
+        procedure, public :: log_jacobian_evaluation => oi_log_jacobian_eval
+            !! Logs a Jacobian matrix evaluation.
+        procedure, public :: log_function_evaluation => oi_log_function_eval
+            !! Logs a function evaluation.
+        procedure, public :: log_matrix_factorization => oi_log_matrix_factorization
+            !! Logs a matrix factorization.
     end type
 
     interface
@@ -258,188 +274,10 @@ module diffeq_base
             import ode_integrator
             class(ode_integrator), intent(in) :: this
                 !! The ode_integrator object.
-            integer(int32) :: rst
+            integer :: rst
                 !! The requested value.
         end function
     end interface
-
-! ------------------------------------------------------------------------------
-    type, abstract, extends(ode_integrator) :: single_step_integrator
-        !! The most basic, single-step integrator object capable of integrating
-        !! systems of ODE's.
-    contains
-        procedure(attempt_single_step), public, pass, deferred :: attempt_step
-            !! Attempts an integration step for a single-step integrator.
-        procedure(get_single_step_logical_parameter), public, pass, &
-            deferred :: get_is_fsal
-            !! Gets a logical parameter stating if this is a first-same-as-last
-            !! (FSAL) integrator.
-        procedure(single_step_post_step_routine), public, pass, deferred :: &
-            post_step_action
-            !! Performs actions such as setting up interpolation after 
-            !! completion of a successful integration step.
-        procedure(single_step_interpolate), public, pass, deferred :: &
-            interpolate
-            !! Performs an interpolation to estimate the solution at the
-            !! requested point.
-        procedure(single_step_pre_step_routine), public, pass, deferred :: &
-            pre_step_action
-            !! Provides a routine for performing any actions, such as setting
-            !! up Jacobian calculations.
-        procedure(single_step_integer_inquiry), public, pass, deferred :: &
-            get_stage_count
-            !! Gets the number of stages used by the integrator.
-        procedure, public :: solve => ssi_ode_solver
-            !! Solves the supplied system of ODE's.
-    end type
-
-    interface
-        subroutine attempt_single_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
-            use iso_fortran_env
-            import single_step_integrator
-            import ode_container
-            !! Attempts an integration step for a single-step integrator.
-            class(single_step_integrator), intent(inout) :: this
-                !! The single_step_integrator object.
-            class(ode_container), intent(inout) :: sys
-                !! The ode_container object containing the ODE's to integrate.
-            real(real64), intent(in) :: h
-                !! The current step size.
-            real(real64), intent(in) :: x
-                !! The current value of the independent variable.
-            real(real64), intent(in), dimension(:) :: y
-                !! An N-element array containing the current solution at x.
-            real(real64), intent(in), dimension(:) :: f
-                !! An N-element array containing the values of the derivatives
-                !! at x.
-            real(real64), intent(out), dimension(:) :: yn
-                !! An N-element array where this routine will write the next
-                !! solution estimate at x + h.
-            real(real64), intent(out), dimension(:) :: fn
-                !! An N-element array where this routine will write the next
-                !! derivative estimate at x + h.
-            real(real64), intent(out), dimension(:) :: yerr
-                !! An N-element array where this routine will write an estimate
-                !! of the error in each equation.
-            real(real64), intent(out), dimension(:,:) :: k
-                !! An N-by-NSTAGES matrix containing the derivatives at each
-                !! stage.
-            class(*), intent(inout), optional :: args
-                !! An optional argument that can be used to pass information
-                !! in and out of the differential equation subroutine.
-        end subroutine
-
-        pure function get_single_step_logical_parameter(this) result(rst)
-            !! Returns a logical parameter from a single_step_integrator object.
-            import single_step_integrator
-            class(single_step_integrator), intent(in) :: this
-                !! The single_step_integrator object.
-            logical :: rst
-                !! The parameter.
-        end function
-
-        subroutine single_step_post_step_routine(this, sys, dense, x, xn, y, &
-            yn, f, fn, k, args)
-            !! Provides a routine for performing any actions, such as setting
-            !! up interpolation, after successful completion of a step.
-            use iso_fortran_env
-            import single_step_integrator
-            import ode_container
-            class(single_step_integrator), intent(inout) :: this
-                !! The single_step_integrator object.
-            class(ode_container), intent(inout) :: sys
-                !! The ode_container object containing the ODE's to integrate.
-            logical, intent(in) :: dense
-                !! Determines if dense output is requested (true); else, false.
-            real(real64), intent(in) :: x
-                !! The previous value of the independent variable.
-            real(real64), intent(in) :: xn
-                !! The current value of the independent variable.
-            real(real64), intent(in), dimension(:) :: y
-                !! An N-element array containing the solution at x.
-            real(real64), intent(in), dimension(:) :: yn
-                !! An N-element array containing the solution at xn.
-            real(real64), intent(in), dimension(:) :: f
-                !! An N-element array containing the derivatives at x.
-            real(real64), intent(in), dimension(:) :: fn
-                !! An N-element array containing the derivatives at xn.
-            real(real64), intent(inout), dimension(:,:) :: k
-                !! An N-by-NSTAGES matrix containing the derivatives at each
-                !! stage.
-            class(*), intent(inout), optional :: args
-                !! An optional argument that can be used to pass information
-                !! in and out of the differential equation subroutine.
-        end subroutine
-
-        subroutine single_step_interpolate(this, x, xn, yn, fn, xn1, yn1, &
-            fn1, y)
-            !! Provides a routine for interpolation.
-            use iso_fortran_env
-            import single_step_integrator
-            class(single_step_integrator), intent(in) :: this
-                !! The single_step_integrator object.
-            real(real64), intent(in) :: x
-                !! The value of the independent variable at which to compute
-                !! the interpolation.
-            real(real64), intent(in) :: xn
-                !! The previous value of the independent variable at which the
-                !! solution is computed.
-            real(real64), intent(in), dimension(:) :: yn
-                !! An N-element array containing the solution at xn.
-            real(real64), intent(in), dimension(:) :: fn
-                !! An N-element array containing the derivatives at xn.
-            real(real64), intent(in) :: xn1
-                !! The value of the independent variable at xn + h.
-            real(real64), intent(in), dimension(:) :: yn1
-                !! An N-element array containing the solution at xn + h.
-            real(real64), intent(in), dimension(:) :: fn1
-                !! An N-element array containing the derivatives at xn + h.
-            real(real64), intent(out), dimension(:) :: y
-                !! An N-element array where this routine will write the 
-                !! solution values interpolated at x.
-        end subroutine
-
-        subroutine single_step_pre_step_routine(this, prevs, sys, h, x, y, f, &
-            args)
-            !! Provides a routine for performing any actions, such as setting
-            !! up Jacobian calculations.
-            use iso_fortran_env
-            import single_step_integrator
-            import ode_container
-            class(single_step_integrator), intent(inout) :: this
-                !! The single_step_integrator object.
-            logical, intent(in) :: prevs
-                !! Defines the status of the previous step.  The value is true 
-                !! if the previous step was successful; else, false if the 
-                !! previous step failed.
-            class(ode_container), intent(inout) :: sys
-                !! The ode_container object containing the ODE's to integrate.
-            real(real64), intent(in) :: h
-                !! The current step size.
-            real(real64), intent(in) :: x
-                !! The current value of the independent variable.
-            real(real64), intent(in), dimension(:) :: y
-                !! An N-element array containing the current solution at x.
-            real(real64), intent(in), dimension(:) :: f
-                !! An N-element array containing the values of the derivatives
-                !! at x.
-            class(*), intent(inout), optional :: args
-                !! An optional argument that can be used to pass information
-                !! in and out of the differential equation subroutine.
-        end subroutine
-
-        pure function single_step_integer_inquiry(this) result(rst)
-            !! Gets an integer from the integrator.
-            use iso_fortran_env
-            import single_step_integrator
-            class(single_step_integrator), intent(in) :: this
-                !! The single_step_integrator object.
-            integer(int32) :: rst
-                !! The integer value.
-        end function
-    end interface
-  
-! ------------------------------------------------------------------------------    ! TO DO: multi-step integrator
 
 contains
 ! ******************************************************************************
@@ -514,7 +352,7 @@ subroutine oc_jacobian(this, x, y, jac, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: i, ndof
+    integer :: i, ndof
     real(real64) :: h
     
     ! Initialization
@@ -538,17 +376,26 @@ subroutine oc_jacobian(this, x, y, jac, args)
     ! Finite Difference Approximation
     ! J(i,j) = df(i) / dy(j)
     this%m_jwork(1:ndof) = y
-    call this%fcn(x, y, this%m_jwork(ndof+1:), args)
+    call this%compute_rhs(x, y, this%m_jwork(ndof+1:), args)
     do i = 1, ndof
         this%m_jwork(i) = this%m_jwork(i) + h
-        call this%fcn(x, this%m_jwork(1:ndof), jac(:,i), args)
+        call this%compute_rhs(x, this%m_jwork(1:ndof), jac(:,i), args)
         jac(:,i) = (jac(:,i) - this%m_jwork(ndof+1:)) / h
         this%m_jwork(i) = y(i)
     end do
-
-    ! End
-    return
 end subroutine
+
+! ------------------------------------------------------------------------------
+pure function oc_use_finite_difference_jacobian(this) result(rst)
+    !! States if a finite difference approximation to the Jacobian is utilized.
+    class(ode_container), intent(in) :: this
+        !! The [[ode_container]] object.
+    logical :: rst
+        !! True if a finite difference approximation is being utilized; else,
+        !! false.
+
+    rst = .not.associated(this%jacobian)
+end function
 
 ! ------------------------------------------------------------------------------
 subroutine oc_alloc_workspace(this, ndof)
@@ -556,7 +403,7 @@ subroutine oc_alloc_workspace(this, ndof)
     ! if the workspace array(s) are not sized properly for the application.
     class(ode_container), intent(inout) :: this
         ! The ode_container object.
-    integer(int32), intent(in) :: ndof
+    integer, intent(in) :: ndof
         ! The number of degrees of freedom.
 
     ! Jacobian Workspace Allocation
@@ -581,6 +428,68 @@ function oc_get_is_ode_defined(this) result(rst)
     rst = associated(this%fcn)
 end function
 
+! ------------------------------------------------------------------------------
+subroutine oc_eval_rhs(this, x, y, dydx, args)
+    !! Evaluates the right-hand-side routine defined by the user-defined
+    !! function pointer 'fcn'.  If no routine has been assigned to the 
+    !! function pointer a DIFFEQ_NULL_POINTER_ERROR is thrown.
+    class(ode_container), intent(inout) :: this
+        !! The [[ode_container]] object.
+    real(real64), intent(in) :: x
+        !! The current value of the independent variable.
+    real(real64), intent(in), dimension(:) :: y
+        !! An N-element array containing the current values of the
+        !! dependent variables.
+    real(real64), intent(out), dimension(:) :: dydx
+        !! An N-element array where the derivative values will be
+        !! written.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the routine.
+
+    if (.not.this%get_is_ode_defined()) error stop DIFFEQ_NULL_POINTER_ERROR
+    call this%fcn(x, y, dydx, args = args)
+end subroutine
+
+! ------------------------------------------------------------------------------
+function oc_has_mass_matrix(this) result(rst)
+    !! Returns true if the problem utilizes a mass matrix.
+    class(ode_container), intent(in) :: this
+        !! The [[ode_container]] object.
+    logical :: rst
+        !! True if a mass matrix is utilized; else, false.
+
+    rst = associated(this%mass_matrix)
+end function
+
+! ------------------------------------------------------------------------------
+subroutine oc_eval_mass_matrix(this, x, y, m, args)
+    use linalg, only : identity
+    !! Evaluates the mass matrix defined by the function pointer 'mass_matrix'.
+    !! If no function is assigned to 'mass_matrix' this routine returns an
+    !! appropriately sized identity matrix.
+    class(ode_container), intent(inout) :: this
+        !! The [[ode_container]] object.
+    real(real64), intent(in) :: x
+        !! The current value of the independent variable.
+    real(real64), intent(in), dimension(:) :: y
+        !! An N-element array containing the current values of the
+        !! dependent variables.
+    real(real64), intent(out), dimension(:,:) :: m
+        !! An N-by-N matrix where the 
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the routine.
+
+    integer :: n
+    n = size(y)
+    if (associated(this%mass_matrix)) then
+        call this%mass_matrix(x, y, m, args = args)
+    else
+        m = identity(n)
+    end if
+end subroutine
+
 ! ******************************************************************************
 ! ODE_INTEGRATOR ROUTINES
 ! ------------------------------------------------------------------------------
@@ -593,43 +502,7 @@ subroutine oi_append_to_buffer(this, x, y)
     real(real64), intent(in), dimension(:) :: y
         !! The values of the dependent variables corresponding to x.
 
-    ! Parameters
-    integer(int32), parameter :: buffer_size = 1000
-
-    ! Local Variables
-    integer(int32) :: i, start, m, n, neqn
-    real(real64), allocatable, dimension(:,:) :: copy
-    
-    ! Initialization
-    if (allocated(this%m_buffer)) then
-        neqn = size(this%m_buffer, 2) - 1
-    else
-        neqn = size(y)
-    end if
-    n = neqn + 1
-    start = this%m_bufferCount + 1
-
-    ! Input Checking
-    if (size(y) /= neqn) error stop DIFFEQ_ARRAY_SIZE_ERROR
-
-    ! Allocate memory if necessary
-    if (.not.allocated(this%m_buffer)) then
-        allocate(this%m_buffer(buffer_size, n))
-    else
-        m = size(this%m_buffer, 1)
-        if (start == m + 1) then
-            allocate(copy(m, n), source = this%m_buffer)
-            m = m + buffer_size
-            deallocate(this%m_buffer)
-            allocate(this%m_buffer(m, n))
-            this%m_buffer(:this%m_bufferCount,:) = copy
-        end if
-    end if
-
-    ! Store the result
-    this%m_buffer(start,1) = x
-    this%m_buffer(start,2:) = y
-    this%m_bufferCount = this%m_bufferCount + 1
+    call this%m_buffer%push(x, y)
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -645,11 +518,23 @@ pure function oi_get_solution(this) result(rst)
     real(real64), allocatable, dimension(:,:) :: rst
         !! The resulting solution matrix.
 
-    if (allocated(this%m_buffer)) then
-        rst = this%m_buffer(:this%m_bufferCount,:)
-    else
+    if (this%m_buffer%count() == 0) then
         allocate(rst(0, 0))
+    else
+        rst = this%m_buffer%to_matrix()
     end if
+end function
+
+! ------------------------------------------------------------------------------
+pure function oi_get_ode_results(this) result(rst)
+    !! Returns a copy of the solution computed as a [[ode_results]] container.
+    !! The integrator retains the original copy.
+    class(ode_integrator), intent(in) :: this
+        !! The ode_integrator object.
+    type(ode_results) :: rst
+        !! The [[ode_results]] container.
+
+    rst = this%m_buffer
 end function
 
 ! ------------------------------------------------------------------------------
@@ -658,10 +543,12 @@ subroutine oi_clear_buffer(this)
     class(ode_integrator), intent(inout) :: this
         !! The ode_integrator object.
 
-    ! Clear the buffer
-    if (allocated(this%m_buffer)) deallocate(this%m_buffer)
-    this%m_bufferCount = 0
-    this%m_reject = .false.
+    call this%m_buffer%clear_all()
+    this%m_buffer%statistics%failed_steps = 0
+    this%m_buffer%statistics%successful_steps = 0
+    this%m_buffer%statistics%jacobian_evaluations = 0
+    this%m_buffer%statistics%function_evaluations = 0
+    this%m_buffer%statistics%matrix_factorizations = 0
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -669,7 +556,7 @@ pure function oi_get_abs_tol(this, equation) result(rst)
     !! Gets the absolute error tolerance.
     class(ode_integrator), intent(in) :: this
         !! The ode_integrator object.
-    integer(int32), intent(in), optional :: equation
+    integer, intent(in), optional :: equation
         !! The equation index. If omitted, the scalar tolerance is returned.
     real(real64) :: rst
         !! The tolerance value.
@@ -706,7 +593,7 @@ pure function oi_get_rel_tol(this, equation) result(rst)
     !! Gets the relative error tolerance.
     class(ode_integrator), intent(in) :: this
         !! The ode_integrator object.
-    integer(int32), intent(in), optional :: equation
+    integer, intent(in), optional :: equation
         !! The equation index. If omitted, the scalar tolerance is returned.
     real(real64) :: rst
         !! The tolerance value.
@@ -756,7 +643,7 @@ pure function oi_estimate_error(this, y, yest, yerr) result(rst)
         !! The norm of the scaled error.
 
     ! Local Variables
-    integer(int32) :: i, n
+    integer :: i, n
     real(real64) :: sf, atol, rtol
 
     ! Initialization
@@ -902,7 +789,7 @@ function oi_next_step(this, e, eold, h, x) result(rst)
     real(real64), parameter :: maxscale = 1.0d1
 
     ! Local Variables
-    integer(int32) :: k
+    integer :: k
     real(real64) :: alpha, beta, fs, maxstep, minstep, scale
     
     ! Initialization
@@ -949,9 +836,9 @@ end function
 ! ------------------------------------------------------------------------------
 subroutine oi_initial_step(this, sys, xo, xf, yo, fo, h, args)
     !! Computes an estimate of an initial step size.
-    class(ode_integrator), intent(in) :: this
+    class(ode_integrator), intent(inout) :: this
         !! The ode_integrator object.
-    class(ode_container), intent(in) :: sys
+    class(ode_container), intent(inout) :: sys
         !! The ode_container object containing the ODE's to integrate.
     real(real64), intent(in) :: xo
         !! The initial value of the independent variable.
@@ -968,7 +855,7 @@ subroutine oi_initial_step(this, sys, xo, xf, yo, fo, h, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: i, n
+    integer :: i, n
     real(real64) :: dx, derivative_norm
     real(real64), dimension(size(yo)) :: tol
 
@@ -987,14 +874,16 @@ subroutine oi_initial_step(this, sys, xo, xf, yo, fo, h, args)
         tol(i) = max(this%get_absolute_tolerance(i), &
             this%get_relative_tolerance(i))
     end do
-    call sys%fcn(xo, yo, fo, args)
+    call sys%compute_rhs(xo, yo, fo, args)
     derivative_norm = norm2(fo / tol)
     if (derivative_norm > 0.0d0) then
         h = min(abs(dx), 2.0d0 / derivative_norm)
     else
         h = abs(dx)
     end if
+    h = min(h, this%get_maximum_step_size())
     h = sign(h, dx)
+    call this%log_function_evaluation()
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -1003,7 +892,7 @@ pure function oi_get_step_limit(this) result(rst)
     !! before the solver terminates.
     class(ode_integrator), intent(in) :: this
         !! The ode_integrator object.
-    integer(int32) :: rst
+    integer :: rst
         !! The step limit.
     rst = this%m_stepLimit
 end function
@@ -1014,7 +903,7 @@ subroutine oi_set_step_limit(this, x)
     !! before the solver terminates.
     class(ode_integrator), intent(inout) :: this
         !! The ode_integrator object.
-    integer(int32), intent(in) :: x
+    integer, intent(in) :: x
         !! The step limit.
     this%m_stepLimit = x
 end subroutine
@@ -1045,152 +934,95 @@ subroutine oi_set_allow_overshoot(this, x)
     this%m_allowOvershoot = x
 end subroutine
 
-! ******************************************************************************
-! SINGLE-STEP INTEGRATOR
 ! ------------------------------------------------------------------------------
-subroutine ssi_ode_solver(this, sys, x, iv, args)
-    !! Solves the supplied system of ODE's.
-    class(single_step_integrator), intent(inout) :: this
-        !! The single_step_integrator object.
-    class(ode_container), intent(inout) :: sys
-        !! The ode_container object containing the ODE's to integrate.
-    real(real64), intent(in), dimension(:) :: x
-        !! An array of independent variable values at which to return the 
-        !! the solution to the ODE's.
-    real(real64), intent(in), dimension(:) :: iv
-        !! An array containing the initial values for each ODE.
-    class(*), intent(inout), optional, target :: args
-        !! An optional argument that can be used to pass information
-        !! in and out of the differential equation subroutine.
+subroutine oi_log_failed_step(this, n)
+    !! Logs a failed integration step.
+    class(ode_integrator), intent(inout) :: this
+        !! The [[ode_integrator]] object.
+    integer, intent(in), optional :: n
+        !! An optional input useful for logging more than one step.  If not
+        !! supplied, this routine will log a single step.
 
-    ! Local Variables
-    logical :: dense, success
-    integer(int32) :: i, j, n, neqn, nsteps, nstages
-    real(real64) :: h, xo, xn, xmax, ei, eold
-    real(real64), allocatable, dimension(:) :: f, y, yn, fn, yerr, yi
-    real(real64), allocatable, dimension(:,:) :: k
-    
-    ! Initialization
-    n = size(x)
-    success = .true.
+    if (present(n)) then
+        this%m_buffer%statistics%failed_steps = &
+            this%m_buffer%statistics%failed_steps + n
+    else
+        this%m_buffer%statistics%failed_steps = &
+            this%m_buffer%statistics%failed_steps + 1
+    end if
+end subroutine
 
-    ! Input Checking
-    if (n < 2) error stop DIFFEQ_ARRAY_SIZE_ERROR
-    if (.not.sys%get_is_ode_defined()) error stop DIFFEQ_MISSING_ARGUMENT_ERROR
+! ------------------------------------------------------------------------------
+subroutine oi_log_successful_step(this, n)
+    !! Logs a successful integration step.
+    class(ode_integrator), intent(inout) :: this
+        !! The [[ode_integrator]] object.
+    integer, intent(in), optional :: n
+        !! An optional input useful for logging more than one step.  If not
+        !! supplied, this routine will log a single step.
 
-    ! Additional Initialization
-    neqn = size(iv)
-    xo = x(1)
-    xmax = x(n)
-    j = 2
-    eold = 1.0d-4
-    dense = (n > 2)
-    nsteps = this%get_step_limit()
-    nstages = this%get_stage_count()
-    
-    ! Memory Allocations
-    allocate( &
-        f(neqn), &
-        y(neqn), &
-        yn(neqn), &
-        fn(neqn), &
-        yerr(neqn), &
-        k(neqn, nstages), &
-        yi(neqn) &
-    )
+    if (present(n)) then
+        this%m_buffer%statistics%successful_steps = &
+            this%m_buffer%statistics%successful_steps + n
+    else
+        this%m_buffer%statistics%successful_steps = &
+            this%m_buffer%statistics%successful_steps + 1
+    end if
+end subroutine
 
-    ! Estimate an initial step size
-    !
-    ! Outputs:
-    ! - f: Value of the derivatives at xo
-    ! - h: Initial step size estimate
-    call this%estimate_inital_step_size(sys, xo, xmax, iv, f, h, args)
-    
-    ! Store the initial conditions
-    call this%append_to_buffer(x(1), iv)
-    y = iv
+! ------------------------------------------------------------------------------
+subroutine oi_log_jacobian_eval(this, n)
+    !! Logs a Jacobian matrix evaluation.
+    class(ode_integrator), intent(inout) :: this
+        !! The [[ode_integrator]] object.
+    integer, intent(in), optional :: n
+        !! An optional input useful for logging more than one Jacobian matrix
+        !! evaluation.  If not supplied, this routine will log a single
+        !! Jacobian evaluation.
 
-    ! Cycle until integration is complete
-    do i = 1, nsteps
-        ! Perform any pre-step actions
-        call this%pre_step_action(success, sys, h, xo, y, f, args = args)
-        
-        ! Attempt a step
-        call this%attempt_step(sys, h, xo, y, f, yn, fn, yerr, k, args)
-        xn = xo + h
+    if (present(n)) then
+        this%m_buffer%statistics%jacobian_evaluations = &
+            this%m_buffer%statistics%jacobian_evaluations + n
+    else
+        this%m_buffer%statistics%jacobian_evaluations = &
+            this%m_buffer%statistics%jacobian_evaluations + 1
+    end if
+end subroutine
 
-        ! Compute a normalized error value.  A value < 1 indicates success
-        ei = this%compute_error_norm(y, yn, yerr)
+! ------------------------------------------------------------------------------
+subroutine oi_log_function_eval(this, n)
+    !! Logs a function evaluation, or evaluations.
+    class(ode_integrator), intent(inout) :: this
+        !! The [[ode_integrator]] object.
+    integer, intent(in), optional :: n
+        !! An optional input useful for logging more than one function 
+        !! evaluation.  If not supplied, this routine will log a single 
+        !! function evaluation.
+    if (present(n)) then
+        this%m_buffer%statistics%function_evaluations = &
+            this%m_buffer%statistics%function_evaluations + n
+    else
+        this%m_buffer%statistics%function_evaluations = &
+            this%m_buffer%statistics%function_evaluations + 1
+    end if
+end subroutine
 
-        ! Determine the next step size
-        h = this%estimate_next_step_size(ei, eold, h, xo)
-
-        ! Reject the step?
-        success = ei <= 1.0d0
-        if (.not.success) cycle   ! We failed.  Try again with a new step size
-
-        ! If we're here, the step has been successful.  Take any post-step
-        ! action such as setting up interpolation routines, etc.
-        call this%post_step_action(sys, dense, xo, xn, y, yn, f, fn, k, args)
-
-        ! Do we need to interpolate for dense output, or can we just store
-        ! values and move on
-        if (dense) then
-            ! Perform the interpolation as needed until a new step is required
-            interp : do while (abs(x(j)) <= abs(xn))
-                call this%interpolate(x(j), xo, y, f, xn, yn, fn, yi)
-                call this%append_to_buffer(x(j), yi)
-                j = j + 1
-                if (j > n) exit interp
-            end do interp
-        else
-            ! Store the values and move on
-            call this%append_to_buffer(xn, yn)
-        end if
-
-        ! Are we done?
-        if (abs(xn) >= abs(xmax)) then
-            ! Deal with the case where output is only returned at the
-            ! integration points and the solver oversteps the endpoint.
-            if (abs(xn) > abs(xmax)) then
-                ! Interpolate to get the solution at xmax
-                call this%post_step_action(sys, .true., xo, xn, y, yn, f, fn, k)
-                call this%interpolate(xmax, xo, y, f, xn, yn, fn, yi)
-                call this%append_to_buffer(xmax, yi)
-            end if
-            
-            ! We're done
-            go to 100
-        end if
-
-        ! Do we need to limit the step size to not overshoot the terminal value?
-        if (this%get_allow_overshoot() .and. abs(xn + h) > abs(xmax)) then
-            ! Limit the step size
-            h = xmax - xn
-        end if
-
-        ! Update parameters
-        xo = xn
-        y = yn
-
-        ! Is this an FSAL integrator?  If so, we already have the derivative
-        ! values.  If not, we need to recompute the derivative values for the
-        ! next iteration
-        if (this%get_is_fsal()) then
-            ! We have the derivative estimate already
-            f = fn
-        else
-            ! Update the derivative estimates
-            call sys%fcn(xn, yn, f, args) ! write to f, not fn
-        end if
-    end do
-
-    ! If we're here, the solver has run out of allowable steps
-    error stop DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR
-
-    ! End
-100 continue
-    return
+! ------------------------------------------------------------------------------
+subroutine oi_log_matrix_factorization(this, n)
+    !! Logs a matrix factorization.
+    class(ode_integrator), intent(inout) :: this
+        !! The [[ode_integrator]] object.
+    integer, intent(in), optional :: n
+        !! An optional input useful for logging more than one matrix 
+        !! factorization.  If not supplied, this routine will log a single
+        !! factorization.
+    if (present(n)) then
+        this%m_buffer%statistics%matrix_factorizations = &
+            this%m_buffer%statistics%matrix_factorizations + n
+    else
+        this%m_buffer%statistics%matrix_factorizations = &
+            this%m_buffer%statistics%matrix_factorizations + 1
+    end if
 end subroutine
 
 ! ------------------------------------------------------------------------------

@@ -1,17 +1,24 @@
 ! This file is part of diffeq.
-! 
-! diffeq is free software: you can redistribute it and/or modify
-! it under the terms of the GNU Lesser General Public License as published by
-! the Free Software Foundation, either version 3 of the License, or
-! (at your option) any later version.
 !
-! diffeq is distributed in the hope that it will be useful,
-! but WITHOUT ANY WARRANTY; without even the implied warranty of
-! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-! GNU Lesser General Public License for more details.
+! Copyright (c) 2023-2026 Jason Christopherson
 !
-! You should have received a copy of the GNU Lesser General Public License
-! along with diffeq. If not, see <https://www.gnu.org/licenses/>.
+! Permission is hereby granted, free of charge, to any person obtaining a copy
+! of this software and associated documentation files (the "Software"), to deal
+! in the Software without restriction, including without limitation the rights
+! to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+! copies of the Software, and to permit persons to whom the Software is
+! furnished to do so, subject to the following conditions:
+!
+! The above copyright notice and this permission notice shall be included in all
+! copies or substantial portions of the Software.
+!
+! THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+! IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+! FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+! AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+! LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+! OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+! SOFTWARE.
 
 module diffeq_multistep
     !! Provides the base structure for implicit, variable step-size, variable
@@ -56,15 +63,15 @@ module diffeq_multistep
 
     type, extends(ode_integrator), abstract :: multistep_integrator
         !! Defines the structure of a multi-step integrator.
-        integer(int32), private :: m_maxOrder = 0
+        integer, private :: m_maxOrder = 0
             ! The user-requested upper limit on the order of the method.  A
             ! value below one deprives the request of meaning and is taken to
             ! mean that the limit of the method itself should govern.
-        integer(int32), private :: m_order = 1
+        integer, private :: m_order = 1
             ! The order currently in use.
-        integer(int32), private :: m_stepsAtOrder = 0
+        integer, private :: m_stepsAtOrder = 0
             ! The number of consecutive successful steps taken at m_order.
-        integer(int32), private :: m_nHist = 0
+        integer, private :: m_nHist = 0
             ! The number of solution points currently stored in the history.
         real(real64), private, allocatable, dimension(:) :: m_xHist
             ! Independent variable history, most recent value first.
@@ -128,7 +135,7 @@ module diffeq_multistep
         !! in return it places no restriction upon the stiffness of the problem
         !! and permits a singular mass matrix, as the mass matrix then appears
         !! only as a factor within the iteration matrix.
-        integer(int32), private :: m_newtonIterLimit = 12
+        integer, private :: m_newtonIterLimit = 12
             ! The limit on the number of Newton iterations allowed.
         real(real64), private :: m_newtonTolerance = 1.0d-8
             ! The convergence tolerance on the Euclidean norm of the residual
@@ -249,7 +256,7 @@ module diffeq_multistep
             import multistep_integrator
             class(multistep_integrator), intent(in) :: this
                 !! The multistep_integrator object.
-            integer(int32) :: rst
+            integer :: rst
                 !! The requested value.
         end function
 
@@ -261,7 +268,7 @@ module diffeq_multistep
             import multistep_integrator
             class(multistep_integrator), intent(in) :: this
                 !! The multistep_integrator object.
-            integer(int32), intent(in) :: k
+            integer, intent(in) :: k
                 !! The order of interest.
             real(real64) :: rst
                 !! The error constant.
@@ -273,7 +280,7 @@ pure function mi_get_newton_step_limit(this) result(rst)
     !! Gets the maximum number of Newton iterations allowed.
     class(newton_multistep_integrator), intent(in) :: this
         !! The newton_multistep_integrator object.
-    integer(int32) :: rst
+    integer :: rst
         !! The iteration limit.
     rst = this%m_newtonIterLimit
 end function
@@ -283,7 +290,7 @@ subroutine mi_set_newton_step_limit(this, x)
     !! Sets the maximum number of Newton iterations allowed.
     class(newton_multistep_integrator), intent(inout) :: this
         !! The newton_multistep_integrator object.
-    integer(int32), intent(in) :: x
+    integer, intent(in) :: x
         !! The iteration limit.
     this%m_newtonIterLimit = x
 end subroutine
@@ -338,7 +345,7 @@ subroutine mi_newton_iteration(this, sys, h, x, ypred, ynew, converged, args)
         !! out of the differential equation subroutine.
 
     ! Local Variables
-    integer(int32) :: i, n, nmax
+    integer :: i, n, nmax
     real(real64) :: tol
     real(real64), allocatable, dimension(:,:) :: A
     real(real64), allocatable, dimension(:) :: b, delta
@@ -361,6 +368,7 @@ subroutine mi_newton_iteration(this, sys, h, x, ypred, ynew, converged, args)
 
         ! Solve the system
         delta = solve_least_squares_full(A, b)
+        call this%log_matrix_factorization()
 
         ! Update the solution and test for convergence.  The tolerance is
         ! applied relative to the size of the solution so that the test
@@ -394,7 +402,8 @@ subroutine mi_evaluate_derivative(this, sys, x, y, dydx, args)
     class(*), intent(inout), optional :: args
         !! An optional argument that can be used to pass information in and out
         !! of the differential equation subroutine.
-    call sys%fcn(x, y, dydx, args)
+    call sys%compute_rhs(x, y, dydx, args)
+    call this%log_function_evaluation()
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -418,7 +427,7 @@ pure function mi_get_order(this) result(rst)
     !! so it reports the order of the most recently attempted step.
     class(multistep_integrator), intent(in) :: this
         !! The multistep_integrator object.
-    integer(int32) :: rst
+    integer :: rst
         !! The order.
     rst = this%m_order
 end function
@@ -432,7 +441,7 @@ pure function mi_get_max_order(this) result(rst)
     !! supports.
     class(multistep_integrator), intent(in) :: this
         !! The multistep_integrator object.
-    integer(int32) :: rst
+    integer :: rst
         !! The order limit.
     rst = this%effective_max_order()
 end function
@@ -444,7 +453,7 @@ subroutine mi_set_max_order(this, x)
     !! The value is constrained to the range supported by the method.
     class(multistep_integrator), intent(inout) :: this
         !! The multistep_integrator object.
-    integer(int32), intent(in) :: x
+    integer, intent(in) :: x
         !! The order limit.
     if (x < 1) error stop DIFFEQ_INVALID_INPUT_ERROR
     this%m_maxOrder = min(x, this%get_maximum_supported_order())
@@ -456,7 +465,7 @@ pure function mi_effective_max_order(this) result(rst)
     !! highest order the method itself supports.
     class(multistep_integrator), intent(in) :: this
         !! The multistep_integrator object.
-    integer(int32) :: rst
+    integer :: rst
         !! The order limit.
     if (this%m_maxOrder < 1) then
         rst = this%get_maximum_supported_order()
@@ -472,7 +481,7 @@ pure function mi_get_stored_count(this) result(rst)
     !! the history.
     class(multistep_integrator), intent(in) :: this
         !! The multistep_integrator object.
-    integer(int32) :: rst
+    integer :: rst
         !! The number of stored points.
     rst = this%m_nHist
 end function
@@ -483,7 +492,7 @@ pure function mi_get_stored_x(this, i) result(rst)
     !! denotes the most recently accepted point.
     class(multistep_integrator), intent(in) :: this
         !! The multistep_integrator object.
-    integer(int32), intent(in) :: i
+    integer, intent(in) :: i
         !! The one-based index into the history.
     real(real64) :: rst
         !! The stored value.
@@ -496,7 +505,7 @@ pure function mi_get_stored_y(this, i) result(rst)
     !! recently accepted point.
     class(multistep_integrator), intent(in) :: this
         !! The multistep_integrator object.
-    integer(int32), intent(in) :: i
+    integer, intent(in) :: i
         !! The one-based index into the history.
     real(real64), allocatable, dimension(:) :: rst
         !! The stored solution.
@@ -509,7 +518,7 @@ pure function mi_get_stored_f(this, i) result(rst)
     !! recently accepted point.
     class(multistep_integrator), intent(in) :: this
         !! The multistep_integrator object.
-    integer(int32), intent(in) :: i
+    integer, intent(in) :: i
         !! The one-based index into the history.
     real(real64), allocatable, dimension(:) :: rst
         !! The stored derivative.
@@ -533,11 +542,11 @@ subroutine mi_init_history(this, neqn)
     !! Allocates storage for the solution history.
     class(multistep_integrator), intent(inout) :: this
         !! The multistep_integrator object.
-    integer(int32), intent(in) :: neqn
+    integer, intent(in) :: neqn
         !! The number of equations being integrated.
 
     ! Local Variables
-    integer(int32) :: nmax
+    integer :: nmax
 
     ! Room is required for the highest usable order plus the additional points
     ! the order controller needs in order to test one order higher.
@@ -567,7 +576,7 @@ subroutine mi_push_history(this, x, y, f)
         !! The derivative at x.
 
     ! Local Variables
-    integer(int32) :: i, nmax
+    integer :: i, nmax
 
     ! Process
     nmax = size(this%m_xHist)
@@ -600,7 +609,7 @@ subroutine mi_interpolate(this, x, y)
         !! An N-element array where the interpolated solution is written.
 
     ! Local Variables
-    integer(int32) :: np
+    integer :: np
     real(real64), allocatable, dimension(:,:) :: dd
 
     ! Input Checking
@@ -639,7 +648,7 @@ pure subroutine newton_divided_differences(x, y, d)
         !! An N-by-M matrix where the coefficients will be written.
 
     ! Local Variables
-    integer(int32) :: i, j, m
+    integer :: i, j, m
 
     ! Process
     m = size(x)
@@ -664,7 +673,7 @@ pure subroutine evaluate_newton_polynomial(x, d, xi, y)
         !! An N-element array where the result will be written.
 
     ! Local Variables
-    integer(int32) :: i, m
+    integer :: i, m
 
     ! Process
     m = size(x)
@@ -694,7 +703,7 @@ subroutine mi_adjust_order_step(this, yprev, ynew, ek, h)
         !! attempt next.
 
     ! Local Variables
-    integer(int32) :: k, kmax, kbest, mmax, n
+    integer :: k, kmax, kbest, mmax, n
     real(real64) :: ekc, ekm1, ekp1, r, rbest, safe
     real(real64), allocatable, dimension(:) :: errv
     real(real64), allocatable, dimension(:,:) :: dd
@@ -788,7 +797,7 @@ contains
         !! Estimates the factor by which the step size could change were the
         !! given order used.
         real(real64), intent(in) :: e
-        integer(int32), intent(in) :: korder
+        integer, intent(in) :: korder
         real(real64) :: rst
         rst = (1.0d0 / max(e, min_error))**(1.0d0 / (korder + 1.0d0))
     end function
@@ -798,9 +807,9 @@ contains
         !! degree m-1 extrapolation of the preceding points would have given.
         real(real64), intent(in), dimension(:) :: xh
         real(real64), intent(in), dimension(:,:) :: dtab
-        integer(int32), intent(in) :: m
+        integer, intent(in) :: m
         real(real64), allocatable, dimension(:) :: rst
-        integer(int32) :: i
+        integer :: i
         real(real64) :: p
         p = 1.0d0
         do i = 2, m + 1
@@ -835,8 +844,8 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    logical :: dense, converged
-    integer(int32) :: i, j, n, neqn, nsteps, k, nfail
+    logical :: dense, converged, forward
+    integer :: i, j, n, neqn, nsteps, k, nfail
     real(real64) :: h, xo, xn, xmax, e, minstep
     real(real64), allocatable, dimension(:) :: f, y, yn, fn, fnew, ypred, &
         yerr, yi
@@ -852,6 +861,7 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
     neqn = size(iv)
     xo = x(1)
     xmax = x(n)
+    forward = xmax >= xo
     j = 2
     dense = (n > 2)
     nsteps = this%get_step_limit()
@@ -901,7 +911,9 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
         ! Do not overshoot the end of the integration range if the solver has
         ! been asked to terminate on it exactly
         if (.not.this%get_allow_overshoot()) then
-            if (abs(xo + h) > abs(xmax)) h = xmax - xo
+            if ((xmax - x(1)) * (xo + h - xmax) > 0.0d0) then
+                h = xmax - xo
+            end if
         end if
 
         ! Predict, then correct
@@ -918,6 +930,7 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
             h = 2.5d-1 * h
             if (nfail >= 3) this%m_order = 1
             if (abs(h) < minstep) error stop DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR
+            call this%log_failed_step()
             cycle
         end if
 
@@ -940,6 +953,7 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
             end if
             if (nfail >= 3) this%m_order = 1
             if (abs(h) < minstep) error stop DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR
+            call this%log_failed_step()
             cycle
         end if
 
@@ -948,28 +962,33 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
         xn = xo + h
         call this%evaluate_derivative(sys, xn, yn, fnew, args)
         call this%push_history(xn, yn, fnew)
+        call this%log_successful_step()
 
         ! Store the results
         if (dense) then
             ! Interpolate to each requested point falling within this step
-            interp : do while (abs(x(j)) <= abs(xn))
+            interp : do while (j <= n .and. &
+                ((forward .and. x(j) <= xn) .or. &
+                (.not.forward .and. x(j) >= xn)))
                 call this%interpolate(x(j), yi)
                 call this%append_to_buffer(x(j), yi)
                 j = j + 1
                 if (j > n) exit interp
             end do interp
-        else if (abs(xn) > abs(xmax)) then
+        else if ((xmax - x(1)) * (xn - xmax) > 0.0d0) then
             ! The step carried past the end of the range, so report the
             ! solution interpolated back onto the requested end point
-            call this%interpolate(xmax, yi)
-            call this%append_to_buffer(xmax, yi)
+            if (j <= n) then
+                call this%interpolate(xmax, yi)
+                call this%append_to_buffer(xmax, yi)
+            end if
         else
             ! Report every successful step
             call this%append_to_buffer(xn, yn)
         end if
 
         ! Are we done?
-        if (abs(xn) >= abs(xmax)) return
+        if ((xmax - x(1)) * (xn - xmax) >= 0.0d0) return
 
         ! Choose the order and step size for the next step
         call this%adjust_order_and_step(y, yn, e, h)
