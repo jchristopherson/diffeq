@@ -237,13 +237,12 @@ subroutine adams_evaluate_derivative(this, sys, x, y, dydx, args)
     call this%initialize_workspace(n)
 
     ! Evaluate the right-hand side
-    call sys%fcn(x, y, dydx, args)
+    call sys%compute_rhs(x, y, dydx, args)
     call this%log_function_evaluation()
-    if (.not.associated(sys%mass_matrix)) return
 
     ! Factor the mass matrix
     if (.not.this%m_massFactored .or. sys%get_is_mass_matrix_dependent()) then
-        call sys%mass_matrix(x, y, this%m_lu, args)
+        call sys%compute_mass_matrix(x, y, this%m_lu, args)
         call DGETRF(n, n, this%m_lu, n, this%m_pivot, flag)
         if (flag /= 0) error stop DIFFEQ_SINGULAR_MATRIX_ERROR
 

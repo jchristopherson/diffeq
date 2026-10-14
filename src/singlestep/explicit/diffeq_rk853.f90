@@ -215,49 +215,49 @@ subroutine rk853_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     k(:,1) = f
 
     yn = y + h * a21
-    call sys%fcn(x + c2 * h, yn, k(:,2), args)
+    call sys%compute_rhs(x + c2 * h, yn, k(:,2), args)
 
     yn = y + h * (a31 * f + a32 * k(:,2))
-    call sys%fcn(x + c3 * h, yn, k(:,3), args)
+    call sys%compute_rhs(x + c3 * h, yn, k(:,3), args)
 
     yn = y + h * (a41 * f + a43 * k(:,3))
-    call sys%fcn(x + c4 * h, yn, k(:,4), args)
+    call sys%compute_rhs(x + c4 * h, yn, k(:,4), args)
 
     yn = y + h * (a51 * f + a53 * k(:,3) + a54 * k(:,4))
-    call sys%fcn(x + c5 * h, yn, k(:,5), args)
+    call sys%compute_rhs(x + c5 * h, yn, k(:,5), args)
 
     yn = y + h * (a61 * f + a64 * k(:,4) + a65 * k(:,5))
-    call sys%fcn(x + c6 * h, yn, k(:,6), args)
+    call sys%compute_rhs(x + c6 * h, yn, k(:,6), args)
 
     yn = y + h * (a71 * f + a74 * k(:,4) + a75 * k(:,5) + a76 * k(:,6))
-    call sys%fcn(x + c7 * h, yn, k(:,7), args)
+    call sys%compute_rhs(x + c7 * h, yn, k(:,7), args)
 
     yn = y + h * (a81 * f + a84 * k(:,4) + a85 * k(:,5) + a86 * k(:,6) + &
         a87 * k(:,7))
-    call sys%fcn(x + c8 * h, yn, k(:,8), args)
+    call sys%compute_rhs(x + c8 * h, yn, k(:,8), args)
 
     yn = y + h * (a91 * f + a94 * k(:,4) + a95 * k(:,5) + a96 * k(:,6) + &
         a97 * k(:,7) + a98 * k(:,8))
-    call sys%fcn(x + c9 * h, yn, k(:,9), args)
+    call sys%compute_rhs(x + c9 * h, yn, k(:,9), args)
 
     yn = y + h * (a101 * f + a104 * k(:,4) + a105 * k(:,5) + &
         a106 * k(:,6) + a107 * k(:,7) + a108 * k(:,8) + a109 * k(:,9))
-    call sys%fcn(x + c10 * h, yn, k(:,10), args)
+    call sys%compute_rhs(x + c10 * h, yn, k(:,10), args)
 
     yn = y + h * (a111 * f + a114 * k(:,4) + a115 * k(:,5) + &
         a116 * k(:,6) + a117 * k(:,7) + a118 * k(:,8) + a119 * k(:,9) + &
         a1110 * k(:,10))
-    call sys%fcn(x + c11 * h, yn, k(:,2), args)
+    call sys%compute_rhs(x + c11 * h, yn, k(:,2), args)
 
     yn = y + h * (a121 * f + a124 * k(:,4) + a125 * k(:,5) + &
         a126 * k(:,6) + a127 * k(:,7) + a128 * k(:,8) + a129 * k(:,9) + &
         a1210 * k(:,10) + a1211 * k(:,2))
-    call sys%fcn(x + h, yn, k(:,3), args)
+    call sys%compute_rhs(x + h, yn, k(:,3), args)
 
     k(:,4) = b1 * f + b6 * k(:,6) + b7 * k(:,7) + b8 * k(:,8) + &
         b9 * k(:,9) + b10 * k(:,10) + b11 * k(:,2) + b12 * k(:,3)
     yn = y + h * k(:,4)
-    call sys%fcn(x + h, yn, fn, args)
+    call sys%compute_rhs(x + h, yn, fn, args)
 
     call this%log_function_evaluation(12)
 
@@ -332,17 +332,17 @@ subroutine rk853_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k, args)
     this%work = y + h * (a141 * f + a147 * k(:,7) + a148 * k(:,8) + &
         a149 * k(:,9) + a1410 * k(:,10) + a1411 * k(:,2) + &
         a1412 * k(:,3) + a1413 * fn)
-    call sys%fcn(x + c14 * h, this%work, k(:,10), args)
+    call sys%compute_rhs(x + c14 * h, this%work, k(:,10), args)
 
     this%work = y + h * (a151 * f + a156 * k(:,6) + a157 * k(:,7) + &
         a158 * k(:,8) + a1511 * k(:,2) + a1512 * k(:,3) + a1513 * fn + &
         a1514 * k(:,10))
-    call sys%fcn(x + c15 * h, this%work, k(:,2), args)
+    call sys%compute_rhs(x + c15 * h, this%work, k(:,2), args)
 
     this%work = y + h * (a161 * f + a166 * k(:,6) + a167 * k(:,7) + &
         a168 * k(:,8) + a169 * k(:,9) + a1613 * fn + a1614 * k(:,10) + &
         a1615 * k(:,2))
-    call sys%fcn(x + c16 * h, this%work, k(:,3), args)
+    call sys%compute_rhs(x + c16 * h, this%work, k(:,3), args)
 
     call this%log_function_evaluation(3)
 

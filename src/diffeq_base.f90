@@ -97,7 +97,7 @@ module diffeq_base
         !! systems of the form \( M(x,y)y' = f(x,y) \). If no Jacobian is
         !! supplied, DIFFEQ estimates it using finite differences. A null
         !! mass-matrix callback means that \( M = I \).
-        logical, private :: m_massDependent = .true.
+        logical, private :: m_massDependent = .false.
             ! A value determining if the mass matrix is state dependent such 
             ! that it must be recomputed at each step. 
         real(real64), private, allocatable, dimension(:) :: m_jwork
@@ -128,6 +128,8 @@ module diffeq_base
         procedure, public :: get_is_ode_defined => oc_get_is_ode_defined
         procedure, public :: use_finite_difference_jacobian => &
             oc_use_finite_difference_jacobian
+        procedure, public :: compute_rhs => oc_eval_rhs
+        procedure, public :: compute_mass_matrix => oc_eval_mass_matrix
     end type
 
 ! ------------------------------------------------------------------------------
@@ -427,6 +429,57 @@ function oc_get_is_ode_defined(this) result(rst)
 
     rst = associated(this%fcn)
 end function
+
+! ------------------------------------------------------------------------------
+subroutine oc_eval_rhs(this, x, y, dydx, args)
+    !! Evaluates the right-hand-side routine defined by the user-defined
+    !! function pointer 'fcn'.  If no routine has been assigned to the 
+    !! function pointer a DIFFEQ_NULL_POINTER_ERROR is thrown.
+    class(ode_container), intent(inout) :: this
+        !! The [[ode_container]] object.
+    real(real64), intent(in) :: x
+        !! The current value of the independent variable.
+    real(real64), intent(in), dimension(:) :: y
+        !! An N-element array containing the current values of the
+        !! dependent variables.
+    real(real64), intent(out), dimension(:) :: dydx
+        !! An N-element array where the derivative values will be
+        !! written.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the routine.
+
+    if (.not.associated(this%fcn)) error stop DIFFEQ_NULL_POINTER_ERROR
+    call this%fcn(x, y, dydx, args = args)
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine oc_eval_mass_matrix(this, x, y, m, args)
+    use linalg, only : identity
+    !! Evaluates the mass matrix defined by the function pointer 'mass_matrix'.
+    !! If no function is assigned to 'mass_matrix' this routine returns an
+    !! appropriately sized identity matrix.
+    class(ode_container), intent(inout) :: this
+        !! The [[ode_container]] object.
+    real(real64), intent(in) :: x
+        !! The current value of the independent variable.
+    real(real64), intent(in), dimension(:) :: y
+        !! An N-element array containing the current values of the
+        !! dependent variables.
+    real(real64), intent(out), dimension(:,:) :: m
+        !! An N-by-N matrix where the 
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the routine.
+
+    integer :: n
+    n = size(y)
+    if (associated(this%mass_matrix)) then
+        call this%mass_matrix(x, y, m, args = args)
+    else
+        m = identity(n)
+    end if
+end subroutine
 
 ! ******************************************************************************
 ! ODE_INTEGRATOR ROUTINES

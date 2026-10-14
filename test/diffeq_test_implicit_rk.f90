@@ -381,6 +381,14 @@ function test_rosenbrock_mass_matrix() result(rst)
         rst = .false.
         print "(A)", "TEST FAILED: test_rosenbrock_mass_matrix -1"
     end if
+
+    call integrator%clear_buffer()
+    call integrator%solve(mass_mdl, t, [1.0d0, 1.0d0])
+    sol = integrator%get_solution()
+    if (.not.assert(sol, refsol, tol)) then
+        rst = .false.
+        print "(A)", "TEST FAILED: test_rosenbrock_mass_matrix -2"
+    end if
 end function
 
 ! ------------------------------------------------------------------------------

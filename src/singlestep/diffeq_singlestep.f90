@@ -33,6 +33,7 @@ module diffeq_singlestep
     public :: single_step_interpolate
     public :: single_step_integer_inquiry
     public :: single_step_integrator
+    public :: ssi_ode_solver
     
     ! ------------------------------------------------------------------------------
     type, abstract, extends(ode_integrator) :: single_step_integrator
@@ -357,7 +358,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
             f = fn
         else
             ! Update the derivative estimates
-            call sys%fcn(xn, yn, f, args) ! write to f, not fn
+            call sys%compute_rhs(xn, yn, f, args) ! write to f, not fn
             call this%log_function_evaluation()
         end if
     end do

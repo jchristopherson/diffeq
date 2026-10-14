@@ -190,13 +190,13 @@ subroutine rk23_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     k(:,1) = f
 
     yn = y + h * a21 * f
-    call sys%fcn(x + h * c2, yn, k(:,2), args)
+    call sys%compute_rhs(x + h * c2, yn, k(:,2), args)
 
     yn = y + h * (a31 * f + a32 * k(:,2))
-    call sys%fcn(x + h * c3, yn, k(:,3), args)
+    call sys%compute_rhs(x + h * c3, yn, k(:,3), args)
 
     yn = y + h * (a41 * f + a42 * k(:,2) + a43 * k(:,3))
-    call sys%fcn(x + h * c4, yn, fn, args)
+    call sys%compute_rhs(x + h * c4, yn, fn, args)
 
     call this%log_function_evaluation(3)
 

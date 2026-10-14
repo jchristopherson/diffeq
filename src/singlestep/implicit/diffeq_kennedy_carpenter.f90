@@ -228,50 +228,34 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
-    ! Parameters
-    integer, parameter :: maxiter = 12
-    real(real64), parameter :: tol = 1.0d-12
-
     ! Local Variables
-    logical :: usemass
-    integer :: i, j, n, stages, iteration, njac
+    integer :: i, j, n, stages, njac
     real(real64) :: a(8,8), b(8), d(8), c(8)
-    real(real64), allocatable, dimension(:) :: base, state, rhs, deriv, &
-        residual, delta, embedded
-    real(real64), allocatable, dimension(:,:) :: jac, mass
+    real(real64), allocatable, dimension(:) :: base, state, embedded
+    real(real64), allocatable, dimension(:,:) :: mass
 
     ! Initialization
     n = size(y)
-    usemass = associated(sys%mass_matrix)
     call kc_table(this, a, b, d, c, stages)
     allocate( &
         base(n), &
         state(n), &
-        rhs(n), &
-        deriv(n), &
-        residual(n), &
-        delta(n), &
         embedded(n), &
-        jac(n, n), &
         mass(n, n) &
     )
 
     ! Process
     ! The first stage of an ESDIRK method is explicit
     k = 0.0d0
-    if (usemass) then
-        call sys%mass_matrix(x, y, mass, args)
-        call kc_consistent_derivative(sys, x, y, f, mass, k(:,1), args)
-        call this%log_jacobian_evaluation()
-        call this%log_function_evaluation()
-        call this%log_matrix_factorization()
-        if (sys%use_finite_difference_jacobian()) then
-            ! The forward difference algorithm requires another n + 1 
-            ! function evaluations
-            call this%log_function_evaluation(n + 1)
-        end if
-    else
-        k(:,1) = f
+    call sys%compute_mass_matrix(x, y, mass, args)
+    call kc_consistent_derivative(sys, x, y, f, mass, k(:,1), args)
+    call this%log_jacobian_evaluation()
+    call this%log_function_evaluation()
+    call this%log_matrix_factorization()
+    if (sys%use_finite_difference_jacobian()) then
+        ! The forward difference algorithm requires another n + 1 
+        ! function evaluations
+        call this%log_function_evaluation(n + 1)
     end if
 
     ! Each remaining stage is diagonally implicit
@@ -282,58 +266,13 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
             base = base + h * a(i,j) * k(:,j)
         end do
 
-        if (usemass) then
-            call kc_mass_stage(sys, x + c(i) * h, base, h * a(i,i), &
-                state, k(:,i), njac, args)
-            call this%log_jacobian_evaluation(njac)
-            call this%log_function_evaluation(njac)
-            call this%log_matrix_factorization(njac)
-            if (sys%use_finite_difference_jacobian()) then
-                call this%log_function_evaluation(njac * (n + 1))
-            end if
-            cycle
-        end if
-
-        ! Use an explicit Euler prediction to start the Newton iteration
-        call sys%fcn(x + c(i) * h, base, rhs, args)
-        call this%log_function_evaluation()
-        state = base + h * a(i,i) * rhs
-
-        ! Solve the stage equation
-        do iteration = 1, maxiter
-            call sys%fcn(x + c(i) * h, state, rhs, args)
-            call this%log_function_evaluation()
-            if (usemass) then
-                call sys%mass_matrix(x + c(i) * h, state, mass, args)
-                call sys%compute_jacobian(x + c(i) * h, state, jac, args)
-                residual = matmul(mass, state - base) - h * a(i,i) * rhs
-                delta = solve_kc_system(mass - h * a(i,i) * jac, -residual)
-            else
-                call sys%compute_jacobian(x + c(i) * h, state, jac, args)
-                residual = state - base - h * a(i,i) * rhs
-                delta = solve_kc_system(identity(n) - h * a(i,i) * jac, &
-                    -residual)
-            end if
-            call this%log_matrix_factorization()
-            call this%log_jacobian_evaluation()
-            if (sys%use_finite_difference_jacobian()) then
-                ! The forward difference algorithm requires another n + 1 
-                ! function evaluations
-                call this%log_function_evaluation(n + 1)
-            end if
-            if (norm2(residual) <= tol * max(1.0d0, norm2(state))) exit
-            state = state + delta
-        end do
-        if (iteration > maxiter) error stop DIFFEQ_CONVERGENCE_ERROR
-
-        ! Store the derivative for this stage
-        call sys%fcn(x + c(i) * h, state, rhs, args)
-        if (usemass) then
-            call sys%mass_matrix(x + c(i) * h, state, mass, args)
-            k(:,i) = solve_kc_system(mass, rhs)
-            call this%log_matrix_factorization()
-        else
-            k(:,i) = rhs
+        call kc_mass_stage(sys, x + c(i) * h, base, h * a(i,i), &
+            state, k(:,i), njac, args)
+        call this%log_jacobian_evaluation(njac)
+        call this%log_function_evaluation(njac)
+        call this%log_matrix_factorization(njac)
+        if (sys%use_finite_difference_jacobian()) then
+            call this%log_function_evaluation(njac * (n + 1))
         end if
     end do
 
@@ -378,7 +317,7 @@ subroutine kc_consistent_derivative(sys, x, y, f, mass, derivative, args)
     allocate(jac(n,n), fplus(n), augmented(n,n), rhs(n))
     call sys%compute_jacobian(x, y, jac, args)
     fdstep = sys%get_finite_difference_step()
-    call sys%fcn(x + fdstep, y, fplus, args)
+    call sys%compute_rhs(x + fdstep, y, fplus, args)
     fplus = (fplus - f) / fdstep
 
     augmented = 0.0d0
@@ -411,8 +350,8 @@ subroutine kc_mass_stage(sys, x, base, diagonal_step, state, derivative, njac, a
     njac = 0
     do iteration = 1, 12
         derivative = (state - base) / diagonal_step
-        call sys%fcn(x, state, f, args)
-        call sys%mass_matrix(x, state, mass, args)
+        call sys%compute_rhs(x, state, f, args)
+        call sys%compute_mass_matrix(x, state, mass, args)
         residual = matmul(mass, state - base) - diagonal_step * f
         if (norm2(residual) <= 1.0d-14 * max(1.0d0, norm2(state))) exit
         call sys%compute_jacobian(x, state, jac, args)
@@ -421,7 +360,7 @@ subroutine kc_mass_stage(sys, x, base, diagonal_step, state, derivative, njac, a
         fdstep = sys%get_finite_difference_step()
         do i = 1, size(base)
             state(i) = state(i) + fdstep
-            call sys%mass_matrix(x, state, mass_perturbed, args)
+            call sys%compute_mass_matrix(x, state, mass_perturbed, args)
             state(i) = state(i) - fdstep
             system(:,i) = system(:,i) + &
                 matmul((mass_perturbed - mass) / fdstep, state - base)

@@ -218,7 +218,7 @@ subroutine bdf_predictor(this, sys, h, x, y, f, yn, fn, args)
         call newton_divided_differences(xv, yv, dd)
         call evaluate_newton_polynomial(xv, dd, x + h, yn)
     end if
-    call sys%fcn(x + h, yn, fn, args)
+    call sys%compute_rhs(x + h, yn, fn, args)
     call this%log_function_evaluation()
 
     ! Form the coefficients of the formula from the actual node locations
@@ -302,12 +302,10 @@ subroutine bdf_build_linear_system(this, sys, h, x, y, A, b, args)
 
     ! Local Variables
     integer :: i, n
-    logical :: usemass
 
     ! Initialization
     n = size(y)
     call this%initialize_workspace(n)
-    usemass = associated(sys%mass_matrix)
 
     ! Input Checking
     if (size(A, 1) /= n .or. size(A, 2) /= n) error stop DIFFEQ_MATRIX_SIZE_ERROR
@@ -315,7 +313,7 @@ subroutine bdf_build_linear_system(this, sys, h, x, y, A, b, args)
 
     ! Evaluate the model
     call sys%compute_jacobian(x, y, this%m_jac, args)
-    call sys%fcn(x, y, this%m_rhs, args)
+    call sys%compute_rhs(x, y, this%m_rhs, args)
     this%m_ydot = this%m_c0 * y + this%m_histTerm
     call this%log_jacobian_evaluation()
     call this%log_function_evaluation()
@@ -329,22 +327,14 @@ subroutine bdf_build_linear_system(this, sys, h, x, y, A, b, args)
     ! matrix; the dependence of a state-dependent mass matrix upon y is
     ! neglected, which affects the rate of convergence but not the solution
     ! the iteration converges upon.
-    if (usemass) then
-        if (.not.this%m_massComputed .or. &
-            sys%get_is_mass_matrix_dependent()) &
-        then
-            call sys%mass_matrix(x, y, this%m_mass, args)
-            this%m_massComputed = .true.
-        end if
-        A = this%m_c0 * this%m_mass - this%m_jac
-        b = this%m_rhs - matmul(this%m_mass, this%m_ydot)
-    else
-        A = -this%m_jac
-        do i = 1, n
-            A(i,i) = A(i,i) + this%m_c0
-        end do
-        b = this%m_rhs - this%m_ydot
+    if (.not.this%m_massComputed .or. &
+        sys%get_is_mass_matrix_dependent()) &
+    then
+        call sys%compute_mass_matrix(x, y, this%m_mass, args)
+        this%m_massComputed = .true.
     end if
+    A = this%m_c0 * this%m_mass - this%m_jac
+    b = this%m_rhs - matmul(this%m_mass, this%m_ydot)
 end subroutine
 
 ! ------------------------------------------------------------------------------

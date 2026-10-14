@@ -81,6 +81,7 @@ module diffeq_rosenbrock
         real(real64), private :: m_hOld = 0.0d0
             ! The previous step size.
     contains
+        procedure, public :: solve => rbrk_solve
         procedure, private :: initialize_matrices => rbrk_init_matrices
             !! Allocates internal storage for the system matrices.
         procedure, private :: initialize_interp => rbrk_init_interp
@@ -105,6 +106,20 @@ module diffeq_rosenbrock
     end type
 
 contains
+! ------------------------------------------------------------------------------
+subroutine rbrk_solve(this, sys, x, iv, args)
+    class(rosenbrock), intent(inout) :: this
+    class(ode_container), intent(inout) :: sys
+    real(real64), intent(in), dimension(:) :: x, iv
+    class(*), intent(inout), optional, target :: args
+
+    this%m_massComputed = .false.
+    this%m_firstStep = .true.
+    this%m_rejectStep = .false.
+    this%m_hOld = 0.0d0
+    call ssi_ode_solver(this, sys, x, iv, args)
+end subroutine
+
 ! ------------------------------------------------------------------------------
 subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
     use diffeq_rosenbrock_constants
@@ -133,14 +148,12 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
 
     ! Local Variables
     integer :: i, n, flag
-    logical :: useMass
     real(real64) :: fac
     real(real64), allocatable, dimension(:,:) :: lu
     
     ! Initialization
     n = size(y)
-    useMass = associated(sys%mass_matrix)
-    call this%initialize_matrices(n, useMass)
+    call this%initialize_matrices(n, .true.)
 
     ! Compute the Jacobian matrix - only need to update if the previous step
     ! was successful
@@ -154,27 +167,18 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
         end if
 
         ! Compute the mass matrix
-        if (useMass) then
-            if (.not.this%m_massComputed .or. &
-                sys%get_is_mass_matrix_dependent()) &
-            then
-                ! We need to compute the mass matrix
-                call sys%mass_matrix(x, y, this%mass, args)
-                this%m_massComputed = .true.
-            end if
+        if (.not.this%m_massComputed .or. &
+            sys%get_is_mass_matrix_dependent()) &
+        then
+            ! We need to compute the mass matrix
+            call sys%compute_mass_matrix(x, y, this%mass, args)
+            this%m_massComputed = .true.
         end if
     end if
 
     ! Form the system matrix, and then factor it accordingly
     fac = 1.0d0 / (gam * h)
-    if (useMass) then
-        this%a = fac * this%mass - this%jac
-    else
-        this%a = -this%jac
-        do i = 1, n
-            this%a(i,i) = this%a(i,i) + fac
-        end do
-    end if
+    this%a = fac * this%mass - this%jac
 
     ! Factor the equations
     this%pivot = 0
@@ -183,7 +187,7 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
 
     ! Compute df/dx
     fac = sys%get_finite_difference_step()
-    call sys%fcn(x + fac, y, this%dfdx, args)
+    call sys%compute_rhs(x + fac, y, this%dfdx, args)
     call this%log_function_evaluation()
     this%dfdx = (this%dfdx - f) / h ! forward differencing
 end subroutine
@@ -285,7 +289,7 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     k(:,1) = solve_qr(this%qr, this%tau, this%pivot, rhs)
 
     yn = y + a21 * k(:,1)
-    call sys%fcn(x + c2 * h, yn, fn, args)
+    call sys%compute_rhs(x + c2 * h, yn, fn, args)
 
     rhs = c21 * k(:,1) / h
     if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
@@ -293,7 +297,7 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     k(:,2) = solve_qr(this%qr, this%tau, this%pivot, rhs)
 
     yn = y + a31 * k(:,1) + a32 * k(:,2)
-    call sys%fcn(x + c3 * h, yn, fn, args)
+    call sys%compute_rhs(x + c3 * h, yn, fn, args)
 
     rhs = (c31 * k(:,1) + c32 * k(:,2)) / h
     if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
@@ -301,7 +305,7 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     k(:,3) = solve_qr(this%qr, this%tau, this%pivot, rhs)
 
     yn = y + a41 * k(:,1) + a42 * k(:,2) + a43 * k(:,3)
-    call sys%fcn(x + c4 * h, yn, fn, args)
+    call sys%compute_rhs(x + c4 * h, yn, fn, args)
 
     rhs = (c41 * k(:,1) + c42 * k(:,2) + c43 * k(:,3)) / h
     if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
@@ -309,7 +313,7 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     k(:,4) = solve_qr(this%qr, this%tau, this%pivot, rhs)
 
     yn = y + a51 * k(:,1) + a52 * k(:,2) + a53 * k(:,3) + a54 * k(:,4)
-    call sys%fcn(x + h, yn, fn, args)
+    call sys%compute_rhs(x + h, yn, fn, args)
 
     rhs = (c51 * k(:,1) + c52 * k(:,2) + c53 * k(:,3) + &
         c54 * k(:,4)) / h
@@ -319,7 +323,7 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
 
 
     yn = yn + k(:,5)
-    call sys%fcn(x + h, yn, fn, args) ! updated derivative
+    call sys%compute_rhs(x + h, yn, fn, args) ! updated derivative
 
     call this%log_function_evaluation(5)
 

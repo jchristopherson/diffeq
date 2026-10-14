@@ -167,7 +167,7 @@ subroutine tsit_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         do j = 1, i - 1
             stage = stage + h * tsit_a(i,j) * k(:,j)
         end do
-        call sys%fcn(x + tsit_c(i) * h, stage, k(:,i), args)
+        call sys%compute_rhs(x + tsit_c(i) * h, stage, k(:,i), args)
         call this%log_function_evaluation()
     end do
 
@@ -180,7 +180,7 @@ subroutine tsit_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     end do
 
     ! The FSAL stage supplies the derivatives at the end of the step
-    call sys%fcn(x + h, yn, fn, args)
+    call sys%compute_rhs(x + h, yn, fn, args)
     call this%log_function_evaluation()
 end subroutine
 
