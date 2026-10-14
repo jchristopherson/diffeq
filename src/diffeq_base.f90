@@ -24,6 +24,7 @@ module diffeq_base
     !! A collection of base types for the DIFFEQ library.
     use iso_fortran_env
     use diffeq_errors
+    use diffeq_containers, only : ode_results
     implicit none
     private
     public :: ode
@@ -143,10 +144,8 @@ module diffeq_base
         !! scaled local error such as
         !! \( \mathrm{err}_i / (\mathrm{atol} + \mathrm{rtol}|y_i|) \)
         !! to choose their step sizes.
-        real(real64), private, allocatable, dimension(:,:) :: m_buffer
+        type(ode_results), private :: m_buffer
             ! The internal solution buffer.
-        integer(int32), private :: m_bufferCount = 0
-            ! The number of solution points stored in the buffer.
         real(real64), private :: m_abstol = 1.0d-6
             ! The absolute tolerance value applied to each equation.
         real(real64), private :: m_reltol = 1.0d-6
@@ -600,43 +599,7 @@ subroutine oi_append_to_buffer(this, x, y)
     real(real64), intent(in), dimension(:) :: y
         !! The values of the dependent variables corresponding to x.
 
-    ! Parameters
-    integer(int32), parameter :: buffer_size = 1000
-
-    ! Local Variables
-    integer(int32) :: i, start, m, n, neqn
-    real(real64), allocatable, dimension(:,:) :: copy
-    
-    ! Initialization
-    if (allocated(this%m_buffer)) then
-        neqn = size(this%m_buffer, 2) - 1
-    else
-        neqn = size(y)
-    end if
-    n = neqn + 1
-    start = this%m_bufferCount + 1
-
-    ! Input Checking
-    if (size(y) /= neqn) error stop DIFFEQ_ARRAY_SIZE_ERROR
-
-    ! Allocate memory if necessary
-    if (.not.allocated(this%m_buffer)) then
-        allocate(this%m_buffer(buffer_size, n))
-    else
-        m = size(this%m_buffer, 1)
-        if (start == m + 1) then
-            allocate(copy(m, n), source = this%m_buffer)
-            m = m + buffer_size
-            deallocate(this%m_buffer)
-            allocate(this%m_buffer(m, n))
-            this%m_buffer(:this%m_bufferCount,:) = copy
-        end if
-    end if
-
-    ! Store the result
-    this%m_buffer(start,1) = x
-    this%m_buffer(start,2:) = y
-    this%m_bufferCount = this%m_bufferCount + 1
+    call this%m_buffer%push(x, y)
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -652,10 +615,10 @@ pure function oi_get_solution(this) result(rst)
     real(real64), allocatable, dimension(:,:) :: rst
         !! The resulting solution matrix.
 
-    if (allocated(this%m_buffer)) then
-        rst = this%m_buffer(:this%m_bufferCount,:)
-    else
+    if (this%m_buffer%count() == 0) then
         allocate(rst(0, 0))
+    else
+        rst = this%m_buffer%to_matrix()
     end if
 end function
 
@@ -665,10 +628,7 @@ subroutine oi_clear_buffer(this)
     class(ode_integrator), intent(inout) :: this
         !! The ode_integrator object.
 
-    ! Clear the buffer
-    if (allocated(this%m_buffer)) deallocate(this%m_buffer)
-    this%m_bufferCount = 0
-    this%m_reject = .false.
+    call this%m_buffer%clear_all()
 end subroutine
 
 ! ------------------------------------------------------------------------------

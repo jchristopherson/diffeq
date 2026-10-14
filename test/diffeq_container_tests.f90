@@ -20,6 +20,7 @@ program diffeq_container_tests
         call test_capacity()
         call test_push()
         call test_to_matrix()
+        call test_clear_all()
     else
         select case (trim(test_name))
         case ("init_zero_states")
@@ -180,6 +181,57 @@ contains
         call container%state(2, xvalue, yvalue)
         call check(xvalue == 4.0d0 .and. all(yvalue == [40.0d0, -4.0d0]), &
             "Push replaces discarded point")
+    end subroutine
+
+    subroutine test_clear_all()
+        type(ode_results) :: container
+        real(real64), allocatable, dimension(:,:) :: output
+        real(real64), dimension(0) :: empty_grid
+        real(real64), dimension(0,0) :: empty_states
+
+        call container%clear_all()
+        call check(container%count() == 0, "Clear default count")
+        call check(container%get_capacity() == 0, "Clear default capacity")
+        call check(container%state_variable_count() == 0, "Clear default state count")
+
+        container = ode_results(2, 3)
+        call container%clear_all()
+        call check(container%count() == 0, "Clear empty count")
+        call check(container%get_capacity() == 3, "Clear empty preserves capacity")
+        call check(container%state_variable_count() == 0, "Clear empty state count")
+        call container%push(1.0d0, [2.0d0, 3.0d0])
+        call container%push(4.0d0, [5.0d0, 6.0d0])
+        call container%clear_all()
+        call container%clear_all()
+        call check(container%count() == 0, "Repeated clear count")
+        call check(container%get_capacity() == 3, "Clear populated preserves capacity")
+        call check(container%state_variable_count() == 0, "Clear populated state count")
+        output = container%to_matrix()
+        call check(all(shape(output) == [0, 1]), "Cleared matrix shape")
+        call container%state(empty_grid, empty_states)
+
+        call container%push(7.0d0, [8.0d0, 9.0d0])
+        output = container%to_matrix()
+        call check(all(shape(output) == [1, 3]), "Reuse cleared matrix shape")
+        call check(all(output(1,:) == [7.0d0, 8.0d0, 9.0d0]), "Clear removes old points")
+        call check(container%get_capacity() == 3, "Reuse retains capacity")
+
+        call container%clear_all()
+        call container%set_capacity(4)
+        call container%push(10.0d0, [11.0d0])
+        output = container%to_matrix()
+        call check(container%get_capacity() == 4, "Resize cleared capacity")
+        call check(container%state_variable_count() == 1, "Reuse with fewer variables")
+        call check(all(shape(output) == [1, 2]), "Fewer variables matrix shape")
+        call check(all(output(1,:) == [10.0d0, 11.0d0]), "Fewer variables matrix values")
+
+        call container%clear_all()
+        call container%push(12.0d0, [13.0d0, 14.0d0, 15.0d0])
+        output = container%to_matrix()
+        call check(container%get_capacity() == 4, "New vector size preserves capacity")
+        call check(container%state_variable_count() == 3, "Reuse with more variables")
+        call check(all(shape(output) == [1, 4]), "More variables matrix shape")
+        call check(all(output(1,:) == [12.0d0, 13.0d0, 14.0d0, 15.0d0]), "More variables values")
     end subroutine
 
     subroutine test_to_matrix()

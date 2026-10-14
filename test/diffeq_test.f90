@@ -30,6 +30,9 @@ program test
     flag = 0
 
     ! Tests
+    rst = test_integrator_buffers()
+        if (.not.rst) flag = max(flag, 52)
+
     rst = test_state_variable_tolerances()
         if (.not.rst) flag = max(flag, 42)
 

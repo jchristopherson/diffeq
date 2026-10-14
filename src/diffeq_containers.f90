@@ -41,6 +41,8 @@ module diffeq_containers
         integer, private :: m_count = 0
             !! The number of solution points actually stored in the solution
             !! buffers.
+        integer, private :: m_state_count = 0
+            !! The number of state variables.
     contains
         procedure, public :: state_variable_count => or_get_state_count
         procedure, public :: count => or_get_count
@@ -53,6 +55,7 @@ module diffeq_containers
         procedure, private :: or_state_vector
         procedure, public :: push => or_push_state
         procedure, public :: to_matrix => or_to_matrix
+        procedure, public :: clear_all => or_clear_all
     end type
 
     interface ode_results
@@ -81,6 +84,7 @@ pure function or_init_empty(n, capacity) result(rst)
         allocate(rst%m_buffer(BUFFER_CAPACITY, n + 1))
     end if
     rst%m_count = 0
+    rst%m_state_count = n
 end function
 
 ! ------------------------------------------------------------------------------
@@ -101,7 +105,7 @@ pure function or_get_state_count(this) result(rst)
     integer :: rst
         !! The number of state variables.
     if (allocated(this%m_buffer)) then
-        rst = size(this%m_buffer, 2) - 1
+        rst = this%m_state_count
     else
         rst = 0
     end if
@@ -237,12 +241,22 @@ subroutine or_push_state(this, x, y)
         !! the value returned by state_variable_count(); else, a 
         !! DIFFEQ_ARRAY_SIZE_ERROR will be thrown.  If the container is not
         !! yet initialized, the size of this vector will set the expected 
-        !! number of state variables.
+        !! number of state variables.  The same applies after clear_all().
+
+    integer :: capacity
 
     if (.not.allocated(this%m_buffer)) then
         !! This is brand new.  Initialize the collection
         allocate(this%m_buffer(BUFFER_CAPACITY, size(y) + 1))
         this%m_count = 0
+        this%m_state_count = size(y)
+    else if (this%m_state_count == 0) then
+        if (size(this%m_buffer, 2) /= size(y) + 1) then
+            capacity = this%get_capacity()
+            deallocate(this%m_buffer)
+            allocate(this%m_buffer(capacity, size(y) + 1))
+        end if
+        this%m_state_count = size(y)
     else
         if (size(y) /= this%state_variable_count()) error stop DIFFEQ_ARRAY_SIZE_ERROR
     end if
@@ -267,8 +281,18 @@ pure function or_to_matrix(this) result(rst)
         !! The matrix.
 
     if (.not.allocated(this%m_buffer)) error stop DIFFEQ_INVALID_OPERATION_ERROR
-    rst = this%m_buffer(1:this%count(),:)
+    rst = this%m_buffer(1:this%count(),1:this%state_variable_count() + 1)
 end function
+
+! ------------------------------------------------------------------------------
+subroutine or_clear_all(this)
+    !! Clears the contents of this container, but does not alter its capacity.
+    !! The state variable count is reset; the next push sets the new count.
+    class(ode_results), intent(inout) :: this
+        !! The [[ode_results]] object.
+    this%m_count = 0
+    this%m_state_count = 0
+end subroutine
 
 ! ------------------------------------------------------------------------------
 end module

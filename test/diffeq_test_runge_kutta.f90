@@ -21,6 +21,93 @@ module diffeq_test_runge_kutta
     implicit none
 
 contains
+function test_integrator_buffers() result(rst)
+    logical :: rst, passed
+    type(runge_kutta_45) :: rk_integrator
+    type(bdf) :: bdf_integrator
+    type(adams) :: adams_integrator
+
+    rst = check_integrator_buffer(rk_integrator)
+    passed = check_integrator_buffer(bdf_integrator)
+    rst = rst .and. passed
+    passed = check_integrator_buffer(adams_integrator)
+    rst = rst .and. passed
+    if (.not.rst) print "(A)", "TEST FAILED: test_integrator_buffers"
+end function
+
+function check_integrator_buffer(integrator) result(rst)
+    class(ode_integrator), intent(inout) :: integrator
+    logical :: rst
+    type(ode_container) :: model
+    real(real64), allocatable, dimension(:,:) :: solution, snapshot
+    real(real64), allocatable, dimension(:) :: initial
+    real(real64), dimension(3) :: grid
+    integer :: index, equation, equation_count
+
+    rst = .true.
+    call integrator%clear_buffer()
+    solution = integrator%get_solution()
+    rst = rst .and. allocated(solution)
+    rst = rst .and. all(shape(solution) == [0, 0])
+    do index = 1, 2001
+        call integrator%append_to_buffer(real(index, real64), &
+            [real(index * 2, real64), real(-index, real64)])
+    end do
+    solution = integrator%get_solution()
+    if (.not.all(shape(solution) == [2001, 3])) then
+        rst = .false.
+        return
+    end if
+    do index = 1, 2001
+        rst = rst .and. all(solution(index,:) == &
+            [real(index, real64), real(index * 2, real64), real(-index, real64)])
+    end do
+    solution = 0.0d0
+    snapshot = integrator%get_solution()
+    rst = rst .and. all(snapshot(1,:) == [1.0d0, 2.0d0, -1.0d0])
+    call integrator%clear_buffer()
+    call integrator%clear_buffer()
+    solution = integrator%get_solution()
+    rst = rst .and. all(shape(solution) == [0, 0])
+    call integrator%append_to_buffer(3.0d0, [4.0d0])
+    solution = integrator%get_solution()
+    if (.not.all(shape(solution) == [1, 2])) then
+        rst = .false.
+        return
+    end if
+    rst = rst .and. all(solution(1,:) == [3.0d0, 4.0d0])
+    rst = rst .and. all(snapshot(2001,:) == [2001.0d0, 4002.0d0, -2001.0d0])
+
+    model%fcn => buffer_test_ode
+    grid = [0.0d0, 0.5d0, 1.0d0]
+    do equation_count = 1, 3
+        call integrator%clear_buffer()
+        allocate(initial(equation_count))
+        do equation = 1, equation_count
+            initial(equation) = real(equation * 10, real64)
+        end do
+        call integrator%solve(model, grid, initial)
+        solution = integrator%get_solution()
+        if (.not.all(shape(solution) == [3, equation_count + 1])) then
+            rst = .false.
+            return
+        end if
+        rst = rst .and. assert(grid, solution(:,1), 1.0d-12)
+        do equation = 1, equation_count
+            rst = rst .and. assert(initial(equation) + grid, solution(:,equation + 1), 1.0d-7)
+        end do
+        deallocate(initial)
+    end do
+end function
+
+subroutine buffer_test_ode(x, y, dydx, args)
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:) :: dydx
+    class(*), intent(inout), optional :: args
+    dydx = 1.0d0
+end subroutine
+
 ! ------------------------------------------------------------------------------
 function test_reverse_and_overshoot() result(rst)
     logical :: rst
