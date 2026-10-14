@@ -928,6 +928,7 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
             h = 2.5d-1 * h
             if (nfail >= 3) this%m_order = 1
             if (abs(h) < minstep) error stop DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR
+            call this%log_failed_step()
             cycle
         end if
 
@@ -950,6 +951,7 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
             end if
             if (nfail >= 3) this%m_order = 1
             if (abs(h) < minstep) error stop DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR
+            call this%log_failed_step()
             cycle
         end if
 
@@ -958,6 +960,7 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
         xn = xo + h
         call this%evaluate_derivative(sys, xn, yn, fnew, args)
         call this%push_history(xn, yn, fnew)
+        call this%log_successful_step()
 
         ! Store the results
         if (dense) then

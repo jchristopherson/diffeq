@@ -294,11 +294,15 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
 
         ! Reject the step?
         success = ei <= 1.0d0
-        if (.not.success) cycle   ! We failed.  Try again with a new step size
+        if (.not.success) then
+            call this%log_failed_step()
+            cycle   ! We failed.  Try again with a new step size
+        end if
 
         ! If we're here, the step has been successful.  Take any post-step
         ! action such as setting up interpolation routines, etc.
         call this%post_step_action(sys, dense, xo, xn, y, yn, f, fn, k, args)
+        call this%log_successful_step()
 
         ! Do we need to interpolate for dense output, or can we just store
         ! values and move on

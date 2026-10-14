@@ -234,7 +234,7 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
 
     ! Local Variables
     logical :: usemass
-    integer :: i, j, n, stages, iteration
+    integer :: i, j, jj, n, stages, iteration, njac
     real(real64) :: a(8,8), b(8), d(8), c(8)
     real(real64), allocatable, dimension(:) :: base, state, rhs, deriv, &
         residual, delta, embedded
@@ -262,6 +262,7 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     if (usemass) then
         call sys%mass_matrix(x, y, mass, args)
         call kc_consistent_derivative(sys, x, y, f, mass, k(:,1), args)
+        call this%log_jacobian_evaluation()
     else
         k(:,1) = f
     end if
@@ -276,7 +277,10 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
 
         if (usemass) then
             call kc_mass_stage(sys, x + c(i) * h, base, h * a(i,i), &
-                state, k(:,i), args)
+                state, k(:,i), njac, args)
+            do jj = 1, njac
+                call this%log_jacobian_evaluation()
+            end do
             cycle
         end if
 
@@ -290,10 +294,12 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
             if (usemass) then
                 call sys%mass_matrix(x + c(i) * h, state, mass, args)
                 call sys%compute_jacobian(x + c(i) * h, state, jac, args)
+                call this%log_jacobian_evaluation()
                 residual = matmul(mass, state - base) - h * a(i,i) * rhs
                 delta = solve_kc_system(mass - h * a(i,i) * jac, -residual)
             else
                 call sys%compute_jacobian(x + c(i) * h, state, jac, args)
+                call this%log_jacobian_evaluation()
                 residual = state - base - h * a(i,i) * rhs
                 delta = solve_kc_system(identity(n) - h * a(i,i) * jac, &
                     -residual)
@@ -369,11 +375,12 @@ subroutine kc_consistent_derivative(sys, x, y, f, mass, derivative, args)
     derivative = solve_kc_system(augmented, rhs)
 end subroutine
 
-subroutine kc_mass_stage(sys, x, base, diagonal_step, state, derivative, args)
+subroutine kc_mass_stage(sys, x, base, diagonal_step, state, derivative, njac, args)
     !! Solves one Kennedy--Carpenter mass-matrix stage without forming M^{-1}f.
     class(ode_container), intent(inout) :: sys
     real(real64), intent(in) :: x, base(:), diagonal_step
     real(real64), intent(out) :: state(:), derivative(:)
+    integer, intent(out) :: njac
     class(*), intent(inout), optional :: args
     real(real64) :: f(size(base)), residual(size(base))
     real(real64) :: jac(size(base),size(base)), mass(size(base),size(base))
@@ -383,6 +390,7 @@ subroutine kc_mass_stage(sys, x, base, diagonal_step, state, derivative, args)
     integer :: i, iteration
 
     state = base
+    njac = 0
     do iteration = 1, 12
         derivative = (state - base) / diagonal_step
         call sys%fcn(x, state, f, args)
@@ -390,6 +398,7 @@ subroutine kc_mass_stage(sys, x, base, diagonal_step, state, derivative, args)
         residual = matmul(mass, state - base) - diagonal_step * f
         if (norm2(residual) <= 1.0d-14 * max(1.0d0, norm2(state))) exit
         call sys%compute_jacobian(x, state, jac, args)
+        njac = njac + 1
         system = mass - diagonal_step * jac
         fdstep = sys%get_finite_difference_step()
         do i = 1, size(base)

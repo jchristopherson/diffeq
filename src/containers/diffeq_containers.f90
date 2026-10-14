@@ -29,9 +29,19 @@ module diffeq_containers
     use diffeq_errors
     implicit none
     private
+    public :: ode_results_statistics
     public :: ode_results
 
     integer, parameter :: BUFFER_CAPACITY = 1000
+
+    type ode_results_statistics
+        integer :: successful_steps = 0
+            !! The number of successful steps taken by the integrator.
+        integer :: failed_steps = 0
+            !! The number of unsuccessful steps taken by the integrator.
+        integer :: jacobian_evaluations = 0
+            !! The number of Jacobian matrix evaluations.
+    end type
 
     type ode_results
         !! A container for ODE results.
@@ -47,6 +57,8 @@ module diffeq_containers
             !! buffers.
         integer, private :: m_state_count = 0
             !! The number of state variables.
+        type(ode_results_statistics), public :: statistics
+            !! Statistical information regarding the integration process.
     contains
         procedure, public :: state_variable_count => or_get_state_count
         procedure, public :: count => or_get_count

@@ -316,6 +316,7 @@ subroutine bdf_build_linear_system(this, sys, h, x, y, A, b, args)
     call sys%compute_jacobian(x, y, this%m_jac, args)
     call sys%fcn(x, y, this%m_rhs, args)
     this%m_ydot = this%m_c0 * y + this%m_histTerm
+    call this%log_jacobian_evaluation()
 
     ! Form the system.  Only the derivative of f contributes to the iteration
     ! matrix; the dependence of a state-dependent mass matrix upon y is

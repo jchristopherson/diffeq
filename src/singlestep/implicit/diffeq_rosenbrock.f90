@@ -146,6 +146,7 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
     ! was successful
     if (prevs) then
         call sys%compute_jacobian(x, y, this%jac, args = args)
+        call this%log_jacobian_evaluation()
 
         ! Compute the mass matrix
         if (useMass) then

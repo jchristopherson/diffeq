@@ -228,6 +228,12 @@ module diffeq_base
         procedure, public :: set_allow_overshoot => oi_set_allow_overshoot
             !! Sets a value determining if the solver is allowed to overshoot 
             !! the final value in the integration range.
+        procedure, public :: log_failed_step => oi_log_failed_step
+            !! Logs a failed integration step.
+        procedure, public :: log_successful_step => oi_log_successful_step
+            !! Logs a successful integration step.
+        procedure, public :: log_jacobian_evaluation => oi_log_jacobian_eval
+            !! Logs a Jacobian matrix evaluation.
     end type
 
     interface
@@ -458,6 +464,9 @@ subroutine oi_clear_buffer(this)
         !! The ode_integrator object.
 
     call this%m_buffer%clear_all()
+    this%m_buffer%statistics%failed_steps = 0
+    this%m_buffer%statistics%successful_steps = 0
+    this%m_buffer%statistics%jacobian_evaluations = 0
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -840,6 +849,36 @@ subroutine oi_set_allow_overshoot(this, x)
         !! required final value; else, false thereby indicating the solver 
         !! cannot overshoot.
     this%m_allowOvershoot = x
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine oi_log_failed_step(this)
+    !! Logs a failed integration step.
+    class(ode_integrator), intent(inout) :: this
+        !! The [[ode_integrator]] object.
+
+    this%m_buffer%statistics%failed_steps = &
+        this%m_buffer%statistics%failed_steps + 1
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine oi_log_successful_step(this)
+    !! Logs a successful integration step.
+    class(ode_integrator), intent(inout) :: this
+        !! The [[ode_integrator]] object.
+
+    this%m_buffer%statistics%successful_steps = &
+        this%m_buffer%statistics%successful_steps + 1
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine oi_log_jacobian_eval(this)
+    !! Logs a Jacobian matrix evaluation.
+    class(ode_integrator), intent(inout) :: this
+        !! The [[ode_integrator]] object.
+
+    this%m_buffer%statistics%jacobian_evaluations = &
+        this%m_buffer%statistics%jacobian_evaluations + 1
 end subroutine
 
 ! ------------------------------------------------------------------------------
