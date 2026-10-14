@@ -821,7 +821,7 @@ end program
 ```
 ![](images/dae_results.png?raw=true)
 
-The mass swings between $x = \pm L$ while $y$ remains at or below the pivot, which is the expected behavior for a pendulum released from rest in a horizontal position.
+The mass swings between $x = \pm L$ while $y$ remains at or below the pivot, which is the expected behavior for a pendulum released from rest in a horizontal position ($\theta = 0$).
 
 The example uses `rosenbrock`, but any integrator that tolerates a singular mass matrix will serve.  Substituting `type(bdf)`, `type(kennedy_carpenter_4)`, or `type(kennedy_carpenter_5)` for the declared integrator type is the only change required, as every solver exposes the same `solve` and `get_solution` interface.
 

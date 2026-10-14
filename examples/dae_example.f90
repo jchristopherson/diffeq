@@ -20,6 +20,9 @@ program example
     use fplot_core
     implicit none
 
+    ! Parameters
+    real(real64), parameter :: pi = 2.0d0 * acos(0.0d0)
+
     ! Model Parameters
     real(real64), parameter :: length = 1.5d0
     real(real64), parameter :: mass = 2.0d0
@@ -28,12 +31,12 @@ program example
     type(rosenbrock) :: integrator
     type(ode_container) :: mdl
     type(cartesian_pendulum_properties) :: args
+    real(real64), allocatable, dimension(:) :: theta
     real(real64), allocatable, dimension(:,:) :: sol
 
     ! Plot Variables
-    type(plot_2d) :: plt
-    type(plot_data_2d) :: pd1, pd2
-    class(plot_axis), pointer :: xAxis, yAxis, y2Axis
+    type(multiplot) :: plt
+    type(plot_2d) :: pltxy, plttheta
     class(legend), pointer :: lgnd
 
     ! Pass in the model parameters
@@ -54,17 +57,18 @@ program example
     )
     sol = integrator%get_solution()
 
+    ! Compute the angular representation of the solution
+    theta = atan2(sol(:,4), sol(:,2)) * 1.8d2 / pi
+
 ! ------------------------------------------------------------------------------
-    ! Plot the results
-    call plt%initialize()
-    xAxis => plt%get_x_axis()
-    yAxis => plt%get_y_axis()
-    y2Axis => plt%get_y2_axis()
-    lgnd => plt%get_legend()
-    call plt%set_use_y2_axis(.true.)
-    call xAxis%set_title("t")
-    call yAxis%set_title("x(t)")
-    call y2Axis%set_title("y(t)")
+    ! Set up the plot
+    call plt%initialize(1, 2, width = 1200)
+
+    ! Plot the X-Y results
+    call pltxy%initialize()
+    lgnd => pltxy%get_legend()
+    call pltxy%set_x_axis_title("t")
+    call pltxy%set_y_axis_title("x(t), y(t)")
     call lgnd%set_is_visible(.true.)
     call lgnd%set_draw_border(.false.)
     call lgnd%set_draw_inside_axes(.false.)
@@ -72,16 +76,18 @@ program example
     call lgnd%set_horizontal_position(LEGEND_CENTER)
     call lgnd%set_layout(LEGEND_ARRANGE_HORIZONTALLY)
 
-    call pd1%define_data(sol(:,1), sol(:,2))
-    call pd1%set_name("x(t)")
-    call pd1%set_line_width(2.0)
-    call plt%push(pd1)
+    call pltxy%push(sol(:,1), sol(:,2), name = "x(t)")
+    call pltxy%push(sol(:,1), sol(:,4), name = "y(t)")
 
-    call pd2%define_data(sol(:,1), sol(:,4))
-    call pd2%set_name("y(t)")
-    call pd2%set_line_width(2.0)
-    call pd2%set_draw_against_y2(.true.)
-    call plt%push(pd2)
+    call plt%set(1, 1, pltxy)
+
+    ! Plot the angular results
+    call plttheta%initialize()
+    call plttheta%set_x_axis_title("t")
+    call plttheta%set_y_axis_title("{/Symbol q} [deg]")
+    call plttheta%push(sol(:,1), theta)
+    
+    call plt%set(1, 2, plttheta)
 
     call plt%draw()
 end program
