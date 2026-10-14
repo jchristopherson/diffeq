@@ -41,6 +41,7 @@ module diffeq_kennedy_carpenter
         !! estimate used by the inherited adaptive driver.  These solvers use
         !! the inherited configurable PI step-size controller.
         real(real64), private, allocatable, dimension(:,:) :: m_mass
+        real(real64), private, allocatable, dimension(:) :: m_startDerivative
         logical, private :: m_massComputed = .false.
     contains
         procedure, public :: solve => kc_solve
@@ -87,6 +88,7 @@ subroutine kc_solve(this, sys, x, iv, args)
 
     this%m_massComputed = .false.
     if (allocated(this%m_mass)) deallocate(this%m_mass)
+    if (allocated(this%m_startDerivative)) deallocate(this%m_startDerivative)
     call ssi_ode_solver(this, sys, x, iv, args)
 end subroutine
 
@@ -123,11 +125,11 @@ end subroutine
 
 ! ------------------------------------------------------------------------------
 subroutine kc_post_step(this, sys, dense, x, xn, y, yn, f, fn, k, args)
-    !! Placeholder routine for any post-step actions.
+    !! Retains the first-stage derivative for cubic Hermite interpolation.
     !!
-    !! The interpolation for these integrators requires only the solution and
-    !! derivative values at each end of the step, so no additional storage is
-    !! required here.
+    !! For a mass-matrix problem, the driver's f is a raw RHS rather than a
+    !! derivative. The first stage supplies the consistent left-end slope;
+    !! the stiffly accurate final stage already supplies the right-end slope.
     class(kennedy_carpenter), intent(inout) :: this
         !! The kennedy_carpenter object.
     class(ode_container), intent(inout) :: sys
@@ -152,8 +154,7 @@ subroutine kc_post_step(this, sys, dense, x, xn, y, yn, f, fn, k, args)
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
-    ! Process
-    return
+    this%m_startDerivative = k(:,1)
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -629,9 +630,13 @@ subroutine kc_interpolate(this, x, xn, yn, fn, xn1, yn1, fn1, y)
 
     ! Process
     y = (2.0d0 * s**3 - 3.0d0 * s**2 + 1.0d0) * yn + &
-        (s**3 - 2.0d0 * s**2 + s) * h * fn + &
         (-2.0d0 * s**3 + 3.0d0 * s**2) * yn1 + &
         (s**3 - s**2) * h * fn1
+    if (allocated(this%m_startDerivative)) then
+        y = y + (s**3 - 2.0d0 * s**2 + s) * h * this%m_startDerivative
+    else
+        y = y + (s**3 - 2.0d0 * s**2 + s) * h * fn
+    end if
 end subroutine
 
 ! ------------------------------------------------------------------------------

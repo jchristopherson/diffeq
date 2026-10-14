@@ -94,6 +94,10 @@ problem of index greater than one must first be reduced to index 1, typically
 by differentiating its constraint equations with respect to the independent
 variable.
 
+For autonomous holonomic mechanical constraints, `ggl_container` provides
+a [stabilized index-1 GGL variant](#stabilized-index-1-ggl) that assembles
+the reduced equations and damps position and velocity constraint violations.
+
 The `adams` integrator is the exception. It integrates $y'$ directly, so it
 must resolve the mass matrix rather than merely carry it along as a factor.
 It therefore requires $M$ to be nonsingular and reports
@@ -107,6 +111,7 @@ integrators:
 | API | Purpose |
 | --- | --- |
 | `ode_container` | Stores the right-hand-side callback, optional Jacobian, and optional mass-matrix callbacks. |
+| `ggl_container` | Adapts holonomically constrained mechanics to a stabilized index-1 DAE with position and velocity residual damping. Its force and physical-mass callbacks have specialized shapes documented below. |
 | `model%fcn` | Defines $f(x,y)$ for the problem. This callback is required. |
 | `model%jacobian` | Supplies $J = \partial f / \partial y$. If omitted, DIFFEQ estimates it by finite differences where needed. |
 | `model%mass_matrix` | Supplies $M(x,y)$ for a system written as $M y' = f(x,y)$. It is supported by the Rosenbrock, Kennedy-Carpenter, BDF, and Adams solvers. Only Adams requires $M$ to be nonsingular. |
@@ -825,6 +830,163 @@ end program
 The mass swings between $x = \pm L$ while $y$ remains at or below the pivot, which is the expected behavior for a pendulum released from rest in a horizontal position ($\theta = 0$).
 
 The example uses `rosenbrock`, but any integrator that tolerates a singular mass matrix will serve.  Substituting `type(bdf)`, `type(kennedy_carpenter_4)`, or `type(kennedy_carpenter_5)` for the declared integrator type is the only change required, as every solver exposes the same `solve` and `get_solution` interface.
+
+### Stabilized Index-1 GGL
+
+Use `ggl_container` instead of `ode_container` for mechanical systems with
+autonomous holonomic constraints $g(q)=0$. This is a **stabilized index-1
+GGL-inspired variant**, not classical index-2 GGL. It replaces the original
+position and velocity algebraic constraints with their stabilized evolution
+equations. For $N$ coordinates and $M$ constraints, define
+
+$$
+z=[q_N,v_N,\lambda_M,\mu_M]^T,\qquad
+G(q)=\frac{\partial g}{\partial q},\qquad
+\mathcal M=\operatorname{diag}(I_N,M_N,0_M,0_M).
+$$
+
+The container supplies the equations
+
+$$
+\begin{aligned}
+\dot q &= v+G^T\mu,\\
+M\dot v &= F(x,q,v)-G^T\lambda,\\
+0 &= G(v+G^T\mu)+\alpha g(q),\\
+0 &= DG(q)[v+G^T\mu]v+GM^{-1}(F-G^T\lambda)+\beta Gv.
+\end{aligned}
+$$
+
+The force multiplier uses the sign convention $-G^T\lambda$. The last two
+RHS blocks occupy the rows corresponding to the multiplier slots, but contain
+no multiplier derivatives. The physical $M$ must be nonsingular; only the
+augmented matrix is singular. Independent constraints and a symmetric
+positive-definite physical mass guarantee the required regularity of $GG^T$
+and $GM^{-1}G^T$. Singular physical or initialization systems are rejected.
+
+These equations imply
+
+$$
+\dot g=-\alpha g,\qquad \frac{d(Gv)}{dx}=-\beta Gv.
+$$
+
+Both constraints remain zero in the exact solution if initially satisfied.
+Positive gains damp initial or numerical violations; zero gains preserve
+the corresponding initial residual rather than correcting it. Gains default
+to one and have inverse-time units when $x$ is time. Large gains can introduce
+additional stiffness. Stabilization is not projection: neither accepted steps
+nor interpolated output are guaranteed to lie exactly on the constraint surface.
+Explicitly time-dependent constraints are not supported.
+
+The callback shapes differ from an ordinary `ode_container`:
+
+| Callback | Input State | Output |
+| --- | --- | --- |
+| `fcn` (required) | `[q,v]`, length $2N$ | Applied force $F$, length $N$, excluding multiplier forces. |
+| `mass_matrix` (optional) | $q$, length $N$ | Physical $N\times N$ mass; identity if absent. |
+| `constraints` (required) | $q$, length $N$ | Position residual $g$, length $M$. |
+| `constraint_jacobian` (required) | $q$, length $N$ | $G$, an $M\times N$ matrix. |
+| `constraint_curvature` (required) | $q$, direction $\dot q$, and physical velocity $v$, each length $N$ | $DG(q)[\dot q]v$, length $M$; zeros for linear constraints. |
+| `jacobian` (optional) | Full augmented state $z$ | Jacobian of the complete augmented RHS, of size $(2N+2M)\times(2N+2M)$. |
+
+All callbacks receive the independent variable and optional user `args`.
+The constraint callbacks must describe autonomous geometry, accept off-manifold
+inputs, and fill every output element. There is no finite-difference fallback
+for $G$ or curvature. If the full RHS Jacobian is omitted, the inherited
+finite-difference implementation evaluates the augmented RHS automatically.
+Set `set_is_mass_matrix_dependent(.true.)` when the physical mass varies with
+time or coordinates; otherwise solvers can cache the augmented mass per solve.
+
+`initialize(N,M,alpha,beta)` defines dimensions and gains; `get_state_count()`
+returns $2N+2M$. `validate_initial_conditions(x,z,tolerance,args)` checks both
+position and velocity residuals against an absolute tolerance without changing
+the state. Choose constraint scaling that makes this tolerance meaningful for
+both residuals. `initialize_multipliers(x,z,args)` solves for $\mu$ and $\lambda$
+without changing $q$ or $v$. It makes the stabilized algebraic rows consistent,
+but does not repair physically inconsistent position or velocity inputs.
+
+Here is a complete pendulum example with $g(q)=q^Tq-L^2$, $G=2q^T$, and
+$DG(q)[\dot q]v=2\dot q^Tv$. Its state ordering differs from the preceding
+acceleration-level pendulum example: `[qx,qy,vx,vy,lambda,mu]`.
+
+```fortran
+program stabilized_pendulum
+    use iso_fortran_env, only : real64
+    use diffeq, only : ggl_container, bdf
+    implicit none
+
+    real(real64), parameter :: length = 1.5d0, body_mass = 2.0d0
+    type(ggl_container) :: model
+    type(bdf) :: solver
+    real(real64), dimension(6) :: initial_state
+    real(real64), allocatable, dimension(:,:) :: solution
+
+    call model%initialize(2, 1, alpha = 2.0d0, beta = 3.0d0)
+    model%fcn => force
+    model%mass_matrix => physical_mass
+    model%constraints => position_constraint
+    model%constraint_jacobian => constraint_gradient
+    model%constraint_curvature => constraint_curvature
+    call model%set_is_mass_matrix_dependent(.false.)
+    initial_state = [length, 0.0d0, 0.0d0, 0.0d0, 0.0d0, 0.0d0]
+    if (.not.model%validate_initial_conditions(0.0d0, initial_state, 1.0d-10)) &
+        error stop "Inconsistent physical initial conditions"
+    call model%initialize_multipliers(0.0d0, initial_state)
+    call solver%set_absolute_tolerance(1.0d-9)
+    call solver%set_relative_tolerance(1.0d-9)
+    call solver%solve(model, [0.0d0, 1.0d0], initial_state)
+    solution = solver%get_solution()
+    print *, solution(size(solution,1),:)
+
+contains
+    subroutine force(x, y, applied_force, args)
+        real(real64), intent(in) :: x
+        real(real64), intent(in), dimension(:) :: y
+        real(real64), intent(out), dimension(:) :: applied_force
+        class(*), intent(inout), optional :: args
+        applied_force = [0.0d0, -body_mass * 9.81d0]
+    end subroutine
+
+    subroutine physical_mass(x, q, mass, args)
+        real(real64), intent(in) :: x
+        real(real64), intent(in), dimension(:) :: q
+        real(real64), intent(out), dimension(:,:) :: mass
+        class(*), intent(inout), optional :: args
+        mass = 0.0d0
+        mass(1,1) = body_mass
+        mass(2,2) = body_mass
+    end subroutine
+
+    subroutine position_constraint(x, q, g, args)
+        real(real64), intent(in) :: x
+        real(real64), intent(in), dimension(:) :: q
+        real(real64), intent(out), dimension(:) :: g
+        class(*), intent(inout), optional :: args
+        g(1) = dot_product(q, q) - length**2
+    end subroutine
+
+    subroutine constraint_gradient(x, q, gradient, args)
+        real(real64), intent(in) :: x
+        real(real64), intent(in), dimension(:) :: q
+        real(real64), intent(out), dimension(:,:) :: gradient
+        class(*), intent(inout), optional :: args
+        gradient(1,:) = 2.0d0 * q
+    end subroutine
+
+    subroutine constraint_curvature(x, q, direction, v, curvature, args)
+        real(real64), intent(in) :: x
+        real(real64), intent(in), dimension(:) :: q, direction, v
+        real(real64), intent(out), dimension(:) :: curvature
+        class(*), intent(inout), optional :: args
+        curvature(1) = 2.0d0 * dot_product(direction, v)
+    end subroutine
+end program
+```
+
+Use BDF, Rosenbrock, or either Kennedy-Carpenter solver with this container.
+Adams and explicit Runge-Kutta methods are unsuitable for its singular augmented
+matrix. The regression suite checks constraint preservation and exponential
+decay for all four supported implicit solvers, including dense output and a
+time-dependent physical mass.
 
 ## External Libraries
 Here is a list of external code libraries utilized by this library.  The CMake build script will include these dependencies automatically; however, it is highly recommended that an optimized BLAS and LAPACK already reside on your system for best performance (used by LINALG for linear algebra calculations).

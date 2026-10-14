@@ -41,7 +41,9 @@ add_executable(diffeq_error_tests diffeq_error_tests.f90)
 target_link_libraries(diffeq_error_tests diffeq)
 
 foreach(error_case missing_ode short_grid step_limit tolerance_size
-    bdf_step_exhaustion adams_step_exhaustion)
+    bdf_step_exhaustion adams_step_exhaustion
+    ggl_dimensions ggl_gains ggl_state_size ggl_rhs_size ggl_matrix_size
+    ggl_missing_callback ggl_tolerance ggl_singular_mass ggl_singular_constraints)
     add_test(
         NAME diffeq_error_${error_case}
         WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}

@@ -150,6 +150,12 @@ program test
     rst = test_solver_mass_dispatch()
         if (.not.rst) flag = max(flag, 57)
 
+    rst = test_ggl_container()
+        if (.not.rst) flag = max(flag, 58)
+
+    rst = test_ggl_integration()
+        if (.not.rst) flag = max(flag, 59)
+
     rst = test_runge_kutta_dense_with_args()
         if (.not.rst) flag = max(flag, 23)
 

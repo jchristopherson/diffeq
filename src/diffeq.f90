@@ -27,6 +27,7 @@ module diffeq
     use diffeq_pece
     use diffeq_rosenbrock
     use diffeq_kennedy_carpenter
+    use diffeq_index_reduction
     use diffeq_containers
     use diffeq_container_io
     use diffeq_singlestep
