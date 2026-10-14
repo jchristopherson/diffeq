@@ -375,16 +375,13 @@ subroutine oc_jacobian(this, x, y, jac, args)
     ! Finite Difference Approximation
     ! J(i,j) = df(i) / dy(j)
     this%m_jwork(1:ndof) = y
-    call this%fcn(x, y, this%m_jwork(ndof+1:), args)
+    call this%compute_rhs(x, y, this%m_jwork(ndof+1:), args)
     do i = 1, ndof
         this%m_jwork(i) = this%m_jwork(i) + h
-        call this%fcn(x, this%m_jwork(1:ndof), jac(:,i), args)
+        call this%compute_rhs(x, this%m_jwork(1:ndof), jac(:,i), args)
         jac(:,i) = (jac(:,i) - this%m_jwork(ndof+1:)) / h
         this%m_jwork(i) = y(i)
     end do
-
-    ! End
-    return
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -449,7 +446,7 @@ subroutine oc_eval_rhs(this, x, y, dydx, args)
         !! An optional argument that can be used to pass information
         !! in and out of the routine.
 
-    if (.not.associated(this%fcn)) error stop DIFFEQ_NULL_POINTER_ERROR
+    if (.not.this%get_is_ode_defined()) error stop DIFFEQ_NULL_POINTER_ERROR
     call this%fcn(x, y, dydx, args = args)
 end subroutine
 
@@ -829,7 +826,7 @@ subroutine oi_initial_step(this, sys, xo, xf, yo, fo, h, args)
     !! Computes an estimate of an initial step size.
     class(ode_integrator), intent(inout) :: this
         !! The ode_integrator object.
-    class(ode_container), intent(in) :: sys
+    class(ode_container), intent(inout) :: sys
         !! The ode_container object containing the ODE's to integrate.
     real(real64), intent(in) :: xo
         !! The initial value of the independent variable.
@@ -865,7 +862,7 @@ subroutine oi_initial_step(this, sys, xo, xf, yo, fo, h, args)
         tol(i) = max(this%get_absolute_tolerance(i), &
             this%get_relative_tolerance(i))
     end do
-    call sys%fcn(xo, yo, fo, args)
+    call sys%compute_rhs(xo, yo, fo, args)
     derivative_norm = norm2(fo / tol)
     if (derivative_norm > 0.0d0) then
         h = min(abs(dx), 2.0d0 / derivative_norm)
