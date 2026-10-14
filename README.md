@@ -839,3 +839,10 @@ Here is a list of external code libraries utilized by this library.  The CMake b
 6. Kennedy, C. A., Carpenter, M. H. (2016, March). Diagonally Implicit Runge-Kutta Methods for Ordinary Differential Equations. A Review. https://ntrs.nasa.gov/api/citations/20160005923/downloads/20160005923.pdf 
 7. Stal, J. (2015). Implementation of Singly Diagonally Implicit Runge-Kutta Methods with Constant Step Sizes. https://core.ac.uk/download/pdf/289938621.pdf 
 8. Nayfeh, A. H., & Balachandran, B. (1995). Applied Nonlinear Dynamics: Analytical, Computational, and Experimental Methods. J. Wiley.
+9. Schoeder, Svenja & Ulbrich, Heinz & Schindler, Thorsten. (2013). Discussion of the Gear–Gupta–Leimkuhler method for impacting mechanical systems. Multibody System Dynamics. 31. 10.1007/s11044-013-9370-y. 
+10. Pöll, C. & Hafner, Irene. (2015). Index Reduction and Regularisation Methods for Multibody Systems. IFAC-PapersOnLine. 48. 306-311. 10.1016/j.ifacol.2015.05.150. 
+11. Tsitouras, Charalampos. (2011). Runge–Kutta pairs of order 5(4) satisfying only the first column simplifying assumption. Computers & Mathematics with Applications. 62. 770-775. 10.1016/j.camwa.2011.06.002. 
+12. M. H. Carpenter, C. A. Kennedy, and J. M. Derlaga, “Intrastep, Stage-Value Predictors for Diagonally-Implicit Runge–Kutta Methods,” NASA Langley Research Center, Presentation, 2023.
+13. Gear, C. W. (1971). Numerical initial value problems in ordinary differential equations. Prentice-Hall.
+14. Hairer, E., Nørsett, S. P., & Wanner, G. (1993). Solving ordinary differential equations I: Nonstiff problems (2nd revised ed.). Springer.
+15. Hairer, E., & Wanner, G. (1996). Solving ordinary differential equations II: Stiff and differential-algebraic problems (2nd revised ed.). Springer.
