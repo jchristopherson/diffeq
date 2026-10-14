@@ -155,11 +155,11 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='diffeq_singlestep.html'>diffeq_singlestep</a></li>
-                  <li class="list-inline-item"><a href='diffeq_base.html'>diffeq_base</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
                   <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
                   <li class="list-inline-item">linalg</li>
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='diffeq_base.html'>diffeq_base</a></li>
+                  <li class="list-inline-item"><a href='diffeq_singlestep.html'>diffeq_singlestep</a></li>
               </ul>
             </li>
         </ul>
@@ -202,7 +202,7 @@ buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-attempt_step~2'>attempt_step</a></strong> => kc_attempt_step</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-attempt_step~4'>attempt_step</a></strong> => kc_attempt_step</td>
                 <td>..\..\<p>Attempts an integration step for this integrator.<\p></td>
               </tr>
               <tr>
@@ -212,7 +212,7 @@ buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm'>compute_error_norm</a></strong> => oi_estimate_error</td>
                 <td>..\..\<p>Computes the norm of the scaled error estimate.<\p></td>
               </tr>
               <tr>
@@ -222,7 +222,7 @@ buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size'>estimate_next_step_size</a></strong> => oi_next_step</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
                 <td>..\..\<p>Estimates the next step size.<\p></td>
               </tr>
               <tr>
@@ -238,7 +238,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-get_is_fsal~2'>get_is_fsal</a></strong> => kc_get_is_fsal</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-get_is_fsal~4'>get_is_fsal</a></strong> => kc_get_is_fsal</td>
                 <td>..\..\<p>Gets a logical parameter stating if this is a first-same-as-last
 (FSAL) integrator.<\p></td>
               </tr>
@@ -274,7 +274,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-get_stage_count~2'>get_stage_count</a></strong> => kc_get_stage_count</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-get_stage_count~4'>get_stage_count</a></strong> => kc_get_stage_count</td>
                 <td>..\..\<p>Gets the stage count for this integrator.<\p></td>
               </tr>
               <tr>
@@ -294,7 +294,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-interpolate~2'>interpolate</a></strong> => kc_interpolate</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-interpolate~5'>interpolate</a></strong> => kc_interpolate</td>
                 <td>..\..\<p>Performs the interpolation.<\p></td>
               </tr>
               <tr>
@@ -324,17 +324,17 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-post_step_action~2'>post_step_action</a></strong> => kc_post_step</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-post_step_action~4'>post_step_action</a></strong> => kc_post_step</td>
                 <td>..\..\<p>Performs any post-step actions.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-pre_step_action~2'>pre_step_action</a></strong> => kc_pre_step</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-pre_step_action~4'>pre_step_action</a></strong> => kc_pre_step</td>
                 <td>..\..\<p>Performs any pre-step actions.<\p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-set_absolute_tolerance~3'>set_absolute_tolerance</a></strong> => oi_set_abs_tol, oi_set_abs_tols</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-set_absolute_tolerance~8'>set_absolute_tolerance</a></strong> => oi_set_abs_tol, oi_set_abs_tols</td>
                 <td>..\..\<p>Sets the absolute error tolerance.<\p></td>
               </tr>
               <tr>
@@ -355,7 +355,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-set_relative_tolerance~3'>set_relative_tolerance</a></strong> => oi_set_rel_tol, oi_set_rel_tols</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-set_relative_tolerance~8'>set_relative_tolerance</a></strong> => oi_set_rel_tol, oi_set_rel_tols</td>
                 <td>..\..\<p>Sets the relative error tolerance.<\p></td>
               </tr>
               <tr>
@@ -375,7 +375,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-solve'>solve</a></strong> => kc_solve</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-solve~4'>solve</a></strong> => kc_solve</td>
                 <td></td>
               </tr>
           </tbody>
@@ -411,7 +411,7 @@ buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-attempt_step~2'>attempt_step</a></strong> => kc_attempt_step</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-attempt_step~4'>attempt_step</a></strong> => kc_attempt_step</td>
                 <td>..\..\<p>Attempts an integration step for this integrator.<\p></td>
               </tr>
               <tr>
@@ -421,7 +421,7 @@ buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm'>compute_error_norm</a></strong> => oi_estimate_error</td>
                 <td>..\..\<p>Computes the norm of the scaled error estimate.<\p></td>
               </tr>
               <tr>
@@ -431,7 +431,7 @@ buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size'>estimate_next_step_size</a></strong> => oi_next_step</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
                 <td>..\..\<p>Estimates the next step size.<\p></td>
               </tr>
               <tr>
@@ -447,7 +447,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-get_is_fsal~2'>get_is_fsal</a></strong> => kc_get_is_fsal</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-get_is_fsal~4'>get_is_fsal</a></strong> => kc_get_is_fsal</td>
                 <td>..\..\<p>Gets a logical parameter stating if this is a first-same-as-last
 (FSAL) integrator.<\p></td>
               </tr>
@@ -468,7 +468,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter_4.html#boundprocedure-get_order~2'>get_order</a></strong> => kc4_get_order</td>
+  <strong><a href='..\type\kennedy_carpenter_4.html#boundprocedure-get_order~6'>get_order</a></strong> => kc4_get_order</td>
                 <td>..\..\<p>Gets the order of the integrator.<\p></td>
               </tr>
               <tr>
@@ -483,7 +483,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-get_stage_count~2'>get_stage_count</a></strong> => kc_get_stage_count</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-get_stage_count~4'>get_stage_count</a></strong> => kc_get_stage_count</td>
                 <td>..\..\<p>Gets the stage count for this integrator.<\p></td>
               </tr>
               <tr>
@@ -503,7 +503,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-interpolate~2'>interpolate</a></strong> => kc_interpolate</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-interpolate~5'>interpolate</a></strong> => kc_interpolate</td>
                 <td>..\..\<p>Performs the interpolation.<\p></td>
               </tr>
               <tr>
@@ -533,17 +533,17 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-post_step_action~2'>post_step_action</a></strong> => kc_post_step</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-post_step_action~4'>post_step_action</a></strong> => kc_post_step</td>
                 <td>..\..\<p>Performs any post-step actions.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-pre_step_action~2'>pre_step_action</a></strong> => kc_pre_step</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-pre_step_action~4'>pre_step_action</a></strong> => kc_pre_step</td>
                 <td>..\..\<p>Performs any pre-step actions.<\p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='..\type\kennedy_carpenter_4.html#boundprocedure-set_absolute_tolerance~4'>set_absolute_tolerance</a></strong> => oi_set_abs_tol, oi_set_abs_tols</td>
+  <strong><a href='..\type\kennedy_carpenter_4.html#boundprocedure-set_absolute_tolerance~9'>set_absolute_tolerance</a></strong> => oi_set_abs_tol, oi_set_abs_tols</td>
                 <td>..\..\<p>Sets the absolute error tolerance.<\p></td>
               </tr>
               <tr>
@@ -564,7 +564,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='..\type\kennedy_carpenter_4.html#boundprocedure-set_relative_tolerance~4'>set_relative_tolerance</a></strong> => oi_set_rel_tol, oi_set_rel_tols</td>
+  <strong><a href='..\type\kennedy_carpenter_4.html#boundprocedure-set_relative_tolerance~9'>set_relative_tolerance</a></strong> => oi_set_rel_tol, oi_set_rel_tols</td>
                 <td>..\..\<p>Sets the relative error tolerance.<\p></td>
               </tr>
               <tr>
@@ -584,7 +584,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-solve'>solve</a></strong> => kc_solve</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-solve~4'>solve</a></strong> => kc_solve</td>
                 <td></td>
               </tr>
           </tbody>
@@ -620,7 +620,7 @@ buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-attempt_step~2'>attempt_step</a></strong> => kc_attempt_step</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-attempt_step~4'>attempt_step</a></strong> => kc_attempt_step</td>
                 <td>..\..\<p>Attempts an integration step for this integrator.<\p></td>
               </tr>
               <tr>
@@ -630,7 +630,7 @@ buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm'>compute_error_norm</a></strong> => oi_estimate_error</td>
                 <td>..\..\<p>Computes the norm of the scaled error estimate.<\p></td>
               </tr>
               <tr>
@@ -640,7 +640,7 @@ buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size'>estimate_next_step_size</a></strong> => oi_next_step</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
                 <td>..\..\<p>Estimates the next step size.<\p></td>
               </tr>
               <tr>
@@ -656,7 +656,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-get_is_fsal~2'>get_is_fsal</a></strong> => kc_get_is_fsal</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-get_is_fsal~4'>get_is_fsal</a></strong> => kc_get_is_fsal</td>
                 <td>..\..\<p>Gets a logical parameter stating if this is a first-same-as-last
 (FSAL) integrator.<\p></td>
               </tr>
@@ -677,7 +677,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter_5.html#boundprocedure-get_order~3'>get_order</a></strong> => kc5_get_order</td>
+  <strong><a href='..\type\kennedy_carpenter_5.html#boundprocedure-get_order~7'>get_order</a></strong> => kc5_get_order</td>
                 <td>..\..\<p>Gets the order of the integrator.<\p></td>
               </tr>
               <tr>
@@ -692,7 +692,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-get_stage_count~2'>get_stage_count</a></strong> => kc_get_stage_count</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-get_stage_count~4'>get_stage_count</a></strong> => kc_get_stage_count</td>
                 <td>..\..\<p>Gets the stage count for this integrator.<\p></td>
               </tr>
               <tr>
@@ -712,7 +712,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-interpolate~2'>interpolate</a></strong> => kc_interpolate</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-interpolate~5'>interpolate</a></strong> => kc_interpolate</td>
                 <td>..\..\<p>Performs the interpolation.<\p></td>
               </tr>
               <tr>
@@ -742,17 +742,17 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-post_step_action~2'>post_step_action</a></strong> => kc_post_step</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-post_step_action~4'>post_step_action</a></strong> => kc_post_step</td>
                 <td>..\..\<p>Performs any post-step actions.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-pre_step_action~2'>pre_step_action</a></strong> => kc_pre_step</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-pre_step_action~4'>pre_step_action</a></strong> => kc_pre_step</td>
                 <td>..\..\<p>Performs any pre-step actions.<\p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='..\type\kennedy_carpenter_5.html#boundprocedure-set_absolute_tolerance~5'>set_absolute_tolerance</a></strong> => oi_set_abs_tol, oi_set_abs_tols</td>
+  <strong><a href='..\type\kennedy_carpenter_5.html#boundprocedure-set_absolute_tolerance~10'>set_absolute_tolerance</a></strong> => oi_set_abs_tol, oi_set_abs_tols</td>
                 <td>..\..\<p>Sets the absolute error tolerance.<\p></td>
               </tr>
               <tr>
@@ -773,7 +773,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='..\type\kennedy_carpenter_5.html#boundprocedure-set_relative_tolerance~5'>set_relative_tolerance</a></strong> => oi_set_rel_tol, oi_set_rel_tols</td>
+  <strong><a href='..\type\kennedy_carpenter_5.html#boundprocedure-set_relative_tolerance~10'>set_relative_tolerance</a></strong> => oi_set_rel_tol, oi_set_rel_tols</td>
                 <td>..\..\<p>Sets the relative error tolerance.<\p></td>
               </tr>
               <tr>
@@ -793,7 +793,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-solve'>solve</a></strong> => kc_solve</td>
+  <strong><a href='..\type\kennedy_carpenter.html#boundprocedure-solve~4'>solve</a></strong> => kc_solve</td>
                 <td></td>
               </tr>
           </tbody>
@@ -823,7 +823,7 @@ the final value in the integration range.<\p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-14 15:24              </p>
+ on 2026-10-14 15:56              </p>
           </div>
         </div>
         <br>
