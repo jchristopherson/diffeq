@@ -1051,7 +1051,7 @@ shows the horizontal coordinate oscillating between $-L$ and $L$, while the
 vertical coordinate stays between $-L$ and zero. The mass passes its lowest
 point twice per complete horizontal oscillation, so the vertical motion repeats
 twice as often. The right panel shows
-$\theta=\operatorname{atan2}(q_y,q_x)$, measured from the positive horizontal
+$\theta$, measured from the positive horizontal
 axis: the release point is $0^\circ$, the lowest point is $-90^\circ$, and
 the opposite horizontal turning point is $-180^\circ$.
 
