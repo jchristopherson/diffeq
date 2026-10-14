@@ -842,7 +842,7 @@ equations. For $N$ coordinates and $M$ constraints, define
 $$
 z=[q_N,v_N,\lambda_M,\mu_M]^T,\qquad
 G(q)=\frac{\partial g}{\partial q},\qquad
-\mathcal M=\operatorname{diag}(I_N,M_N,0_M,0_M).
+\mathcal M=diag(I_N,M_N,0_M,0_M).
 $$
 
 The container supplies the equations
