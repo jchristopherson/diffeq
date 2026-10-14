@@ -61,9 +61,10 @@ add_test(
 foreach(error_case
     init_zero_states init_negative_states init_zero_capacity init_negative_capacity
     capacity_uninitialized capacity_zero capacity_negative push_size
-    point_uninitialized point_low point_high point_size
-    whole_uninitialized whole_grid_size whole_rows whole_columns
-    vector_uninitialized vector_low vector_high vector_size
+    point_uninitialized point_low point_high point_empty point_cleared
+    selected_uninitialized selected_low selected_high selected_empty selected_cleared
+    whole_uninitialized points_uninitialized
+    vector_uninitialized vector_low vector_high vector_cleared
     matrix_uninitialized
 )
     add_test(

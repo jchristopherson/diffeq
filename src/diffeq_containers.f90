@@ -48,14 +48,15 @@ module diffeq_containers
         procedure, public :: count => or_get_count
         procedure, public :: get_capacity => or_get_capacity
         procedure, public :: set_capacity => or_set_capacity
-        generic, public :: state => or_state_by_index, or_whole_state, &
-            or_state_vector
-        procedure, private :: or_state_by_index
+        generic, public :: state => or_whole_state, or_state_vector
         procedure, private :: or_whole_state
         procedure, private :: or_state_vector
+        procedure, public :: selected_state => or_state_by_index
+        procedure, public :: solution_point => or_solution_point_by_index
         procedure, public :: push => or_push_state
         procedure, public :: to_matrix => or_to_matrix
         procedure, public :: clear_all => or_clear_all
+        procedure, public :: solution_points => or_solution_points
     end type
 
     interface ode_results
@@ -156,7 +157,7 @@ end subroutine
 
 
 ! ------------------------------------------------------------------------------
-pure subroutine or_state_by_index(this, index, x, y)
+pure function or_state_by_index(this, index) result(rst)
     !! Gets the requested state variables by index.  If this routine is called
     !! on an uninitialized container a DIFFEQ_INVALID_OPERATION_ERROR is thrown.
     class(ode_results), intent(in) :: this
@@ -165,51 +166,51 @@ pure subroutine or_state_by_index(this, index, x, y)
         !! The one-based index for the state to return.  The index value must
         !! lie within the range [1, count()], else a DIFFEQ_INVALID_INPUT_ERROR
         !! is thrown.
-    real(real64), intent(out) :: x
-        !! The independent variable value.
-    real(real64), intent(out), dimension(:) :: y
-        !! The state vector.  This vector must be correctly sized to accept the
-        !! state vector, else a DIFFEQ_ARRAY_SIZE_ERROR is thrown.
+    real(real64), allocatable, dimension(:) :: rst
+        !! The state vector.
 
     if (.not.allocated(this%m_buffer)) error stop DIFFEQ_INVALID_OPERATION_ERROR
-    if (size(y) /= this%state_variable_count()) error stop DIFFEQ_ARRAY_SIZE_ERROR
     if (index < 1 .or. index > this%count()) error stop DIFFEQ_INVALID_INPUT_ERROR
 
-    x = this%m_buffer(index,1)
-    y = this%m_buffer(index,2:)
-end subroutine
+    rst = this%m_buffer(index,2:)
+end function
 
 ! ------------------------------------------------------------------------------
-pure subroutine or_whole_state(this, x, y)
+pure function or_solution_point_by_index(this, index) result(rst)
+    !! Gets the requested solution point by index.  If this routine is called
+    !! on an uninitialized container a DIFFEQ_INVALID_OPERATION_ERROR is thrown.
+    class(ode_results), intent(in) :: this
+        !! The [[ode_results]] object.
+    integer, intent(in) :: index
+        !! The one-based index for the state to return.  The index value must
+        !! lie within the range [1, count()], else a DIFFEQ_INVALID_INPUT_ERROR
+        !! is thrown.
+    real(real64) :: rst
+        !! The solution point.
+
+    if (.not.allocated(this%m_buffer)) error stop DIFFEQ_INVALID_OPERATION_ERROR
+    if (index < 1 .or. index > this%count()) error stop DIFFEQ_INVALID_INPUT_ERROR
+
+    rst = this%m_buffer(index,1)
+end function
+
+! ------------------------------------------------------------------------------
+pure function or_whole_state(this) result(rst)
     !! Gets the entire contents of the container.  If this routine is called
     !! on an uninitialized container a DIFFEQ_INVALID_OPERATION_ERROR is thrown.
     class(ode_results), intent(in) :: this
         !! The [[ode_results]] object.
-    real(real64), intent(out), dimension(:) :: x
-        !! An M-element array where the independent variable values at which the
-        !! solution was computed are returned.  M must be equal to count() or
-        !! a DIFFEQ_ARRAY_SIZE_ERROR is thrown.
-    real(real64), intent(out), dimension(:,:) :: y
+    real(real64), allocatable, dimension(:,:) :: rst
         !! An M-by-N element matrix where the state variable values are 
-        !! returned.  M must be equal to count(), and N must be equal to
-        !! state_variable_count() or a DIFFEQ_MATRIX_SIZE_ERROR is thrown.
+        !! returned.  M is equal to count(), and N is equal to
+        !! state_variable_count().
 
-    integer :: i
-
-    if (.not.allocated(this%m_buffer)) error stop DIFFEQ_INVALID_OPERATION_ERROR
-    if (size(x) /= this%count()) error stop DIFFEQ_ARRAY_SIZE_ERROR
-    if (size(y, 1) /= this%count() .or. &
-        size(y, 2) /= this%state_variable_count()) &
-        error stop DIFFEQ_MATRIX_SIZE_ERROR
-
-    do i = 1, this%count()
-        x(i) = this%m_buffer(i,1)
-        y(i,:) = this%m_buffer(i,2:)
-    end do
-end subroutine
+    if (.not.allocated(this%m_buffer)) error stop DIFFEQ_INVALID_OPERATION_ERROR    
+    rst = this%m_buffer(1:this%count(), 2:this%state_variable_count() + 1)
+end function
 
 ! ------------------------------------------------------------------------------
-pure subroutine or_state_vector(this, index, yi)
+pure function or_state_vector(this, index) result(rst)
     !! Gets an entire state vector.   If this routine is called on an 
     !! uninitialized container a DIFFEQ_INVALID_OPERATION_ERROR is thrown.
     class(ode_results), intent(in) :: this
@@ -218,16 +219,15 @@ pure subroutine or_state_vector(this, index, yi)
         !! The one-based index for the state vector to return.  The index value 
         !! must lie within the range [1, state_variable_count()], else a 
         !! DIFFEQ_INVALID_INPUT_ERROR is thrown.
-    real(real64), intent(out), dimension(:) :: yi
-        !! An N-element array where the state vector will be returned.  If N
-        !! is not equal to count(), a DIFFEQ_ARRAY_SIZE_ERROR will be thrown.
+    real(real64), allocatable, dimension(:) :: rst
+        !! An M-element array where the state vector will be returned.  M is 
+        !! equal to count().
 
     if (.not.allocated(this%m_buffer)) error stop DIFFEQ_INVALID_OPERATION_ERROR
     if (index < 1 .or. index > this%state_variable_count()) error stop DIFFEQ_INVALID_INPUT_ERROR
-    if (size(yi) /= this%count()) error stop DIFFEQ_ARRAY_SIZE_ERROR
 
-    yi = this%m_buffer(1:this%m_count,index + 1)
-end subroutine
+    rst = this%m_buffer(1:this%m_count,index + 1)
+end function
 
 ! ------------------------------------------------------------------------------
 subroutine or_push_state(this, x, y)
@@ -293,6 +293,21 @@ subroutine or_clear_all(this)
     this%m_count = 0
     this%m_state_count = 0
 end subroutine
+
+! ------------------------------------------------------------------------------
+pure function or_solution_points(this) result(rst)
+    !! Gets a vector containing the independent variable values at which the
+    !! solution was computed.  If this routine is called on an uninitialized 
+    !! container a DIFFEQ_INVALID_OPERATION_ERROR is thrown.
+    class(ode_results), intent(in) :: this
+        !! The [[ode_results]] object.
+    real(real64), allocatable, dimension(:) :: rst
+        !! An M-element array where the solution points will be written.  M is 
+        !! equal to count().
+
+    if (.not.allocated(this%m_buffer)) error stop DIFFEQ_INVALID_OPERATION_ERROR
+    rst = this%m_buffer(1:this%count(),1)
+end function
 
 ! ------------------------------------------------------------------------------
 end module

@@ -6,11 +6,7 @@ program diffeq_container_tests
     character(len=40) :: test_name
     type(ode_results) :: results
     real(real64) :: point
-    real(real64), dimension(2) :: values
-    real(real64), dimension(1) :: grid, vector
-    real(real64), dimension(1,2) :: states
-    real(real64), dimension(2,2) :: wrong_rows
-    real(real64), dimension(1,1) :: wrong_columns
+    real(real64), allocatable, dimension(:) :: values, grid, vector
     real(real64), allocatable, dimension(:,:) :: matrix
 
     call get_command_argument(1, test_name)
@@ -34,13 +30,24 @@ program diffeq_container_tests
         case ("capacity_uninitialized")
             call results%set_capacity(1)
         case ("point_uninitialized")
-            call results%state(1, point, values)
+            point = results%solution_point(1)
+        case ("selected_uninitialized")
+            values = results%selected_state(1)
         case ("whole_uninitialized")
-            call results%state(grid, states)
+            matrix = results%state()
         case ("vector_uninitialized")
-            call results%state(1, vector)
+            vector = results%state(1)
+        case ("points_uninitialized")
+            grid = results%solution_points()
         case ("matrix_uninitialized")
             matrix = results%to_matrix()
+        case ("point_empty", "selected_empty")
+            results = ode_results(2)
+            if (trim(test_name) == "point_empty") then
+                point = results%solution_point(1)
+            else
+                values = results%selected_state(1)
+            end if
         case default
             results = ode_results(2, 2)
             call results%push(1.0d0, [2.0d0, 3.0d0])
@@ -52,23 +59,26 @@ program diffeq_container_tests
             case ("push_size")
                 call results%push(2.0d0, [4.0d0])
             case ("point_low")
-                call results%state(0, point, values)
+                point = results%solution_point(0)
             case ("point_high")
-                call results%state(2, point, values)
-            case ("point_size")
-                call results%state(1, point, vector)
-            case ("whole_grid_size")
-                call results%state(values, states)
-            case ("whole_rows")
-                call results%state(grid, wrong_rows)
-            case ("whole_columns")
-                call results%state(grid, wrong_columns)
+                point = results%solution_point(2)
+            case ("selected_low")
+                values = results%selected_state(0)
+            case ("selected_high")
+                values = results%selected_state(2)
             case ("vector_low")
-                call results%state(0, vector)
+                vector = results%state(0)
             case ("vector_high")
-                call results%state(3, vector)
-            case ("vector_size")
-                call results%state(1, values)
+                vector = results%state(3)
+            case ("point_cleared")
+                call results%clear_all()
+                point = results%solution_point(1)
+            case ("selected_cleared")
+                call results%clear_all()
+                values = results%selected_state(1)
+            case ("vector_cleared")
+                call results%clear_all()
+                vector = results%state(1)
             case default
                 error stop "Unknown container test"
             end select
@@ -85,8 +95,8 @@ contains
 
     subroutine test_construction()
         type(ode_results) :: container
-        real(real64), dimension(0) :: empty_grid, empty_vector
-        real(real64), dimension(0,2) :: empty_states
+        real(real64), allocatable, dimension(:) :: empty_grid, empty_vector
+        real(real64), allocatable, dimension(:,:) :: empty_states
 
         call check(container%count() == 0, "Default count")
         call check(container%get_capacity() == 0, "Default capacity")
@@ -96,8 +106,15 @@ contains
         call check(container%count() == 0, "Constructed count")
         call check(container%get_capacity() == 1000, "Default buffer capacity")
         call check(container%state_variable_count() == 2, "Constructed state count")
-        call container%state(empty_grid, empty_states)
-        call container%state(2, empty_vector)
+        empty_states = container%state()
+        empty_vector = container%state(2)
+        empty_grid = container%solution_points()
+        call check(allocated(empty_states), "Empty state allocated")
+        call check(all(shape(empty_states) == [0, 2]), "Empty state shape")
+        call check(allocated(empty_vector), "Empty state vector allocated")
+        call check(size(empty_vector) == 0, "Empty state vector size")
+        call check(allocated(empty_grid), "Empty solution points allocated")
+        call check(size(empty_grid) == 0, "Empty solution points size")
 
         container = ode_results(1, 1)
         call check(container%count() == 0, "Explicit empty count")
@@ -108,9 +125,9 @@ contains
     subroutine test_state_access()
         type(ode_results) :: container
         real(real64) :: xvalue
-        real(real64), dimension(2) :: yvalue
-        real(real64), dimension(3) :: xvalues, yvector
-        real(real64), dimension(3,2) :: yvalues, expected
+        real(real64), allocatable, dimension(:) :: yvalue, xvalues, yvector
+        real(real64), allocatable, dimension(:,:) :: yvalues
+        real(real64), dimension(3,2) :: expected
         integer :: index
 
         container = ode_results(2, 5)
@@ -123,17 +140,39 @@ contains
         call check(container%get_capacity() == 5, "Push within capacity")
 
         do index = 1, 3
-            call container%state(index, xvalue, yvalue)
+            xvalue = container%solution_point(index)
+            yvalue = container%selected_state(index)
+            call check(size(yvalue) == 2, "Selected state size")
             call check(xvalue == real(index, real64), "Indexed independent variable")
             call check(all(yvalue == expected(index,:)), "Indexed state")
         end do
-        call container%state(xvalues, yvalues)
+        xvalues = container%solution_points()
+        yvalues = container%state()
+        call check(size(xvalues) == 3, "Solution points exclude spare capacity")
+        call check(all(shape(yvalues) == [3, 2]), "Whole state excludes spare capacity")
         call check(all(xvalues == [1.0d0, 2.0d0, 3.0d0]), "Whole independent variable")
         call check(all(yvalues == expected), "Whole state")
         do index = 1, 2
-            call container%state(index, yvector)
+            yvector = container%state(index)
+            call check(size(yvector) == 3, "State vector excludes spare capacity")
             call check(all(yvector == expected(:,index)), "State vector with spare capacity")
         end do
+
+        yvalue = 0.0d0
+        yvalue = container%selected_state(3)
+        call check(all(yvalue == expected(3,:)), "Selected state is a copy")
+        xvalues = 0.0d0
+        xvalues = container%solution_points()
+        call check(all(xvalues == [1.0d0, 2.0d0, 3.0d0]), "Solution points are a copy")
+        yvalues = 0.0d0
+        yvalues = container%state()
+        call check(all(yvalues == expected), "Whole state is a copy")
+        yvector = 0.0d0
+        yvector = container%state(2)
+        call check(all(yvector == expected(:,2)), "State vector is a copy")
+        call container%clear_all()
+        call check(all(yvalues == expected), "Clear preserves returned state copy")
+        call check(all(xvalues == [1.0d0, 2.0d0, 3.0d0]), "Clear preserves returned points copy")
     end subroutine
 
     subroutine test_capacity()
@@ -162,7 +201,8 @@ contains
         call check(container%get_capacity() == 4, "Shrink spare capacity")
         call check(container%count() == 3, "Shrink without truncation")
         do index = 1, 3
-            call container%state(index, xvalue, yvalue)
+            xvalue = container%solution_point(index)
+            yvalue = container%selected_state(index)
             call check(xvalue == real(index, real64), "Resize preserves independent variable")
             call check(all(yvalue == [real(index * 10, real64), real(-index, real64)]), &
                 "Resize preserves state")
@@ -173,12 +213,14 @@ contains
         call container%set_capacity(1)
         call check(container%get_capacity() == 1, "Truncated capacity")
         call check(container%count() == 1, "Truncated count")
-        call container%state(1, xvalue, yvalue)
+        xvalue = container%solution_point(1)
+        yvalue = container%selected_state(1)
         call check(xvalue == 1.0d0 .and. all(yvalue == [10.0d0, -1.0d0]), &
             "Truncation keeps first point")
         call container%push(4.0d0, [40.0d0, -4.0d0])
         call check(container%count() == 2, "Push after truncation")
-        call container%state(2, xvalue, yvalue)
+        xvalue = container%solution_point(2)
+        yvalue = container%selected_state(2)
         call check(xvalue == 4.0d0 .and. all(yvalue == [40.0d0, -4.0d0]), &
             "Push replaces discarded point")
     end subroutine
@@ -186,8 +228,8 @@ contains
     subroutine test_clear_all()
         type(ode_results) :: container
         real(real64), allocatable, dimension(:,:) :: output
-        real(real64), dimension(0) :: empty_grid
-        real(real64), dimension(0,0) :: empty_states
+        real(real64), allocatable, dimension(:) :: empty_grid
+        real(real64), allocatable, dimension(:,:) :: empty_states
 
         call container%clear_all()
         call check(container%count() == 0, "Clear default count")
@@ -208,7 +250,10 @@ contains
         call check(container%state_variable_count() == 0, "Clear populated state count")
         output = container%to_matrix()
         call check(all(shape(output) == [0, 1]), "Cleared matrix shape")
-        call container%state(empty_grid, empty_states)
+        empty_grid = container%solution_points()
+        empty_states = container%state()
+        call check(size(empty_grid) == 0, "Cleared solution points size")
+        call check(all(shape(empty_states) == [0, 0]), "Cleared state shape")
 
         call container%push(7.0d0, [8.0d0, 9.0d0])
         output = container%to_matrix()
@@ -285,7 +330,8 @@ contains
         call check(container%count() == 2001, "Repeated growth count")
         call check(container%get_capacity() >= container%count(), "Repeated growth capacity")
         do index = 1, container%count()
-            call container%state(index, xvalue, yvalue)
+            xvalue = container%solution_point(index)
+            yvalue = container%selected_state(index)
             call check(xvalue == real(index, real64), "Growth preserves independent variable")
             call check(all(yvalue == [real(index * 2, real64), real(-index, real64)]), &
                 "Growth preserves state")
@@ -296,9 +342,11 @@ contains
         call small%push(4.0d0, [5.0d0, 6.0d0])
         call check(small%count() == 2, "Explicit capacity growth count")
         call check(small%get_capacity() >= 2, "Explicit capacity growth")
-        call small%state(1, xvalue, yvalue)
+        xvalue = small%solution_point(1)
+        yvalue = small%selected_state(1)
         call check(xvalue == 1.0d0 .and. all(yvalue == [2.0d0, 3.0d0]), "Growth first point")
-        call small%state(2, xvalue, yvalue)
+        xvalue = small%solution_point(2)
+        yvalue = small%selected_state(2)
         call check(xvalue == 4.0d0 .and. all(yvalue == [5.0d0, 6.0d0]), "Growth last point")
     end subroutine
 end program
