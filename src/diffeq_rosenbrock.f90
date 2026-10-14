@@ -23,6 +23,7 @@
 module diffeq_rosenbrock
     use iso_fortran_env
     use diffeq_base
+    use diffeq_singlestep
     use diffeq_errors
     use linalg
     implicit none

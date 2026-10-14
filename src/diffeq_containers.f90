@@ -20,6 +20,11 @@
 ! OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ! SOFTWARE.
 
+
+! TO DO LIST:
+! - Add interface for solver statistics (e.g. function evaluations, jacobian evaluations, etc.)
+! - Add a routine for writing a ode_results container to file
+
 module diffeq_containers
     use iso_fortran_env
     use diffeq_errors

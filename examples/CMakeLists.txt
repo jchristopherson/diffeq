@@ -1,4 +1,5 @@
 # Get Dependencies
+set(BUILD_TESTING OFF)
 find_package(fplot QUIET)
 
 if (fplot_FOUND)
