@@ -5,7 +5,7 @@ program diffeq_container_tests
 
     character(len=40) :: test_name
     type(ode_results) :: results
-    real(real64) :: point
+    real(real64), volatile :: point
     real(real64), allocatable, dimension(:) :: values, grid, vector
     real(real64), allocatable, dimension(:,:) :: matrix
 
