@@ -40,7 +40,8 @@ add_test(
 add_executable(diffeq_error_tests diffeq_error_tests.f90)
 target_link_libraries(diffeq_error_tests diffeq)
 
-foreach(error_case missing_ode short_grid step_limit tolerance_size)
+foreach(error_case missing_ode short_grid step_limit tolerance_size
+    bdf_step_exhaustion adams_step_exhaustion)
     add_test(
         NAME diffeq_error_${error_case}
         WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}

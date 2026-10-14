@@ -15,12 +15,232 @@
 
 module diffeq_test_bdf
     use iso_fortran_env
+    use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
     use diffeq
     use fortran_test_helper
     use diffeq_models
     implicit none
 
 contains
+function test_bdf_nonlinear_reaction() result(rst)
+    logical :: rst
+    type(bdf) :: integrator
+    type(ode_container) :: model
+    integer, parameter :: point_count = 301
+    real(real64), dimension(point_count) :: grid, expected
+    real(real64), allocatable, dimension(:,:) :: solution
+    integer :: index
+
+    rst = .true.
+    model%fcn => nonlinear_reaction_ode
+    do index = 1, point_count
+        grid(index) = (real(index - 1, real64) / real(point_count - 1, real64))**2
+    end do
+    call integrator%set_absolute_tolerance([1.0d-10, 1.0d-12, 1.0d-10])
+    call integrator%set_relative_tolerance(1.0d-9)
+    call integrator%set_step_limit(100000)
+    call integrator%solve(model, grid, [1.0d-3, 9.99d-1, 1.0d0])
+    solution = integrator%get_solution()
+    if (.not.all(shape(solution) == [point_count, 4])) then
+        rst = .false.
+        print "(A)", "TEST FAILED: test_bdf_nonlinear_reaction shape"
+        return
+    end if
+    expected = 1.0d0 / (1.0d0 + 999.0d0 * exp(-1000.0d0 * grid))
+    if (.not.all(ieee_is_finite(solution)) .or. &
+        .not.assert(grid, solution(:,1), 1.0d-12) .or. &
+        .not.assert(expected, solution(:,2), 5.0d-7) .or. &
+        .not.assert(1.0d0 - expected, solution(:,3), 5.0d-7) .or. &
+        .not.assert(exp(-grid), solution(:,4), 5.0d-7) .or. &
+        maxval(abs(solution(:,2) + solution(:,3) - 1.0d0)) > 1.0d-8 .or. &
+        any(solution(:,2:) < -1.0d-8)) then
+        rst = .false.
+        print "(A)", "TEST FAILED: test_bdf_nonlinear_reaction accuracy or invariants"
+    end if
+end function
+
+subroutine nonlinear_reaction_ode(x, y, dydx, args)
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:) :: dydx
+    class(*), intent(inout), optional :: args
+
+    dydx(1) = 1000.0d0 * y(1) * y(2)
+    dydx(2) = -dydx(1)
+    dydx(3) = -y(3)
+end subroutine
+
+function test_bdf_robustness() result(rst)
+    logical :: rst
+    type(bdf) :: integrator
+
+    rst = check_multistep_robustness(integrator, "BDF")
+end function
+
+function check_multistep_robustness(integrator, name) result(rst)
+    class(ode_integrator), intent(inout) :: integrator
+    character(len=*), intent(in) :: name
+    logical :: rst
+    type(ode_container) :: model
+    integer, parameter :: point_count = 2501
+    real(real64), dimension(point_count) :: grid, expected_position, expected_velocity
+    real(real64), dimension(2) :: initial
+    real(real64), allocatable, dimension(:,:) :: solution
+    real(real64) :: start, finish
+    integer :: index, direction, count
+
+    rst = .true.
+    model%fcn => test_2dof_1
+    call integrator%set_absolute_tolerance(1.0d-10)
+    call integrator%set_relative_tolerance(1.0d-10)
+    call integrator%set_step_limit(100000)
+    do direction = 1, 2
+        start = 0.0d0
+        finish = 20.0d0
+        if (direction == 2) then
+            start = 20.0d0
+            finish = 0.0d0
+        end if
+        do index = 1, point_count
+            grid(index) = start + (finish - start) * &
+                (real(index - 1, real64) / real(point_count - 1, real64))**2
+        end do
+        call test_2dof_state_solution_1(start, initial)
+        call integrator%clear_buffer()
+        call integrator%set_allow_overshoot(direction == 1)
+        call integrator%solve(model, grid, initial)
+        solution = integrator%get_solution()
+        if (.not.all(shape(solution) == [point_count, 3])) then
+            rst = .false.
+            print "(A)", "TEST FAILED: " // name // " long-run shape"
+            return
+        end if
+        expected_position = test_2dof_solution_1(grid)
+        expected_velocity = 0.5d0 * cos(20.0d0 * grid) - 20.0d0 * sin(20.0d0 * grid)
+        if (.not.all(ieee_is_finite(solution)) .or. &
+            .not.assert(grid, solution(:,1), 1.0d-12) .or. &
+            .not.assert(expected_position, solution(:,2), 2.0d-6) .or. &
+            .not.assert(expected_velocity, solution(:,3), 4.0d-5)) then
+            rst = .false.
+            print "(A,I0)", "TEST FAILED: " // name // " long-run direction ", direction
+        end if
+    end do
+
+    call integrator%clear_buffer()
+    model%fcn => robustness_decay_ode
+    call integrator%set_absolute_tolerance([1.0d-2, 1.0d-18])
+    call integrator%set_relative_tolerance(1.0d-9)
+    call integrator%solve(model, [0.0d0, 0.1d0, 0.3d0, 1.0d0, 2.0d0], [1.0d8, 1.0d-8])
+    solution = integrator%get_solution()
+    if (.not.all(shape(solution) == [5, 3])) then
+        rst = .false.
+        print "(A)", "TEST FAILED: " // name // " mixed-scale shape"
+        return
+    end if
+    if (.not.all(ieee_is_finite(solution)) .or. &
+        .not.assert(exp(-solution(:,1)), solution(:,2) / 1.0d8, 2.0d-7) .or. &
+        .not.assert(exp(-solution(:,1)), solution(:,3) / 1.0d-8, 2.0d-7)) then
+        rst = .false.
+        print "(A)", "TEST FAILED: " // name // " mixed-scale accuracy"
+    end if
+
+    call integrator%clear_buffer()
+    call integrator%set_absolute_tolerance(1.0d-9)
+    call integrator%set_relative_tolerance(1.0d-9)
+    call integrator%solve(model, [0.0d0, 0.1d0, 1.0d0], [0.0d0, 0.0d0, 0.0d0])
+    solution = integrator%get_solution()
+    if (.not.all(shape(solution) == [3, 4])) then
+        rst = .false.
+        print "(A)", "TEST FAILED: " // name // " equilibrium shape"
+        return
+    end if
+    if (.not.all(ieee_is_finite(solution)) .or. any(solution(:,2:) /= 0.0d0)) then
+        rst = .false.
+        print "(A)", "TEST FAILED: " // name // " equilibrium"
+    end if
+
+    call integrator%clear_buffer()
+    call integrator%set_maximum_step_size(5.0d-4)
+    call integrator%solve(model, [0.0d0, 1.0d0], [1.0d0])
+    solution = integrator%get_solution()
+    count = size(solution, 1)
+    if (count <= 1000 .or. size(solution, 2) /= 2) then
+        rst = .false.
+        print "(A)", "TEST FAILED: " // name // " accepted-step buffer growth"
+        return
+    end if
+    if (.not.all(ieee_is_finite(solution)) .or. &
+        any(solution(2:,1) <= solution(:count - 1,1)) .or. &
+        maxval(solution(2:,1) - solution(:count - 1,1)) > 5.0d-4 * (1.0d0 + 1.0d-10) .or. &
+        abs(solution(1,1)) > 1.0d-12 .or. abs(solution(count,1) - 1.0d0) > 1.0d-12 .or. &
+        .not.assert(exp(-solution(:,1)), solution(:,2), 2.0d-7)) then
+        rst = .false.
+        print "(A)", "TEST FAILED: " // name // " accepted-step accuracy or limits"
+    end if
+end function
+
+subroutine robustness_decay_ode(x, y, dydx, args)
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:) :: dydx
+    class(*), intent(inout), optional :: args
+    dydx = -y
+end subroutine
+
+function test_bdf_stiff_relaxation() result(rst)
+    logical :: rst
+    type(bdf) :: integrator
+    type(ode_container) :: model
+    integer, parameter :: point_count = 251
+    real(real64), dimension(point_count) :: grid, expected
+    real(real64), dimension(3) :: rates
+    real(real64), allocatable, dimension(:,:) :: solution
+    real(real64) :: rate
+    integer :: index, trial
+
+    rst = .true.
+    model%fcn => stiff_relaxation_ode
+    rates = [1.0d1, 1.0d3, 1.0d5]
+    do index = 1, point_count
+        grid(index) = (real(index - 1, real64) / real(point_count - 1, real64))**2
+    end do
+    call integrator%set_absolute_tolerance(1.0d-9)
+    call integrator%set_relative_tolerance(1.0d-9)
+    call integrator%set_step_limit(100000)
+    do trial = 1, size(rates)
+        rate = rates(trial)
+        call integrator%clear_buffer()
+        call integrator%solve(model, grid, [2.0d0], rate)
+        solution = integrator%get_solution()
+        if (.not.all(shape(solution) == [point_count, 2])) then
+            rst = .false.
+            print "(A)", "TEST FAILED: test_bdf_stiff_relaxation shape"
+            return
+        end if
+        expected = cos(grid) + exp(-rate * grid)
+        if (.not.all(ieee_is_finite(solution)) .or. &
+            .not.assert(grid, solution(:,1), 1.0d-12) .or. &
+            .not.assert(expected, solution(:,2), 5.0d-7)) then
+            rst = .false.
+            print "(A,ES12.4)", "TEST FAILED: test_bdf_stiff_relaxation rate ", rate
+        end if
+    end do
+end function
+
+subroutine stiff_relaxation_ode(x, y, dydx, args)
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:) :: dydx
+    class(*), intent(inout), optional :: args
+
+    select type (args)
+    type is (real(real64))
+        dydx(1) = -args * (y(1) - cos(x)) - sin(x)
+    class default
+        error stop "Missing relaxation rate"
+    end select
+end subroutine
+
 ! ------------------------------------------------------------------------------
 function test_bdf_reverse() result(rst)
     logical :: rst

@@ -30,6 +30,18 @@ program test
     flag = 0
 
     ! Tests
+    rst = test_bdf_stiff_relaxation()
+        if (.not.rst) flag = max(flag, 53)
+
+    rst = test_bdf_nonlinear_reaction()
+        if (.not.rst) flag = max(flag, 56)
+
+    rst = test_bdf_robustness()
+        if (.not.rst) flag = max(flag, 54)
+
+    rst = test_adams_robustness()
+        if (.not.rst) flag = max(flag, 55)
+
     rst = test_integrator_buffers()
         if (.not.rst) flag = max(flag, 52)
 

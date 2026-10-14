@@ -18,9 +18,18 @@ module diffeq_test_pece
     use diffeq
     use fortran_test_helper
     use diffeq_models
+    use diffeq_test_bdf, only : check_multistep_robustness
     implicit none
+    private :: check_multistep_robustness
 
 contains
+function test_adams_robustness() result(rst)
+    logical :: rst
+    type(adams) :: integrator
+
+    rst = check_multistep_robustness(integrator, "Adams")
+end function
+
 ! ------------------------------------------------------------------------------
 function test_adams_state_tolerances() result(rst)
     logical :: rst

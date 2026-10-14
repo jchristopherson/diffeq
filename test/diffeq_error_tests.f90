@@ -19,6 +19,8 @@ program diffeq_error_tests
 
     character(len=32) :: test_name
     type(runge_kutta_45) :: integrator
+    type(bdf) :: bdf_integrator
+    type(adams) :: adams_integrator
     type(ode_container) :: mdl
 
     call get_command_argument(1, test_name)
@@ -36,6 +38,16 @@ program diffeq_error_tests
         mdl%fcn => constant_ode
         call integrator%set_absolute_tolerance([1.0d-6, 1.0d-6])
         call integrator%solve(mdl, [0.0d0, 1.0d0], [0.0d0])
+    case ("bdf_step_exhaustion")
+        mdl%fcn => constant_ode
+        call bdf_integrator%set_step_limit(1)
+        call bdf_integrator%set_maximum_step_size(1.0d-3)
+        call bdf_integrator%solve(mdl, [0.0d0, 1.0d0], [0.0d0])
+    case ("adams_step_exhaustion")
+        mdl%fcn => constant_ode
+        call adams_integrator%set_step_limit(1)
+        call adams_integrator%set_maximum_step_size(1.0d-3)
+        call adams_integrator%solve(mdl, [0.0d0, 1.0d0], [0.0d0])
     case default
         error stop 2
     end select
