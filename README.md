@@ -1046,11 +1046,11 @@ matrix. The regression suite checks constraint preservation and exponential
 decay for all four supported implicit solvers, including dense output and a
 time-dependent physical mass.
 
-The stabilized formulation produces the following response. The left panel
+The stabilized formulation produces the following response. The left plot
 shows the horizontal coordinate oscillating between $-L$ and $L$, while the
 vertical coordinate stays between $-L$ and zero. The mass passes its lowest
 point twice per complete horizontal oscillation, so the vertical motion repeats
-twice as often. The right panel shows
+twice as often. The right plot shows
 $\theta$, measured from the positive horizontal
 axis: the release point is $0^\circ$, the lowest point is $-90^\circ$, and
 the opposite horizontal turning point is $-180^\circ$.
@@ -1074,7 +1074,7 @@ explicitly damp position or velocity constraint errors. The stabilized variant
 instead gives the residuals
 $r_p=q_x^2+q_y^2-L^2$ and $r_v=2(q_xv_x+q_yv_y)$ the evolution laws
 $\dot r_p=-2r_p$ and $\dot r_v=-3r_v$ in the exact solution for the gains
-used here. These laws provide restoring behavior for violations, without
+used here. These relationships provide restoring behavior for violations, without
 projecting the numerical state onto the constraint surface.
 
 The motion plots alone cannot quantify that benefit or establish that one
@@ -1082,13 +1082,6 @@ formulation is more accurate or efficient. A numerical comparison should also
 plot $r_p$ and $r_v$, measure energy drift, and compare solver work at matched
 tolerances. Small constraint violations or accumulated phase errors can remain
 invisible on the position and angle scales shown here.
-
-For the stabilized GGL implementation, reference 16 describes the original GGL
-construction, while reference 17 provides the constraint-stabilization
-background. References 9 and 10 discuss GGL and index reduction more broadly.
-The first-order residual decay equations documented above define this library's
-index-1 variant; they are not the classical index-2 GGL formulation or the
-standard second-order Baumgarte stabilization equation.
 
 ## External Libraries
 Here is a list of external code libraries utilized by this library.  The CMake build script will include these dependencies automatically; however, it is highly recommended that an optimized BLAS and LAPACK already reside on your system for best performance (used by LINALG for linear algebra calculations).
