@@ -26,6 +26,12 @@ set(DIFFEQ_SOURCES
     ${dir}/dae/diffeq_index_reduction.f90
 )
 
+set(DIFFEQ_C_SOURCES
+    ${dir}/C/diffeq_c_containers.f90
+)
+
+
+
 # Dependencies
 include(FetchContent)
 find_package(linalg 2.3.0 QUIET)
