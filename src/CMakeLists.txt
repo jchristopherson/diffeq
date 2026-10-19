@@ -27,9 +27,12 @@ set(DIFFEQ_SOURCES
 )
 
 set(DIFFEQ_C_SOURCES
+    ${dir}/C/diffeq_c_helpers.f90
+    ${dir}/C/diffeq_c_errors.f90
     ${dir}/C/diffeq_c_containers.f90
+    ${dir}/C/diffeq_c_integrators.f90
 )
-
+list(APPEND DIFFEQ_SOURCES ${DIFFEQ_C_SOURCES})
 
 
 # Dependencies
