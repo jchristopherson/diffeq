@@ -33,6 +33,7 @@ module diffeq_c_integrators
     public :: c_ode_mass_matrix
     public :: c_ode_settings
     public :: c_default_ode_settings
+    public :: c_runge_kutta_23
 
     integer, parameter :: C_RK23 = 1
     integer, parameter :: C_RK45 = 2
