@@ -103,7 +103,9 @@ extern "C"{
 /**
  * @brief Cleans up a c_ode_results type.
  * 
- * @param ptr The c_ode_results object to free.
+ * @param ptr The c_ode_results object to free.  It's the caller's
+ * responsibility to nullify ptr.  This routine merely frees the
+ * associated memory.
  */
 void c_free_ode_results(c_ode_results ptr);
 
@@ -187,6 +189,117 @@ void c_default_ode_settings(c_ode_settings *settings);
 int c_runge_kutta_23(int nx, int nstates, c_ode fcn, const double *x, 
     const double *initcond, const c_ode_settings *settings, 
     c_ode_results *output);
+
+/**
+ * @brief Utilizes the 5th order Dormand-Prince Runge-Kutta integrator to 
+ * solve a system of first order differential equations.
+ * 
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param fcn A pointer to the function containing the equations to integrate.
+ * @param x An NX-element array containing the desired solution points.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_runge_kutta_45(int nx, int nstates, c_ode fcn, const double *x, 
+    const double *initcond, const c_ode_settings *settings, 
+    c_ode_results *output);
+
+/**
+ * @brief Utilizes the 8th order Hairer Runge-Kutta integrator to 
+ * solve a system of first order differential equations.
+ * 
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param fcn A pointer to the function containing the equations to integrate.
+ * @param x An NX-element array containing the desired solution points.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_runge_kutta_853(int nx, int nstates, c_ode fcn, const double *x, 
+    const double *initcond, const c_ode_settings *settings, 
+    c_ode_results *output);
+
+/**
+ * @brief Utilizes the 5th order Tsitouras Runge-Kutta integrator to 
+ * solve a system of first order differential equations.
+ * 
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param fcn A pointer to the function containing the equations to integrate.
+ * @param x An NX-element array containing the desired solution points.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_tsitouras(int nx, int nstates, c_ode fcn, const double *x, 
+    const double *initcond, const c_ode_settings *settings, 
+    c_ode_results *output);
+
+/**
+ * @brief Utilizes a variable order Adams predictor-corrector integrator to 
+ * solve a system of first order differential equations.
+ * 
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param fcn A pointer to the function containing the equations to integrate.
+ * @param x An NX-element array containing the desired solution points.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_adams(int nx, int nstates, c_ode fcn, const double *x, 
+    const double *initcond, const c_ode_settings *settings, 
+    c_ode_results *output);
+
+/**
+ * @brief Utilizes a 4th order Rosenbrock integrator to solve a system of
+ * first order differential equations or index-1 differential algebraic 
+ * equations.
+ * 
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param fcn A pointer to the function containing the equations to integrate.
+ * @param x An NX-element array containing the desired solution points.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param jac A pointer to the routine for computing the Jacobian matrix.
+ * Pass NULL if no routine is necessary and allowing the integrator to use 
+ * a finite-difference estimate is acceptable.
+ * @param mass A pointer to the routine for computing the mass matrix.  Pass
+ * NULL if no routine is necessary.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_rosenbrock(int nx, int nstates, c_ode fcn, const double *x, 
+    const double *initcond, const c_ode_settings *settings, 
+    c_ode_jacobian jac, c_ode_mass_matrix mass, c_ode_results *output);
 
 #ifdef __cplusplus
 }

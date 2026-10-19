@@ -199,7 +199,7 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
     fac = sys%get_finite_difference_step()
     call sys%compute_rhs(x + fac, y, this%dfdx, args)
     call this%log_function_evaluation()
-    this%dfdx = (this%dfdx - f) / h ! forward differencing
+    this%dfdx = (this%dfdx - f) / fac ! forward differencing
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -347,6 +347,8 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     yerr = solve_qr(this%qr, this%tau, this%pivot, yerr)
 
     yn = yn + yerr
+    call sys%compute_rhs(x + h, yn, fn, args)
+    call this%log_function_evaluation()
 end subroutine
 
 ! ------------------------------------------------------------------------------

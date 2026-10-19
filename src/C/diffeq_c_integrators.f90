@@ -34,6 +34,11 @@ module diffeq_c_integrators
     public :: c_ode_settings
     public :: c_default_ode_settings
     public :: c_runge_kutta_23
+    public :: c_runge_kutta_45
+    public :: c_runge_kutta_853
+    public :: c_tsitouras
+    public :: c_adams
+    public :: c_rosenbrock
 
     integer, parameter :: C_RK23 = 1
     integer, parameter :: C_RK45 = 2
@@ -274,15 +279,215 @@ contains
         rst = c_integrate_ode(C_RK23, nx, nstates, fcn_ptr, x, initcond, &
             settings, output)
     end function
-! ------------------------------------------------------------------------------
 
 ! ------------------------------------------------------------------------------
+    function c_runge_kutta_45(nx, nstates, fcn, x, initcond, settings, output) &
+        result(rst) bind(C, name = "c_runge_kutta_45")
+        !! Utilizes the 5th order Dormand-Prince Runge-Kutta integrator to 
+        !! solve a system of first order differential equations.
+        integer(c_int), intent(in), value :: nx
+            !! The number of solution points.  This value must be at least 2;
+            !! else, a C_INVALID_INPUT_ERROR is returned.
+        integer(c_int), intent(in), value :: nstates
+            !! The number of state equations.  This value must be at least 1;
+            !! else, a C_INVALID_INPUT_ERROR is returned.
+        type(c_funptr), value, intent(in) :: fcn
+            !! A pointer to the function containing the equations to integrate.
+        real(c_double), intent(in) :: x(nx)
+            !! An NX-element array containing the desired solution points.
+        real(c_double), intent(in) :: initcond(nstates)
+            !! An NSTATES-element array containing the initial conditions.
+        type(c_ode_settings), intent(in) :: settings
+            !! The integrator settings.
+        type(c_ptr), intent(out) :: output
+            !! The output c_ode_results object.  Memory must be freed by 
+            !! c_free_ode_results.
+        integer(c_int) :: rst
+            !! An error flag denoting the status of the operation.
+
+        procedure(c_ode), pointer :: fcn_ptr
+
+        if (.not.c_associated(fcn)) then
+            rst = C_NULL_POINTER_ERROR
+            return
+        end if
+        call c_f_procpointer(fcn, fcn_ptr)
+        rst = c_integrate_ode(C_RK45, nx, nstates, fcn_ptr, x, initcond, &
+            settings, output)
+    end function
 
 ! ------------------------------------------------------------------------------
+    function c_runge_kutta_853(nx, nstates, fcn, x, initcond, settings, output) &
+        result(rst) bind(C, name = "c_runge_kutta_853")
+        !! Utilizes the 8th order Hairer Runge-Kutta integrator to 
+        !! solve a system of first order differential equations.
+        integer(c_int), intent(in), value :: nx
+            !! The number of solution points.  This value must be at least 2;
+            !! else, a C_INVALID_INPUT_ERROR is returned.
+        integer(c_int), intent(in), value :: nstates
+            !! The number of state equations.  This value must be at least 1;
+            !! else, a C_INVALID_INPUT_ERROR is returned.
+        type(c_funptr), value, intent(in) :: fcn
+            !! A pointer to the function containing the equations to integrate.
+        real(c_double), intent(in) :: x(nx)
+            !! An NX-element array containing the desired solution points.
+        real(c_double), intent(in) :: initcond(nstates)
+            !! An NSTATES-element array containing the initial conditions.
+        type(c_ode_settings), intent(in) :: settings
+            !! The integrator settings.
+        type(c_ptr), intent(out) :: output
+            !! The output c_ode_results object.  Memory must be freed by 
+            !! c_free_ode_results.
+        integer(c_int) :: rst
+            !! An error flag denoting the status of the operation.
+
+        procedure(c_ode), pointer :: fcn_ptr
+
+        if (.not.c_associated(fcn)) then
+            rst = C_NULL_POINTER_ERROR
+            return
+        end if
+        call c_f_procpointer(fcn, fcn_ptr)
+        rst = c_integrate_ode(C_RK853, nx, nstates, fcn_ptr, x, initcond, &
+            settings, output)
+    end function
 
 ! ------------------------------------------------------------------------------
+    function c_tsitouras(nx, nstates, fcn, x, initcond, settings, output) &
+        result(rst) bind(C, name = "c_tsitouras")
+        !! Utilizes the 5th order Tsitouras Runge-Kutta integrator to 
+        !! solve a system of first order differential equations.
+        integer(c_int), intent(in), value :: nx
+            !! The number of solution points.  This value must be at least 2;
+            !! else, a C_INVALID_INPUT_ERROR is returned.
+        integer(c_int), intent(in), value :: nstates
+            !! The number of state equations.  This value must be at least 1;
+            !! else, a C_INVALID_INPUT_ERROR is returned.
+        type(c_funptr), value, intent(in) :: fcn
+            !! A pointer to the function containing the equations to integrate.
+        real(c_double), intent(in) :: x(nx)
+            !! An NX-element array containing the desired solution points.
+        real(c_double), intent(in) :: initcond(nstates)
+            !! An NSTATES-element array containing the initial conditions.
+        type(c_ode_settings), intent(in) :: settings
+            !! The integrator settings.
+        type(c_ptr), intent(out) :: output
+            !! The output c_ode_results object.  Memory must be freed by 
+            !! c_free_ode_results.
+        integer(c_int) :: rst
+            !! An error flag denoting the status of the operation.
+
+        procedure(c_ode), pointer :: fcn_ptr
+
+        if (.not.c_associated(fcn)) then
+            rst = C_NULL_POINTER_ERROR
+            return
+        end if
+        call c_f_procpointer(fcn, fcn_ptr)
+        rst = c_integrate_ode(C_TSIT, nx, nstates, fcn_ptr, x, initcond, &
+            settings, output)
+    end function
 
 ! ------------------------------------------------------------------------------
+    function c_adams(nx, nstates, fcn, x, initcond, settings, output) &
+        result(rst) bind(C, name = "c_adams")
+        !! Utilizes a variable order Adams predictor-corrector integrator to 
+        !! solve a system of first order differential equations.
+        integer(c_int), intent(in), value :: nx
+            !! The number of solution points.  This value must be at least 2;
+            !! else, a C_INVALID_INPUT_ERROR is returned.
+        integer(c_int), intent(in), value :: nstates
+            !! The number of state equations.  This value must be at least 1;
+            !! else, a C_INVALID_INPUT_ERROR is returned.
+        type(c_funptr), value, intent(in) :: fcn
+            !! A pointer to the function containing the equations to integrate.
+        real(c_double), intent(in) :: x(nx)
+            !! An NX-element array containing the desired solution points.
+        real(c_double), intent(in) :: initcond(nstates)
+            !! An NSTATES-element array containing the initial conditions.
+        type(c_ode_settings), intent(in) :: settings
+            !! The integrator settings.
+        type(c_ptr), intent(out) :: output
+            !! The output c_ode_results object.  Memory must be freed by 
+            !! c_free_ode_results.
+        integer(c_int) :: rst
+            !! An error flag denoting the status of the operation.
+
+        procedure(c_ode), pointer :: fcn_ptr
+
+        if (.not.c_associated(fcn)) then
+            rst = C_NULL_POINTER_ERROR
+            return
+        end if
+        call c_f_procpointer(fcn, fcn_ptr)
+        rst = c_integrate_ode(C_ADMS, nx, nstates, fcn_ptr, x, initcond, &
+            settings, output)
+    end function
+
+! ------------------------------------------------------------------------------
+    function c_rosenbrock(nx, nstates, fcn, x, initcond, settings, jac, mass, &
+        output) result(rst) bind(C, name = "c_rosenbrock")
+        !! Utilizes a 4th order Rosenbrock integrator to solve a system of 
+        !! first order differential equations or index-1 differential 
+        !! algebraic equations.
+        integer(c_int), intent(in), value :: nx
+            !! The number of solution points.  This value must be at least 2;
+            !! else, a C_INVALID_INPUT_ERROR is returned.
+        integer(c_int), intent(in), value :: nstates
+            !! The number of state equations.  This value must be at least 1;
+            !! else, a C_INVALID_INPUT_ERROR is returned.
+        type(c_funptr), value, intent(in) :: fcn
+            !! A pointer to the function containing the equations to integrate.
+        real(c_double), intent(in) :: x(nx)
+            !! An NX-element array containing the desired solution points.
+        real(c_double), intent(in) :: initcond(nstates)
+            !! An NSTATES-element array containing the initial conditions.
+        type(c_ode_settings), intent(in) :: settings
+            !! The integrator settings.
+        type(c_funptr), value, intent(in) :: jac
+            !! A pointer to the routine for computing the Jacobian matrix.
+            !! Pass NULL if no routine is necessary and allowing the integrator
+            !! to use a finite-difference estimate is acceptable.
+        type(c_funptr), value, intent(in) :: mass
+            !! A pointer to the routine for computing the mass matrix.  Pass
+            !! NULL if no routine is necessary.
+        type(c_ptr), intent(out) :: output
+            !! The output c_ode_results object.  Memory must be freed by 
+            !! c_free_ode_results.
+        integer(c_int) :: rst
+            !! An error flag denoting the status of the operation.
+
+        procedure(c_ode), pointer :: fcn_ptr
+        procedure(c_ode_jacobian), pointer :: jac_ptr
+        procedure(c_ode_mass_matrix), pointer :: mass_ptr
+        logical :: use_jac, use_mass
+
+        if (.not.c_associated(fcn)) then
+            rst = C_NULL_POINTER_ERROR
+            return
+        end if
+        call c_f_procpointer(fcn, fcn_ptr)
+
+        use_jac = c_associated(jac)
+        if (use_jac) call c_f_procpointer(jac, jac_ptr)
+
+        use_mass = c_associated(mass)
+        if (use_mass) call c_f_procpointer(mass, mass_ptr)
+
+        if (use_jac .and. use_mass) then
+            rst = c_integrate_ode(C_RBRK, nx, nstates, fcn_ptr, x, initcond, &
+                settings, output, jac = jac_ptr, mass = mass_ptr)
+        else if (use_jac .and. .not.use_mass) then
+            rst = c_integrate_ode(C_RBRK, nx, nstates, fcn_ptr, x, initcond, &
+                settings, output, jac = jac_ptr)
+        else if (.not.use_jac .and. use_mass) then
+            rst = c_integrate_ode(C_RBRK, nx, nstates, fcn_ptr, x, initcond, &
+                settings, output, mass = mass_ptr)
+        else
+            rst = c_integrate_ode(C_RBRK, nx, nstates, fcn_ptr, x, initcond, &
+                settings, output)
+        end if
+    end function
 
 ! ------------------------------------------------------------------------------
 
