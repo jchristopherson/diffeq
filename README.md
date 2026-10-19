@@ -258,6 +258,19 @@ cmake --build build --config Release
 ctest --test-dir build --output-on-failure
 ```
 
+The C API tests can be run separately with
+`ctest --test-dir build --output-on-failure -R '^diffeq_c_'`. They are organized as:
+
+- [diffeq_c_api_tests.c](test/diffeq_c_api_tests.c): default settings, result
+  access, matrix layout, error codes, and file output.
+- [diffeq_c_integrator_tests.c](test/diffeq_c_integrator_tests.c): table-driven
+  accuracy, forward/reverse integration, overshoot-setting, callback statistics,
+  and invalid-input tests shared by all C integrators. Each method has its own
+  CTest entry; add new methods to both the function table and the CMake test list.
+- [diffeq_c_rosenbrock_tests.c](test/diffeq_c_rosenbrock_tests.c): all combinations
+  of optional analytical Jacobian and mass-matrix callbacks, including
+  column-major matrix indexing and solver-specific statistics.
+
 The example programs are enabled separately:
 
 ```sh
