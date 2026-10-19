@@ -250,7 +250,7 @@ contains
         integer(c_int), intent(in), value :: nstates
             !! The number of state equations.  This value must be at least 1;
             !! else, a C_INVALID_INPUT_ERROR is returned.
-        procedure(c_ode), intent(in), pointer :: fcn
+        type(c_funptr), value, intent(in) :: fcn
             !! A pointer to the function containing the equations to integrate.
         real(c_double), intent(in) :: x(nx)
             !! An NX-element array containing the desired solution points.
@@ -264,7 +264,14 @@ contains
         integer(c_int) :: rst
             !! An error flag denoting the status of the operation.
 
-        rst = c_integrate_ode(C_RK23, nx, nstates, fcn, x, initcond, &
+        procedure(c_ode), pointer :: fcn_ptr
+
+        if (.not.c_associated(fcn)) then
+            rst = C_NULL_POINTER_ERROR
+            return
+        end if
+        call c_f_procpointer(fcn, fcn_ptr)
+        rst = c_integrate_ode(C_RK23, nx, nstates, fcn_ptr, x, initcond, &
             settings, output)
     end function
 ! ------------------------------------------------------------------------------

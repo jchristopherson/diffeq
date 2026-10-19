@@ -8,6 +8,7 @@
 #define C_MATRIX_ROW_SIZE_ERROR 2
 #define C_MATRIX_COLUMN_SIZE_ERROR 3
 #define C_MATRIX_STRIDE_ERROR 4
+#define C_INVALID_INPUT_ERROR 5
 
 /**
  * @brief ODE callback routine.
@@ -179,13 +180,13 @@ void c_default_ode_settings(c_ode_settings *settings);
  * @param initcond An NSTATES-element array containing the initial conditions.
  * @param settings The integrator settings.  Use c_default_ode_settings to
  * utilize default settings.
- * @param output The output c_ode_results object.  Memory must be freed by 
- * c_free_ode_results.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
  * @return An error flag denoting the status of the operation.
  */
 int c_runge_kutta_23(int nx, int nstates, c_ode fcn, const double *x, 
     const double *initcond, const c_ode_settings *settings, 
-    c_ode_results output);
+    c_ode_results *output);
 
 #ifdef __cplusplus
 }

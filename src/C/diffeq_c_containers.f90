@@ -91,7 +91,7 @@ contains
 
     subroutine c_free_ode_results(c_obj) bind(C, name = "c_free_ode_results")
         !! Frees memory allocated by c_create_ode_results.
-        type(c_ptr), intent(inout) :: c_obj
+        type(c_ptr), value, intent(in) :: c_obj
             !! A pointer to the [[ode_results]] object to free.
         type(ode_results), pointer :: obj
         if (.not.c_associated(c_obj)) return
@@ -103,7 +103,7 @@ contains
         bind(C, name = "c_get_ode_results_statistics")
         !! Gets the integrator performance statistics from an [[ode_results]]
         !! object.
-        type(c_ptr), intent(in) :: c_obj
+        type(c_ptr), value, intent(in) :: c_obj
             !! The pointer to the [[ode_results]] object.
         type(c_ode_results_statistics), intent(out) :: stats
             !! A [[c_ode_results_statistics]] container for the results.
@@ -124,7 +124,7 @@ contains
     function c_get_ode_results_size(c_obj, rows, cols) result(rst) &
         bind(C, name = "c_get_ode_results_size")
         !! Gets the size of the matrix required to hold the integration results.
-        type(c_ptr), intent(in) :: c_obj
+        type(c_ptr), value, intent(in) :: c_obj
             !! The pointer to the [[ode_results]] object.
         integer(c_int), intent(out) :: rows
             !! The number of rows in the matrix.
@@ -150,7 +150,7 @@ contains
     function c_get_ode_results(c_obj, m, n, x, ldx) result(rst) &
         bind(C, name = "c_get_ode_results")
         !! Returns the contents of the [[ode_results]] object as a matrix.
-        type(c_ptr), intent(in) :: c_obj
+        type(c_ptr), value, intent(in) :: c_obj
             !! The pointer to the [[ode_results]] object.
         integer(c_int), intent(in), value :: m
             !! The number of rows in x.
@@ -199,7 +199,7 @@ contains
         !! delimited text file.
         character(kind = c_char), intent(in) :: fname(*)
             !! The filename.
-        type(c_ptr), intent(in) :: c_obj
+        type(c_ptr), value, intent(in) :: c_obj
             !! The pointer to the [[ode_results]] object.
         character(kind = c_char), intent(in), value :: delimiter
             !! The delimiter character.

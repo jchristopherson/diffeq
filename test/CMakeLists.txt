@@ -85,6 +85,15 @@ add_test(
     COMMAND $<TARGET_FILE:diffeq_container_io_tests>
 )
 
+add_executable(diffeq_c_api_tests diffeq_c_api_tests.c)
+target_include_directories(diffeq_c_api_tests PRIVATE ${PROJECT_SOURCE_DIR}/src/C)
+target_link_libraries(diffeq_c_api_tests diffeq)
+add_test(
+    NAME diffeq_c_api_tests
+    WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+    COMMAND $<TARGET_FILE:diffeq_c_api_tests>
+)
+
 foreach(error_case quote carriage_return line_feed uninitialized open_error)
     add_test(
         NAME diffeq_container_io_error_${error_case}
@@ -104,4 +113,3 @@ if (${BUILD_SHARED_LIBS} AND WIN32)
         COMMAND_EXPAND_LISTS
     )
 endif()
-
