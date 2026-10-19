@@ -75,15 +75,17 @@ contains
     end subroutine
 
 ! ------------------------------------------------------------------------------
-    subroutine c_create_ode_results(c_obj) bind(C, name = "c_create_ode_results")
+    subroutine c_create_ode_results(c_obj, src)
         !! Constructs a new [[ode_results]] pointer and returns its address to
         !! the supplied C pointer.  Be sure to call c_free_ode_results once
         !! finished with this object.
         type(c_ptr), intent(out) :: c_obj
             !! A pointer to the newly created [[ode_results]] object.
+        type(ode_results), intent(in) :: src
+            !! The source [[ode_results]] object.
 
         type(ode_results), pointer :: obj
-        allocate(obj)
+        allocate(obj, source = src)
         c_obj = c_loc(obj)
     end subroutine
 
