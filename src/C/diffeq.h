@@ -166,6 +166,27 @@ int c_write_ode_results(const char *fname, const c_ode_results ptr, char delimit
  */
 void c_default_ode_settings(c_ode_settings *settings);
 
+/**
+ * @brief Utilizes the 3rd order Bogacki-Shampine Runge-Kutta integrator to 
+ * solve a system of first order differential equations.
+ * 
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param fcn A pointer to the function containing the equations to integrate.
+ * @param x An NX-element array containing the desired solution points.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param output The output c_ode_results object.  Memory must be freed by 
+ * c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_runge_kutta_23(int nx, int nstates, c_ode fcn, const double *x, 
+    const double *initcond, const c_ode_settings *settings, 
+    c_ode_results output);
+
 #ifdef __cplusplus
 }
 #endif

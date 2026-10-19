@@ -34,18 +34,18 @@ module diffeq_c_integrators
     public :: c_ode_settings
     public :: c_default_ode_settings
 
-    integer, parameter :: C_RUNGE_KUTTA_23 = 1
-    integer, parameter :: C_RUNGE_KUTTA_45 = 2
-    integer, parameter :: C_RUNGE_KUTTA_853 = 3
-    integer, parameter :: C_TSITOURAS = 4
-    integer, parameter :: C_ROSENBROCK = 5
+    integer, parameter :: C_RK23 = 1
+    integer, parameter :: C_RK45 = 2
+    integer, parameter :: C_RK853 = 3
+    integer, parameter :: C_TSIT = 4
+    integer, parameter :: C_RBRK = 5
     integer, parameter :: C_KCARP4 = 6
     integer, parameter :: C_KCARP5 = 7
-    integer, parameter :: C_BDF = 8
-    integer, parameter :: C_ADAMS = 9
+    integer, parameter :: C_BACKDIFF = 8
+    integer, parameter :: C_ADMS = 9
 
     interface
-        subroutine c_ode(n, x, y, dydx)
+        subroutine c_ode(n, x, y, dydx) bind(C)
             use iso_c_binding, only : c_int, c_double
             integer(c_int), intent(in), value :: n
             real(c_double), intent(in), value :: x
@@ -53,7 +53,7 @@ module diffeq_c_integrators
             real(c_double), intent(out) :: dydx(n)
         end subroutine
 
-        subroutine c_ode_jacobian(m, n, x, y, jac, ldj)
+        subroutine c_ode_jacobian(m, n, x, y, jac, ldj) bind(C)
             use iso_c_binding, only : c_int, c_double
             integer(c_int), intent(in), value :: m
             integer(c_int), intent(in), value :: n
@@ -63,7 +63,7 @@ module diffeq_c_integrators
             integer(c_int), intent(in), value :: ldj
         end subroutine
 
-        subroutine c_ode_mass_matrix(n, x, y, m, ldm)
+        subroutine c_ode_mass_matrix(n, x, y, m, ldm) bind(C)
             use iso_c_binding, only : c_int, c_double
             integer(c_int), intent(in), value :: n
             real(c_double), intent(in), value :: x
@@ -116,17 +116,35 @@ contains
 
 ! ------------------------------------------------------------------------------
     function c_integrate_ode(method, nx, nstates, fcn, x, initcond, &
-        settings, jac, mass) result(rst)
+        settings, output, jac, mass) result(rst)
         integer(c_int), intent(in) :: method
+            !! The integrator to use.
         integer(c_int), intent(in) :: nx
+            !! The number of solution points.  This value must be at least 2;
+            !! else, a C_INVALID_INPUT_ERROR is returned.
         integer(c_int), intent(in) :: nstates
+            !! The number of state equations.  This value must be at least 1;
+            !! else, a C_INVALID_INPUT_ERROR is returned.
         procedure(c_ode), intent(in), pointer :: fcn
+            !! A pointer to the function containing the equations to integrate.
         real(c_double), intent(in) :: x(nx)
+            !! An NX-element array containing the desired solution points.
         real(c_double), intent(in) :: initcond(nstates)
+            !! An NSTATES-element array containing the initial conditions.
         type(c_ode_settings), intent(in) :: settings
-        procedure(c_ode_jacobian), intent(in), pointer :: jac
-        procedure(c_ode_mass_matrix), intent(in), pointer :: mass
+            !! The integrator settings.
+        type(c_ptr), intent(out) :: output
+            !! The output c_ode_results object.  Memory must be freed by 
+            !! c_free_ode_results.
+        procedure(c_ode_jacobian), intent(in), pointer, optional :: jac
+            !! A pointer to the Jacobian calculation routine.  If not supplied,
+            !! a finite difference approach is utilized if a Jacobian matrix
+            !! is needed.
+        procedure(c_ode_mass_matrix), intent(in), pointer, optional :: mass
+            !! A pointer to the mass matrix routine.  If not supplied, no 
+            !! mass matrix is utilized.
         integer(c_int) :: rst
+            !! An error flag denoting the status of the operation.
 
         class(ode_integrator), pointer :: integrator
         type(runge_kutta_23), target :: rk23
@@ -139,31 +157,60 @@ contains
         type(bdf), target :: bdf_i
         type(adams), target :: adams_i
         type(ode_container) :: model
+        logical :: mass_matrix_dependent
+        type(ode_results) :: ode_output
 
         rst = C_NO_ERROR
         select case (method)
-        case (C_RUNGE_KUTTA_23)
+        case (C_RK23)
             integrator => rk23
-        case (C_RUNGE_KUTTA_45)
+        case (C_RK45)
             integrator => rk45
-        case (C_RUNGE_KUTTA_853)
+        case (C_RK853)
             integrator => rk853
-        case (C_TSITOURAS)
+        case (C_TSIT)
             integrator => tsit
-        case (C_ROSENBROCK)
+        case (C_RBRK)
             integrator => rsbrk
         case (C_KCARP4)
             integrator => kc4
         case (C_KCARP5)
             integrator => kc5
-        case (C_BDF)
+        case (C_BACKDIFF)
             integrator => bdf_i
-        case (C_ADAMS)
+        case (C_ADMS)
             integrator => adams_i
         case default
             rst = C_INVALID_INPUT_ERROR
             return
         end select
+
+        if (nx < 2) then
+            rst = C_INVALID_INPUT_ERROR
+            return
+        end if
+        if (nstates < 1) then
+            rst = C_INVALID_INPUT_ERROR
+            return
+        end if
+
+        if (present(jac)) model%jacobian => internal_jac
+        if (present(mass)) model%mass_matrix => internal_mass
+        model%fcn => internal_ode
+        mass_matrix_dependent = .not.settings%mass_matrix_constant
+        call model%set_is_mass_matrix_dependent(mass_matrix_dependent)
+
+        call integrator%set_minimum_step_size(settings%minimum_step_size)
+        call integrator%set_maximum_step_size(settings%maximum_step_size)
+        call integrator%set_step_limit(settings%step_limit)
+        call integrator%set_allow_overshoot(logical(settings%allow_overshoot))
+        call integrator%set_absolute_tolerance(settings%absolute_tolerance)
+        call integrator%set_relative_tolerance(settings%relative_tolerance)
+        call integrator%set_step_size_control_parameter(settings%beta)
+
+        call integrator%solve(model, x, initcond)
+        ode_output = integrator%get_ode_results()
+        call c_create_ode_results(output, ode_output)
 
     contains
         subroutine internal_ode(x_, y_, dydx_, args_)
@@ -173,10 +220,52 @@ contains
             class(*), intent(inout), optional :: args_
             call fcn(size(y_), x_, y_, dydx_)
         end subroutine
+
+        subroutine internal_jac(x_, y_, jac_, args_)
+            real(real64), intent(in) :: x_
+            real(real64), intent(in), dimension(:) :: y_
+            real(real64), intent(out), dimension(:,:) :: jac_
+            class(*), intent(inout), optional :: args_
+            call jac(size(jac_, 1), size(jac_, 2), x_, y_, jac_, size(jac_, 1))
+        end subroutine
+
+        subroutine internal_mass(x_, y_, m_, args_)
+            real(real64), intent(in) :: x_
+            real(real64), intent(in), dimension(:) :: y_
+            real(real64), intent(out), dimension(:,:) :: m_
+            class(*), intent(inout), optional :: args_
+            call mass(size(m_, 1), x_, y_, m_, size(m_, 1))
+        end subroutine
     end function
 
 ! ------------------------------------------------------------------------------
+    function c_runge_kutta_23(nx, nstates, fcn, x, initcond, settings, output) &
+        result(rst) bind(C, name = "c_runge_kutta_23")
+        !! Utilizes the 3rd order Bogacki-Shampine Runge-Kutta integrator to 
+        !! solve a system of first order differential equations.
+        integer(c_int), intent(in), value :: nx
+            !! The number of solution points.  This value must be at least 2;
+            !! else, a C_INVALID_INPUT_ERROR is returned.
+        integer(c_int), intent(in), value :: nstates
+            !! The number of state equations.  This value must be at least 1;
+            !! else, a C_INVALID_INPUT_ERROR is returned.
+        procedure(c_ode), intent(in), pointer :: fcn
+            !! A pointer to the function containing the equations to integrate.
+        real(c_double), intent(in) :: x(nx)
+            !! An NX-element array containing the desired solution points.
+        real(c_double), intent(in) :: initcond(nstates)
+            !! An NSTATES-element array containing the initial conditions.
+        type(c_ode_settings), intent(in) :: settings
+            !! The integrator settings.
+        type(c_ptr), intent(out) :: output
+            !! The output c_ode_results object.  Memory must be freed by 
+            !! c_free_ode_results.
+        integer(c_int) :: rst
+            !! An error flag denoting the status of the operation.
 
+        rst = c_integrate_ode(C_RK23, nx, nstates, fcn, x, initcond, &
+            settings, output)
+    end function
 ! ------------------------------------------------------------------------------
 
 ! ------------------------------------------------------------------------------
