@@ -166,12 +166,12 @@ contains
         end select
 
     contains
-        subroutine internal_ode(x, y, dydx, args)
-            real(real64), intent(in) :: x
-            real(real64), intent(in), dimension(:) :: y
-            real(real64), intent(out), dimension(:) :: dydx
-            class(*), intent(inout), optional :: args
-            call fcn(size(y), x, y, dydx)
+        subroutine internal_ode(x_, y_, dydx_, args_)
+            real(real64), intent(in) :: x_
+            real(real64), intent(in), dimension(:) :: y_
+            real(real64), intent(out), dimension(:) :: dydx_
+            class(*), intent(inout), optional :: args_
+            call fcn(size(y_), x_, y_, dydx_)
         end subroutine
     end function
 
