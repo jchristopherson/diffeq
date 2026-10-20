@@ -97,7 +97,7 @@ add_test(
 add_executable(diffeq_c_integrator_tests diffeq_c_integrator_tests.c)
 target_include_directories(diffeq_c_integrator_tests PRIVATE ${PROJECT_SOURCE_DIR}/src/C)
 target_link_libraries(diffeq_c_integrator_tests diffeq)
-foreach(integrator rk23 rk45 rk853 tsitouras adams rosenbrock)
+foreach(integrator rk23 rk45 rk853 tsitouras adams rosenbrock kc4 kc5 bdf)
     add_test(
         NAME diffeq_c_${integrator}
         WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}

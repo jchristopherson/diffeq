@@ -178,7 +178,12 @@ void c_default_ode_settings(c_ode_settings *settings);
  * @param nstates The number of state equations.  This value must be at least 
  * 1; else, a C_INVALID_INPUT_ERROR is returned.
  * @param fcn A pointer to the function containing the equations to integrate.
- * @param x An NX-element array containing the desired solution points.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
  * @param initcond An NSTATES-element array containing the initial conditions.
  * @param settings The integrator settings.  Use c_default_ode_settings to
  * utilize default settings.
@@ -199,7 +204,12 @@ int c_runge_kutta_23(int nx, int nstates, c_ode fcn, const double *x,
  * @param nstates The number of state equations.  This value must be at least 
  * 1; else, a C_INVALID_INPUT_ERROR is returned.
  * @param fcn A pointer to the function containing the equations to integrate.
- * @param x An NX-element array containing the desired solution points.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
  * @param initcond An NSTATES-element array containing the initial conditions.
  * @param settings The integrator settings.  Use c_default_ode_settings to
  * utilize default settings.
@@ -220,7 +230,12 @@ int c_runge_kutta_45(int nx, int nstates, c_ode fcn, const double *x,
  * @param nstates The number of state equations.  This value must be at least 
  * 1; else, a C_INVALID_INPUT_ERROR is returned.
  * @param fcn A pointer to the function containing the equations to integrate.
- * @param x An NX-element array containing the desired solution points.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
  * @param initcond An NSTATES-element array containing the initial conditions.
  * @param settings The integrator settings.  Use c_default_ode_settings to
  * utilize default settings.
@@ -241,7 +256,12 @@ int c_runge_kutta_853(int nx, int nstates, c_ode fcn, const double *x,
  * @param nstates The number of state equations.  This value must be at least 
  * 1; else, a C_INVALID_INPUT_ERROR is returned.
  * @param fcn A pointer to the function containing the equations to integrate.
- * @param x An NX-element array containing the desired solution points.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
  * @param initcond An NSTATES-element array containing the initial conditions.
  * @param settings The integrator settings.  Use c_default_ode_settings to
  * utilize default settings.
@@ -262,17 +282,25 @@ int c_tsitouras(int nx, int nstates, c_ode fcn, const double *x,
  * @param nstates The number of state equations.  This value must be at least 
  * 1; else, a C_INVALID_INPUT_ERROR is returned.
  * @param fcn A pointer to the function containing the equations to integrate.
- * @param x An NX-element array containing the desired solution points.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
  * @param initcond An NSTATES-element array containing the initial conditions.
  * @param settings The integrator settings.  Use c_default_ode_settings to
  * utilize default settings.
+ * @param mass A pointer to the routine for computing the mass matrix.  Pass
+ * NULL if no routine is necessary.  This routine cannot handle singular mass
+ * matrices.
  * @param output A pointer to the output c_ode_results handle.  Memory must be
  * freed by c_free_ode_results.
  * @return An error flag denoting the status of the operation.
  */
 int c_adams(int nx, int nstates, c_ode fcn, const double *x, 
     const double *initcond, const c_ode_settings *settings, 
-    c_ode_results *output);
+    c_ode_mass_matrix mass, c_ode_results *output);
 
 /**
  * @brief Utilizes a 4th order Rosenbrock integrator to solve a system of
@@ -284,7 +312,12 @@ int c_adams(int nx, int nstates, c_ode fcn, const double *x,
  * @param nstates The number of state equations.  This value must be at least 
  * 1; else, a C_INVALID_INPUT_ERROR is returned.
  * @param fcn A pointer to the function containing the equations to integrate.
- * @param x An NX-element array containing the desired solution points.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
  * @param initcond An NSTATES-element array containing the initial conditions.
  * @param settings The integrator settings.  Use c_default_ode_settings to
  * utilize default settings.
@@ -298,6 +331,102 @@ int c_adams(int nx, int nstates, c_ode fcn, const double *x,
  * @return An error flag denoting the status of the operation.
  */
 int c_rosenbrock(int nx, int nstates, c_ode fcn, const double *x, 
+    const double *initcond, const c_ode_settings *settings, 
+    c_ode_jacobian jac, c_ode_mass_matrix mass, c_ode_results *output);
+
+/**
+ * @brief Utilizes a 4th order Kennedy-Carpenter integrator to solve a system of
+ * first order differential equations or index-1 differential algebraic 
+ * equations.
+ * 
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param fcn A pointer to the function containing the equations to integrate.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param jac A pointer to the routine for computing the Jacobian matrix.
+ * Pass NULL if no routine is necessary and allowing the integrator to use 
+ * a finite-difference estimate is acceptable.
+ * @param mass A pointer to the routine for computing the mass matrix.  Pass
+ * NULL if no routine is necessary.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_kennedy_carpenter_4(int nx, int nstates, c_ode fcn, const double *x, 
+    const double *initcond, const c_ode_settings *settings, 
+    c_ode_jacobian jac, c_ode_mass_matrix mass, c_ode_results *output);
+
+/**
+ * @brief Utilizes a 5th order Kennedy-Carpenter integrator to solve a system of
+ * first order differential equations or index-1 differential algebraic 
+ * equations.
+ * 
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param fcn A pointer to the function containing the equations to integrate.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param jac A pointer to the routine for computing the Jacobian matrix.
+ * Pass NULL if no routine is necessary and allowing the integrator to use 
+ * a finite-difference estimate is acceptable.
+ * @param mass A pointer to the routine for computing the mass matrix.  Pass
+ * NULL if no routine is necessary.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_kennedy_carpenter_5(int nx, int nstates, c_ode fcn, const double *x, 
+    const double *initcond, const c_ode_settings *settings, 
+    c_ode_jacobian jac, c_ode_mass_matrix mass, c_ode_results *output);
+
+/**
+ * @brief Utilizes a variable order BDF integrator to solve a system of
+ * first order differential equations or index-1 differential algebraic 
+ * equations.
+ * 
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param fcn A pointer to the function containing the equations to integrate.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param jac A pointer to the routine for computing the Jacobian matrix.
+ * Pass NULL if no routine is necessary and allowing the integrator to use 
+ * a finite-difference estimate is acceptable.
+ * @param mass A pointer to the routine for computing the mass matrix.  Pass
+ * NULL if no routine is necessary.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_bdf(int nx, int nstates, c_ode fcn, const double *x, 
     const double *initcond, const c_ode_settings *settings, 
     c_ode_jacobian jac, c_ode_mass_matrix mass, c_ode_results *output);
 
