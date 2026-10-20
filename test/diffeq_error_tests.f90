@@ -21,6 +21,7 @@ program diffeq_error_tests
     type(runge_kutta_45) :: integrator
     type(bdf) :: bdf_integrator
     type(adams) :: adams_integrator
+    type(kennedy_carpenter_4) :: kc_integrator
     type(ode_container) :: mdl
     type(ggl_container) :: ggl_mdl
     real(real64), dimension(8) :: ggl_state, ggl_rhs
@@ -52,6 +53,10 @@ program diffeq_error_tests
         call adams_integrator%set_step_limit(1)
         call adams_integrator%set_maximum_step_size(1.0d-3)
         call adams_integrator%solve(mdl, [0.0d0, 1.0d0], [0.0d0])
+    case ("kc_newton_step_limit")
+        call kc_integrator%set_newton_step_limit(0)
+    case ("kc_newton_tolerance")
+        call kc_integrator%set_newton_tolerance(0.0d0)
     case ("ggl_dimensions")
         call ggl_mdl%initialize(2, 3)
     case ("ggl_gains")
