@@ -103,3 +103,10 @@ if (${BUILD_SHARED_LIBS} AND WIN32)
         COMMAND_EXPAND_LISTS
     )
 endif()
+
+# ------------------------------------------------------------------------------
+# C API Examples
+
+add_executable(c_comparison_example c_comparison_example.c)
+target_link_libraries(c_comparison_example diffeq)
+target_include_directories(c_comparison_example PUBLIC ${CMAKE_SOURCE_DIR}/src/C)
