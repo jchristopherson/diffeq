@@ -64,6 +64,7 @@ contains
         lhs%matrix_factorizations = int(rhs%matrix_factorizations, c_int)
     end subroutine
 
+! ------------------------------------------------------------------------------
     subroutine ode_results_stats_to_c_assign(lhs, rhs)
         type(ode_results_statistics), intent(out) :: lhs
         type(c_ode_results_statistics), intent(in) :: rhs
@@ -89,6 +90,7 @@ contains
         c_obj = c_loc(obj)
     end subroutine
 
+! ------------------------------------------------------------------------------
     subroutine c_free_ode_results(c_obj) bind(C, name = "c_free_ode_results")
         !! Frees memory allocated by c_create_ode_results.
         type(c_ptr), value, intent(in) :: c_obj
@@ -99,6 +101,7 @@ contains
         if (associated(obj)) deallocate(obj)
     end subroutine
 
+! ------------------------------------------------------------------------------
     function c_get_ode_results_statistics(c_obj, stats) result(rst) &
         bind(C, name = "c_get_ode_results_statistics")
         !! Gets the integrator performance statistics from an [[ode_results]]
@@ -121,6 +124,7 @@ contains
         stats = obj%statistics
     end function
 
+! ------------------------------------------------------------------------------
     function c_get_ode_results_size(c_obj, rows, cols) result(rst) &
         bind(C, name = "c_get_ode_results_size")
         !! Gets the size of the matrix required to hold the integration results.
@@ -147,6 +151,7 @@ contains
         cols = obj%state_variable_count() + 1
     end function
 
+! ------------------------------------------------------------------------------
     function c_get_ode_results(c_obj, m, n, x, ldx) result(rst) &
         bind(C, name = "c_get_ode_results")
         !! Returns the contents of the [[ode_results]] object as a matrix.

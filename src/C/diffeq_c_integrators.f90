@@ -23,14 +23,12 @@
 module diffeq_c_integrators
     use iso_fortran_env
     use iso_c_binding
+    use diffeq_c_function_pointers
     use diffeq_c_containers
     use diffeq_c_errors
     use diffeq
     implicit none
     private
-    public :: c_ode
-    public :: c_ode_jacobian
-    public :: c_ode_mass_matrix
     public :: c_ode_settings
     public :: c_default_ode_settings
     public :: c_runge_kutta_23
@@ -52,35 +50,6 @@ module diffeq_c_integrators
     integer, parameter :: C_KCARP5 = 7
     integer, parameter :: C_BACKDIFF = 8
     integer, parameter :: C_ADMS = 9
-
-    interface
-        subroutine c_ode(n, x, y, dydx) bind(C)
-            use iso_c_binding, only : c_int, c_double
-            integer(c_int), intent(in), value :: n
-            real(c_double), intent(in), value :: x
-            real(c_double), intent(in) :: y(n)
-            real(c_double), intent(out) :: dydx(n)
-        end subroutine
-
-        subroutine c_ode_jacobian(m, n, x, y, jac, ldj) bind(C)
-            use iso_c_binding, only : c_int, c_double
-            integer(c_int), intent(in), value :: m
-            integer(c_int), intent(in), value :: n
-            real(c_double), intent(in), value :: x
-            real(c_double), intent(in) :: y(n)
-            real(c_double), intent(out) :: jac(ldj,n)
-            integer(c_int), intent(in), value :: ldj
-        end subroutine
-
-        subroutine c_ode_mass_matrix(n, x, y, m, ldm) bind(C)
-            use iso_c_binding, only : c_int, c_double
-            integer(c_int), intent(in), value :: n
-            real(c_double), intent(in), value :: x
-            real(c_double), intent(in) :: y(n)
-            real(c_double), intent(out) :: m(ldm,n)
-            integer(c_int), intent(in), value :: ldm
-        end subroutine
-    end interface
 
     type, bind(C) :: c_ode_settings
         !! A container for ODE settings.
