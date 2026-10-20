@@ -1,3 +1,25 @@
+/*
+* Copyright (c) 2023-2026 Jason Christopherson
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+*/
+
 #ifndef DIFFEQ_H_
 #define DIFFEQ_H_
 
@@ -42,6 +64,57 @@ typedef void (*c_ode_jacobian)(int m, int n, double x, const double *y, double *
  * @param ldm The leading dimension of @p m.  This value must be at least @p n.
  */
 typedef void (*c_ode_mass_matrix)(int n, double x, const double *y, double *m, int ldm);
+
+/**
+ * @brief Evaluates algebraic constraint residuals \(g(x,y)\).
+ *
+ * For \(N\) input state components and \(M\) constraints,
+ * the callback represents a mapping
+ * \[
+ * g : \mathbb{R}\times\mathbb{R}^{N}
+ * \longrightarrow \mathbb{R}^{M}.
+ * \]
+ * A consistent state satisfies \(g(x,y)=0\). Return the
+ * residuals themselves, not their derivatives, a Boolean result,
+ * or a projected state. A nonzero residual is a valid evaluation
+ * at an inconsistent state, rather than a callback failure.
+ *
+ * The caller supplies the input and output array sizes. The
+ * implementation must interpret the same state ordering as its
+ * model and write every output element. This interface performs
+ * no dimension, rank, or initial-consistency checks. Residual
+ * ordering and physical units are defined by the model; any
+ * subsequent consistency tolerance must respect that scaling.
+ * 
+ * @param nconstraints The number of constraint equations.
+ * @param nstates The number of state variables.
+ * @param x The current value of the independent variable.
+ * @param y The current state vector.
+ * @param g The constraint vector.
+ */
+typedef void (*c_dae_algebraic_constraints)(int nconstraints, int nstates,
+    double x, const double *y, double *g);
+
+/**
+ * @brief Evaluates \(DG(q)[\mathrm{direction}]v\), without including
+ * \(G\dot v\). Each component is
+ * \(\mathrm{direction}^T\nabla^2 g_i(q)v\).
+ * Assign every output element. For linear constraints return
+ * zeros. The callback must support off-manifold coordinates and
+ * arbitrary directions used during nonlinear/Jacobian evaluation.
+ * 
+ * @param nconstraints The number of constraint equations.
+ * @param nstates The number of state variables.
+ * @param x The current value of the independent variable.
+ * @param q The current coordinate vector.
+ * @param direction The coordinate derivative \(\dot q\), including the 
+ * kinematic multiplier correction.
+ * @param v The physical velocity components.
+ * @param curvature The curvature terms in the order of teh constraint callback.
+ */
+typedef void (*c_dae_constraint_curvature)(int nconstraints, int nstates, 
+    double x, const double *q, const double *direction, const double *v,
+    double *curvature);
 
 /**
  * @brief A container of performance statistics for an integrator.
