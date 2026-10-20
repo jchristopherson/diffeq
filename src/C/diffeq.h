@@ -175,6 +175,15 @@ typedef struct {
     double newton_tolerance;
 } c_ode_settings;
 
+typedef struct {
+    void* model;
+    c_ode force;
+    c_ode_mass_matrix mass;
+    c_dae_algebraic_constraints constraints;
+    c_ode_jacobian gradient;
+    c_dae_constraint_curvature curvature;
+} c_ggl_container;
+
 #ifdef __cplusplus
 extern "C"{
 #endif
@@ -508,6 +517,37 @@ int c_kennedy_carpenter_5(int nx, int nstates, c_ode fcn, const double *x,
 int c_bdf(int nx, int nstates, c_ode fcn, const double *x, 
     const double *initcond, const c_ode_settings *settings, 
     c_ode_jacobian jac, c_ode_mass_matrix mass, c_ode_results *output);
+
+/**
+ * @brief
+ * 
+ * @param ncoordinates The number of coordinates (state variables of the ODE 
+ * component).  This value must be positive-valued; else, a 
+ * C_INVALID_INPUT_ERROR is returned.
+ * @param nconstraints The number of constraint equations.  This value must be 
+ * positive-valued; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param force
+ * @param mass
+ * @param constraints
+ * @param gradient
+ * @param curvature
+ * @param alpha
+ * @param beta
+ * @param obj The c_ggl_container.
+ * @return
+ */
+int c_create_ggl_container(int ncoordinates, int nconstraints,
+    c_ode force, c_ode_mass_matrix mass, 
+    c_dae_algebraic_constraints constraints, c_ode_jacobian gradient, 
+    c_dae_constraint_curvature curvature, double alpha, double beta, 
+    c_ggl_container *obj);
+
+/**
+ * @brief
+ * 
+ * @param obj
+ */
+void c_free_ggl_results(c_ggl_container *obj);
 
 #ifdef __cplusplus
 }
