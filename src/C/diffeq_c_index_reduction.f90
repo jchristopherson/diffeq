@@ -137,7 +137,7 @@ contains
         subroutine gradient_routine(x_, y_, jac_, args_)
             real(real64), intent(in) :: x_
             real(real64), intent(in), dimension(:) :: y_
-            real(real64), intent(in), dimension(:,:) :: jac_
+            real(real64), intent(out), dimension(:,:) :: jac_
             class(*), intent(inout), optional :: args_
             call gradient_ptr(size(jac_, 1), size(jac_, 2), x_, y_, jac_, &
                 size(jac_, 1))
