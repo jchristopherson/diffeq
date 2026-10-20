@@ -26,6 +26,7 @@ module diffeq_c_integrators
     use diffeq_c_function_pointers
     use diffeq_c_containers
     use diffeq_c_errors
+    use diffeq_c_index_reduction
     use diffeq
     implicit none
     private
@@ -712,6 +713,161 @@ contains
 ! ******************************************************************************
 ! INDEX-REDUCTION DAE SOLVERS
 ! ------------------------------------------------------------------------------
+    function c_integrate_dae(method, model, nx, nstates, x, initcond, settings, output) &
+        result(rst)
+        integer(c_int), intent(in) :: method
+        type(c_ggl_container), intent(in) :: model
+        integer(c_int), intent(in), value :: nx
+        integer(c_int), intent(in), value :: nstates
+        real(c_double), intent(in) :: x(nx)
+        real(c_double), intent(in) :: initcond(nstates)
+        type(c_ode_settings), intent(in) :: settings
+        type(c_ptr), intent(out) :: output
+        integer(c_int) :: rst
+
+        logical :: use_mass
+        procedure(c_ode), pointer :: force_ptr
+        procedure(c_ode_mass_matrix), pointer :: mass_ptr
+        procedure(c_ode_jacobian), pointer :: gradient_ptr
+        procedure(c_dae_algebraic_constraints), pointer :: constraint_ptr
+        procedure(c_dae_constraint_curvature), pointer :: curvature_ptr
+        type(rosenbrock), target :: rsbrk
+        type(kennedy_carpenter_4), target :: kc4
+        type(kennedy_carpenter_5), target :: kc5
+        type(bdf), target :: bdf_i
+        class(ode_integrator), pointer :: integrator
+        type(ode_results) :: ode_output
+        type(ggl_container), pointer :: mdl
+
+        rst = C_NO_ERROR
+
+        if (.not.c_associated(model%model)) then
+            rst = C_NULL_POINTER_ERROR
+            return
+        end if
+
+        if (.not.c_associated(model%force)) then
+            rst = C_NULL_POINTER_ERROR
+            return
+        end if
+        call c_f_procpointer(model%force, force_ptr)
+
+        use_mass = c_associated(model%mass)
+        if (use_mass) then
+            call c_f_procpointer(model%mass, mass_ptr)
+        end if
+
+        if (.not.c_associated(model%constraints)) then
+            rst = C_NULL_POINTER_ERROR
+            return
+        end if
+        call c_f_procpointer(model%constraints, constraint_ptr)
+
+        if (.not.c_associated(model%gradient)) then
+            rst = C_NULL_POINTER_ERROR
+            return
+        end if
+        call c_f_procpointer(model%gradient, gradient_ptr)
+
+        if (.not.c_associated(model%curvature)) then
+            rst = C_NULL_POINTER_ERROR
+            return
+        end if
+        call c_f_procpointer(model%curvature, curvature_ptr)
+
+        select case (method)
+        case (C_RBRK)
+            integrator => rsbrk
+        case (C_KCARP4)
+            if (.not.c_valid_newton_settings(settings)) then
+                rst = C_INVALID_INPUT_ERROR
+                return
+            end if
+            call kc4%set_newton_step_limit(settings%newton_step_limit)
+            call kc4%set_newton_tolerance(settings%newton_tolerance)
+            integrator => kc4
+        case (C_KCARP5)
+            if (.not.c_valid_newton_settings(settings)) then
+                rst = C_INVALID_INPUT_ERROR
+                return
+            end if
+            call kc5%set_newton_step_limit(settings%newton_step_limit)
+            call kc5%set_newton_tolerance(settings%newton_tolerance)
+            integrator => kc5
+        case default ! BDF
+            if (.not.c_valid_newton_settings(settings)) then
+                rst = C_INVALID_INPUT_ERROR
+                return
+            end if
+            call bdf_i%set_newton_step_limit(settings%newton_step_limit)
+            call bdf_i%set_newton_tolerance(settings%newton_tolerance)
+            integrator => bdf_i
+        end select
+
+        call integrator%set_minimum_step_size(settings%minimum_step_size)
+        call integrator%set_maximum_step_size(settings%maximum_step_size)
+        call integrator%set_step_limit(settings%step_limit)
+        call integrator%set_allow_overshoot(logical(settings%allow_overshoot))
+        call integrator%set_absolute_tolerance(settings%absolute_tolerance)
+        call integrator%set_relative_tolerance(settings%relative_tolerance)
+        call integrator%set_step_size_control_parameter(settings%beta)
+
+        call c_f_pointer(model%model, mdl)
+        mdl%fcn => force_routine
+        if (use_mass) mdl%mass_matrix => mass_routine
+        mdl%constraint_jacobian => gradient_routine
+        mdl%constraint_curvature => curvature_routine
+        mdl%constraints => constraint_routine
+
+        call integrator%solve(mdl, x, initcond)
+        ode_output = integrator%get_ode_results()
+        call c_create_ode_results(output, ode_output)
+
+    contains
+        subroutine force_routine(x_, y_, dydx_, args_)
+            real(real64), intent(in) :: x_
+            real(real64), intent(in), dimension(:) :: y_
+            real(real64), intent(out), dimension(:) :: dydx_
+            class(*), intent(inout), optional :: args_
+            call force_ptr(size(y_), x_, y_, dydx_)
+        end subroutine
+
+        subroutine mass_routine(x_, y_, m_, args_)
+            real(real64), intent(in) :: x_
+            real(real64), intent(in), dimension(:) :: y_
+            real(real64), intent(out), dimension(:,:) :: m_
+            class(*), intent(inout), optional :: args_
+            call mass_ptr(size(m_, 1), x_, y_, m_, size(m_, 1))
+        end subroutine
+
+        subroutine gradient_routine(x_, y_, jac_, args_)
+            real(real64), intent(in) :: x_
+            real(real64), intent(in), dimension(:) :: y_
+            real(real64), intent(out), dimension(:,:) :: jac_
+            class(*), intent(inout), optional :: args_
+            call gradient_ptr(size(jac_, 1), size(jac_, 2), x_, y_, jac_, &
+                size(jac_, 1))
+        end subroutine
+
+        subroutine constraint_routine(x_, y_, g_, args_)
+            real(real64), intent(in) :: x_
+            real(real64), intent(in), dimension(:) :: y_
+            real(real64), intent(out), dimension(:) :: g_
+            class(*), intent(inout), optional :: args_
+            call constraint_ptr(size(g_), size(y_), x_, y_, g_)
+        end subroutine
+
+        subroutine curvature_routine(x_, q_, direction_, v_, curvature_, args_)
+            real(real64), intent(in) :: x_
+            real(real64), intent(in), dimension(:) :: q_
+            real(real64), intent(in), dimension(:) :: direction_
+            real(real64), intent(in), dimension(:) :: v_
+            real(real64), intent(out), dimension(:) :: curvature_
+            class(*), intent(inout), optional :: args_
+            call curvature_ptr(size(curvature_), size(q_), x_, q_, direction_, &
+                v_, curvature_)
+        end subroutine
+    end function
 
 ! ------------------------------------------------------------------------------
 
