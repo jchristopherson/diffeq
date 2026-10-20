@@ -587,12 +587,12 @@ RUNGE_KUTTA_853:
     84 Failed Steps
     12097 Function Evaluations
 ROSENBROCK:
-    1185 Solution Points
-    1184 Successful Steps
-    94 Failed Steps
-    1184 Jacobian Evaluations
-    11221 Function Evaluations
-    1278 Matrix Factorizations
+    1101 Solution Points
+    1100 Successful Steps
+    37 Failed Steps
+    1100 Jacobian Evaluations
+    11260 Function Evaluations
+    1137 Matrix Factorizations
 RUNGE_KUTTA_45 w/ PI Controller:
     1107 Solution Points
     1106 Successful Steps
@@ -635,7 +635,7 @@ Because the integration range is supplied as just its two end points, each solve
 
 Function evaluations and matrix factorizations make the cost comparison more informative because the work performed per step differs considerably from one method to the next.  Explicit Runge-Kutta methods evaluate the model at multiple stages; implicit methods may also form Jacobians, factor matrices, and iterate to convergence.  Comparing `function_evaluations` alongside step counts reveals how many model evaluations a method required, rather than inferring that work from its accepted steps.  The separate `matrix_factorizations` counter exposes work required to prepare linear systems for solution; it need not equal the number of Jacobian evaluations or successful steps.  These operations have different costs depending on the model, system size, and method, and the statistics do not measure elapsed time.  Fewer evaluations or factorizations therefore do not necessarily imply a shorter wall-clock time.
 
-For example, `rosenbrock` reports 1278 matrix factorizations but only 1184 Jacobian evaluations in this run.  The counters describe distinct operations rather than interchangeable estimates of implicit-solver work.  KC4, KC5, and BDF happen to report equal Jacobian-evaluation and factorization counts here; that equality should not be assumed for every method.
+For example, `rosenbrock` reports 1137 matrix factorizations but only 1100 Jacobian evaluations in this run.  The counters describe distinct operations rather than interchangeable estimates of implicit-solver work.  KC4, KC5, and BDF happen to report equal Jacobian-evaluation and factorization counts here; that equality should not be assumed for every method.
 
 With $\mu = 5$ the Van der Pol oscillator is only mildly stiff, so the explicit integrators remain competitive.  The low-order `runge_kutta_23` requires by far the most steps because its step size is limited by accuracy rather than by stability; the higher-order `tsitouras_54` and `runge_kutta_45` traverse the same interval in roughly a fifth as many steps.  The Kennedy-Carpenter methods accept the fewest steps of any integrator here, and `kennedy_carpenter_5` accepts the fewest of all, but each of those steps carries the cost of the Newton iteration noted above.  The implicit methods may accept fewer steps while doing more work per step than the explicit methods.
 
