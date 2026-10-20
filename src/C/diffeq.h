@@ -94,9 +94,11 @@ typedef struct {
     double absolute_tolerance;
     /** The relative tolerance applied to each equation. */
     double relative_tolerance;
-    /** The number of steps allowed per Newton iteration. */
+    /** The maximum number of Newton iterations allowed per implicit solve
+     * (BDF and Kennedy-Carpenter). */
     int newton_step_limit;
-    /** The convergence tolerance for Newton iteration. */
+    /** The convergence tolerance for Newton iteration (BDF and
+     * Kennedy-Carpenter). */
     double newton_tolerance;
 } c_ode_settings;
 

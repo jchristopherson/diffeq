@@ -105,9 +105,11 @@ module diffeq_c_integrators
         real(c_double) :: relative_tolerance
             !! The relative tolerance applied to each equation.
         integer(c_int) :: newton_step_limit
-            !! The number of steps allowed per Newton iteration.
+            !! The maximum number of Newton iterations allowed per implicit
+            !! solve (BDF and Kennedy-Carpenter).
         real(c_double) :: newton_tolerance
-            !! The convergence tolerance for Newton iteration.
+            !! The convergence tolerance for Newton iteration (BDF and
+            !! Kennedy-Carpenter).
     end type
 
 contains
@@ -128,6 +130,18 @@ contains
         settings%newton_step_limit = 12
         settings%newton_tolerance = 1.0d-8
     end subroutine
+
+! ------------------------------------------------------------------------------
+    pure function c_valid_newton_settings(settings) result(rst)
+        !! Determines if the Newton iteration settings are usable.
+        type(c_ode_settings), intent(in) :: settings
+            !! The [[c_ode_settings]] object.
+        logical :: rst
+            !! True if the settings are valid; else, false.
+        rst = settings%newton_step_limit >= 1 .and. &
+            settings%newton_tolerance > 0.0d0 .and. &
+            settings%newton_tolerance <= huge(1.0d0)
+    end function
 
 ! ------------------------------------------------------------------------------
     function c_integrate_ode(method, nx, nstates, fcn, x, initcond, &
@@ -188,8 +202,20 @@ contains
         case (C_RBRK)
             integrator => rsbrk
         case (C_KCARP4)
+            if (.not.c_valid_newton_settings(settings)) then
+                rst = C_INVALID_INPUT_ERROR
+                return
+            end if
+            call kc4%set_newton_step_limit(settings%newton_step_limit)
+            call kc4%set_newton_tolerance(settings%newton_tolerance)
             integrator => kc4
         case (C_KCARP5)
+            if (.not.c_valid_newton_settings(settings)) then
+                rst = C_INVALID_INPUT_ERROR
+                return
+            end if
+            call kc5%set_newton_step_limit(settings%newton_step_limit)
+            call kc5%set_newton_tolerance(settings%newton_tolerance)
             integrator => kc5
         case (C_BACKDIFF)
             call bdf_i%set_newton_step_limit(settings%newton_step_limit)
