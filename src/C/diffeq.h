@@ -94,6 +94,10 @@ typedef struct {
     double absolute_tolerance;
     /** The relative tolerance applied to each equation. */
     double relative_tolerance;
+    /** The number of steps allowed per Newton iteration. */
+    int newton_step_limit;
+    /** The convergence tolerance for Newton iteration. */
+    double newton_tolerance;
 } c_ode_settings;
 
 #ifdef __cplusplus

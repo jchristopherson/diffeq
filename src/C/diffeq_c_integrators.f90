@@ -104,6 +104,10 @@ module diffeq_c_integrators
             !! The absolute tolerance applied to each equation.
         real(c_double) :: relative_tolerance
             !! The relative tolerance applied to each equation.
+        integer(c_int) :: newton_step_limit
+            !! The number of steps allowed per Newton iteration.
+        real(c_double) :: newton_tolerance
+            !! The convergence tolerance for Newton iteration.
     end type
 
 contains
@@ -121,6 +125,8 @@ contains
         settings%minimum_step_size = 1.0d1 * epsilon(1.0d0)
         settings%relative_tolerance = 1.0d-6
         settings%step_limit = 1000000
+        settings%newton_step_limit = 12
+        settings%newton_tolerance = 1.0d-8
     end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -186,6 +192,8 @@ contains
         case (C_KCARP5)
             integrator => kc5
         case (C_BACKDIFF)
+            call bdf_i%set_newton_step_limit(settings%newton_step_limit)
+            call bdf_i%set_newton_tolerance(settings%newton_tolerance)
             integrator => bdf_i
         case (C_ADMS)
             integrator => adams_i
