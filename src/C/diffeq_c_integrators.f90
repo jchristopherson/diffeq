@@ -870,6 +870,20 @@ contains
     end function
 
 ! ------------------------------------------------------------------------------
+    function c_dae_rosenbrock(model, nx, nstates, x, initcond, settings, &
+        output) result(rst) bind(C, name = "c_dae_rosenbrock")
+        type(c_ggl_container), intent(in) :: model
+        integer(c_int), intent(in), value :: nx
+        integer(c_int), intent(in), value :: nstates
+        real(c_double), intent(in) :: x(nx)
+        real(c_double), intent(in) :: initcond(nstates)
+        type(c_ode_settings), intent(in) :: settings
+        type(c_ptr), intent(out) :: output
+        integer(c_int) :: rst
+
+        rst = c_integrate_dae(C_RBRK, model, nx, nstates, x, initcond, &
+            settings, output)
+    end function
 
 ! ------------------------------------------------------------------------------
 

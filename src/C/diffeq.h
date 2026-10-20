@@ -549,6 +549,15 @@ int c_create_ggl_container(int ncoordinates, int nconstraints,
  */
 void c_free_ggl_results(c_ggl_container *obj);
 
+/**
+ * @brief
+ * 
+ * @param obj
+ * @param n
+ * @return
+ */
+int c_get_ggl_state_count(const c_ggl_container *obj, int *n);
+
 #ifdef __cplusplus
 }
 #endif
