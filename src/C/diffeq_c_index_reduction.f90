@@ -30,6 +30,7 @@ module diffeq_c_index_reduction
     implicit none
     private
     public :: c_ggl_container
+    public :: c_get_ggl_state_count
 
     type, bind(C) :: c_ggl_container
         type(c_ptr) :: model
@@ -149,6 +150,26 @@ contains
     end subroutine
 
 ! ------------------------------------------------------------------------------
+    function c_get_ggl_state_count(c_obj, n) result(rst) &
+        bind(C, name = "c_get_ggl_state_count")
+        !! Gets the number of state variables (2N + 2M).
+        type(c_ggl_container), intent(in) :: c_obj
+            !! The [[c_ggl_container]].
+        integer(c_int), intent(out) :: n
+            !! The state variable count.
+        integer(c_int) :: rst
+            !! An error flag denoting the status of the operation.
+
+        type(ggl_container), pointer :: obj
+
+        rst = C_NO_ERROR
+        if (.not.c_associated(c_obj%model)) then
+            rst = C_NULL_POINTER_ERROR
+            return
+        end if
+        call c_f_pointer(c_obj%model, obj)
+        n = obj%get_state_count()
+    end function
 
 ! ------------------------------------------------------------------------------
 
