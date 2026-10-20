@@ -218,6 +218,10 @@ contains
             call kc5%set_newton_tolerance(settings%newton_tolerance)
             integrator => kc5
         case (C_BACKDIFF)
+            if (.not.c_valid_newton_settings(settings)) then
+                rst = C_INVALID_INPUT_ERROR
+                return
+            end if
             call bdf_i%set_newton_step_limit(settings%newton_step_limit)
             call bdf_i%set_newton_tolerance(settings%newton_tolerance)
             integrator => bdf_i
