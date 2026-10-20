@@ -148,13 +148,15 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
 
     ! Local Variables
     integer :: i, n, flag
-    logical :: usemass
+    logical :: usemass, massDependent
     real(real64) :: fac
-    real(real64), allocatable, dimension(:,:) :: lu
+    real(real64), allocatable, dimension(:,:) :: lu, mass_perturbed
+    real(real64), allocatable, dimension(:) :: derivative, state
     
     ! Initialization
     n = size(y)
     usemass = sys%has_mass_matrix()
+    massDependent = sys%get_is_mass_matrix_dependent()
     call this%initialize_matrices(n, usemass)
 
     ! Compute the Jacobian matrix - only need to update if the previous step
@@ -171,11 +173,27 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
         ! Compute the mass matrix
         if (usemass) then
             if (.not.this%m_massComputed .or. &
-                sys%get_is_mass_matrix_dependent()) &
+                massDependent) &
             then
                 call sys%compute_mass_matrix(x, y, this%mass, args)
                 this%m_massComputed = .true.
             end if
+        end if
+    end if
+
+    if (usemass .and. massDependent) then
+        fac = sys%get_finite_difference_step()
+        allocate(mass_perturbed(n,n))
+        derivative = solve_least_squares_full(this%mass, f)
+        if (prevs) then
+            allocate(state(n))
+            do i = 1, n
+                state = y
+                state(i) = state(i) + fac
+                call sys%compute_mass_matrix(x, state, mass_perturbed, args)
+                this%jac(:,i) = this%jac(:,i) - &
+                    matmul((mass_perturbed - this%mass) / fac, derivative)
+            end do
         end if
     end if
 
@@ -200,6 +218,11 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
     call sys%compute_rhs(x + fac, y, this%dfdx, args)
     call this%log_function_evaluation()
     this%dfdx = (this%dfdx - f) / fac ! forward differencing
+    if (usemass .and. massDependent) then
+        call sys%compute_mass_matrix(x + fac, y, mass_perturbed, args)
+        this%dfdx = this%dfdx - &
+            matmul((mass_perturbed - this%mass) / fac, derivative)
+    end if
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -518,10 +541,12 @@ function rbrk_next_step(this, e, eold, h, x) result(rst)
     real(real64), parameter :: fac2 = 1.0d0 / 6.0d0
 
     ! Local Variables
-    real(real64) :: safe, fac, facpred
+    real(real64) :: safe, fac, facpred, maxstep, minstep
 
     ! Initialization
     safe = this%get_step_size_factor()
+    maxstep = this%get_maximum_step_size()
+    minstep = this%get_minimum_step_size()
     fac = max(fac2, min(fac1, e**(0.25d0) / safe))
     rst = h / fac
 
@@ -551,6 +576,9 @@ function rbrk_next_step(this, e, eold, h, x) result(rst)
         ! The step is rejected, reduce the step size - already computed
         this%m_rejectStep = .true.
     end if
+
+    if (abs(rst) > maxstep) rst = sign(maxstep, h)
+    if (abs(rst) < minstep) error stop DIFFEQ_STEP_SIZE_TOO_SMALL_ERROR
 end function
 
 ! ------------------------------------------------------------------------------
