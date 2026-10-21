@@ -9,6 +9,17 @@ A modern Fortran library providing an object-oriented approach to solving and ex
 - [Fortran API Documentation](https://jchristopherson.github.io/diffeq/).
 - [C API Documentation](https://jchristopherson.github.io/diffeq/c-api/).
 
+## Capabilities
+| Capability | Summary |
+| --- | --- |
+| Ordinary differential equations (ODEs) | Solve initial-value problems with adaptive step-size control and configurable absolute and relative tolerances. |
+| Mass-matrix systems | Formulate problems as $M y' = f(x,y)$, including systems with state-dependent mass matrices. |
+| Index-1 differential-algebraic equations (DAEs) | Solve supported singular-mass-matrix systems with consistent initial conditions. |
+| Holonomically constrained mechanics | Use a stabilized index-1 GGL-inspired formulation with position and velocity constraint residual damping. |
+| Dense output | Request solution values on a specified output grid between accepted integration steps. |
+| Solution diagnostics | Retrieve step counts, function and Jacobian evaluations, and matrix-factorization statistics. |
+| C interoperability | Integrate from C through the library's C API. |
+
 ## Available Integrators
 - Runge-Kutta, 5th Order with 4th-Order Embedded Estimate (Dormand-Prince)
 - Tsitouras, 5th Order with 4th-Order Embedded Estimate
