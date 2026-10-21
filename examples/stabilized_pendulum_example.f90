@@ -46,7 +46,7 @@ program stabilized_pendulum
     class(legend), pointer :: lgnd
 
     ! Set up the model and constraints
-    call model%initialize(2, 1, alpha = 2.0d0, beta = 3.0d0)
+    model = ggl_container(2, 1, alpha = 2.0d0, beta = 3.0d0)
     model%fcn => force
     model%mass_matrix => physical_mass
     model%constraints => position_constraint
