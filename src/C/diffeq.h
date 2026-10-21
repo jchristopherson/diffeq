@@ -558,6 +558,114 @@ void c_free_ggl_results(c_ggl_container *obj);
  */
 int c_get_ggl_state_count(const c_ggl_container *obj, int *n);
 
+/**
+ * @brief Utilizes a 4th order Rosenbrock integrator to solve a system of
+ * differential algebraic equations.
+ * 
+ * @param model The c_ggl_container containing the model and constraints.
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.  This value must agree with
+ * c_get_ggl_state_count; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_dae_rosenbrock(const c_ggl_container *model, int nx, int nstates,
+    const double *x, const double *initcond, const c_ode_settings *settings,
+    c_ode_results *output);
+
+/**
+ * @brief Utilizes a 4th order Kennedy-Carpenter integrator to solve a system of
+ * differential algebraic equations.
+ * 
+ * @param model The c_ggl_container containing the model and constraints.
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.  This value must agree with
+ * c_get_ggl_state_count; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_dae_kennedy_carpenter_4(const c_ggl_container *model, int nx, int nstates,
+    const double *x, const double *initcond, const c_ode_settings *settings,
+    c_ode_results *output);
+
+/**
+ * @brief Utilizes a 5th order Kennedy-Carpenter integrator to solve a system of
+ * differential algebraic equations.
+ * 
+ * @param model The c_ggl_container containing the model and constraints.
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.  This value must agree with
+ * c_get_ggl_state_count; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_dae_kennedy_carpenter_5(const c_ggl_container *model, int nx, int nstates,
+    const double *x, const double *initcond, const c_ode_settings *settings,
+    c_ode_results *output);
+
+/**
+ * @brief Utilizes a variable order BDF integrator to solve a system of
+ * differential algebraic equations.
+ * 
+ * @param model The c_ggl_container containing the model and constraints.
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.  This value must agree with
+ * c_get_ggl_state_count; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_dae_bdf(const c_ggl_container *model, int nx, int nstates,
+    const double *x, const double *initcond, const c_ode_settings *settings,
+    c_ode_results *output);
+
 #ifdef __cplusplus
 }
 #endif
