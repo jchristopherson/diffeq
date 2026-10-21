@@ -6,7 +6,8 @@ A modern Fortran library providing an object-oriented approach to solving and ex
 [![Actions Status](https://github.com/jchristopherson/diffeq/workflows/fpm/badge.svg)](https://github.com/jchristopherson/diffeq/actions)
 
 ## Documentation
-The documentation can be found [here](https://jchristopherson.github.io/diffeq/).
+- [Fortran API Documentation](https://jchristopherson.github.io/diffeq/).
+- [C API Documentation](https://jchristopherson.github.io/diffeq/c-api/).
 
 ## Available Integrators
 - Runge-Kutta, 5th Order with 4th-Order Embedded Estimate (Dormand-Prince)
