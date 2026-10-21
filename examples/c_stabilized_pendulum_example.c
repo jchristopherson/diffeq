@@ -20,6 +20,16 @@ int main()
     c_ode_results rst;
     c_ode_settings settings;
 
+    /* NOTE:
+    * The state vector for this example is a 6 component vector:
+    * 1. x motion
+    * 2. y motion
+    * 3. x velocity
+    * 4. y velocity
+    * 5. lambda
+    * 6. mu
+    */
+
     // Set up the model
     model.alpha = 2.0;
     model.beta = 3.0;
