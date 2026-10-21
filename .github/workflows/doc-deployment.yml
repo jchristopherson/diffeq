@@ -11,11 +11,24 @@ jobs:
       with:
         python-version: '3.x'
 
+    - name: Install Doxygen
+      run: |
+        sudo apt-get update
+        sudo apt-get install --yes doxygen
+
     - name: Install dependencies
       run: pip install -v ford==6.1.17
 
-    - name: Build Documentation
+    - name: Build Fortran documentation
       run: ford docs.md
+
+    - name: Build C documentation
+      run: doxygen c_doc/c-api.doxyfile
+
+    - name: Validate documentation output
+      run: |
+        test -f doc/index.html
+        test -f doc/c-api/index.html
 
     - uses: JamesIves/github-pages-deploy-action@3.7.1
       if: github.event_name == 'push' && github.repository == 'jchristopherson/diffeq' && ( startsWith( github.ref, 'refs/tags/' ) || github.ref == 'refs/heads/main' )

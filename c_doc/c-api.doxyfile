@@ -1,0 +1,25 @@
+# Doxygen configuration for the public C interface.
+PROJECT_NAME           = "DIFFEQ C API"
+PROJECT_BRIEF          = "C interface to the DIFFEQ differential equation solvers"
+OUTPUT_DIRECTORY       = doc/c-api
+INPUT                  = src/C/diffeq.h c_doc/c-api.md c_doc/c-api-reference.md
+USE_MDFILE_AS_MAINPAGE = c_doc/c-api.md
+FILE_PATTERNS          = *.h *.md
+RECURSIVE              = NO
+EXTRACT_ALL            = YES
+JAVADOC_AUTOBRIEF      = YES
+WARN_IF_UNDOCUMENTED   = NO
+WARN_AS_ERROR          = YES
+QUIET                  = YES
+FULL_PATH_NAMES        = NO
+STRIP_FROM_PATH        = src/C
+SORT_MEMBER_DOCS       = NO
+GENERATE_HTML          = YES
+HTML_OUTPUT            = .
+GENERATE_TREEVIEW      = YES
+DISABLE_INDEX          = NO
+SEARCHENGINE            = YES
+GENERATE_LATEX         = NO
+GENERATE_MAN            = NO
+GENERATE_XML            = NO
+HAVE_DOT               = NO
