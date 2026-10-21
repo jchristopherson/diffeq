@@ -115,6 +115,17 @@ add_test(
     COMMAND $<TARGET_FILE:diffeq_c_rosenbrock_tests>
 )
 
+add_executable(diffeq_c_dae_integrator_tests diffeq_c_dae_integrator_tests.c)
+target_include_directories(diffeq_c_dae_integrator_tests PRIVATE ${PROJECT_SOURCE_DIR}/src/C)
+target_link_libraries(diffeq_c_dae_integrator_tests diffeq)
+foreach(integrator dae_rosenbrock dae_kc4 dae_kc5 dae_bdf)
+    add_test(
+        NAME diffeq_c_${integrator}
+        WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+        COMMAND $<TARGET_FILE:diffeq_c_dae_integrator_tests> ${integrator}
+    )
+endforeach()
+
 foreach(error_case quote carriage_return line_feed uninitialized open_error)
     add_test(
         NAME diffeq_container_io_error_${error_case}
