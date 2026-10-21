@@ -59,6 +59,10 @@ module diffeq_c_index_reduction
             !! \(F(x,q,v)\), excluding multiplier forces. It is called with
             !! n = 2N and receives the 2N-element vector [q, v], but must
             !! write only the N-element force vector.
+        type(c_funptr) :: jacobian
+            !! Optional callback for computing the Jacobian matrix of the 
+            !! complete system, including the constraints.  If not supplied, 
+            !! the Jacobian will be estimated with finite differences.
         type(c_funptr) :: mass
             !! Optional [[c_ode_mass_matrix]] callback receiving the
             !! N-element coordinate vector q and writing the N-by-N
