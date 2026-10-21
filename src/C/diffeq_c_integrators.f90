@@ -41,6 +41,10 @@ module diffeq_c_integrators
     public :: c_kennedy_carpenter_4
     public :: c_kennedy_carpenter_5
     public :: c_bdf
+    public :: c_dae_rosenbrock
+    public :: c_dae_kennedy_carpenter_4
+    public :: c_dae_kennedy_carpenter_5
+    public :: c_dae_bdf
 
     integer, parameter :: C_RK23 = 1
     integer, parameter :: C_RK45 = 2
