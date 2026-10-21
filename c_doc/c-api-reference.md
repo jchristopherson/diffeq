@@ -14,7 +14,7 @@ accept optional Jacobian and mass-matrix callbacks.
 DAE integrators instead take a `c_ggl_container`, requested point count, full
 augmented-state count, time grid, mutable initial state, settings, and output
 handle. For `N` coordinates and `M` constraints, pass
-`nstates = 2 * (N + M)`.
+`nstates = 2 * (N + M)`.  The solver requires the position and velocity values specified in the initial state vector satisfy the constraints; however, the solver will determine proper initial values for the multiplier components.
 
 The callback declarations describe the exact array lengths and storage. In
 particular, the DAE force callback receives the coordinate and velocity state
