@@ -47,7 +47,7 @@ int main()
     printf("\t%i Solution Points\n", npts);
     printf("\t%i Successful Steps\n", stats.successful_steps);
     printf("\t%i Failed Steps\n", stats.failed_steps);
-    printf("\t%i Function Evaluations:\n", stats.function_evaluations);
+    printf("\t%i Function Evaluations\n", stats.function_evaluations);
     c_free_ode_results(rst);
 
     // RK45
@@ -59,7 +59,7 @@ int main()
     printf("\t%i Solution Points\n", npts);
     printf("\t%i Successful Steps\n", stats.successful_steps);
     printf("\t%i Failed Steps\n", stats.failed_steps);
-    printf("\t%i Function Evaluations:\n", stats.function_evaluations);
+    printf("\t%i Function Evaluations\n", stats.function_evaluations);
     c_free_ode_results(rst);
 
     // RK853
@@ -71,7 +71,7 @@ int main()
     printf("\t%i Solution Points\n", npts);
     printf("\t%i Successful Steps\n", stats.successful_steps);
     printf("\t%i Failed Steps\n", stats.failed_steps);
-    printf("\t%i Function Evaluations:\n", stats.function_evaluations);
+    printf("\t%i Function Evaluations\n", stats.function_evaluations);
     c_free_ode_results(rst);
 
     // ROSENBROCK
@@ -84,9 +84,9 @@ int main()
     printf("\t%i Solution Points\n", npts);
     printf("\t%i Successful Steps\n", stats.successful_steps);
     printf("\t%i Failed Steps\n", stats.failed_steps);
-    printf("\t%i Jacobian Evaluations:\n", stats.jacobian_evaluations);
-    printf("\t%i Function Evaluations:\n", stats.function_evaluations);
-    printf("\t%i Matrix Factorizations:\n", stats.matrix_factorizations);
+    printf("\t%i Jacobian Evaluations\n", stats.jacobian_evaluations);
+    printf("\t%i Function Evaluations\n", stats.function_evaluations);
+    printf("\t%i Matrix Factorizations\n", stats.matrix_factorizations);
     c_free_ode_results(rst);
 
     // RK45 W/ PI
@@ -100,7 +100,7 @@ int main()
     printf("\t%i Solution Points\n", npts);
     printf("\t%i Successful Steps\n", stats.successful_steps);
     printf("\t%i Failed Steps\n", stats.failed_steps);
-    printf("\t%i Function Evaluations:\n", stats.function_evaluations);
+    printf("\t%i Function Evaluations\n", stats.function_evaluations);
     c_free_ode_results(rst);
 
     // KC4
@@ -113,9 +113,9 @@ int main()
     printf("\t%i Solution Points\n", npts);
     printf("\t%i Successful Steps\n", stats.successful_steps);
     printf("\t%i Failed Steps\n", stats.failed_steps);
-    printf("\t%i Jacobian Evaluations:\n", stats.jacobian_evaluations);
-    printf("\t%i Function Evaluations:\n", stats.function_evaluations);
-    printf("\t%i Matrix Factorizations:\n", stats.matrix_factorizations);
+    printf("\t%i Jacobian Evaluations\n", stats.jacobian_evaluations);
+    printf("\t%i Function Evaluations\n", stats.function_evaluations);
+    printf("\t%i Matrix Factorizations\n", stats.matrix_factorizations);
     c_free_ode_results(rst);
 
     // KC5
@@ -128,9 +128,9 @@ int main()
     printf("\t%i Solution Points\n", npts);
     printf("\t%i Successful Steps\n", stats.successful_steps);
     printf("\t%i Failed Steps\n", stats.failed_steps);
-    printf("\t%i Jacobian Evaluations:\n", stats.jacobian_evaluations);
-    printf("\t%i Function Evaluations:\n", stats.function_evaluations);
-    printf("\t%i Matrix Factorizations:\n", stats.matrix_factorizations);
+    printf("\t%i Jacobian Evaluations\n", stats.jacobian_evaluations);
+    printf("\t%i Function Evaluations\n", stats.function_evaluations);
+    printf("\t%i Matrix Factorizations\n", stats.matrix_factorizations);
     c_free_ode_results(rst);
 
     // TSITOURAS
@@ -142,7 +142,7 @@ int main()
     printf("\t%i Solution Points\n", npts);
     printf("\t%i Successful Steps\n", stats.successful_steps);
     printf("\t%i Failed Steps\n", stats.failed_steps);
-    printf("\t%i Function Evaluations:\n", stats.function_evaluations);
+    printf("\t%i Function Evaluations\n", stats.function_evaluations);
     c_free_ode_results(rst);
 
     // BDF
@@ -155,9 +155,9 @@ int main()
     printf("\t%i Solution Points\n", npts);
     printf("\t%i Successful Steps\n", stats.successful_steps);
     printf("\t%i Failed Steps\n", stats.failed_steps);
-    printf("\t%i Jacobian Evaluations:\n", stats.jacobian_evaluations);
-    printf("\t%i Function Evaluations:\n", stats.function_evaluations);
-    printf("\t%i Matrix Factorizations:\n", stats.matrix_factorizations);
+    printf("\t%i Jacobian Evaluations\n", stats.jacobian_evaluations);
+    printf("\t%i Function Evaluations\n", stats.function_evaluations);
+    printf("\t%i Matrix Factorizations\n", stats.matrix_factorizations);
     c_free_ode_results(rst);
 
     // ADAMS
@@ -170,7 +170,7 @@ int main()
     printf("\t%i Solution Points\n", npts);
     printf("\t%i Successful Steps\n", stats.successful_steps);
     printf("\t%i Failed Steps\n", stats.failed_steps);
-    printf("\t%i Function Evaluations:\n", stats.function_evaluations);
+    printf("\t%i Function Evaluations\n", stats.function_evaluations);
     c_free_ode_results(rst);
 
     // End
