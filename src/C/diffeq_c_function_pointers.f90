@@ -3,31 +3,49 @@ module diffeq_c_function_pointers
     implicit none
 
     abstract interface
-    subroutine c_ode(n, x, y, dydx) bind(C)
+        subroutine c_ode(n, x, y, dydx) bind(C)
+            !! ODE callback routine.
             use iso_c_binding, only : c_int, c_double
             integer(c_int), intent(in), value :: n
+                !! The number of state variables.
             real(c_double), intent(in), value :: x
+                !! The current value of the independent variable.
             real(c_double), intent(in) :: y(n)
+                !! The current state vector.
             real(c_double), intent(out) :: dydx(n)
+                !! The state vector derivatives.
         end subroutine
 
         subroutine c_ode_jacobian(m, n, x, y, jac, ldj) bind(C)
+            !! ODE Jacobian callback routine.
             use iso_c_binding, only : c_int, c_double
             integer(c_int), intent(in), value :: m
+                !! The number of equations.
             integer(c_int), intent(in), value :: n
+                !! The state vector length.
             real(c_double), intent(in), value :: x
+                !! The current value of the independent variable.
             real(c_double), intent(in) :: y(n)
+                !! The current state vector.
             real(c_double), intent(out) :: jac(ldj,n)
+                !! The M-by-N Jacobian matrix.
             integer(c_int), intent(in), value :: ldj
+                !! The leading dimension of the Jacobian matrix.
         end subroutine
 
         subroutine c_ode_mass_matrix(n, x, y, m, ldm) bind(C)
+            !! ODE mass matrix callback routine.
             use iso_c_binding, only : c_int, c_double
             integer(c_int), intent(in), value :: n
+                !! The number of state variables.
             real(c_double), intent(in), value :: x
+                !! The current value of the independent variable.
             real(c_double), intent(in) :: y(n)
+                !! The current state vector.
             real(c_double), intent(out) :: m(ldm,n)
+                !! The mass matrix.
             integer(c_int), intent(in), value :: ldm
+                !! The leading dimension of the mass matrix.
         end subroutine
         
         subroutine c_dae_algebraic_constraints(nconstraints, nstates, x, y, g)
