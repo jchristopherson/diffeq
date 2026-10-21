@@ -716,14 +716,27 @@ contains
     function c_integrate_dae(method, model, nx, nstates, x, initcond, settings, output) &
         result(rst)
         integer(c_int), intent(in) :: method
+            !! The integrator to use.
         type(c_ggl_container), intent(in) :: model
+            !! The [[c_ggl_container]] containing the constraints and model.
         integer(c_int), intent(in), value :: nx
+            !! The number of solution points.  This value must be at least 2;
+            !! else, a C_INVALID_INPUT_ERROR is returned.
         integer(c_int), intent(in), value :: nstates
+            !! The number of state equations, including the constraints.  This 
+            !! value must be at least 1; else, a C_INVALID_INPUT_ERROR is 
+            !! returned.
         real(c_double), intent(in) :: x(nx)
+            !! An NX-element array containing the desired solution points.
         real(c_double), intent(in) :: initcond(nstates)
+            !! An NSTATES-element array containing the initial conditions.
         type(c_ode_settings), intent(in) :: settings
+            !! The integrator settings.
         type(c_ptr), intent(out) :: output
+            !! The output c_ode_results object.  Memory must be freed by 
+            !! c_free_ode_results.
         integer(c_int) :: rst
+            !! An error flag denoting the status of the operation.
 
         logical :: use_mass
         procedure(c_ode), pointer :: force_ptr
@@ -751,6 +764,16 @@ contains
             return
         end if
         call c_f_procpointer(model%force, force_ptr)
+
+        if (nx < 2) then
+            rst = C_INVALID_INPUT_ERROR
+            return
+        end if
+
+        if (nstates < 1) then
+            rst = C_INVALID_INPUT_ERROR
+            return
+        end if
 
         use_mass = c_associated(model%mass)
         if (use_mass) then
@@ -872,26 +895,124 @@ contains
 ! ------------------------------------------------------------------------------
     function c_dae_rosenbrock(model, nx, nstates, x, initcond, settings, &
         output) result(rst) bind(C, name = "c_dae_rosenbrock")
+        !! Utilizes a 4th order Rosenbrock integrator to solve the system of
+        !! DAE's.
         type(c_ggl_container), intent(in) :: model
+            !! The [[c_ggl_container]] containing the constraints and model.
         integer(c_int), intent(in), value :: nx
+            !! The number of solution points.  This value must be at least 2;
+            !! else, a C_INVALID_INPUT_ERROR is returned.
         integer(c_int), intent(in), value :: nstates
+            !! The number of state equations, including the constraints.  This 
+            !! value must be at least 1; else, a C_INVALID_INPUT_ERROR is 
+            !! returned.
         real(c_double), intent(in) :: x(nx)
+            !! An NX-element array containing the desired solution points.
         real(c_double), intent(in) :: initcond(nstates)
+            !! An NSTATES-element array containing the initial conditions.
         type(c_ode_settings), intent(in) :: settings
+            !! The integrator settings.
         type(c_ptr), intent(out) :: output
+            !! The output c_ode_results object.  Memory must be freed by 
+            !! c_free_ode_results.
         integer(c_int) :: rst
+            !! An error flag denoting the status of the operation.
 
         rst = c_integrate_dae(C_RBRK, model, nx, nstates, x, initcond, &
             settings, output)
     end function
 
 ! ------------------------------------------------------------------------------
+    function c_dae_kennedy_carpenter_4(model, nx, nstates, x, initcond, &
+        settings, output) result(rst) &
+        bind(C, name = "c_dae_kennedy_carpenter_4")
+        !! Utilizes a 4th order Kennedy-Carpenter integrator to solve the 
+        !! system of DAE's.
+        type(c_ggl_container), intent(in) :: model
+            !! The [[c_ggl_container]] containing the constraints and model.
+        integer(c_int), intent(in), value :: nx
+            !! The number of solution points.  This value must be at least 2;
+            !! else, a C_INVALID_INPUT_ERROR is returned.
+        integer(c_int), intent(in), value :: nstates
+            !! The number of state equations, including the constraints.  This 
+            !! value must be at least 1; else, a C_INVALID_INPUT_ERROR is 
+            !! returned.
+        real(c_double), intent(in) :: x(nx)
+            !! An NX-element array containing the desired solution points.
+        real(c_double), intent(in) :: initcond(nstates)
+            !! An NSTATES-element array containing the initial conditions.
+        type(c_ode_settings), intent(in) :: settings
+            !! The integrator settings.
+        type(c_ptr), intent(out) :: output
+            !! The output c_ode_results object.  Memory must be freed by 
+            !! c_free_ode_results.
+        integer(c_int) :: rst
+            !! An error flag denoting the status of the operation.
+
+        rst = c_integrate_dae(C_KCARP4, model, nx, nstates, x, initcond, &
+            settings, output)
+    end function
 
 ! ------------------------------------------------------------------------------
+    function c_dae_kennedy_carpenter_5(model, nx, nstates, x, initcond, &
+        settings, output) result(rst) &
+        bind(C, name = "c_dae_kennedy_carpenter_5")
+        !! Utilizes a 5th order Kennedy-Carpenter integrator to solve the 
+        !! system of DAE's.
+        type(c_ggl_container), intent(in) :: model
+            !! The [[c_ggl_container]] containing the constraints and model.
+        integer(c_int), intent(in), value :: nx
+            !! The number of solution points.  This value must be at least 2;
+            !! else, a C_INVALID_INPUT_ERROR is returned.
+        integer(c_int), intent(in), value :: nstates
+            !! The number of state equations, including the constraints.  This 
+            !! value must be at least 1; else, a C_INVALID_INPUT_ERROR is 
+            !! returned.
+        real(c_double), intent(in) :: x(nx)
+            !! An NX-element array containing the desired solution points.
+        real(c_double), intent(in) :: initcond(nstates)
+            !! An NSTATES-element array containing the initial conditions.
+        type(c_ode_settings), intent(in) :: settings
+            !! The integrator settings.
+        type(c_ptr), intent(out) :: output
+            !! The output c_ode_results object.  Memory must be freed by 
+            !! c_free_ode_results.
+        integer(c_int) :: rst
+            !! An error flag denoting the status of the operation.
+
+        rst = c_integrate_dae(C_KCARP5, model, nx, nstates, x, initcond, &
+            settings, output)
+    end function
 
 ! ------------------------------------------------------------------------------
+    function c_dae_bdf(model, nx, nstates, x, initcond, settings, &
+        output) result(rst) bind(C, name = "c_dae_bdf")
+        !! Utilizes a variable order BDF integrator to solve the system of
+        !! DAE's.
+        type(c_ggl_container), intent(in) :: model
+            !! The [[c_ggl_container]] containing the constraints and model.
+        integer(c_int), intent(in), value :: nx
+            !! The number of solution points.  This value must be at least 2;
+            !! else, a C_INVALID_INPUT_ERROR is returned.
+        integer(c_int), intent(in), value :: nstates
+            !! The number of state equations, including the constraints.  This 
+            !! value must be at least 1; else, a C_INVALID_INPUT_ERROR is 
+            !! returned.
+        real(c_double), intent(in) :: x(nx)
+            !! An NX-element array containing the desired solution points.
+        real(c_double), intent(in) :: initcond(nstates)
+            !! An NSTATES-element array containing the initial conditions.
+        type(c_ode_settings), intent(in) :: settings
+            !! The integrator settings.
+        type(c_ptr), intent(out) :: output
+            !! The output c_ode_results object.  Memory must be freed by 
+            !! c_free_ode_results.
+        integer(c_int) :: rst
+            !! An error flag denoting the status of the operation.
 
-! ------------------------------------------------------------------------------
+        rst = c_integrate_dae(C_BACKDIFF, model, nx, nstates, x, initcond, &
+            settings, output)
+    end function
 
 ! ------------------------------------------------------------------------------
 end module
