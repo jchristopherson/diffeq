@@ -63,7 +63,7 @@ module diffeq_c_function_pointers
                 !! The constraint vector.
         end subroutine
 
-        subroutine c_dae_constraint_curvature(nconstraints, nstates, x, q, &
+        subroutine c_dae_constraint_curvature(nconstraints, ncoord, x, q, &
             direction, v, curvature)
             !! Evaluates \(DG(q)[\mathrm{direction}]v\), without including
             !! \(G\dot v\). Each component is
@@ -74,16 +74,16 @@ module diffeq_c_function_pointers
             use iso_c_binding, only : c_int, c_double
             integer(c_int), intent(in), value :: nconstraints
                 !! The number of constraint equations.
-            integer(c_int), intent(in), value :: nstates
-                !! The number of state variables.
+            integer(c_int), intent(in), value :: ncoord
+                !! The number of coordinate variables.
             real(c_double), intent(in), value :: x
                 !! The current value of the independent variable.
-            real(c_double), intent(in) :: q(nstates)
+            real(c_double), intent(in) :: q(ncoord)
                 !! The current coordinate vector.
-            real(c_double), intent(in) :: direction(nstates)
+            real(c_double), intent(in) :: direction(ncoord)
                 !! The coordinate derivative \(\dot q\), including the 
                 !! kinematic multiplier correction.
-            real(c_double), intent(in) :: v(nstates)
+            real(c_double), intent(in) :: v(ncoord)
                 !! The physical velocity components.
             real(c_double), intent(out) :: curvature(nconstraints)
                 !! The curvature terms in the order of teh constraint callback.

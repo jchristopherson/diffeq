@@ -728,7 +728,7 @@ contains
             !! returned.
         real(c_double), intent(in) :: x(nx)
             !! An NX-element array containing the desired solution points.
-        real(c_double), intent(in) :: initcond(nstates)
+        real(c_double), intent(inout) :: initcond(nstates)
             !! An NSTATES-element array containing the initial conditions.
         type(c_ode_settings), intent(in) :: settings
             !! The integrator settings.
@@ -835,13 +835,18 @@ contains
         call integrator%set_relative_tolerance(settings%relative_tolerance)
         call integrator%set_step_size_control_parameter(settings%beta)
 
-        call mdl%initialize(nstates - model%constraint_count, &
+        ! NSTATES is the size of the entire state vector, the constraints,
+        ! the coordinates, the velocity, and the velocity constraints;
+        ! therefore, the number of coordinates is (NSTATES - 2 NCONSTRAINTS)/2
+        call mdl%initialize((nstates - 2 * model%constraint_count) / 2, &
             model%constraint_count, alpha = model%alpha, beta = model%beta)
         mdl%fcn => force_routine
         if (use_mass) mdl%mass_matrix => mass_routine
         mdl%constraint_jacobian => gradient_routine
         mdl%constraint_curvature => curvature_routine
         mdl%constraints => constraint_routine
+
+        call mdl%initialize_multipliers(0.0d0, initcond)
 
         call integrator%solve(mdl, x, initcond)
         ode_output = integrator%get_ode_results()
@@ -909,7 +914,7 @@ contains
             !! returned.
         real(c_double), intent(in) :: x(nx)
             !! An NX-element array containing the desired solution points.
-        real(c_double), intent(in) :: initcond(nstates)
+        real(c_double), intent(inout) :: initcond(nstates)
             !! An NSTATES-element array containing the initial conditions.
         type(c_ode_settings), intent(in) :: settings
             !! The integrator settings.
@@ -940,7 +945,7 @@ contains
             !! returned.
         real(c_double), intent(in) :: x(nx)
             !! An NX-element array containing the desired solution points.
-        real(c_double), intent(in) :: initcond(nstates)
+        real(c_double), intent(inout) :: initcond(nstates)
             !! An NSTATES-element array containing the initial conditions.
         type(c_ode_settings), intent(in) :: settings
             !! The integrator settings.
@@ -971,7 +976,7 @@ contains
             !! returned.
         real(c_double), intent(in) :: x(nx)
             !! An NX-element array containing the desired solution points.
-        real(c_double), intent(in) :: initcond(nstates)
+        real(c_double), intent(inout) :: initcond(nstates)
             !! An NSTATES-element array containing the initial conditions.
         type(c_ode_settings), intent(in) :: settings
             !! The integrator settings.
@@ -1001,7 +1006,7 @@ contains
             !! returned.
         real(c_double), intent(in) :: x(nx)
             !! An NX-element array containing the desired solution points.
-        real(c_double), intent(in) :: initcond(nstates)
+        real(c_double), intent(inout) :: initcond(nstates)
             !! An NSTATES-element array containing the initial conditions.
         type(c_ode_settings), intent(in) :: settings
             !! The integrator settings.

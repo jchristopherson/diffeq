@@ -110,3 +110,7 @@ endif()
 add_executable(c_comparison_example c_comparison_example.c)
 target_link_libraries(c_comparison_example diffeq)
 target_include_directories(c_comparison_example PUBLIC ${CMAKE_SOURCE_DIR}/src/C)
+
+add_executable(c_stabilized_pendulum_example c_stabilized_pendulum_example.c)
+target_link_libraries(c_stabilized_pendulum_example diffeq)
+target_include_directories(c_stabilized_pendulum_example PUBLIC ${CMAKE_SOURCE_DIR}/src/C)

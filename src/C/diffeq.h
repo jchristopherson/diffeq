@@ -597,7 +597,7 @@ int c_bdf(int nx, int nstates, c_ode fcn, const double *x,
  * @return An error flag denoting the status of the operation.
  */
 int c_dae_rosenbrock(const c_ggl_container *model, int nx, int nstates,
-    const double *x, const double *initcond, const c_ode_settings *settings,
+    const double *x, double *initcond, const c_ode_settings *settings,
     c_ode_results *output);
 
 /**
@@ -623,7 +623,7 @@ int c_dae_rosenbrock(const c_ggl_container *model, int nx, int nstates,
  * @return An error flag denoting the status of the operation.
  */
 int c_dae_kennedy_carpenter_4(const c_ggl_container *model, int nx, int nstates,
-    const double *x, const double *initcond, const c_ode_settings *settings,
+    const double *x, double *initcond, const c_ode_settings *settings,
     c_ode_results *output);
 
 /**
@@ -649,7 +649,7 @@ int c_dae_kennedy_carpenter_4(const c_ggl_container *model, int nx, int nstates,
  * @return An error flag denoting the status of the operation.
  */
 int c_dae_kennedy_carpenter_5(const c_ggl_container *model, int nx, int nstates,
-    const double *x, const double *initcond, const c_ode_settings *settings,
+    const double *x, double *initcond, const c_ode_settings *settings,
     c_ode_results *output);
 
 /**
@@ -675,7 +675,7 @@ int c_dae_kennedy_carpenter_5(const c_ggl_container *model, int nx, int nstates,
  * @return An error flag denoting the status of the operation.
  */
 int c_dae_bdf(const c_ggl_container *model, int nx, int nstates,
-    const double *x, const double *initcond, const c_ode_settings *settings,
+    const double *x, double *initcond, const c_ode_settings *settings,
     c_ode_results *output);
 
 #ifdef __cplusplus
