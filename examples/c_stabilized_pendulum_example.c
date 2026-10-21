@@ -39,6 +39,7 @@ int main()
     model.force = force;
     model.gradient = gradient;
     model.mass = physical_mass;
+    model.jacobian = NULL;
 
     // Set up the integrator
     c_default_ode_settings(&settings);

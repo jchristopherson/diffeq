@@ -204,6 +204,12 @@ typedef struct {
      */
     c_ode force;
     /**
+     * Optional callback for computing the Jacobian matrix of the complete
+     * system, including the constraints.  If not supplied, the Jacobian will
+     * be estimated with finite differences.
+     */
+    c_ode_jacobian jacobian;
+    /**
      * Optional callback receiving the N-element coordinate vector q and
      * writing the N-by-N symmetric positive-definite physical mass matrix.
      * Set to NULL to use the identity matrix.  Set the mass_matrix_constant

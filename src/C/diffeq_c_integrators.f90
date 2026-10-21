@@ -738,10 +738,10 @@ contains
         integer(c_int) :: rst
             !! An error flag denoting the status of the operation.
 
-        logical :: use_mass
+        logical :: use_mass, use_jac
         procedure(c_ode), pointer :: force_ptr
         procedure(c_ode_mass_matrix), pointer :: mass_ptr
-        procedure(c_ode_jacobian), pointer :: gradient_ptr
+        procedure(c_ode_jacobian), pointer :: gradient_ptr, jacobian_ptr
         procedure(c_dae_algebraic_constraints), pointer :: constraint_ptr
         procedure(c_dae_constraint_curvature), pointer :: curvature_ptr
         type(rosenbrock), target :: rsbrk
@@ -773,6 +773,11 @@ contains
         if (nstates < 1) then
             rst = C_INVALID_INPUT_ERROR
             return
+        end if
+
+        use_jac = c_associated(model%jacobian)
+        if (use_jac) then
+            call c_f_procpointer(model%jacobian, jacobian_ptr)
         end if
 
         use_mass = c_associated(model%mass)
@@ -841,6 +846,7 @@ contains
         call mdl%initialize((nstates - 2 * model%constraint_count) / 2, &
             model%constraint_count, alpha = model%alpha, beta = model%beta)
         mdl%fcn => force_routine
+        if (use_jac) mdl%jacobian => jacobian_routine
         if (use_mass) mdl%mass_matrix => mass_routine
         mdl%constraint_jacobian => gradient_routine
         mdl%constraint_curvature => curvature_routine
@@ -895,6 +901,15 @@ contains
             class(*), intent(inout), optional :: args_
             call curvature_ptr(size(curvature_), size(q_), x_, q_, direction_, &
                 v_, curvature_)
+        end subroutine
+
+        subroutine jacobian_routine(x_, y_, jac_, args_)
+            real(real64), intent(in) :: x_
+            real(real64), intent(in), dimension(:) :: y_
+            real(real64), intent(out), dimension(:,:) :: jac_
+            class(*), intent(inout), optional :: args_
+            call jacobian_ptr(size(jac_, 1), size(jac_, 2), x_, y_, jac_, &
+                size(jac_, 1))
         end subroutine
     end function
 
