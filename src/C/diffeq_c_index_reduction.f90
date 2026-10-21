@@ -30,152 +30,64 @@ module diffeq_c_index_reduction
     implicit none
     private
     public :: c_ggl_container
-    public :: c_get_ggl_state_count
 
     type, bind(C) :: c_ggl_container
-        type(c_ptr) :: model
+        !! C-interoperable description of a holonomically constrained
+        !! mechanical model to be solved with the stabilized index-1
+        !! Gear-Gupta-Leimkuhler (GGL) formulation of [[ggl_container]].
+        !!
+        !! For N coordinates and M constraints the integrated state is
+        !! \[
+        !! z=[q_N,v_N,\lambda_M,\mu_M]^T,
+        !! \]
+        !! so the state count supplied to the DAE integrators must equal
+        !! \(2(N+M)\), and the initial conditions must use this ordering.
+        !! The model is
+        !! \[
+        !! \dot q = v + G^T\mu, \qquad M(q)\dot v = F(x,q,v) - G^T\lambda,
+        !! \]
+        !! \[
+        !! 0 = G\dot q + \alpha g, \qquad
+        !! 0 = DG(q)[\dot q]v + GM^{-1}(F-G^T\lambda) + \beta Gv,
+        !! \]
+        !! where \(g(q)\) are the position constraints and
+        !! \(G=\partial g/\partial q\). Every callback must accept perturbed,
+        !! off-manifold states, and the constraint callbacks must not depend
+        !! on the independent variable.
         type(c_funptr) :: force
+            !! Required [[c_ode]] callback computing the applied force
+            !! \(F(x,q,v)\), excluding multiplier forces. It is called with
+            !! n = 2N and receives the 2N-element vector [q, v], but must
+            !! write only the N-element force vector.
         type(c_funptr) :: mass
+            !! Optional [[c_ode_mass_matrix]] callback receiving the
+            !! N-element coordinate vector q and writing the N-by-N
+            !! symmetric positive-definite physical mass matrix. Set to
+            !! C_NULL_FUNPTR to use the identity matrix. Set the
+            !! mass_matrix_constant setting to false whenever this matrix
+            !! varies with x or q.
         type(c_funptr) :: constraints
+            !! Required [[c_dae_algebraic_constraints]] callback receiving
+            !! the N-element coordinate vector q and writing the M position
+            !! constraint residuals \(g(q)\).
         type(c_funptr) :: gradient
+            !! Required [[c_ode_jacobian]] callback receiving the N-element
+            !! coordinate vector q and writing the M-by-N constraint
+            !! Jacobian \(G=\partial g/\partial q\) in column-major order.
+            !! The rows of \(G\) must be linearly independent.
         type(c_funptr) :: curvature
+            !! Required [[c_dae_constraint_curvature]] callback computing the
+            !! M curvature terms \(DG(q)[\dot q]v\). Return zeros for linear
+            !! constraints.
+        real(c_double) :: alpha
+            !! Nonnegative, finite position-constraint decay rate, in inverse
+            !! independent-variable units. Zero disables position damping.
+        real(c_double) :: beta
+            !! Nonnegative, finite velocity-constraint decay rate, in inverse
+            !! independent-variable units. Zero disables velocity damping.
+        integer(c_int) :: constraint_count
+            !! The number M of independent constraints, with
+            !! \(1 \le M \le N\).
     end type
 
-contains
-! ------------------------------------------------------------------------------
-    function c_create_ggl_container(ncoordinates, nconstraints, force, mass, &
-        constraints, gradient, curvature, alpha, beta, c_obj) result(rst) &
-        bind(C, name = "c_create_ggl_container")
-        !! Constructs a new [[ggl_container]] pointer and returns its address
-        !! to the supplied C pointer.  Be sure to call c_free_ggl_container
-        !! once finished with this object.
-        integer(c_int), intent(in), value :: ncoordinates
-            !! The number of coordinates (state variables of the ODE component).
-            !! This value must be positive-valued; else, a C_INVALID_INPUT_ERROR
-            !! is returned.
-        integer(c_int), intent(in), value :: nconstraints
-            !! The number of constraint equations.  This value must be 
-            !! positive-valued; else, a C_INVALID_INPUT_ERROR is returned.
-        type(c_funptr), intent(in), value :: force
-            !! A pointer to the right-hand-side force routine.  A 
-            !! C_NULL_POINTER_ERROR error is returned if NULL.
-        type(c_funptr), intent(in), value :: mass
-            !! A pointer to the physical mass routine.  Supply NULL in the event
-            !! that an identity matrix is desired.
-        type(c_funptr), intent(in), value :: constraints
-            !! A pointer to the routine containing the algebraic constraints.  A 
-            !! C_NULL_POINTER_ERROR error is returned if NULL.
-        type(c_funptr), intent(in), value :: gradient
-            !! A pointer to the routine that computes the constraint gradient.
-            !! A C_NULL_POINTER_ERROR error is returned if NULL.
-        type(c_funptr), intent(in), value :: curvature
-            !! A pointer to the routine that computes the curvature of the
-            !! constraint equations.  A C_NULL_POINTER_ERROR error is returned 
-            !! if NULL.
-        real(c_double), intent(in), value :: alpha
-            !! A non-negative, finite position decay rate.  Zero disables the
-            !! damping term without disabling the differentiated constraint.
-        real(c_double), intent(in), value :: beta
-            !! A non-negative, finite velocity decay rate.  Zero disables the
-            !! damping term without disabling the differentiated constraint.
-        type(c_ggl_container), intent(out) :: c_obj
-            !! A pointer to the newly initialized [[c_ggl_container]].
-        integer(c_int) :: rst
-            !! An error flag denoting the status of the operation.  
-
-        type(ggl_container), pointer :: obj
-
-        rst = C_NO_ERROR
-        if (nconstraints < 1) then
-            rst = C_INVALID_INPUT_ERROR
-            return
-        end if
-        if (ncoordinates < 1) then
-            rst = C_INVALID_INPUT_ERROR
-            return
-        end if
-
-        allocate(obj)
-        call obj%initialize(ncoordinates, nconstraints, alpha = alpha, beta = beta)
-        c_obj%model = c_loc(obj)
-        
-        if (.not.c_associated(force)) then
-            rst = C_NULL_POINTER_ERROR
-            deallocate(obj)
-            return
-        end if
-        c_obj%force = force
-
-        ! MASS Can be NULL
-        c_obj%mass = mass
-
-        if (.not.c_associated(constraints)) then
-            rst = C_NULL_POINTER_ERROR
-            deallocate(obj)
-            return
-        end if
-        c_obj%constraints = constraints
-
-        if (.not.c_associated(gradient)) then
-            rst = C_NULL_POINTER_ERROR
-            deallocate(obj)
-            return
-        end if
-        c_obj%gradient = gradient
-
-        if (.not.c_associated(curvature)) then
-            rst = C_NULL_POINTER_ERROR
-            deallocate(obj)
-            return
-        end if
-        c_obj%curvature = curvature
-    end function
-
-! ------------------------------------------------------------------------------
-    subroutine c_free_ggl_results(c_obj) bind(C, name = "c_free_ggl_results")
-        !! Cleans up resources held by a [[c_ggl_container]] object.
-        type(c_ggl_container), intent(inout) :: c_obj
-            !! A pointer to the [[c_ggl_container]] object to free.
-
-        type(ggl_container), pointer :: obj
-        if (.not.c_associated(c_obj%model)) return
-        call c_f_pointer(c_obj%model, obj)
-        if (associated(obj)) deallocate(obj)
-        c_obj%model = c_null_ptr
-        c_obj%constraints = c_null_funptr
-        c_obj%curvature = c_null_funptr
-        c_obj%force = c_null_funptr
-        c_obj%gradient = c_null_funptr
-        c_obj%mass = c_null_funptr
-    end subroutine
-
-! ------------------------------------------------------------------------------
-    function c_get_ggl_state_count(c_obj, n) result(rst) &
-        bind(C, name = "c_get_ggl_state_count")
-        !! Gets the number of state variables (2N + 2M).
-        type(c_ggl_container), intent(in) :: c_obj
-            !! The [[c_ggl_container]].
-        integer(c_int), intent(out) :: n
-            !! The state variable count.
-        integer(c_int) :: rst
-            !! An error flag denoting the status of the operation.
-
-        type(ggl_container), pointer :: obj
-
-        rst = C_NO_ERROR
-        if (.not.c_associated(c_obj%model)) then
-            rst = C_NULL_POINTER_ERROR
-            return
-        end if
-        call c_f_pointer(c_obj%model, obj)
-        n = obj%get_state_count()
-    end function
-
-! ------------------------------------------------------------------------------
-
-! ------------------------------------------------------------------------------
-
-! ------------------------------------------------------------------------------
-
-! ------------------------------------------------------------------------------
 end module

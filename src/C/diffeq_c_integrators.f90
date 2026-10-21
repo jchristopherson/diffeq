@@ -750,12 +750,12 @@ contains
         type(bdf), target :: bdf_i
         class(ode_integrator), pointer :: integrator
         type(ode_results) :: ode_output
-        type(ggl_container), pointer :: mdl
+        type(ggl_container) :: mdl
 
         rst = C_NO_ERROR
 
-        if (.not.c_associated(model%model)) then
-            rst = C_NULL_POINTER_ERROR
+        if (model%constraint_count < 0) then
+            rst = C_INVALID_INPUT_ERROR
             return
         end if
 
@@ -835,7 +835,8 @@ contains
         call integrator%set_relative_tolerance(settings%relative_tolerance)
         call integrator%set_step_size_control_parameter(settings%beta)
 
-        call c_f_pointer(model%model, mdl)
+        call mdl%initialize(nstates - model%constraint_count, &
+            model%constraint_count, alpha = model%alpha, beta = model%beta)
         mdl%fcn => force_routine
         if (use_mass) mdl%mass_matrix => mass_routine
         mdl%constraint_jacobian => gradient_routine
