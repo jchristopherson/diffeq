@@ -21,7 +21,7 @@ copy its solution, and release it with `c_free_ode_results`:
 
 ```c
 c_ode_settings settings;
-c_ode_results results = NULL;
+c_ode_results results;
 int rows, columns;
 
 c_default_ode_settings(&settings);
@@ -48,12 +48,11 @@ the computed solution.
 - Callback array lengths and matrix dimensions are provided explicitly.
   Callbacks must write every output element required by their declaration.
 - Solver time grids contain at least two points. Requested points are returned
-  in order; with more than two points the solver may use dense output.
+  in order; with more than two points the solver will use dense output.
 - Optional ODE Jacobian and mass-matrix callbacks may be `NULL` where allowed
-  by the solver declaration. Use finite-difference Jacobians when no analytic
+  by the solver declaration. The solvers use finite-difference Jacobians when no analytic
   Jacobian is supplied.
-- Initialize each `c_ode_results` output handle to `NULL` and release
-  successful results with `c_free_ode_results`.
+- Utilize a `c_ode_results` handle to retrieve the integration results, and release the handle after finished with the results by calling `c_free_ode_results`.
 
 ## Differential-algebraic equations
 
