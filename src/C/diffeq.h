@@ -175,13 +175,69 @@ typedef struct {
     double newton_tolerance;
 } c_ode_settings;
 
+/**
+ * @brief Describes a holonomically constrained mechanical model to be solved
+ * with the stabilized index-1 Gear-Gupta-Leimkuhler (GGL) formulation.
+ *
+ * For N coordinates and M constraints the integrated state is
+ * \(z = [q_N, v_N, \lambda_M, \mu_M]^T\), so the @p nstates argument supplied
+ * to the DAE integrators must equal \(2(N + M)\), and the initial conditions
+ * must use this ordering.  The model is
+ * \[
+ * \dot q = v + G^T\mu, \qquad M(q)\dot v = F(x,q,v) - G^T\lambda,
+ * \]
+ * \[
+ * 0 = G\dot q + \alpha g, \qquad
+ * 0 = DG(q)[\dot q]v + GM^{-1}(F - G^T\lambda) + \beta Gv,
+ * \]
+ * where \(g(q)\) are the position constraints and
+ * \(G = \partial g / \partial q\).  Every callback must accept perturbed,
+ * off-manifold states, and the constraint callbacks must not depend on the
+ * independent variable.
+ */
 typedef struct {
-    void* model;
+    /**
+     * Required callback computing the applied force \(F(x,q,v)\), excluding
+     * multiplier forces.  It is called with n = 2N and receives the
+     * 2N-element vector [q, v], but must write only the N-element force
+     * vector.
+     */
     c_ode force;
+    /**
+     * Optional callback receiving the N-element coordinate vector q and
+     * writing the N-by-N symmetric positive-definite physical mass matrix.
+     * Set to NULL to use the identity matrix.  Set the mass_matrix_constant
+     * setting to false whenever this matrix varies with x or q.
+     */
     c_ode_mass_matrix mass;
+    /**
+     * Required callback receiving the N-element coordinate vector q and
+     * writing the M position constraint residuals \(g(q)\).
+     */
     c_dae_algebraic_constraints constraints;
+    /**
+     * Required callback receiving the N-element coordinate vector q and
+     * writing the M-by-N constraint Jacobian \(G = \partial g / \partial q\)
+     * in column-major order.  The rows of \(G\) must be linearly independent.
+     */
     c_ode_jacobian gradient;
+    /**
+     * Required callback computing the M curvature terms \(DG(q)[\dot q]v\).
+     * Return zeros for linear constraints.
+     */
     c_dae_constraint_curvature curvature;
+    /**
+     * Nonnegative, finite position-constraint decay rate, in inverse
+     * independent-variable units.  Zero disables position damping.
+     */
+    double alpha;
+    /**
+     * Nonnegative, finite velocity-constraint decay rate, in inverse
+     * independent-variable units.  Zero disables velocity damping.
+     */
+    double beta;
+    /** The number M of independent constraints, with 1 <= M <= N. */
+    int constraint_count;
 } c_ggl_container;
 
 #ifdef __cplusplus
@@ -519,46 +575,6 @@ int c_bdf(int nx, int nstates, c_ode fcn, const double *x,
     c_ode_jacobian jac, c_ode_mass_matrix mass, c_ode_results *output);
 
 /**
- * @brief
- * 
- * @param ncoordinates The number of coordinates (state variables of the ODE 
- * component).  This value must be positive-valued; else, a 
- * C_INVALID_INPUT_ERROR is returned.
- * @param nconstraints The number of constraint equations.  This value must be 
- * positive-valued; else, a C_INVALID_INPUT_ERROR is returned.
- * @param force
- * @param mass
- * @param constraints
- * @param gradient
- * @param curvature
- * @param alpha
- * @param beta
- * @param obj The c_ggl_container.
- * @return
- */
-int c_create_ggl_container(int ncoordinates, int nconstraints,
-    c_ode force, c_ode_mass_matrix mass, 
-    c_dae_algebraic_constraints constraints, c_ode_jacobian gradient, 
-    c_dae_constraint_curvature curvature, double alpha, double beta, 
-    c_ggl_container *obj);
-
-/**
- * @brief
- * 
- * @param obj
- */
-void c_free_ggl_results(c_ggl_container *obj);
-
-/**
- * @brief
- * 
- * @param obj
- * @param n
- * @return
- */
-int c_get_ggl_state_count(const c_ggl_container *obj, int *n);
-
-/**
  * @brief Utilizes a 4th order Rosenbrock integrator to solve a system of
  * differential algebraic equations.
  * 
@@ -566,8 +582,7 @@ int c_get_ggl_state_count(const c_ggl_container *obj, int *n);
  * @param nx The number of solution points.  This value must be at least 2;
  * else, a C_INVALID_INPUT_ERROR is returned.
  * @param nstates The number of state equations.  This value must be at least 
- * 1; else, a C_INVALID_INPUT_ERROR is returned.  This value must agree with
- * c_get_ggl_state_count; else, a C_INVALID_INPUT_ERROR is returned.
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
  * @param x An NX-element array containing the desired solution points.  If
  * only 2 points are defined, the integrator will return all successful 
  * intermediate integration points as well as the requested start and end 
@@ -593,8 +608,7 @@ int c_dae_rosenbrock(const c_ggl_container *model, int nx, int nstates,
  * @param nx The number of solution points.  This value must be at least 2;
  * else, a C_INVALID_INPUT_ERROR is returned.
  * @param nstates The number of state equations.  This value must be at least 
- * 1; else, a C_INVALID_INPUT_ERROR is returned.  This value must agree with
- * c_get_ggl_state_count; else, a C_INVALID_INPUT_ERROR is returned.
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
  * @param x An NX-element array containing the desired solution points.  If
  * only 2 points are defined, the integrator will return all successful 
  * intermediate integration points as well as the requested start and end 
@@ -620,8 +634,7 @@ int c_dae_kennedy_carpenter_4(const c_ggl_container *model, int nx, int nstates,
  * @param nx The number of solution points.  This value must be at least 2;
  * else, a C_INVALID_INPUT_ERROR is returned.
  * @param nstates The number of state equations.  This value must be at least 
- * 1; else, a C_INVALID_INPUT_ERROR is returned.  This value must agree with
- * c_get_ggl_state_count; else, a C_INVALID_INPUT_ERROR is returned.
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
  * @param x An NX-element array containing the desired solution points.  If
  * only 2 points are defined, the integrator will return all successful 
  * intermediate integration points as well as the requested start and end 
@@ -647,8 +660,7 @@ int c_dae_kennedy_carpenter_5(const c_ggl_container *model, int nx, int nstates,
  * @param nx The number of solution points.  This value must be at least 2;
  * else, a C_INVALID_INPUT_ERROR is returned.
  * @param nstates The number of state equations.  This value must be at least 
- * 1; else, a C_INVALID_INPUT_ERROR is returned.  This value must agree with
- * c_get_ggl_state_count; else, a C_INVALID_INPUT_ERROR is returned.
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
  * @param x An NX-element array containing the desired solution points.  If
  * only 2 points are defined, the integrator will return all successful 
  * intermediate integration points as well as the requested start and end 
