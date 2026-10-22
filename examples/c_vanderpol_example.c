@@ -44,7 +44,7 @@ int main()
     // Integrate using a 5th order Tsitouras integrator.
     flag = c_tsitouras(npts, nvars, vanderpol, x, ic, &settings, &rst);
     if (flag != C_NO_ERROR) {
-        printf("There was an error encountered during integration.  Flag: %i\n", flag);
+        fprintf(stderr, "Integration failed: %d\n", flag);
         return flag;
     }
 
@@ -56,22 +56,23 @@ int main()
     flag = c_get_ode_results_size(rst, &m, &n);
     if (flag != C_NO_ERROR)
     {
-        printf("There was an error retrieving the size of the results. Flag: %i\n", flag);
+        fprintf(stderr, "Result-size query failed: %d\n", flag);
+        c_free_ode_results(rst);
         return flag;
     }
     sol = (double*)malloc((size_t)(m * n * sizeof(double)));
     if (!sol)
     {
-        printf("There was an issue allocating memory for the results matrix.\n");
+        fprintf(stderr, "Could not allocate the solution matrix.\n");
         c_free_ode_results(rst);
-        return -1;
+        return EXIT_FAILURE;
     }
 
     // Now that we have our matrix allocated, we can retrieve the results.
     flag = c_get_ode_results(rst, m, n, sol, m);
     if (flag != C_NO_ERROR)
     {
-        printf("There was an issue copying the results matrix.  Flag: %i\n", flag);
+        fprintf(stderr, "Result copy failed: %d\n", flag);
         free(sol);
         c_free_ode_results(rst);
         return flag;
@@ -82,7 +83,7 @@ int main()
     flag = c_write_ode_results("example file.txt", rst, ',');
     if (flag != C_NO_ERROR)
     {
-        printf("There was an issue writing the results to file.  Flag: %i\n", flag);
+        fprintf(stderr, "Writing results failed: %d\n", flag);
         free(sol);
         c_free_ode_results(rst);
         return flag;
