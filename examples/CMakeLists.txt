@@ -95,7 +95,7 @@ target_link_libraries(ode_results_to_file_example diffeq)
 
 # Dense Output Example
 add_executable(dense_output_example dense_output_example.f90)
-target_link_libraries(dense_output_example diffeq ${fplot_LIBRARY})
+target_link_libraries(dense_output_example diffeq diffeq_example_models ${fplot_LIBRARY})
 
 if (${BUILD_SHARED_LIBS} AND WIN32)
     add_custom_command(
@@ -122,3 +122,7 @@ target_include_directories(c_stabilized_pendulum_example PUBLIC ${CMAKE_SOURCE_D
 add_executable(c_vanderpol_example c_vanderpol_example.c)
 target_link_libraries(c_vanderpol_example diffeq)
 target_include_directories(c_vanderpol_example PUBLIC ${CMAKE_SOURCE_DIR}/src/C)
+
+add_executable(c_dense_output_example c_dense_output_example.c)
+target_link_libraries(c_dense_output_example diffeq)
+target_include_directories(c_dense_output_example PUBLIC ${CMAKE_SOURCE_DIR}/src/C)

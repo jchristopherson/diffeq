@@ -41,6 +41,7 @@ int main()
     double t[] = {0.0, 10.0};
     c_ode_results rst;
     c_ode_settings settings;
+    int flag;
 
     /* NOTE:
     * The state vector for this example is a 6 component vector:
@@ -67,17 +68,24 @@ int main()
     c_default_ode_settings(&settings);
 
     // Solve
-    c_dae_bdf(&model, 2, 6, t, ic, &settings, &rst);
+    flag = c_dae_bdf(&model, 2, 6, t, ic, &settings, &rst);
+    if (flag != C_NO_ERROR) {
+        fprintf(stderr, "Constrained integration failed: %d\n", flag);
+        return flag;
+    }
 
     // Write the results to file
-    c_write_ode_results("pendulum_example.txt", rst, ',');
+    flag = c_write_ode_results("pendulum_example.txt", rst, ',');
+    if (flag != C_NO_ERROR) {
+        fprintf(stderr, "Writing results failed: %d\n", flag);
+    }
 
     // Clean up
     c_free_ode_results(rst);
     rst = NULL;
 
     // End
-    return 0;
+    return flag;
 }
 
 

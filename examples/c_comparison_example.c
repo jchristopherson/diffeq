@@ -30,7 +30,7 @@ int main()
     // Local Variables
     double x[] = {0.0, 50.0};
     double ic[] = {2.0, 0.0};
-    int n, npts;
+    int n, npts, flag;
     c_ode_results rst;
     c_ode_results_statistics stats;
     c_ode_settings settings;
@@ -39,9 +39,12 @@ int main()
     c_default_ode_settings(&settings);
 
     // RK23
-    c_runge_kutta_23(2, 2, vanderpol, x, ic, &settings, &rst);
-    c_get_ode_results_statistics(rst, &stats);
-    c_get_ode_results_size(rst, &npts, &n);
+    flag = c_runge_kutta_23(2, 2, vanderpol, x, ic, &settings, &rst);
+    if (flag != C_NO_ERROR) goto integration_error;
+    flag = c_get_ode_results_statistics(rst, &stats);
+    if (flag != C_NO_ERROR) goto statistics_error;
+    flag = c_get_ode_results_size(rst, &npts, &n);
+    if (flag != C_NO_ERROR) goto size_error;
     
     printf("RUNGE_KUTTA_23:\n");
     printf("\t%i Solution Points\n", npts);
@@ -51,9 +54,12 @@ int main()
     c_free_ode_results(rst);
 
     // RK45
-    c_runge_kutta_45(2, 2, vanderpol, x, ic, &settings, &rst);
-    c_get_ode_results_statistics(rst, &stats);
-    c_get_ode_results_size(rst, &npts, &n);
+    flag = c_runge_kutta_45(2, 2, vanderpol, x, ic, &settings, &rst);
+    if (flag != C_NO_ERROR) goto integration_error;
+    flag = c_get_ode_results_statistics(rst, &stats);
+    if (flag != C_NO_ERROR) goto statistics_error;
+    flag = c_get_ode_results_size(rst, &npts, &n);
+    if (flag != C_NO_ERROR) goto size_error;
     
     printf("RUNGE_KUTTA_45:\n");
     printf("\t%i Solution Points\n", npts);
@@ -63,9 +69,12 @@ int main()
     c_free_ode_results(rst);
 
     // RK853
-    c_runge_kutta_853(2, 2, vanderpol, x, ic, &settings, &rst);
-    c_get_ode_results_statistics(rst, &stats);
-    c_get_ode_results_size(rst, &npts, &n);
+    flag = c_runge_kutta_853(2, 2, vanderpol, x, ic, &settings, &rst);
+    if (flag != C_NO_ERROR) goto integration_error;
+    flag = c_get_ode_results_statistics(rst, &stats);
+    if (flag != C_NO_ERROR) goto statistics_error;
+    flag = c_get_ode_results_size(rst, &npts, &n);
+    if (flag != C_NO_ERROR) goto size_error;
     
     printf("RUNGE_KUTTA_853:\n");
     printf("\t%i Solution Points\n", npts);
@@ -75,9 +84,12 @@ int main()
     c_free_ode_results(rst);
 
     // ROSENBROCK
-    c_rosenbrock(2, 2, vanderpol, x, ic, &settings, NULL, NULL, &rst);
-    c_get_ode_results_statistics(rst, &stats);
-    c_get_ode_results_size(rst, &npts, &n);
+    flag = c_rosenbrock(2, 2, vanderpol, x, ic, &settings, NULL, NULL, &rst);
+    if (flag != C_NO_ERROR) goto integration_error;
+    flag = c_get_ode_results_statistics(rst, &stats);
+    if (flag != C_NO_ERROR) goto statistics_error;
+    flag = c_get_ode_results_size(rst, &npts, &n);
+    if (flag != C_NO_ERROR) goto size_error;
     settings.beta = 0.0;    // reset to avoid using PI with other solvers
     
     printf("ROSENBROCK:\n");
@@ -91,9 +103,12 @@ int main()
 
     // RK45 W/ PI
     settings.beta = 0.1;
-    c_runge_kutta_45(2, 2, vanderpol, x, ic, &settings, &rst);
-    c_get_ode_results_statistics(rst, &stats);
-    c_get_ode_results_size(rst, &npts, &n);
+    flag = c_runge_kutta_45(2, 2, vanderpol, x, ic, &settings, &rst);
+    if (flag != C_NO_ERROR) goto integration_error;
+    flag = c_get_ode_results_statistics(rst, &stats);
+    if (flag != C_NO_ERROR) goto statistics_error;
+    flag = c_get_ode_results_size(rst, &npts, &n);
+    if (flag != C_NO_ERROR) goto size_error;
     settings.beta = 0.0;    // reset to avoid using PI with other solvers
     
     printf("RUNGE_KUTTA_45 w/ PI Controller:\n");
@@ -104,9 +119,12 @@ int main()
     c_free_ode_results(rst);
 
     // KC4
-    c_kennedy_carpenter_4(2, 2, vanderpol, x, ic, &settings, NULL, NULL, &rst);
-    c_get_ode_results_statistics(rst, &stats);
-    c_get_ode_results_size(rst, &npts, &n);
+    flag = c_kennedy_carpenter_4(2, 2, vanderpol, x, ic, &settings, NULL, NULL, &rst);
+    if (flag != C_NO_ERROR) goto integration_error;
+    flag = c_get_ode_results_statistics(rst, &stats);
+    if (flag != C_NO_ERROR) goto statistics_error;
+    flag = c_get_ode_results_size(rst, &npts, &n);
+    if (flag != C_NO_ERROR) goto size_error;
     settings.beta = 0.0;    // reset to avoid using PI with other solvers
     
     printf("KC4:\n");
@@ -119,9 +137,12 @@ int main()
     c_free_ode_results(rst);
 
     // KC5
-    c_kennedy_carpenter_5(2, 2, vanderpol, x, ic, &settings, NULL, NULL, &rst);
-    c_get_ode_results_statistics(rst, &stats);
-    c_get_ode_results_size(rst, &npts, &n);
+    flag = c_kennedy_carpenter_5(2, 2, vanderpol, x, ic, &settings, NULL, NULL, &rst);
+    if (flag != C_NO_ERROR) goto integration_error;
+    flag = c_get_ode_results_statistics(rst, &stats);
+    if (flag != C_NO_ERROR) goto statistics_error;
+    flag = c_get_ode_results_size(rst, &npts, &n);
+    if (flag != C_NO_ERROR) goto size_error;
     settings.beta = 0.0;    // reset to avoid using PI with other solvers
     
     printf("KC5:\n");
@@ -134,9 +155,12 @@ int main()
     c_free_ode_results(rst);
 
     // TSITOURAS
-    c_tsitouras(2, 2, vanderpol, x, ic, &settings, &rst);
-    c_get_ode_results_statistics(rst, &stats);
-    c_get_ode_results_size(rst, &npts, &n);
+    flag = c_tsitouras(2, 2, vanderpol, x, ic, &settings, &rst);
+    if (flag != C_NO_ERROR) goto integration_error;
+    flag = c_get_ode_results_statistics(rst, &stats);
+    if (flag != C_NO_ERROR) goto statistics_error;
+    flag = c_get_ode_results_size(rst, &npts, &n);
+    if (flag != C_NO_ERROR) goto size_error;
     
     printf("TSITOURAS 4/5:\n");
     printf("\t%i Solution Points\n", npts);
@@ -146,9 +170,12 @@ int main()
     c_free_ode_results(rst);
 
     // BDF
-    c_bdf(2, 2, vanderpol, x, ic, &settings, NULL, NULL, &rst);
-    c_get_ode_results_statistics(rst, &stats);
-    c_get_ode_results_size(rst, &npts, &n);
+    flag = c_bdf(2, 2, vanderpol, x, ic, &settings, NULL, NULL, &rst);
+    if (flag != C_NO_ERROR) goto integration_error;
+    flag = c_get_ode_results_statistics(rst, &stats);
+    if (flag != C_NO_ERROR) goto statistics_error;
+    flag = c_get_ode_results_size(rst, &npts, &n);
+    if (flag != C_NO_ERROR) goto size_error;
     settings.beta = 0.0;    // reset to avoid using PI with other solvers
     
     printf("BDF:\n");
@@ -161,9 +188,12 @@ int main()
     c_free_ode_results(rst);
 
     // ADAMS
-    c_adams(2, 2, vanderpol, x, ic, &settings, NULL, &rst);
-    c_get_ode_results_statistics(rst, &stats);
-    c_get_ode_results_size(rst, &npts, &n);
+    flag = c_adams(2, 2, vanderpol, x, ic, &settings, NULL, &rst);
+    if (flag != C_NO_ERROR) goto integration_error;
+    flag = c_get_ode_results_statistics(rst, &stats);
+    if (flag != C_NO_ERROR) goto statistics_error;
+    flag = c_get_ode_results_size(rst, &npts, &n);
+    if (flag != C_NO_ERROR) goto size_error;
     settings.beta = 0.0;    // reset to avoid using PI with other solvers
     
     printf("ADAMS:\n");
@@ -175,6 +205,20 @@ int main()
 
     // End
     return 0;
+
+integration_error:
+    fprintf(stderr, "Integration failed: %d\n", flag);
+    return flag;
+
+statistics_error:
+    fprintf(stderr, "Statistics query failed: %d\n", flag);
+    c_free_ode_results(rst);
+    return flag;
+
+size_error:
+    fprintf(stderr, "Result-size query failed: %d\n", flag);
+    c_free_ode_results(rst);
+    return flag;
 }
 
 
