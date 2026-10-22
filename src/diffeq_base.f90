@@ -23,7 +23,8 @@
 module diffeq_base
     !! A collection of base types for the DIFFEQ library.
     use iso_fortran_env
-    use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
+    use, intrinsic :: ieee_arithmetic, only : ieee_is_finite, ieee_value, &
+        ieee_quiet_nan
     use diffeq_errors
     use diffeq_containers, only : ode_results
     implicit none
@@ -98,9 +99,10 @@ module diffeq_base
             real(real64), intent(in), dimension(:) :: y
                 !! An N-element array containing the current state vector.
             real(real64), intent(out), dimension(:) :: f
-                !! An N-element array containing the values of the event
+                !! An M-element array containing the values of the event
                 !! functions.  The solver attempts to find the situation 
-                !! where f equals zero thereby signaling an event.
+                !! where f equals zero thereby signaling an event.  Notice, M 
+                !! need not equal N (N is the number of state variables).
             class(*), intent(inout), optional :: args
                 !! An optional argument that can be used to pass information
                 !! in and out of the routine.
@@ -337,9 +339,20 @@ module diffeq_base
             !! The convergence tolerance.
     contains
         procedure, public :: get_max_allowed_iterations => oes_get_max_iter
+            !! Gets the number of iterations the solver is allowed to take.
         procedure, public :: set_max_allowed_iterations => oes_set_max_iter
+            !! Sets the number of iterations the solver is allowed to take.
         procedure, public :: get_solver_tolerance => oes_get_tol
+            !! Gets the solver tolerance.
         procedure, public :: set_solver_tolerance => oes_set_tol
+            !! Sets the solver tolerance.
+        procedure, public :: get_is_event_function_defined => oes_is_fcn_defined
+            !! Determines if the event function has been defined.
+        procedure, public :: is_event_suspected => oes_event_in_bracket
+            !! Determines if an event is suspected to exist within the &
+            !! specified bracket.
+        procedure, public :: evaluate => oes_eval_fcn
+            !! Evaluates the event function.
     end type
 
 contains
@@ -1195,27 +1208,215 @@ subroutine oes_set_tol(this, x)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-
-! ------------------------------------------------------------------------------
-
-! ******************************************************************************
-! ODE EVENT HELPER ROUTINES
-! ------------------------------------------------------------------------------
-pure function event_occurred(y1, y2) result(rst)
-    !! Tests to see if an event occurred by checking for a change in sign
-    !! in any of the state vector components.
-    real(real64), intent(in), dimension(:) :: y1
-        !! An N-element array containing the event function vector at some 
-        !! value x.
-    real(real64), intent(in), dimension(:) :: y2
-        !! An N-element array containing the event function vector at one 
-        !! integration step away from y1.
+pure function oes_is_fcn_defined(this) result(rst)
+    !! Tests to see if the event function has been defined.
+    class(ode_event_solver), intent(in) :: this
+        !! The [[ode_event_solver]] object.
     logical :: rst
-        !! Returns true if there is a sign change between any of the
-        !! components of the two vectors; else, false, if no sign
-        !! change occurred.  A value of 0.0 will also return true.
+        !! True if the event function has been defined; else, false.
 
-    rst = any(y1 * y2 <= 0.0d0)
+    rst = associated(this%event_function)
+end function
+
+! ------------------------------------------------------------------------------
+subroutine oes_eval_fcn(this, x, y, f, args)
+    !! Evaluates the event function, assuming it's defined.  If it is undefined,
+    !! the routine fills f with NaN values.
+    class(ode_event_solver), intent(in) :: this
+        !! The [[ode_event_solver]] object.
+    real(real64), intent(in) :: x
+        !! The current value of the independent variable.
+    real(real64), intent(in), dimension(:) :: y
+        !! An N-element array containing the current state vector.
+    real(real64), intent(out), dimension(:) :: f
+        !! An M-element array containing the values of the event
+        !! functions.  The solver attempts to find the situation 
+        !! where f equals zero thereby signaling an event.  Notice, M need not
+        !! equal N (N is the number of state variables).
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the routine.
+
+    if (.not.this%get_is_event_function_defined()) then
+        f = ieee_value(0.0d0, ieee_quiet_nan)
+        return
+    end if
+    call this%event_function(x, y, f, args = args)
+end subroutine
+
+! ------------------------------------------------------------------------------
+function oes_find_event(this, integrator, x1, y1, x2, y2, args) result(rst)
+    class(ode_event_solver), intent(in) :: this
+    class(ode_integrator), intent(in) :: integrator
+    real(real64), intent(in) :: x1
+    real(real64), intent(in), dimension(:) :: y1
+    real(real64), intent(in) :: x2
+    real(real64), intent(in), dimension(:) :: y2
+    class(*), intent(inout), optional :: args
+    logical :: rst
+end function
+
+! ------------------------------------------------------------------------------
+function oes_find_single_channel_event(this, integrator, index, nevents, x1, &
+    y1, x2, y2, x, y, niter, neval, args) result(rst)
+    !! Performs the root finding iteration process via Brent's method for a
+    !! single channel.  As this routine is intended to stay private, there is
+    !! no error checking that is performed.  However, there is a call to other
+    !! type-bound procedures that do check their inputs courtesy of their public
+    !! interface; therefore, it is still possible that this routine would 
+    !! trigger an 'error stop' condition.  For this reason, be sure of the 
+    !! inputs supplied to this routine.
+    class(ode_event_solver), intent(in) :: this
+        !! The [[ode_event_solver]] routine.
+    class(ode_integrator), intent(in) :: integrator
+        !! The [[ode_integrator]] being used to integrate the ODE's.
+    integer, intent(in) :: index
+        !! The index of the channel on which to operate.
+    integer, intent(in) :: nevents
+        !! The number of event equations.
+    real(real64), intent(in) :: x1
+        !! The initial bound of the search region.
+    real(real64), intent(in), dimension(:) :: y1
+        !! The N-element state vector at x1.
+    real(real64), intent(in) :: x2
+        !! The terminal bound of the search region.
+    real(real64), intent(in), dimension(:) :: y2
+        !! The N-element state vector at x2.
+    real(real64), intent(out) :: x
+        !! The value of the independent variable at which the root is found.
+        !! If no root is found, this value is returned as a NaN.
+    real(real64), intent(out), dimension(:) :: y
+        !! The N-element array containing the state vector at x.  If no root
+        !! is found, this array is populated with NaN.
+    integer, intent(out) :: niter
+        !! The number of iterations taken.
+    integer, intent(out) :: neval
+        !! The number of event function evaluations taken.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information in and out
+        !! of the routine.
+    logical :: rst
+        !! True if the process converged to a root; else, false.
+
+    ! Local Variables
+    integer :: maxiter
+    real(real64), allocatable, dimension(:) :: g1, g2, g
+    real(real64) :: a, b, c, d, e, fa, fb, fc, p, q, r, s, eps, tol, tol1, xm, &
+        min1, min2
+
+    ! Initialization
+    rst = .false.
+    x = ieee_value(0.0d0, ieee_quiet_nan)
+    y = ieee_value(0.0d0, ieee_quiet_nan)
+    niter = 0
+    maxiter = this%get_max_allowed_iterations()
+    eps = epsilon(eps)
+    tol = this%get_solver_tolerance()
+    allocate( &
+        g1(nevents), &
+        g2(nevents), &
+        g(nevents) &
+    )
+
+    ! Evaluate the event functions.
+    call this%evaluate(x1, y1, g1, args = args)
+    call this%evaluate(x2, y2, g2, args = args)
+    neval = 2
+
+    ! Test to see if a root exists within this range for this index
+    if (.not.this%is_event_suspected(g1, g2, index)) then
+        ! No root is expected in this bracket, for this channel - return
+        rst = .false.
+        return
+    end if
+
+    ! Iteration Process
+    a = x1
+    b = x2
+    c = x2
+    fa = g1(index)
+    fb = g2(index)
+    fc = fb
+    do niter = 1, maxiter
+        ! Adjust the bounding interval
+        if ((fb > 0.0d0 .and. fc > 0.0d0) .or. &
+            (fb < 0.0d0 .and. fc < 0.0d0)) &
+        then
+            c = a
+            fc = fa
+            e = b - a
+            d = e
+        end if
+        if (abs(fc) < abs(fb)) then
+            a = b
+            b = c
+            c = a
+            fa = fb
+            fb = fc
+            fc = fa
+        end if
+
+        ! Convergence Check
+        tol1 = 2.0d0 * eps * abs(b) + 0.5d0 * tol
+        xm = 0.5d0 * (c - b)
+        if (abs(xm) <= tol1 .or. fb == 0.0d0) then
+            ! b is the root
+            rst = .true.
+            x = b
+            call integrator%evaluate_dense(x, y)
+            exit
+        end if
+
+        if (abs(e) >= tol1 .and. abs(fa) > abs(fb)) then
+            ! Attempt interpolation
+            s = fb / fa
+            if (a == c) then
+                p = 2.0d0 * xm * x
+                q = 1.0d0 - s
+            else
+                q = fa / fc
+                r = fb / fc
+                p = s * (2.0d0 * xm * q * (q - r) - (b - a) * (r - 1.0d0))
+                q = (q - 1.0d0) * (r - 1.0d0) * (s - 1.0d0)
+            end if
+
+            ! Bounds checking
+            if (p > 0.0d0) q = -q
+            p = abs(p)
+            min1 = 3.0d0 * xm * q - abs(tol1 * q)
+            min2 = abs(e * q)
+            
+        end if
+    end do
+end function
+
+! ------------------------------------------------------------------------------
+pure function oes_event_in_bracket(this, f1, f2, index) result(rst)
+    !! Tests to see if a root is likely to exist in the given bracket.
+    class(ode_event_solver), intent(in) :: this
+        !! The [[ode_event_solver]] object.
+    real(real64), intent(in), dimension(:) :: f1
+        !! An M-element array containing the values of the M event functions at
+        !! the initial interval point.
+    real(real64), intent(in), dimension(:) :: f2
+        !! An M-element array containing the values of the M event functions at
+        !! the terminal interval point.  An DIFFEQ_ARRAY_SIZE_ERROR is thrown
+        !! if this array is not the same size as f1.
+    integer(int32), intent(in) :: index
+        !! The index of the event function to validate.  The index must exist
+        !! on the interval [1, M], where M is the number of event functions.  A
+        !! DIFFEQ_INVALID_INPUT_ERROR is thrown if index is outside this 
+        !! interval.
+    logical :: rst
+        !! True if an event is suspected to exist within the bracket; else,
+        !! false.
+
+    ! Input Checking
+    if (size(f1) /= size(f2)) error stop DIFFEQ_ARRAY_SIZE_ERROR
+    if (index < 1 .or. index > size(f1)) error stop DIFFEQ_INVALID_INPUT_ERROR
+
+    ! Process
+    rst = f1(index) * f2(index) <= 0.0d0
 end function
 
 ! ------------------------------------------------------------------------------
