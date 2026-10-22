@@ -79,7 +79,11 @@ module diffeq_multistep
             ! Solution history, most recent value in column one.
         real(real64), private, allocatable, dimension(:,:) :: m_fHist
             ! Derivative history, most recent value in column one.
+        real(real64), private, allocatable, dimension(:) :: m_denseNodes
+        real(real64), private, allocatable, dimension(:,:) :: m_denseDifferences
     contains
+        procedure, public :: compute_dense_output => mi_dense_output
+        procedure, private :: cache_dense_output => mi_cache_dense
         procedure(predictor_step), public, pass, deferred :: predictor
             !! Evaluates the predictor.
         procedure(multistep_corrector), public, pass, deferred :: correct
@@ -532,6 +536,7 @@ subroutine mi_reset_history(this)
     !! The integrator restarts at first order the next time it is used.
     class(multistep_integrator), intent(inout) :: this
         !! The multistep_integrator object.
+    call this%invalidate_dense_output()
     this%m_nHist = 0
     this%m_order = 1
     this%m_stepsAtOrder = 0
@@ -626,6 +631,31 @@ subroutine mi_interpolate(this, x, y)
     call newton_divided_differences(this%m_xHist(1:np), &
         this%m_yHist(:,1:np), dd)
     call evaluate_newton_polynomial(this%m_xHist(1:np), dd, x, y)
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine mi_cache_dense(this, x_start, x_end)
+    class(multistep_integrator), intent(inout) :: this
+    real(real64), intent(in) :: x_start, x_end
+    integer :: np, n
+    np = min(this%m_order + 1, this%m_nHist)
+    n = size(this%m_yHist, 1)
+    this%m_denseNodes = this%m_xHist(1:np)
+    if (allocated(this%m_denseDifferences)) then
+        if (size(this%m_denseDifferences, 1) /= n .or. &
+            size(this%m_denseDifferences, 2) /= np) deallocate(this%m_denseDifferences)
+    end if
+    if (.not.allocated(this%m_denseDifferences)) allocate(this%m_denseDifferences(n, np))
+    call newton_divided_differences(this%m_denseNodes, &
+        this%m_yHist(:,1:np), this%m_denseDifferences)
+    call this%set_dense_interval(x_start, x_end, n)
+end subroutine
+
+subroutine mi_dense_output(this, x, y)
+    class(multistep_integrator), intent(in) :: this
+    real(real64), intent(in) :: x
+    real(real64), intent(out) :: y(:)
+    call evaluate_newton_polynomial(this%m_denseNodes, this%m_denseDifferences, x, y)
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -844,7 +874,7 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    logical :: dense, converged, forward
+    logical :: dense, need_dense, converged, forward
     integer :: i, j, n, neqn, nsteps, k, nfail
     real(real64) :: h, xo, xn, xmax, e, minstep
     real(real64), allocatable, dimension(:) :: f, y, yn, fn, fnew, ypred, &
@@ -852,6 +882,7 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
 
     ! Initialization
     n = size(x)
+    call this%invalidate_dense_output()
 
     ! Input Checking
     if (n < 2) error stop DIFFEQ_ARRAY_SIZE_ERROR
@@ -904,6 +935,7 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
 
     ! Cycle until integration is complete
     do i = 1, nsteps
+        call this%invalidate_dense_output()
         ! The order can never exceed what the stored history will support
         this%m_order = max(1, min(this%m_order, this%m_nHist - 1))
         k = this%m_order
@@ -962,6 +994,9 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
         xn = xo + h
         call this%evaluate_derivative(sys, xn, yn, fnew, args)
         call this%push_history(xn, yn, fnew)
+        need_dense = dense .or. this%get_dense_output_enabled() .or. &
+            ((xmax - x(1)) * (xn - xmax) > 0.0d0)
+        if (need_dense) call this%cache_dense_output(xo, xn)
         call this%log_successful_step()
 
         ! Store the results
@@ -970,7 +1005,7 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
             interp : do while (j <= n .and. &
                 ((forward .and. x(j) <= xn) .or. &
                 (.not.forward .and. x(j) >= xn)))
-                call this%interpolate(x(j), yi)
+                call this%evaluate_dense(x(j), yi)
                 call this%append_to_buffer(x(j), yi)
                 j = j + 1
                 if (j > n) exit interp
@@ -979,7 +1014,7 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
             ! The step carried past the end of the range, so report the
             ! solution interpolated back onto the requested end point
             if (j <= n) then
-                call this%interpolate(xmax, yi)
+                call this%evaluate_dense(xmax, yi)
                 call this%append_to_buffer(xmax, yi)
             end if
         else

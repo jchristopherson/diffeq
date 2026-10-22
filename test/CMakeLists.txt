@@ -40,6 +40,19 @@ add_test(
 add_executable(diffeq_error_tests diffeq_error_tests.f90)
 target_link_libraries(diffeq_error_tests diffeq)
 
+add_executable(diffeq_dense_output_tests diffeq_dense_output_tests.f90)
+target_link_libraries(diffeq_dense_output_tests diffeq)
+add_test(NAME diffeq_dense_output_tests COMMAND $<TARGET_FILE:diffeq_dense_output_tests>)
+foreach(family singlestep multistep)
+    foreach(error_case unavailable interval size nan infinite before after)
+        add_test(
+            NAME diffeq_dense_${family}_${error_case}
+            COMMAND $<TARGET_FILE:diffeq_dense_output_tests> ${family}_${error_case}
+        )
+        set_tests_properties(diffeq_dense_${family}_${error_case} PROPERTIES WILL_FAIL TRUE)
+    endforeach()
+endforeach()
+
 foreach(error_case missing_ode short_grid step_limit tolerance_size
     bdf_step_exhaustion adams_step_exhaustion
     kc_newton_step_limit kc_newton_tolerance
