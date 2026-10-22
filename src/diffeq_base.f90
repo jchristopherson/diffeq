@@ -23,6 +23,7 @@
 module diffeq_base
     !! A collection of base types for the DIFFEQ library.
     use iso_fortran_env
+    use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
     use diffeq_errors
     use diffeq_containers, only : ode_results
     implicit none
@@ -34,6 +35,7 @@ module diffeq_base
     public :: ode_integrator
     public :: ode_solver
     public :: ode_integer_inquiry
+    public :: ode_dense_output
     
 ! ------------------------------------------------------------------------------
     interface
@@ -171,7 +173,27 @@ module diffeq_base
             ! True if the solver is allowed to overshoot the final value and
             ! interpolate back.  False, if the solver must terminate on the
             ! final value.
+        logical, private :: m_denseEnabled = .false.
+        logical, private :: m_denseValid = .false.
+        real(real64), private :: m_denseInterval(2) = 0.0d0
+        integer, private :: m_denseSize = 0
     contains
+        procedure, public :: set_dense_output_enabled => oi_set_dense_enabled
+            !! Enables dense output on every accepted step (default: false).
+        procedure, public :: get_dense_output_enabled => oi_get_dense_enabled
+            !! Gets the explicit dense-output preparation setting.
+        procedure, public :: has_dense_output => oi_has_dense_output
+            !! Tests whether a prepared accepted-step interpolant is available.
+        procedure, public :: get_dense_interval => oi_get_dense_interval
+            !! Gets the prepared step's start and end in integration order.
+        procedure, public :: evaluate_dense => oi_evaluate_dense
+            !! Evaluates the prepared step without advancing integration.
+        procedure(ode_dense_output), public, pass, deferred :: compute_dense_output
+            !! Implementation hook for evaluating a validated dense-output query.
+        procedure, public :: set_dense_interval => oi_set_dense_interval
+            !! Implementation hook publishing a prepared accepted step.
+        procedure, public :: invalidate_dense_output => oi_invalidate_dense
+            !! Invalidates the prepared interpolant before stepping or resetting.
         procedure(ode_solver), public, pass, deferred :: solve
             !! Solves the supplied system of ODE's.
         procedure(ode_integer_inquiry), public, pass, deferred :: get_order
@@ -246,6 +268,13 @@ module diffeq_base
     end type
 
     interface
+        subroutine ode_dense_output(this, x, y)
+            import ode_integrator, real64
+            class(ode_integrator), intent(in) :: this
+            real(real64), intent(in) :: x
+            real(real64), intent(out) :: y(:)
+        end subroutine
+
         subroutine ode_solver(this, sys, x, iv, args)
             !! Solves the supplied system of ODE's.
             use iso_fortran_env
@@ -280,6 +309,69 @@ module diffeq_base
     end interface
 
 contains
+! ------------------------------------------------------------------------------
+subroutine oi_set_dense_enabled(this, enabled)
+    !! Sets explicit preparation independently of the requested output grid.
+    !! Any previously prepared step is invalidated.
+    class(ode_integrator), intent(inout) :: this
+    logical, intent(in) :: enabled
+    this%m_denseEnabled = enabled
+    call this%invalidate_dense_output()
+end subroutine
+
+pure function oi_get_dense_enabled(this) result(rst)
+    class(ode_integrator), intent(in) :: this
+    logical :: rst
+    rst = this%m_denseEnabled
+end function
+
+pure function oi_has_dense_output(this) result(rst)
+    class(ode_integrator), intent(in) :: this
+    logical :: rst
+    rst = this%m_denseValid
+end function
+
+subroutine oi_invalidate_dense(this)
+    class(ode_integrator), intent(inout) :: this
+    this%m_denseValid = .false.
+end subroutine
+
+subroutine oi_set_dense_interval(this, x_start, x_end, n)
+    !! Publishes dense output after the solver has retained its interpolation
+    !! data. Endpoints are supplied in integration order.
+    class(ode_integrator), intent(inout) :: this
+    real(real64), intent(in) :: x_start, x_end
+    integer, intent(in) :: n
+    if (.not.ieee_is_finite(x_start) .or. .not.ieee_is_finite(x_end)) &
+        error stop DIFFEQ_INVALID_INPUT_ERROR
+    if (x_start == x_end .or. n < 1) error stop DIFFEQ_INVALID_INPUT_ERROR
+    this%m_denseInterval = [x_start, x_end]
+    this%m_denseSize = n
+    this%m_denseValid = .true.
+end subroutine
+
+subroutine oi_get_dense_interval(this, x_start, x_end)
+    class(ode_integrator), intent(in) :: this
+    real(real64), intent(out) :: x_start, x_end
+    if (.not.this%m_denseValid) error stop DIFFEQ_INVALID_OPERATION_ERROR
+    x_start = this%m_denseInterval(1)
+    x_end = this%m_denseInterval(2)
+end subroutine
+
+subroutine oi_evaluate_dense(this, x, y)
+    !! Evaluates only within the last prepared accepted step. This does not
+    !! change solver state or perform any ODE function evaluations.
+    class(ode_integrator), intent(in) :: this
+    real(real64), intent(in) :: x
+    real(real64), intent(out) :: y(:)
+    if (.not.this%m_denseValid) error stop DIFFEQ_INVALID_OPERATION_ERROR
+    if (size(y) /= this%m_denseSize) error stop DIFFEQ_ARRAY_SIZE_ERROR
+    if (.not.ieee_is_finite(x)) error stop DIFFEQ_INVALID_INPUT_ERROR
+    if (x < minval(this%m_denseInterval) .or. x > maxval(this%m_denseInterval)) &
+        error stop DIFFEQ_INVALID_INPUT_ERROR
+    call this%compute_dense_output(x, y)
+end subroutine
+
 ! ******************************************************************************
 ! ODE_CONTAINER ROUTINES
 ! ------------------------------------------------------------------------------
@@ -543,6 +635,7 @@ subroutine oi_clear_buffer(this)
     class(ode_integrator), intent(inout) :: this
         !! The ode_integrator object.
 
+    call this%invalidate_dense_output()
     call this%m_buffer%clear_all()
     this%m_buffer%statistics%failed_steps = 0
     this%m_buffer%statistics%successful_steps = 0

@@ -16,7 +16,7 @@ A modern Fortran library providing an object-oriented approach to solving and ex
 | Mass-matrix systems | Formulate problems as $M y' = f(x,y)$, including systems with state-dependent mass matrices. |
 | Index-1 differential-algebraic equations (DAEs) | Solve supported singular-mass-matrix systems with consistent initial conditions. |
 | Holonomically constrained mechanics | Use a stabilized index-1 GGL-inspired formulation with position and velocity constraint residual damping. |
-| Dense output | Request solution values on a specified output grid between accepted integration steps. |
+| Dense output | Request a specified output grid or evaluate the last prepared accepted step through a common solver interface. |
 | Solution diagnostics | Retrieve step counts, function and Jacobian evaluations, and matrix-factorization statistics. |
 | C interoperability | Integrate from C through the library's C API. |
 
@@ -133,6 +133,10 @@ integrators:
 | `integrator%solve(model, x, y0)` | Integrates from `x(1)` to `x(size(x))` using initial state `y0`. |
 | `integrator%get_solution()` | Returns an $N \times (n+1)$ array with the independent variable in column 1 and state values in columns 2 through $n+1$. |
 | `integrator%get_ode_results()` | Returns an `ode_results` container that provides the solution and statistics on integrator performance, including step counts and function, Jacobian, and matrix-factorization evaluations. |
+| `integrator%set_dense_output_enabled(enabled)` | Opts into dense-output preparation on every accepted step. The default is false. |
+| `integrator%has_dense_output()` | Tests whether a prepared accepted-step interpolant is available. |
+| `integrator%get_dense_interval(x_start, x_end)` | Returns the prepared step's endpoints in integration order, including for backward integration. |
+| `integrator%evaluate_dense(x, y)` | Evaluates the prepared step at `x` into the state-sized array `y`, without advancing integration or evaluating the ODE. |
 | `set_absolute_tolerance` / `set_relative_tolerance` | Control the local error scale, approximately $\mathrm{atol} + \mathrm{rtol}|y|$. |
 | `set_step_size_control_parameter` | Sets the PI controller parameter used by the Kennedy-Carpenter solvers. Rosenbrock and the multi-step solvers use their own step-size estimators. |
 | `set_maximum_order` / `get_maximum_order` | Bound the order of a multi-step solver. A request above what the method supports is clamped rather than rejected. |
@@ -157,6 +161,55 @@ The `x` argument may contain only the start and end points, in which case the
 solver returns accepted step endpoints. When it contains more than two values,
 the solver returns values at those requested points using dense output. All
 solver types expose the same `solve` and `get_solution` workflow.
+
+### Local Dense Output (Fortran)
+
+All integrators expose the same interface for evaluating the last prepared
+accepted step, including through a `class(ode_integrator)` reference:
+
+```fortran
+call solver%set_dense_output_enabled(.true.)
+call solver%solve(model, [0.0d0, 1.0d0], initial_state, args)
+if (solver%has_dense_output()) then
+    call solver%get_dense_interval(x_start, x_end)
+    call solver%evaluate_dense(x_start + 0.5d0 * (x_end - x_start), y)
+end if
+```
+
+Declare `y` with one element per state variable. The interval includes both
+endpoints, and its endpoints follow integration order: `x_start > x_end` for
+backward integration. This is a local interpolant, not a continuous solution
+archive for the whole integration.
+
+Explicit preparation is disabled by default to preserve the cost of existing
+two-point solves. An output grid with more than two points, or interpolation
+back from an overshoot, prepares dense output automatically. The
+`get_dense_output_enabled` setting reports the explicit opt-in, whereas
+`has_dense_output` reports actual availability. In particular, event detection
+must not infer availability solely from the number of requested output points.
+RK853 preparation requires three additional RHS evaluations per prepared step;
+subsequent `evaluate_dense` calls require no RHS evaluations for any solver.
+
+The interpolant is invalidated when another step is attempted, a new solve
+starts, `clear_buffer` is called, the explicit preparation setting is set, or
+multistep history is reset. It remains available after `solve` returns if the
+final accepted step was prepared. Rejected steps do not publish dense output.
+Multistep dense output caches the accepted step's polynomial, independently of
+subsequent order selection. Interpolant accuracy remains method-specific.
+
+Calling `evaluate_dense` or `get_dense_interval` without a prepared step reports
+`DIFFEQ_INVALID_OPERATION_ERROR`. A wrongly sized output array reports
+`DIFFEQ_ARRAY_SIZE_ERROR`; nonfinite coordinates or coordinates outside the
+prepared interval report `DIFFEQ_INVALID_INPUT_ERROR`. No extrapolation is
+performed by this interface.
+
+Existing `interpolate` bindings retain their signatures and behavior. Custom
+types derived directly from `ode_integrator` must implement the new
+`compute_dense_output(this, x, y)` hook with `this` declared `intent(in)`.
+Solver implementations publish a prepared step with
+`set_dense_interval(x_start, x_end, state_count)` and invalidate it before
+altering interpolation data with `invalidate_dense_output`. These are
+implementation hooks; application code should use `evaluate_dense`.
 
 ### Choosing an Integrator
 - `runge_kutta_23`

@@ -24,10 +24,11 @@ module diffeq_events
     use iso_fortran_env
     implicit none
     private
-    public :: ode_event
+    public :: ode_event_function
+    public :: ode_event_solver
     
     abstract interface
-        subroutine ode_event(x, y, f, args)
+        subroutine ode_event_function(x, y, f, args)
             !! A callback routine for evaluating event status.
             use iso_fortran_env, only : real64
             real(real64), intent(in) :: x
@@ -44,27 +45,66 @@ module diffeq_events
         end subroutine
     end interface
 
+    type ode_event_solver
+        !! Provides a mechanism for event detection.
+        procedure(ode_event_function), pointer, public, nopass :: event_function
+            !! A pointer to the event function.
+        integer, private :: m_maxIter = 1000
+            !! The maximum number of iterations allowed.
+        real(real64), private :: m_tol = 1.0d-12
+            !! The convergence tolerance.
+    end type
+
 contains
+! ******************************************************************************
+! HELPER ROUTINES
 ! ------------------------------------------------------------------------------
-    pure function event_occurred(y1, y2) result(rst)
-        !! Tests to see if an event occurred by checking for a change in sign
-        !! in any of the state vector components.
-        real(real64), intent(in), dimension(:) :: y1
-            !! An N-element array containing the state vector at some value x.
-        real(real64), intent(in), dimension(:) :: y2
-            !! An N-element array containing the state vector at one integration
-            !! step away from y1.
-        logical :: rst
-            !! Returns true if there is a sign change between any of the
-            !! components of the two state vectors; else, false, if no sign
-            !! change occurred.  A value of 0.0 will also return true.
+pure function event_occurred(y1, y2) result(rst)
+    !! Tests to see if an event occurred by checking for a change in sign
+    !! in any of the state vector components.
+    real(real64), intent(in), dimension(:) :: y1
+        !! An N-element array containing the event function vector at some 
+        !! value x.
+    real(real64), intent(in), dimension(:) :: y2
+        !! An N-element array containing the event function vector at one 
+        !! integration step away from y1.
+    logical :: rst
+        !! Returns true if there is a sign change between any of the
+        !! components of the two vectors; else, false, if no sign
+        !! change occurred.  A value of 0.0 will also return true.
 
-        rst = any(y1 * y2 <= 0.0d0)
-    end function
+    rst = any(y1 * y2 <= 0.0d0)
+end function
+
+! ******************************************************************************
+! ODE_EVENT_SOLVER ROUTINES
+! ------------------------------------------------------------------------------
+pure function oes_get_max_iter(this) result(rst)
+    class(ode_event_solver), intent(in) :: this
+    integer :: rst
+    rst = this%m_maxIter
+end function
+
+! --------------------
+subroutine oes_set_max_iter(this, x)
+    class(ode_event_solver), intent(inout) :: this
+    integer, intent(in) :: x
+    this%m_maxIter = x
+end subroutine
 
 ! ------------------------------------------------------------------------------
+pure function oes_get_tol(this) result(rst)
+    class(ode_event_solver), intent(in) :: this
+    real(real64) :: rst
+    rst = this%m_tol
+end function
 
-! ------------------------------------------------------------------------------
+! --------------------
+subroutine oes_set_tol(this, x)
+    class(ode_event_solver), intent(inout) :: this
+    real(real64), intent(in) :: x
+    this%m_tol = x
+end subroutine
 
 ! ------------------------------------------------------------------------------
 

@@ -33,3 +33,8 @@ auto-tests = false
 name = "diffeq_tests"
 source-dir = "test"
 main = "diffeq_test.f90"
+
+[[test]]
+name = "diffeq_dense_output_tests"
+source-dir = "test"
+main = "diffeq_dense_output_tests.f90"
