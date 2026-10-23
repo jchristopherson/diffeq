@@ -25,16 +25,22 @@ module diffeq_c_containers
     use diffeq_container_io
     use diffeq_c_errors
     use diffeq_c_helpers
+    use diffeq_base
     implicit none
     private
     public :: assignment(=)
     public :: c_ode_results_statistics
     public :: c_create_ode_results
     public :: c_free_ode_results
+    public :: c_ode_event_statistics
+    public :: c_ode_event_solver_settings
+    public :: c_default_ode_event_solver_settings
 
     interface assignment(=)
         module procedure :: c_ode_results_stats_assign
         module procedure :: ode_results_stats_to_c_assign
+        module procedure :: c_ode_event_stats_assign
+        module procedure :: ode_event_stats_to_c_assign
     end interface
 
     type, bind(C) :: c_ode_results_statistics
@@ -50,6 +56,25 @@ module diffeq_c_containers
             !! The number of function evaluations.
         integer(c_int) :: matrix_factorizations = 0
             !! The number of matrix factorizations.
+    end type
+
+    type, bind(C) :: c_ode_event_statistics
+        !! An ODE event solver statistics container.
+        integer(c_int) :: iteration_count = 0
+            !! The number of iterations taken by the solver.
+        integer(c_int) :: function_evaluations = 0
+            !! The number of event function evaluations.
+        integer(c_int) :: event_index = -1
+            !! The zero-based index of the event equation where an event was 
+            !! located.  If no event was found, this value is set to -1.
+    end type
+
+    type, bind(C) :: c_ode_event_solver_settings
+        !! A container for ODE event solver settings.
+        integer(c_int) :: max_allowed_iterations = 1000
+            !! The maximum number of allowed iterations.
+        real(c_double) :: tolerance = 1.0d-12
+            !! The iteration convergence tolerance.
     end type
 
 contains
@@ -223,6 +248,35 @@ contains
         filename = c_to_f_string(fname)
         call write_ode_results(filename, obj, delimiter = delimiter)
     end function
+
+! ------------------------------------------------------------------------------
+    subroutine c_ode_event_stats_assign(lhs, rhs)
+        type(c_ode_event_statistics), intent(out) :: lhs
+        type(ode_event_statistics), intent(in) :: rhs
+        lhs%iteration_count = int(rhs%iteration_count, c_int)
+        lhs%function_evaluations = int(rhs%function_evaluations)
+        lhs%event_index = int(rhs%event_index - 1, c_int) ! -1 for zero-based indexing
+    end subroutine
+
+! ------------------------------------------------------------------------------
+    subroutine ode_event_stats_to_c_assign(lhs, rhs)
+        type(ode_event_statistics), intent(out) :: lhs
+        type(c_ode_event_statistics), intent(in) :: rhs
+        lhs%iteration_count = rhs%iteration_count
+        lhs%function_evaluations = rhs%function_evaluations
+        lhs%event_index = rhs%event_index + 1
+    end subroutine
+
+! ------------------------------------------------------------------------------
+    subroutine c_default_ode_event_solver_settings(settings) &
+        bind(C, name = "c_default_ode_event_solver_settings")
+        !! Populates a [[c_ode_event_solver_settings]] object with default
+        !! values.
+        type(c_ode_event_solver_settings), intent(out) :: settings
+            !! The [[c_ode_event_solver_settings]] object.
+        settings%max_allowed_iterations = 1000
+        settings%tolerance = 1.0d-12
+    end subroutine
 
 ! ------------------------------------------------------------------------------
 end module
