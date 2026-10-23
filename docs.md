@@ -6,6 +6,7 @@ author: Jason Christopherson
 src_dir: ./src
 exclude: **/*.f
 output_dir: ./doc
+mathjax_config: ./mathjax-config.js
 display: public
 source: true
 proc_internals: true
