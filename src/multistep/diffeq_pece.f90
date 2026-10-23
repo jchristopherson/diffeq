@@ -25,9 +25,9 @@ module diffeq_pece
     !!
     !! An Adams method advances the solution by integrating an interpolating
     !! polynomial fitted to the derivative history,
-    !! \[
+    !! \f[
     !! y_{n+1} = y_n + \int_{x_n}^{x_{n+1}} P(t) \, dt.
-    !! \]
+    !! \f]
     !! The predictor fits that polynomial to derivatives already known, giving
     !! an explicit Adams-Bashforth formula, while the corrector includes the
     !! derivative at the new point as well, giving an implicit Adams-Moulton
@@ -54,8 +54,8 @@ module diffeq_pece
         !!
         !! The corrector is applied once rather than iterated to convergence,
         !! which is what distinguishes PECE from a fully implicit method.  A
-        !! single correction is only contractive while \(h L < 1\), where
-        !! \(L\) bounds the Lipschitz constant of the problem, so this
+        !! single correction is only contractive while \f$h L < 1\f$, where
+        !! \f$L\f$ bounds the Lipschitz constant of the problem, so this
         !! integrator is intended for non-stiff systems.  Applied to a stiff
         !! problem it holds its accuracy only by driving the step size down to
         !! what stability permits, which can cost orders of magnitude more
@@ -63,7 +63,7 @@ module diffeq_pece
         !! bdf or to one of the implicit Runge-Kutta integrators.
         !!
         !! A system carrying a mass matrix is supported, but the matrix must be
-        !! nonsingular.  The method needs \(y'\) itself, so the mass matrix is
+        !! nonsingular.  The method needs \f$y'\f$ itself, so the mass matrix is
         !! factored and resolved rather than merely appearing as a factor, and
         !! a singular matrix is reported as an error.  A differential-algebraic
         !! problem must therefore be given to bdf.
@@ -110,15 +110,15 @@ pure function adams_error_constant(this, k) result(rst)
     !! Gets the constant relating the difference between the corrected and
     !! predicted solutions to the local truncation error of the formula.
     !!
-    !! Writing the errors of the two formulae as \(C_p h^{k+1} y^{(k+1)}\) and
-    !! \(C_c h^{k+1} y^{(k+1)}\), their difference eliminates the derivative
+    !! Writing the errors of the two formulae as \f$C_p h^{k+1} y^{(k+1)}\f$ and
+    !! \f$C_c h^{k+1} y^{(k+1)}\f$, their difference eliminates the derivative
     !! and leaves the corrector error as
-    !! \(\frac{C_c}{C_p - C_c}\left(y^c - y^p\right)\).  This is the Milne
+    !! \f$\frac{C_c}{C_p - C_c}\left(y^c - y^p\right)\f$.  This is the Milne
     !! device, and the values returned here are those ratios.
     !!
     !! In terms of the Adams coefficients the ratio is
-    !! \(\left|\gamma_k^*\right| / \gamma_{k-1}\), the denominator following
-    !! from \(\gamma_k^* = \gamma_k - \gamma_{k-1}\).
+    !! \f$\left|\gamma_k^*\right| / \gamma_{k-1}\f$, the denominator following
+    !! from \f$\gamma_k^* = \gamma_k - \gamma_{k-1}\f$.
     class(adams), intent(in) :: this
         !! The adams object.
     integer, intent(in) :: k
@@ -144,11 +144,11 @@ end function
 
 ! ------------------------------------------------------------------------------
 pure function adams_truncation_constant(this, k) result(rst)
-    !! Gets the constant relating the \((k+1)\)-th difference of the solution
+    !! Gets the constant relating the \f$(k+1)\f$-th difference of the solution
     !! to the local truncation error of the corrector.
     !!
     !! These are the error constants of the Adams-Moulton formulae themselves,
-    !! written \(\gamma_k^*\), and they differ from those returned by
+    !! written \f$\gamma_k^*\f$, and they differ from those returned by
     !! get_error_constant because the Adams predictor is not an extrapolation
     !! of the solution history.
     class(adams), intent(in) :: this
@@ -208,7 +208,7 @@ subroutine adams_evaluate_derivative(this, sys, x, y, dydx, args)
     !! Evaluates the derivative, resolving any mass matrix.
     !!
     !! An Adams method integrates the derivative itself, so a system written as
-    !! \(M y' = f\) requires that the mass matrix be resolved rather than
+    !! \f$M y' = f\f$ requires that the mass matrix be resolved rather than
     !! simply carried along.  The matrix is factored once and reused for as
     !! long as it remains valid, and a factorization that proves to be singular
     !! is reported rather than resolved in some least-squares sense, since a

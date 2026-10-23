@@ -34,7 +34,7 @@ module diffeq_rk853
         !!
         !! This method computes an eighth-order solution together with fifth-
         !! and third-order embedded solutions.  Its error estimate is
-        !! \( e_{n+1} = y_{n+1}^{[5]} - y_{n+1}^{[3]} \), while the accepted
+        !! \f$ e_{n+1} = y_{n+1}^{[5]} - y_{n+1}^{[3]} \f$, while the accepted
         !! solution is the eighth-order result.  The higher order is useful
         !! for smooth, non-stiff problems over long integration intervals.
         real(real64), private, allocatable, dimension(:) :: yerr2

@@ -34,7 +34,7 @@ module diffeq_rk45
         !!
         !! A fifth-order solution is paired with an embedded fourth-order
         !! solution.  The estimated local defect is
-        !! \( e_{n+1} = y_{n+1}^{[5]} - y_{n+1}^{[4]} \), and the method uses
+        !! \f$ e_{n+1} = y_{n+1}^{[5]} - y_{n+1}^{[4]} \f$, and the method uses
         !! the fifth-order result after an accepted step.  The method has
         !! seven stages and FSAL (first-same-as-last) reuse, so the final
         !! stage derivative becomes the first derivative of the next step.

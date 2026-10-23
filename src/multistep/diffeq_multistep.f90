@@ -25,10 +25,10 @@ module diffeq_multistep
     !! order, multi-step integrators.
     !!
     !! A multi-step method advances a system written as
-    !! \[
+    !! \f[
     !! M(x,y) y' = f(x,y)
-    !! \]
-    !! by relating the solution at \(x_{n+1}\) to several previously accepted
+    !! \f]
+    !! by relating the solution at \f$x_{n+1}\f$ to several previously accepted
     !! solution points rather than to intermediate stage values.  The routines
     !! collected here supply the machinery common to such methods: storage and
     !! management of the solution history, Newton iteration on the implicit
@@ -162,7 +162,7 @@ module diffeq_multistep
         subroutine build_linearized_system(this, sys, h, x, y, A, b, args)
             !! Builds the linearized system used to compute the solution for the
             !! implicit step via Newton iteration.  This routine forms matrices
-            !! \(A\) and \(b\) of the system \(A \delta = b\).
+            !! \f$A\f$ and \f$b\f$ of the system \f$A \delta = b\f$.
             use iso_fortran_env, only : real64
             import newton_multistep_integrator
             import ode_container
@@ -177,12 +177,12 @@ module diffeq_multistep
             real(real64), intent(in), dimension(:) :: y
                 !! The current value(s) of the dependent variable(s).
             real(real64), intent(out), dimension(:,:) :: A
-                !! The N-by-N matrix \(A\), where, for BDF methods at least,
-                !! \(A = \frac{\alpha_o}{h_n} M - J\).
+                !! The N-by-N matrix \f$A\f$, where, for BDF methods at least,
+                !! \f$A = \frac{\alpha_o}{h_n} M - J\f$.
             real(real64), intent(out), dimension(:) :: b
                 !! The N-element right-hand-side vector for the linear system.
                 !! This vector is the negative of the corrector residual so
-                !! that the Newton update is \(y \leftarrow y + \delta\).
+                !! that the Newton update is \f$y \leftarrow y + \delta\f$.
             class(*), intent(inout), optional, target :: args
                 !! An optional argument that can be used to pass information
                 !! in and out of the differential equation subroutine.
@@ -212,7 +212,7 @@ module diffeq_multistep
             real(real64), intent(in), dimension(:) :: f
                 !! An N-element array containing the values of the derivatives
                 !! at x.  For a system carrying a mass matrix these are the
-                !! values of \(y'\) rather than of \(f\).
+                !! values of \f$y'\f$ rather than of \f$f\f$.
             real(real64), intent(out), dimension(:) :: yn
                 !! An N-element array where this routine will write the next
                 !! solution estimate at x + h.
@@ -387,7 +387,7 @@ subroutine mi_evaluate_derivative(this, sys, x, y, dydx, args)
     !!
     !! The default implementation simply evaluates the right-hand side, which
     !! is correct whenever the mass matrix is the identity.  An integrator that
-    !! requires \(y'\) itself, rather than \(f\), overrides this routine to
+    !! requires \f$y'\f$ itself, rather than \f$f\f$, overrides this routine to
     !! resolve the mass matrix.
     class(multistep_integrator), intent(inout) :: this
         !! The multistep_integrator object.
@@ -634,9 +634,9 @@ pure subroutine newton_divided_differences(x, y, d)
     !! interpolating the supplied points.
     !!
     !! The resulting coefficients define
-    !! \[
+    !! \f[
     !! P(t) = d_1 + d_2 (t - x_1) + d_3 (t - x_1)(t - x_2) + \cdots
-    !! \]
+    !! \f]
     !! Divided differences are symmetric in their arguments, so the nodes need
     !! not be sorted.  Storing them most-recent-first keeps the terms of the
     !! extrapolation in decreasing order of significance.

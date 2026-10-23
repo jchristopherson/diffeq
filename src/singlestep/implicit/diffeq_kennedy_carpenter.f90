@@ -37,7 +37,7 @@ module diffeq_kennedy_carpenter
         !!
         !! The stage equations are solved with Newton iteration.  A supplied
         !! mass matrix is incorporated in each stage system as
-        !! \(M-h a_{ii}J\), while the embedded tableau supplies the error
+        !! \f$M-h a_{ii}J\f$, while the embedded tableau supplies the error
         !! estimate used by the inherited adaptive driver.  These solvers use
         !! the inherited configurable PI step-size controller.
         real(real64), private, allocatable, dimension(:,:) :: m_mass
@@ -210,12 +210,12 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     !! Attempts an integration step for this integrator.
     !!
     !! The state at each stage is solved from
-    !! \[
+    !! \f[
     !! M(Y_i-Y_i^*)-h a_{ii}f(x+c_i h,Y_i)=0,
-    !! \]
+    !! \f]
     !! using Newton iteration.  The high- and embedded-order solutions are
-    !! \(y_{n+1}=y_n+h\sum b_i k_i\) and
-    !! \(\widehat y_{n+1}=y_n+h\sum d_i k_i\), respectively.
+    !! \f$y_{n+1}=y_n+h\sum b_i k_i\f$ and
+    !! \f$\widehat y_{n+1}=y_n+h\sum d_i k_i\f$, respectively.
     class(kennedy_carpenter), intent(inout) :: this
         !! The kennedy_carpenter object.
     class(ode_container), intent(inout) :: sys
@@ -580,7 +580,7 @@ end subroutine
 
 ! ------------------------------------------------------------------------------
 function solve_kc_system(a, b) result(x)
-    !! Solves the linear system \( A x = b \) by means of a QR factorization
+    !! Solves the linear system \f$ A x = b \f$ by means of a QR factorization
     !! with column pivoting.
     real(real64), intent(in), dimension(:,:) :: a
         !! The N-by-N system matrix.

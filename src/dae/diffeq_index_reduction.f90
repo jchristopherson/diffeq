@@ -24,26 +24,26 @@ module diffeq_index_reduction
     !! Stabilized index-1 Gear-Gupta-Leimkuhler-inspired (GGL) reduction
     !! for mechanical systems with autonomous holonomic constraints.
     !!
-    !! For autonomous holonomic constraints \(g(q)=0\), this variant uses
-    !! coordinates \(q\), velocities \(v\), force multipliers \(\lambda\),
-    !! and kinematic multipliers \(\mu\) in the formulation
-    !! \[
+    !! For autonomous holonomic constraints \f$g(q)=0\f$, this variant uses
+    !! coordinates \f$q\f$, velocities \f$v\f$, force multipliers \f$\lambda\f$,
+    !! and kinematic multipliers \f$\mu\f$ in the formulation
+    !! \f[
     !! \dot q = v + G(q)^T\mu, \qquad
     !! M(q)\dot v = F(x,q,v) - G(q)^T\lambda,
-    !! \]
-    !! \[
+    !! \f]
+    !! \f[
     !! 0 = G\dot q + \alpha g, \qquad
     !! 0 = DG(q)[\dot q]v + GM^{-1}(F-G^T\lambda) + \beta Gv,
-    !! \]
-    !! where \(G=\partial g/\partial q\). Thus \(\dot g=-\alpha g\)
-    !! and \(d(Gv)/dx=-\beta Gv\). Consistent constraints remain zero
+    !! \f]
+    !! where \f$G=\partial g/\partial q\f$. Thus \f$\dot g=-\alpha g\f$
+    !! and \f$d(Gv)/dx=-\beta Gv\f$. Consistent constraints remain zero
     !! in the exact solution; positive gains damp violations. Numerical
     !! integration and interpolation do not project onto the constraints.
     !!
     !! Unlike classical index-2 GGL, the original position and velocity
     !! constraints are replaced by their stabilized evolution equations.
-    !! The algebraic multipliers are locally determined when \(GG^T\)
-    !! and \(GM^{-1}G^T\) are nonsingular. Independent constraints and a
+    !! The algebraic multipliers are locally determined when \f$GG^T\f$
+    !! and \f$GM^{-1}G^T\f$ are nonsingular. Independent constraints and a
     !! symmetric positive-definite mechanical mass matrix suffice. Explicitly
     !! moving constraints are not supported: the constraint callbacks must
     !! not depend on the independent variable.
@@ -60,15 +60,15 @@ module diffeq_index_reduction
 
     abstract interface
         subroutine dae_algebraic_constraints(x, y, g, args)
-            !! Evaluates algebraic constraint residuals \(g(x,y)\).
+            !! Evaluates algebraic constraint residuals \f$g(x,y)\f$.
             !!
-            !! For \(N\) input state components and \(M\) constraints,
+            !! For \f$N\f$ input state components and \f$M\f$ constraints,
             !! the callback represents a mapping
-            !! \[
+            !! \f[
             !! g : \mathbb{R}\times\mathbb{R}^{N}
             !! \longrightarrow \mathbb{R}^{M}.
-            !! \]
-            !! A consistent state satisfies \(g(x,y)=0\). Return the
+            !! \f]
+            !! A consistent state satisfies \f$g(x,y)=0\f$. Return the
             !! residuals themselves, not their derivatives, a Boolean result,
             !! or a projected state. A nonzero residual is a valid evaluation
             !! at an inconsistent state, rather than a callback failure.
@@ -105,9 +105,9 @@ module diffeq_index_reduction
         end subroutine
 
         subroutine dae_constraint_curvature(x, q, direction, v, curvature, args)
-            !! Evaluates \(DG(q)[\mathrm{direction}]v\), without including
-            !! \(G\dot v\). Each component is
-            !! \(\mathrm{direction}^T\nabla^2 g_i(q)v\).
+            !! Evaluates \f$DG(q)[\mathrm{direction}]v\f$, without including
+            !! \f$G\dot v\f$. Each component is
+            !! \f$\mathrm{direction}^T\nabla^2 g_i(q)v\f$.
             !! Assign every output element. For linear constraints return
             !! zeros. The callback must support off-manifold coordinates and
             !! arbitrary directions used during nonlinear/Jacobian evaluation.
@@ -118,7 +118,7 @@ module diffeq_index_reduction
             real(real64), intent(in), dimension(:) :: q
                 !! N coordinates, in the same order as the force model.
             real(real64), intent(in), dimension(:) :: direction
-                !! N components of the coordinate derivative \(\dot q\),
+                !! N components of the coordinate derivative \f$\dot q\f$,
                 !! including the kinematic multiplier correction.
             real(real64), intent(in), dimension(:) :: v
                 !! N physical velocity components; these need not equal direction.
@@ -136,18 +136,18 @@ module diffeq_index_reduction
         !! holonomically constrained mechanical model. Call `initialize` and
         !! assign all required callbacks before using an index-1 DAE solver.
         !! For N coordinates and M constraints, the state and RHS layout is
-        !! \[
+        !! \f[
         !! z=[q_N,v_N,\lambda_M,\mu_M]^T, \quad
         !! \mathcal M=\operatorname{diag}(I_N,M_N,0_M,0_M),
-        !! \]
-        !! \[
+        !! \f]
+        !! \f[
         !! \mathcal f=\begin{bmatrix}
         !! v+G^T\mu \\
         !! F-G^T\lambda \\
         !! G(v+G^T\mu)+\alpha g \\
         !! DG(q)[\dot q]v+GM^{-1}(F-G^T\lambda)+\beta Gv
         !! \end{bmatrix}.
-        !! \]
+        !! \f]
         !! All constraint vectors use the same M-component ordering.
         !!
         !! The inherited `fcn` has a specialized contract here: its input is
@@ -171,9 +171,9 @@ module diffeq_index_reduction
             !! autonomous position residuals g(q), including off-manifold values.
         procedure(ode_jacobian), pointer, public, nopass :: constraint_jacobian => null()
             !! Required callback receiving q and writing the M-by-N matrix
-            !! \(G=\partial g/\partial q\). No finite-difference fallback is used.
+            !! \f$G=\partial g/\partial q\f$. No finite-difference fallback is used.
         procedure(dae_constraint_curvature), pointer, public, nopass :: constraint_curvature => null()
-            !! Required callback for \(DG(q)[\dot q]v\).
+            !! Required callback for \f$DG(q)[\dot q]v\f$.
     contains
         procedure :: initialize => ggl_initialize
         procedure :: set_stabilization_parameters => ggl_set_stabilization

@@ -35,15 +35,15 @@ module diffeq_rosenbrock
         !!
         !! Instead of solving a nonlinear equation at every stage, the method
         !! reuses one factored linear system based on the Jacobian
-        !! \( J = \partial f / \partial y \).  Without a mass matrix, the
+        !! \f$ J = \partial f / \partial y \f$.  Without a mass matrix, the
         !! factored matrix is
-        !! \[
+        !! \f[
         !! A = \frac{1}{\gamma h}I - J,
-        !! \]
+        !! \f]
         !! while a user-supplied mass matrix produces
-        !! \[
+        !! \f[
         !! A = \frac{1}{\gamma h}M - J.
-        !! \]
+        !! \f]
         !! The method is appropriate for stiff problems where explicit
         !! Runge--Kutta methods would require prohibitively small steps.
         !! A mass matrix may be constant or state-dependent; state-dependent
@@ -124,7 +124,7 @@ end subroutine
 subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
     use diffeq_rosenbrock_constants
     !! Constructs the system matrix of the form
-    !! \( A = \frac{1}{\gamma h} M - J \), and then computes its QR
+    !! \f$ A = \frac{1}{\gamma h} M - J \f$, and then computes its QR
     !! factorization.  The QR-factored form of A is stored internally.
     class(rosenbrock), intent(inout) :: this
         !! The rosenbrock object.

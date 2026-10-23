@@ -92,11 +92,11 @@ module diffeq_base
         !! Defines the callbacks and model options for an ODE problem.
         !!
         !! The required right-hand-side callback describes
-        !! \( y' = f(x,y) \). Optional callbacks provide an analytical
-        !! Jacobian \( J = \partial f / \partial y \) and a mass matrix for
-        !! systems of the form \( M(x,y)y' = f(x,y) \). If no Jacobian is
+        !! \f$ y' = f(x,y) \f$. Optional callbacks provide an analytical
+        !! Jacobian \f$ J = \partial f / \partial y \f$ and a mass matrix for
+        !! systems of the form \f$ M(x,y)y' = f(x,y) \f$. If no Jacobian is
         !! supplied, DIFFEQ estimates it using finite differences. A null
-        !! mass-matrix callback means that \( M = I \).
+        !! mass-matrix callback means that \f$ M = I \f$.
         logical, private :: m_massDependent = .false.
             ! A value determining if the mass matrix is state dependent such 
             ! that it must be recomputed at each step. 
@@ -140,7 +140,7 @@ module diffeq_base
         !! Every concrete integrator accepts an `ode_container`, an array of
         !! output coordinates, and an initial state. Adaptive solvers use a
         !! scaled local error such as
-        !! \( \mathrm{err}_i / (\mathrm{atol} + \mathrm{rtol}|y_i|) \)
+        !! \f$ \mathrm{err}_i / (\mathrm{atol} + \mathrm{rtol}|y_i|) \f$
         !! to choose their step sizes.
         type(ode_results), private :: m_buffer
             ! The internal solution buffer.
@@ -709,8 +709,8 @@ end subroutine
 ! ------------------------------------------------------------------------------
 pure function oi_get_safety_factor(this) result(rst)
     !! Gets the safety factor (step size multiplier) used to provide a measure
-    !! of control to the step size estimate such that \( h_{new} = f_{s} h \),
-    !! where \( f_{s} \) is this safety factor.
+    !! of control to the step size estimate such that \f$ h_{new} = f_{s} h \f$,
+    !! where \f$ f_{s} \f$ is this safety factor.
     class(ode_integrator), intent(in) :: this
         !! The ode_integrator object.
     real(real64) :: rst
@@ -721,8 +721,8 @@ end function
 ! --------------------
 subroutine oi_set_safety_factor(this, x)
     !! Sets the safety factor (step size multiplier) used to provide a measure
-    !! of control to the step size estimate such that \( h_{new} = f_{s} h \),
-    !! where \( f_{s} \) is this safety factor.
+    !! of control to the step size estimate such that \f$ h_{new} = f_{s} h \f$,
+    !! where \f$ f_{s} \f$ is this safety factor.
     class(ode_integrator), intent(inout) :: this
         !! The ode_integrator object.
     real(real64), intent(in) :: x
@@ -732,12 +732,12 @@ end subroutine
 
 ! ------------------------------------------------------------------------------
 pure function oi_get_control_parameter(this) result(rst)
-    !! Gets the step size control parameter \( \beta \) used for PI control of 
+    !! Gets the step size control parameter \f$ \beta \f$ used for PI control of 
     !! the step size.  A value of 0 provides a default step size controller
-    !! (non-PI); however, a nonzero value of \( \beta \) provides PI control 
+    !! (non-PI); however, a nonzero value of \f$ \beta \f$ provides PI control 
     !! that improves stability, but comes with a potential for efficiency loss.
-    !! A good estimate for a starting point for this parameter is \( \beta =
-    !! \frac{0.4}{k} \) where \( k \) is the order of the integrator.
+    !! A good estimate for a starting point for this parameter is \f$ \beta =
+    !! \frac{0.4}{k} \f$ where \f$ k \f$ is the order of the integrator.
     !!
     !! The PI controller for step size is defined as follows.
     !! $$ h_{n+1} = f_{s} h_{n} e_{n}^{-\alpha} e_{n-1}^{\beta} $$
@@ -750,12 +750,12 @@ end function
 
 ! --------------------
 subroutine oi_set_control_parameter(this, x)
-    !! Sets the step size control parameter \( \beta \) used for PI control of 
+    !! Sets the step size control parameter \f$ \beta \f$ used for PI control of 
     !! the step size.  A value of 0 provides a default step size controller
-    !! (non-PI); however, a nonzero value of \( \beta \) provides PI control 
+    !! (non-PI); however, a nonzero value of \f$ \beta \f$ provides PI control 
     !! that improves stability, but comes with a potential for efficiency loss.
-    !! A good estimate for a starting point for this parameter is \( \beta =
-    !! \frac{0.4}{k} \) where \( k \) is the order of the integrator.
+    !! A good estimate for a starting point for this parameter is \f$ \beta =
+    !! \frac{0.4}{k} \f$ where \f$ k \f$ is the order of the integrator.
     !!
     !! The PI controller for step size is defined as follows.
     !! $$ h_{n+1} = f_{s} h_{n} e_{n}^{-\alpha} e_{n-1}^{\beta} $$

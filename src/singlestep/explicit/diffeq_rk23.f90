@@ -34,7 +34,7 @@ module diffeq_rk23
         !!
         !! A third-order solution is paired with an embedded second-order
         !! solution, giving the local estimate
-        !! \( e_{n+1} = y_{n+1}^{[3]} - y_{n+1}^{[2]} \).  The method has four
+        !! \f$ e_{n+1} = y_{n+1}^{[3]} - y_{n+1}^{[2]} \f$.  The method has four
         !! stages and FSAL reuse.  Its lower order reduces the cost per step
         !! and is useful when high accuracy is not required.
         real(real64), private, allocatable, dimension(:) :: rc1

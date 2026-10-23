@@ -24,16 +24,16 @@ module diffeq_bdf
     !! Implicit BDF solvers.
     !!
     !! Backward differentiation formulae replace the derivative in
-    !! \[
+    !! \f[
     !! M(x,y) y' = f(x,y)
-    !! \]
-    !! with the derivative, evaluated at \(x_{n+1}\), of the polynomial that
-    !! interpolates the new solution point together with the \(k\) points
+    !! \f]
+    !! with the derivative, evaluated at \f$x_{n+1}\f$, of the polynomial that
+    !! interpolates the new solution point together with the \f$k\f$ points
     !! preceding it.  The resulting formula
-    !! \[
+    !! \f[
     !! M(x_{n+1},y_{n+1}) \sum_{j=0}^{k} c_j y_{n+1-j} = f(x_{n+1},y_{n+1})
-    !! \]
-    !! is implicit in \(y_{n+1}\) and is solved by Newton iteration.  Because
+    !! \f]
+    !! is implicit in \f$y_{n+1}\f$ and is solved by Newton iteration.  Because
     !! the coefficients are derived from the actual spacing of the stored
     !! points, a change of step size is handled exactly rather than by
     !! interpolating the history onto a uniform grid.
@@ -55,15 +55,15 @@ module diffeq_bdf
         !! systems and index-1 differential-algebraic equations.
         !!
         !! The iteration matrix formed for the Newton corrector is
-        !! \[
+        !! \f[
         !! A = \frac{\alpha_0}{h_n} M - J, \qquad
         !! J = \frac{\partial f}{\partial y},
-        !! \]
-        !! which is assembled and factored rather than requiring \(M\) to be
+        !! \f]
+        !! which is assembled and factored rather than requiring \f$M\f$ to be
         !! inverted.  A singular mass matrix is therefore permitted: rows of
-        !! \(M\) that are identically zero impose algebraic constraints, and
+        !! \f$M\f$ that are identically zero impose algebraic constraints, and
         !! the problem becomes a differential-algebraic equation.  So long as
-        !! that system is of index one, \(A\) remains nonsingular and the
+        !! that system is of index one, \f$A\f$ remains nonsingular and the
         !! solver proceeds normally.
         !!
         !! The method restarts at first order, so it does not require a
@@ -116,12 +116,12 @@ pure function bdf_error_constant(this, k) result(rst)
     !! Gets the constant relating the difference between the corrected and
     !! predicted solutions to the local truncation error of the formula.
     !!
-    !! The predictor of order \(k\) and the corrector of order \(k\) differ by
+    !! The predictor of order \f$k\f$ and the corrector of order \f$k\f$ differ by
     !! a quantity proportional to the leading error term of the formula, and
-    !! for a BDF method that constant of proportionality is \(1/(k+1)\).
+    !! for a BDF method that constant of proportionality is \f$1/(k+1)\f$.
     !!
     !! For a BDF method the predictor is precisely the extrapolation of the
-    !! solution history, so that same constant also relates the \((k+1)\)-th
+    !! solution history, so that same constant also relates the \f$(k+1)\f$-th
     !! difference of the solution to the truncation error.  One routine
     !! therefore serves as both the error and the truncation constant.
     class(bdf), intent(in) :: this
@@ -171,7 +171,7 @@ end subroutine
 subroutine bdf_predictor(this, sys, h, x, y, f, yn, fn, args)
     !! Evaluates the predictor and forms the coefficients for the step.
     !!
-    !! The prediction is the extrapolation to \(x + h\) of the polynomial
+    !! The prediction is the extrapolation to \f$x + h\f$ of the polynomial
     !! passing through the stored solution history.  This routine also builds
     !! the BDF coefficients for the step and collapses the history into the
     !! single vector the corrector requires, both of which are fixed for the
@@ -250,7 +250,7 @@ pure subroutine bdf_coefficients(t, c)
     !!
     !! The coefficients are the derivatives, evaluated at the newest node, of
     !! the Lagrange basis polynomials belonging to the supplied nodes, so that
-    !! \( P'(t_1) = \sum_j c_j y_j \).  Deriving them from the node locations
+    !! \f$ P'(t_1) = \sum_j c_j y_j \f$.  Deriving them from the node locations
     !! in this way accommodates an arbitrary distribution of step sizes.
     real(real64), intent(in), dimension(:) :: t
         !! The interpolation nodes, the first of which is the new point.
@@ -283,12 +283,12 @@ subroutine bdf_build_linear_system(this, sys, h, x, y, A, b, args)
     !! implicit step via Newton iteration.
     !!
     !! The corrector residual is
-    !! \[
+    !! \f[
     !! R = M \left( c_0 y + s \right) - f(x,y),
-    !! \]
-    !! where \(s\) collects the contribution of the stored history, and its
-    !! Jacobian is \( c_0 M - J \).  The mass matrix appears only as a factor
-    !! and is never inverted, which is what allows a singular \(M\) to be used.
+    !! \f]
+    !! where \f$s\f$ collects the contribution of the stored history, and its
+    !! Jacobian is \f$ c_0 M - J \f$.  The mass matrix appears only as a factor
+    !! and is never inverted, which is what allows a singular \f$M\f$ to be used.
     class(bdf), intent(inout) :: this
         !! The bdf object.
     class(ode_container), intent(inout) :: sys
@@ -301,7 +301,7 @@ subroutine bdf_build_linear_system(this, sys, h, x, y, A, b, args)
     real(real64), intent(in), dimension(:) :: y
         !! The current value(s) of the dependent variable(s).
     real(real64), intent(out), dimension(:,:) :: A
-        !! The N-by-N matrix \(A\), where \(A = \frac{\alpha_o}{h_n} M - J\).
+        !! The N-by-N matrix \f$A\f$, where \f$A = \frac{\alpha_o}{h_n} M - J\f$.
     real(real64), intent(out), dimension(:) :: b
         !! The N-element right-hand-side vector for the linear system.
     class(*), intent(inout), optional, target :: args
