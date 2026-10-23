@@ -8,6 +8,9 @@ program diffeq_event_tests
     type(runge_kutta_23) :: integrator23
     type(runge_kutta_853) :: integrator853
     type(tsitouras_54) :: integrator_tsit
+    type(kennedy_carpenter_4) :: integrator_kc4
+    type(kennedy_carpenter_5) :: integrator_kc5
+    type(rosenbrock) :: integrator_rosenbrock
     type(ode_container) :: model
     character(len=32) :: test_name
     integer :: callback_count
@@ -112,6 +115,9 @@ program diffeq_event_tests
     call check_integrator_event_detection(integrator, "RK45")
     call check_integrator_event_detection(integrator853, "RK853")
     call check_integrator_event_detection(integrator_tsit, "Tsitouras")
+    call check_integrator_event_detection(integrator_kc4, "Kennedy-Carpenter 4")
+    call check_integrator_event_detection(integrator_kc5, "Kennedy-Carpenter 5")
+    call check_integrator_event_detection(integrator_rosenbrock, "Rosenbrock")
 
 contains
     subroutine check(condition, label)
