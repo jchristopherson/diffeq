@@ -257,6 +257,28 @@ typedef struct {
     int constraint_count;
 } c_ggl_container;
 
+/** An ODE event statistics container. */
+typedef struct {
+    /** The number of iterations taken by the solver. */
+    int iteration_count;
+    /** The number of event function evaluations. */
+    int function_evaluations;
+    /** 
+     * The zero-based index of the event equation where the event was 
+     * located.  If no event was found, this value is set to -1. 
+     */
+    int event_index;
+} c_ode_event_statistics;
+
+/** A container for ODE event solver settings. */
+typedef struct {
+    /** The maximum number of allowed iterations. */
+    int max_allowed_iterations;
+    /** The iteration convergence tolerance. */
+    double tolerance;
+} c_ode_event_solver_settings;
+
+
 #ifdef __cplusplus
 extern "C"{
 #endif
@@ -694,6 +716,13 @@ int c_dae_kennedy_carpenter_5(const c_ggl_container *model, int nx, int nstates,
 int c_dae_bdf(const c_ggl_container *model, int nx, int nstates,
     const double *x, double *initcond, const c_ode_settings *settings,
     c_ode_results *output);
+
+/**
+ * @brief Populates a c_ode_solver_settings object with default values.
+ * 
+ * @param settings The c_ode_solver_settings object.
+ */
+void c_default_ode_event_solver_settings(c_ode_event_solver_settings *settings);
 
 #ifdef __cplusplus
 }

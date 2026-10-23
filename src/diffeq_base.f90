@@ -169,7 +169,7 @@ module diffeq_base
 ! ------------------------------------------------------------------------------
     type ode_event_statistics
         !! An ODE event solver statistics container.
-        integer :: interation_count = 0
+        integer :: iteration_count = 0
             !! The number of iterations taken by the solver.
         integer :: function_evaluations = 0
             !! The number of event function evaluations.
@@ -1392,7 +1392,7 @@ function oes_find_event(this, fcn, integrator, neqn, x1, y1, x2, y2, x, y, &
     ! Reset the iteration statistics information
     this%solver_statistics%event_index = 0
     this%solver_statistics%function_evaluations = 0
-    this%solver_statistics%interation_count = 0
+    this%solver_statistics%iteration_count = 0
 
     ! Locate events
     do i = 1, neqn
@@ -1419,7 +1419,7 @@ function oes_find_event(this, fcn, integrator, neqn, x1, y1, x2, y2, x, y, &
 
     ! Store the iteration statistics information
     this%solver_statistics%function_evaluations = neval
-    this%solver_statistics%interation_count = niter
+    this%solver_statistics%iteration_count = niter
     this%solver_statistics%event_index = ind
 end function
 
