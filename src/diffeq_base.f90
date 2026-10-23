@@ -331,12 +331,15 @@ module diffeq_base
 ! ------------------------------------------------------------------------------
     type ode_event_solver
         !! Provides a mechanism for event detection.
-        procedure(ode_event_function), pointer, public, nopass :: event_function
+        procedure(ode_event_function), pointer, public, nopass :: event_function => null()
             !! A pointer to the event function.
         integer, private :: m_maxIter = 1000
             !! The maximum number of iterations allowed.
         real(real64), private :: m_tol = 1.0d-12
             !! The convergence tolerance.
+        integer, private :: m_iteration_count = 0
+        integer, private :: m_eval_count = 0
+        integer, private :: m_event_index = 0
     contains
         procedure, public :: get_max_allowed_iterations => oes_get_max_iter
             !! Gets the number of iterations the solver is allowed to take.
@@ -353,6 +356,9 @@ module diffeq_base
             !! specified bracket.
         procedure, public :: evaluate => oes_eval_fcn
             !! Evaluates the event function.
+        procedure, public :: find_event => oes_find_event
+            !! Attempts to find any events within a specified bracket.
+        procedure, private :: find_channel_event => oes_find_single_channel_event
     end type
 
 contains
@@ -1245,15 +1251,105 @@ subroutine oes_eval_fcn(this, x, y, f, args)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-function oes_find_event(this, integrator, x1, y1, x2, y2, args) result(rst)
-    class(ode_event_solver), intent(in) :: this
+function oes_find_event(this, integrator, neqn, x1, y1, x2, y2, x, y, args) &
+    result(rst)
+    !! Attempts to find an event via Brent's method for root finding for each
+    !! of the M event equations (M does not have to be equal to the number
+    !! of state equations).  If no events are found, this function simply
+    !! returns false.  If a root, or roots, are found, the first occurring
+    !! root is returned, and iteration statistics are updated in the
+    !! [[ode_event_solver]].
+    !!
+    !! If no event function has been defined a DIFFEQ_NULL_POINTER_ERROR is
+    !! thrown.
+    class(ode_event_solver), intent(inout) :: this
+        !! The [[ode_event_solver]] object.
     class(ode_integrator), intent(in) :: integrator
+        !! The [[ode_integrator]] being used to integrate the ODE's.
+    integer, intent(in) :: neqn
+        !! The number of event equations.  This value must be at least 1; else,
+        !! a DIFFEQ_INVALID_INPUT_ERROR is thrown.
     real(real64), intent(in) :: x1
+        !! The initial bound of the search region.
     real(real64), intent(in), dimension(:) :: y1
+        !! The N-element state vector at x1.
     real(real64), intent(in) :: x2
+        !! The terminal bound of the search region.  This value must be
+        !! different than x2 by an amount larger than machine epsilon; else,
+        !! a DIFFEQ_INVALID_OPERATION_ERROR is thrown.
     real(real64), intent(in), dimension(:) :: y2
+        !! The N-element state vector at x2.  This array must be sized to match
+        !! x1; else, a DIFFEQ_ARRAY_SIZE_ERROR is thrown.
+    real(real64), intent(out) :: x
+        !! The value of the independent variable at which the root is found.
+        !! If no root is found, this value is returned as a NaN.
+    real(real64), intent(out), dimension(:) :: y
+        !! The N-element array containing the state vector at x.  If no root
+        !! is found, this array is populated with NaN.  This array must be
+        !! sized to match x1; else, a DIFFEQ_ARRAY_SIZE_ERROR is thrown.
     class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information in and out
+        !! of the routine.
     logical :: rst
+        !! True if the process converged to a root; else, false.
+
+    ! Local Variables
+    integer :: i, nstates, niter, neval, ind
+    real(real64) :: eps
+    real(real64), allocatable, dimension(:) :: xs
+    real(real64), allocatable, dimension(:,:) :: ys
+    logical, allocatable, dimension(:) :: found_event
+
+    ! Input Validation
+    nstates = size(y1)
+    eps = epsilon(eps)
+    if (size(y2) /= nstates .or. size(y) /= nstates) error stop DIFFEQ_ARRAY_SIZE_ERROR
+    if (abs(x2 - x1) <= eps) error stop DIFFEQ_INVALID_OPERATION_ERROR
+    if (neqn < 1) error stop DIFFEQ_INVALID_INPUT_ERROR
+    if (.not.this%get_is_event_function_defined()) error stop DIFFEQ_NULL_POINTER_ERROR
+
+    ! Initialization
+    allocate( &
+        xs(neqn), &
+        ys(nstates, neqn), &
+        found_event(neqn) &
+    )
+    x = ieee_value(0.0d0, ieee_quiet_nan)
+    y = ieee_value(0.0d0, ieee_quiet_nan)
+    rst = .false.
+
+    ! Reset the iteration statistics information
+    this%m_eval_count = 0
+    this%m_iteration_count = 0
+
+    ! Locate events
+    do i = 1, neqn
+        found_event(i) = this%find_channel_event(integrator, i, neqn, x1, y1, &
+            x2, y2, xs(i), ys(:,i), niter, neval, args = args)
+    end do
+    rst = any(found_event)
+    if (.not.rst) return
+
+    ! Store the iteration statistics information
+    this%m_eval_count = neval
+    this%m_iteration_count = niter
+    this%m_event_index = 0
+
+    ! If any events were found, find the first event
+    ind = 0
+    do i = 1, neqn
+        if (.not.found_event(i)) cycle
+        if (ind == 0) then
+            ind = i
+        else if (x1 < x2 .and. xs(i) < xs(ind)) then
+            ind = i
+        else if (x1 > x2 .and. xs(i) > xs(ind)) then
+            ind = i
+        end if
+    end do
+    x = xs(ind)
+    y = ys(:,ind)
+    this%m_event_index = ind
 end function
 
 ! ------------------------------------------------------------------------------
@@ -1267,7 +1363,7 @@ function oes_find_single_channel_event(this, integrator, index, nevents, x1, &
     !! trigger an 'error stop' condition.  For this reason, be sure of the 
     !! inputs supplied to this routine.
     class(ode_event_solver), intent(in) :: this
-        !! The [[ode_event_solver]] routine.
+        !! The [[ode_event_solver]] object.
     class(ode_integrator), intent(in) :: integrator
         !! The [[ode_integrator]] being used to integrate the ODE's.
     integer, intent(in) :: index
@@ -1299,10 +1395,10 @@ function oes_find_single_channel_event(this, integrator, index, nevents, x1, &
         !! True if the process converged to a root; else, false.
 
     ! Local Variables
-    integer :: maxiter
-    real(real64), allocatable, dimension(:) :: g1, g2, g
+    integer :: maxiter, nstates
+    real(real64), allocatable, dimension(:) :: g1, g2, g, yinterp
     real(real64) :: a, b, c, d, e, fa, fb, fc, p, q, r, s, eps, tol, tol1, xm, &
-        min1, min2
+        min1, min2, mn
 
     ! Initialization
     rst = .false.
@@ -1312,10 +1408,12 @@ function oes_find_single_channel_event(this, integrator, index, nevents, x1, &
     maxiter = this%get_max_allowed_iterations()
     eps = epsilon(eps)
     tol = this%get_solver_tolerance()
+    nstates = size(y)
     allocate( &
         g1(nevents), &
         g2(nevents), &
-        g(nevents) &
+        g(nevents), &
+        yinterp(nstates) &
     )
 
     ! Evaluate the event functions.
@@ -1371,7 +1469,7 @@ function oes_find_single_channel_event(this, integrator, index, nevents, x1, &
             ! Attempt interpolation
             s = fb / fa
             if (a == c) then
-                p = 2.0d0 * xm * x
+                p = 2.0d0 * xm * s
                 q = 1.0d0 - s
             else
                 q = fa / fc
@@ -1385,8 +1483,40 @@ function oes_find_single_channel_event(this, integrator, index, nevents, x1, &
             p = abs(p)
             min1 = 3.0d0 * xm * q - abs(tol1 * q)
             min2 = abs(e * q)
-            
+            if (min1 < min2) then
+                mn = min1
+            else
+                mn = min2
+            end if
+            if (2.0d0 * p < mn) then
+                ! Accept the interpolation
+                e = d
+                d = p / q
+            else
+                ! The interpolation failed, use bisection
+                d = xm
+                e = d
+            end if
+        else
+            ! The bounds are decreasing too slowly, use bisection
+            d = xm
+            e = d
         end if
+
+        ! Update
+        a = b
+        fa = fb
+
+        ! Evaluate the new trial root
+        if (abs(d) > tol1) then
+            b = b + d
+        else
+            b = b + sign(tol1, xm)
+        end if
+        call integrator%evaluate_dense(b, yinterp)
+        call this%evaluate(b, yinterp, g, args = args)
+        fb = g(index)
+        neval = neval + 1
     end do
 end function
 
