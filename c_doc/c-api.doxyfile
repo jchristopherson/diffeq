@@ -17,6 +17,7 @@ SORT_MEMBER_DOCS       = NO
 GENERATE_HTML          = YES
 HTML_OUTPUT            = .
 GENERATE_TREEVIEW      = YES
+USE_MATHJAX            = YES
 DISABLE_INDEX          = NO
 SEARCHENGINE            = YES
 GENERATE_LATEX         = NO
