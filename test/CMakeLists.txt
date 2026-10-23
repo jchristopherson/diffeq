@@ -51,6 +51,18 @@ foreach(family singlestep multistep)
         )
         set_tests_properties(diffeq_dense_${family}_${error_case} PROPERTIES WILL_FAIL TRUE)
     endforeach()
+
+endforeach()
+
+add_executable(diffeq_event_tests diffeq_event_tests.f90)
+target_link_libraries(diffeq_event_tests diffeq)
+add_test(NAME diffeq_event_tests COMMAND $<TARGET_FILE:diffeq_event_tests>)
+foreach(error_case undefined neqn equal_bounds y2_size y_size bracket_size bracket_index)
+    add_test(
+        NAME diffeq_event_error_${error_case}
+        COMMAND $<TARGET_FILE:diffeq_event_tests> ${error_case}
+    )
+    set_tests_properties(diffeq_event_error_${error_case} PROPERTIES WILL_FAIL TRUE)
 endforeach()
 
 foreach(error_case missing_ode short_grid step_limit tolerance_size
@@ -155,6 +167,14 @@ if (${BUILD_SHARED_LIBS} AND WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy
         $<TARGET_RUNTIME_DLLS:diffeq_tests>
         $<TARGET_FILE_DIR:diffeq_tests>
+        COMMAND_EXPAND_LISTS
+    )
+    add_custom_command(
+        TARGET diffeq_event_tests
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        $<TARGET_RUNTIME_DLLS:diffeq_event_tests>
+        $<TARGET_FILE_DIR:diffeq_event_tests>
         COMMAND_EXPAND_LISTS
     )
 endif()
