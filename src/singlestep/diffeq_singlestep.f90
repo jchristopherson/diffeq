@@ -263,20 +263,25 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    logical :: dense, need_dense, success, forward
-    integer :: i, j, n, neqn, nsteps, nstages
-    real(real64) :: h, xo, xn, xmax, ei, eold
-    real(real64), allocatable, dimension(:) :: f, y, yn, fn, yerr, yi
+    logical :: dense, need_dense, success, forward, find_events, event_found
+    integer :: i, j, n, neqn, nsteps, nstages, nevents
+    real(real64) :: h, xo, xn, xmax, ei, eold, xe
+    real(real64), allocatable, dimension(:) :: f, y, yn, fn, yerr, yi, ye
     real(real64), allocatable, dimension(:,:) :: k
     
     ! Initialization
     n = size(x)
     success = .true.
     call this%invalidate_dense_output()
+    nevents = sys%get_event_equation_count()
+    find_events = sys%get_is_ode_event_function_defined() .and. nevents > 0
 
     ! Input Checking
     if (n < 2) error stop DIFFEQ_ARRAY_SIZE_ERROR
     if (.not.sys%get_is_ode_defined()) error stop DIFFEQ_MISSING_ARGUMENT_ERROR
+
+    ! Ensure dense output is being used if we're solving for events as well
+    if (find_events) call this%set_dense_output_enabled(.true.)
 
     ! Additional Initialization
     neqn = size(iv)
@@ -299,6 +304,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
         k(neqn, nstages), &
         yi(neqn) &
     )
+    if (find_events) allocate(ye(neqn))
 
     ! Estimate an initial step size
     !
@@ -341,6 +347,25 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
         call this%post_step_action(sys, need_dense, xo, xn, y, yn, f, fn, k, args)
         if (need_dense) call this%cache_dense_output(xo, xn, y, yn, f, fn)
         call this%log_successful_step()
+
+        ! Detect events
+        if (find_events) then
+            event_found = this%event_solver%find_event(sys%event_function, &
+                this, nevents, xo, y, xn, yn, xe, ye, args = args)
+            if (event_found) then
+                if (dense) then
+                    interp_event : do while (j <= n .and. &
+                        ((forward .and. x(j) < xe) .or. &
+                        (.not.forward .and. x(j) > xe)))
+                        call this%evaluate_dense(x(j), yi)
+                        call this%append_to_buffer(x(j), yi)
+                        j = j + 1
+                    end do interp_event
+                end if
+                call this%append_to_buffer(xe, ye)
+                go to 100
+            end if
+        end if
 
         ! Do we need to interpolate for dense output, or can we just store
         ! values and move on
