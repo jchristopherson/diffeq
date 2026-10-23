@@ -57,7 +57,7 @@ endforeach()
 add_executable(diffeq_event_tests diffeq_event_tests.f90)
 target_link_libraries(diffeq_event_tests diffeq)
 add_test(NAME diffeq_event_tests COMMAND $<TARGET_FILE:diffeq_event_tests>)
-foreach(error_case undefined neqn equal_bounds y2_size y_size bracket_size bracket_index)
+foreach(error_case neqn equal_bounds y2_size y_size bracket_size bracket_index)
     add_test(
         NAME diffeq_event_error_${error_case}
         COMMAND $<TARGET_FILE:diffeq_event_tests> ${error_case}
