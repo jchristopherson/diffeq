@@ -280,7 +280,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
     if (n < 2) error stop DIFFEQ_ARRAY_SIZE_ERROR
     if (.not.sys%get_is_ode_defined()) error stop DIFFEQ_MISSING_ARGUMENT_ERROR
 
-    ! Ensure dense output is being used if we're solving for events as well
+    ! Ensure interpolation is enabled if we're solving for events as well
     if (find_events) call this%set_dense_output_enabled(.true.)
 
     ! Additional Initialization

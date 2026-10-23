@@ -11,6 +11,8 @@ program diffeq_event_tests
     type(kennedy_carpenter_4) :: integrator_kc4
     type(kennedy_carpenter_5) :: integrator_kc5
     type(rosenbrock) :: integrator_rosenbrock
+    type(adams) :: integrator_adams
+    type(bdf) :: integrator_bdf
     type(ode_container) :: model
     character(len=32) :: test_name
     integer :: callback_count
@@ -118,6 +120,8 @@ program diffeq_event_tests
     call check_integrator_event_detection(integrator_kc4, "Kennedy-Carpenter 4")
     call check_integrator_event_detection(integrator_kc5, "Kennedy-Carpenter 5")
     call check_integrator_event_detection(integrator_rosenbrock, "Rosenbrock")
+    call check_integrator_event_detection(integrator_adams, "Adams")
+    call check_integrator_event_detection(integrator_bdf, "BDF")
 
 contains
     subroutine check(condition, label)
@@ -137,7 +141,7 @@ contains
     end subroutine
 
     subroutine check_integrator_event_detection(solver, solver_name)
-        class(single_step_integrator), intent(inout) :: solver
+        class(ode_integrator), intent(inout) :: solver
         character(len=*), intent(in) :: solver_name
         real(real64), allocatable :: solution(:,:)
         real(real64) :: root
@@ -198,6 +202,21 @@ contains
             solver_name // " reverse event location")
         call check(abs(solution(3,2) - root) < 1.0d-10, &
             solver_name // " reverse event state")
+
+        call solver%clear_buffer()
+        call solver%set_dense_output_enabled(.false.)
+        call solver%set_maximum_step_size(0.05d0)
+        integration_event_root = 0.55d0
+        call solver%solve(model, [0.0d0, 0.1d0, 0.3d0, 0.8d0, 1.0d0], &
+            [0.0d0])
+        solution = solver%get_solution()
+        call check(all(shape(solution) == [4, 2]), &
+            solver_name // " later event output size")
+        call check(maxval(abs(solution(:,1) - &
+            [0.0d0, 0.1d0, 0.3d0, integration_event_root])) < 1.0d-10, &
+            solver_name // " later event preserves requested output")
+        call check(maxval(abs(solution(:,2) - solution(:,1))) < 1.0d-10, &
+            solver_name // " later event state")
     end subroutine
 
     subroutine single_event_callback(x, y, values, args)
