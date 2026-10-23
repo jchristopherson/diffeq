@@ -66,6 +66,17 @@ typedef void (*c_ode_jacobian)(int m, int n, double x, const double *y, double *
 typedef void (*c_ode_mass_matrix)(int n, double x, const double *y, double *m, int ldm);
 
 /**
+ * @brief ODE event handler callback routine.
+ * 
+ * @param neqn The number of event equations.
+ * @param nstates The number of state equations.
+ * @param x The current value of the independent variable.
+ * @param y The current state vector.
+ * @param f The event function values.
+ */
+typedef void (*c_ode_event_function)(int neqn, int nstates, double x, const double *y, double *f);
+
+/**
  * @brief Evaluates algebraic constraint residuals \(g(x,y)\).
  *
  * For \(N\) input state components and \(M\) constraints,

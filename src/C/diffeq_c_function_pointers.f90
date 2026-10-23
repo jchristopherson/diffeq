@@ -106,6 +106,22 @@ module diffeq_c_function_pointers
             real(c_double), intent(out) :: curvature(nconstraints)
                 !! The curvature terms in the order of teh constraint callback.
         end subroutine
+
+        subroutine c_ode_event_function(neqn, nstates, x, y, f)
+            !! Evaluates event functions for ODE event detection.  The solver
+            !! seeks to locate roots for each equation.
+            use iso_c_binding, only : c_int, c_double
+            integer(c_int), intent(in), value :: neqn
+                !! The number of event equations.
+            integer(c_int), intent(in), value :: nstates
+                !! The number of state equations.
+            real(c_double), intent(in), value :: x
+                !! The current value of the independent variable.
+            real(c_double), intent(in) :: y(nstates)
+                !! The current state vector.
+            real(c_double), intent(out) :: f(neqn)
+                !! The event function values.
+        end subroutine
     end interface
 
 end module
