@@ -107,17 +107,32 @@ module diffeq_rosenbrock
 
 contains
 ! ------------------------------------------------------------------------------
-subroutine rbrk_solve(this, sys, x, iv, args)
+subroutine rbrk_solve(this, sys, x, iv, store_iv, args)
     class(rosenbrock), intent(inout) :: this
+        !! The rosenbrock object.
     class(ode_container), intent(inout) :: sys
-    real(real64), intent(in), dimension(:) :: x, iv
+        !! The ode_container object containing the ODE's to integrate.
+    real(real64), intent(in), dimension(:) :: x
+        !! An array of independent variable values at which to return the 
+        !! the solution to the ODE's.
+    real(real64), intent(in), dimension(:) :: iv
+        !! An array containing the initial values for each ODE.
+    logical, intent(in), optional :: store_iv
+        !! An optional input that determines whether or not the 
+        !! initial values are stored as part of the output.  The
+        !! default is true such that the initial values are stored;
+        !! however, set to false to avoid storing the initial values.
+        !! This can be useful in cases of event detection where a 
+        !! restart of the integrator is desired.
     class(*), intent(inout), optional, target :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the differential equation subroutine.
 
     this%m_massComputed = .false.
     this%m_firstStep = .true.
     this%m_rejectStep = .false.
     this%m_hOld = 0.0d0
-    call ssi_ode_solver(this, sys, x, iv, args)
+    call ssi_ode_solver(this, sys, x, iv, store_iv = store_iv, args = args)
 end subroutine
 
 ! ------------------------------------------------------------------------------

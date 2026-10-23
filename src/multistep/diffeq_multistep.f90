@@ -850,7 +850,7 @@ contains
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine mi_ode_solver(this, sys, x, iv, args)
+subroutine mi_ode_solver(this, sys, x, iv, store_iv, args)
     !! Solves the supplied system of ODE's.
     !!
     !! The integration is driven by a predictor-corrector cycle.  Each step
@@ -869,12 +869,20 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
         !! solution is returned at every successful integration step.
     real(real64), intent(in), dimension(:) :: iv
         !! An array containing the initial values for each ODE.
+    logical, intent(in), optional :: store_iv
+        !! An optional input that determines whether or not the 
+        !! initial values are stored as part of the output.  The
+        !! default is true such that the initial values are stored;
+        !! however, set to false to avoid storing the initial values.
+        !! This can be useful in cases of event detection where a 
+        !! restart of the integrator is desired.
     class(*), intent(inout), optional, target :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    logical :: dense, need_dense, converged, forward, find_events, event_found
+    logical :: dense, need_dense, converged, forward, find_events, &
+        event_found, first_successful_step
     integer :: i, j, n, neqn, nsteps, k, nfail, nevents
     real(real64) :: h, xo, xn, xmax, e, minstep, xe
     real(real64), allocatable, dimension(:) :: f, y, yn, fn, fnew, ypred, &
@@ -937,9 +945,14 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
     call this%push_history(xo, y, f)
 
     ! Store the initial conditions
-    call this%append_to_buffer(xo, y)
+    if (present(store_iv)) then
+        if (store_iv) call this%append_to_buffer(xo, y)
+    else
+        call this%append_to_buffer(xo, y)
+    end if
 
     ! Cycle until integration is complete
+    first_successful_step = .true.
     do i = 1, nsteps
         call this%invalidate_dense_output()
         ! The order can never exceed what the stored history will support
@@ -1006,7 +1019,7 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
         call this%log_successful_step()
 
         ! Detect events
-        if (find_events) then
+        if (find_events .and. .not.first_successful_step) then
             event_found = this%event_solver%find_event(sys%event_function, &
                 this, nevents, xo, y, xn, yn, xe, ye, args = args)
             if (event_found) then
@@ -1023,6 +1036,9 @@ subroutine mi_ode_solver(this, sys, x, iv, args)
                 return
             end if
         end if
+
+        ! We've taken at least 1 successful step
+        first_successful_step = .false.
 
         ! Store the results
         if (dense) then

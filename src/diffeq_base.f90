@@ -350,7 +350,7 @@ module diffeq_base
             real(real64), intent(out) :: y(:)
         end subroutine
 
-        subroutine ode_solver(this, sys, x, iv, args)
+        subroutine ode_solver(this, sys, x, iv, store_iv, args)
             !! Solves the supplied system of ODE's.
             use iso_fortran_env
             import ode_integrator
@@ -367,6 +367,13 @@ module diffeq_base
                 !! values.
             real(real64), intent(in), dimension(:) :: iv
                 !! An array containing the initial values for each ODE.
+            logical, intent(in), optional :: store_iv
+                !! An optional input that determines whether or not the 
+                !! initial values are stored as part of the output.  The
+                !! default is true such that the initial values are stored;
+                !! however, set to false to avoid storing the initial values.
+                !! This can be useful in cases of event detection where a 
+                !! restart of the integrator is desired.
             class(*), intent(inout), optional, target :: args
                 !! An optional argument that can be used to pass information
                 !! in and out of the differential equation subroutine.
