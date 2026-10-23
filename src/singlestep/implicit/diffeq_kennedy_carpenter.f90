@@ -126,11 +126,26 @@ module diffeq_kennedy_carpenter
 
 contains
 ! ------------------------------------------------------------------------------
-subroutine kc_solve(this, sys, x, iv, args)
+subroutine kc_solve(this, sys, x, iv, store_iv, args)
     class(kennedy_carpenter), intent(inout) :: this
+        !! The kennedy_carpenter object.
     class(ode_container), intent(inout) :: sys
-    real(real64), intent(in), dimension(:) :: x, iv
+        !! The ode_container object containing the ODE's to integrate.
+    real(real64), intent(in), dimension(:) :: x
+        !! An array of independent variable values at which to return the 
+        !! the solution to the ODE's.
+    real(real64), intent(in), dimension(:) :: iv
+        !! An array containing the initial values for each ODE.
+    logical, intent(in), optional :: store_iv
+        !! An optional input that determines whether or not the 
+        !! initial values are stored as part of the output.  The
+        !! default is true such that the initial values are stored;
+        !! however, set to false to avoid storing the initial values.
+        !! This can be useful in cases of event detection where a 
+        !! restart of the integrator is desired.
     class(*), intent(inout), optional, target :: args
+        !! An optional argument that can be used to pass information
+        !! in and out of the differential equation subroutine.
 
     this%m_massComputed = .false.
     this%m_haveFactor = .false.
@@ -139,7 +154,7 @@ subroutine kc_solve(this, sys, x, iv, args)
     this%m_factorStep = 0.0d0
     if (allocated(this%m_mass)) deallocate(this%m_mass)
     if (allocated(this%m_startDerivative)) deallocate(this%m_startDerivative)
-    call ssi_ode_solver(this, sys, x, iv, args)
+    call ssi_ode_solver(this, sys, x, iv, store_iv = store_iv, args = args)
 end subroutine
 
 ! ------------------------------------------------------------------------------

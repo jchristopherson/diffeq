@@ -52,10 +52,10 @@ program diffeq_dense_output_tests
                 calls = 0
                 if (output_mode == 1) then
                     call solver%solve(model, [0.0d0, direction * 0.4d0], &
-                        [1.0d0, 1.0d0], calls)
+                        [1.0d0, 1.0d0], args=calls)
                 else
                     call solver%solve(model, [0.0d0, direction * 0.2d0, direction * 0.4d0], &
-                        [1.0d0, 1.0d0], calls)
+                        [1.0d0, 1.0d0], args=calls)
                 end if
                 call check(solver%has_dense_output(), "accepted-step availability")
                 call solver%get_dense_interval(x_start, x_end)
@@ -97,13 +97,13 @@ program diffeq_dense_output_tests
 
         ! A new solve without preparation must not expose the preceding interpolant.
         call solver%set_dense_output_enabled(.true.)
-        call solver%solve(model, [0.0d0, 0.4d0], [1.0d0, 1.0d0], calls)
+        call solver%solve(model, [0.0d0, 0.4d0], [1.0d0, 1.0d0], args=calls)
         call check(solver%has_dense_output(), "explicit preparation")
         call solver%set_dense_output_enabled(.false.)
         call check(.not.solver%has_dense_output(), "setting invalidates")
         call solver%clear_buffer()
         call solver%set_maximum_step_size(0.05d0)
-        call solver%solve(model, [0.0d0, 0.4d0], [1.0d0, 1.0d0], calls)
+        call solver%solve(model, [0.0d0, 0.4d0], [1.0d0, 1.0d0], args=calls)
         if (solver%has_dense_output()) then
             call solver%get_dense_interval(x_start, x_end)
             call check(x_end > 0.4d0, "disabled mode prepares only for overshoot")
@@ -113,7 +113,7 @@ program diffeq_dense_output_tests
             saved_calls = merge(1, 0, solver%has_dense_output())
             call solver%clear_buffer()
             call solver%set_dense_output_enabled(.true.)
-            call solver%solve(model, [0.0d0, 0.4d0], [1.0d0, 1.0d0], calls)
+            call solver%solve(model, [0.0d0, 0.4d0], [1.0d0, 1.0d0], args=calls)
             after = solver%get_ode_results()
             call check(before%statistics%successful_steps == after%statistics%successful_steps, &
                 "dense preparation preserves step selection")
@@ -133,7 +133,7 @@ program diffeq_dense_output_tests
                     model%fcn => dae_rhs
                     model%mass_matrix => singular_mass
                 end if
-                call solver%solve(model, [0.0d0, 0.4d0], [1.0d0, 1.0d0], calls)
+                call solver%solve(model, [0.0d0, 0.4d0], [1.0d0, 1.0d0], args=calls)
                 call solver%get_dense_interval(x_start, x_end)
                 do i = 0, 4
                     x_query = x_start + (x_end - x_start) * (i / 4.0d0)
@@ -148,7 +148,7 @@ program diffeq_dense_output_tests
 
         call solver%clear_buffer()
         call solver%set_dense_output_enabled(.true.)
-        call solver%solve(model, [0.0d0, 0.4d0], [1.0d0], calls)
+        call solver%solve(model, [0.0d0, 0.4d0], [1.0d0], args=calls)
         call solver%get_dense_interval(x_start, x_end)
         call solver%evaluate_dense(0.5d0 * (x_start + x_end), wrong_size)
         call check(abs(wrong_size(1) - exp(0.5d0 * (x_start + x_end))) < 3.0d-6, &
@@ -258,7 +258,7 @@ contains
         else
             calls = 0
             call solver%set_dense_output_enabled(.true.)
-            call solver%solve(model, [0.0d0, -0.4d0], [1.0d0, 1.0d0], calls)
+            call solver%solve(model, [0.0d0, -0.4d0], [1.0d0, 1.0d0], args=calls)
             call solver%get_dense_interval(x_start, x_end)
             if (index(name, "size") > 0) then
                 call solver%evaluate_dense(x_end, wrong_size)

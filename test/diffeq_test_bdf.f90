@@ -210,7 +210,7 @@ function test_bdf_stiff_relaxation() result(rst)
     do trial = 1, size(rates)
         rate = rates(trial)
         call integrator%clear_buffer()
-        call integrator%solve(model, grid, [2.0d0], rate)
+        call integrator%solve(model, grid, [2.0d0], args=rate)
         solution = integrator%get_solution()
         if (.not.all(shape(solution) == [point_count, 2])) then
             rst = .false.
@@ -553,7 +553,7 @@ function test_bdf_singular_mass_matrix() result(rst)
 
     ! Compute the solution
     call integrator%solve(mdl, [0.0d0, 1.0d0], &
-        [length, 0.0d0, 0.0d0, 0.0d0, 0.0d0], args)
+        [length, 0.0d0, 0.0d0, 0.0d0, 0.0d0], args=args)
     sol = integrator%get_solution()
     n = size(sol, 1)
 
@@ -609,7 +609,7 @@ function test_bdf_singular_mass_matrix_dense() result(rst)
 
     ! Compute the solution
     call integrator%solve(mdl, t, &
-        [length, 0.0d0, 0.0d0, 0.0d0, 0.0d0], args)
+        [length, 0.0d0, 0.0d0, 0.0d0, 0.0d0], args=args)
     sol = integrator%get_solution()
 
     ! The solution must be returned at the requested points
@@ -658,7 +658,7 @@ function test_bdf_with_args() result(rst)
     call integrator%set_relative_tolerance(1.0d-8)
 
     ! Solve with the parameter supplied through args
-    call integrator%solve(mdl, x, [2.0d0, 0.0d0], mu)
+    call integrator%solve(mdl, x, [2.0d0, 0.0d0], args=mu)
     sol = integrator%get_solution()
 
     ! Solve the equivalent model carrying the parameter internally

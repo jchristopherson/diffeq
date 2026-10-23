@@ -17,6 +17,7 @@ A modern Fortran library providing an object-oriented approach to solving and ex
 | Index-1 differential-algebraic equations (DAEs) | Solve supported singular-mass-matrix systems with consistent initial conditions. |
 | Holonomically constrained mechanics | Use a stabilized index-1 GGL-inspired formulation with position and velocity constraint residual damping. |
 | Dense output | Request a specified output grid or evaluate the last prepared accepted step through a common solver interface. |
+| Event detection | Stop integration at zero crossings of user-defined event functions, then restart with updated initial conditions if needed. |
 | Solution diagnostics | Retrieve step counts, function and Jacobian evaluations, and matrix-factorization statistics. |
 | C interoperability | Integrate from C through the library's C API. |
 
@@ -130,7 +131,8 @@ integrators:
 | `model%fcn` | Defines $f(x,y)$ for the problem. This callback is required. |
 | `model%jacobian` | Supplies $J = \partial f / \partial y$. If omitted, DIFFEQ estimates it by finite differences where needed. |
 | `model%mass_matrix` | Supplies $M(x,y)$ for a system written as $M y' = f(x,y)$. It is supported by the Rosenbrock, Kennedy-Carpenter, BDF, and Adams solvers. Only Adams requires $M$ to be nonsingular. |
-| `integrator%solve(model, x, y0)` | Integrates from `x(1)` to `x(size(x))` using initial state `y0`. |
+| `model%event_function` | Supplies one or more event values; DIFFEQ locates zero crossings and stops the solve at a detected event. Set the number of event values with `model%set_event_equation_count(count)`. |
+| `integrator%solve(model, x, y0, store_iv)` | Integrates from `x(1)` to `x(size(x))` using initial state `y0`. The optional `store_iv` defaults to true; set it to false when restarting at an event already present in the result buffer. |
 | `integrator%get_solution()` | Returns an $N \times (n+1)$ array with the independent variable in column 1 and state values in columns 2 through $n+1$. |
 | `integrator%get_ode_results()` | Returns an `ode_results` container that provides the solution and statistics on integrator performance, including step counts and function, Jacobian, and matrix-factorization evaluations. |
 | `integrator%set_dense_output_enabled(enabled)` | Opts into dense-output preparation on every accepted step. The default is false. |
@@ -648,6 +650,50 @@ The two multi-step methods make a useful counterpoint, because this problem is c
 Step counts are especially misleading for `adams`, which uses neither a Jacobian nor a linear solve.  It takes 1132 successful steps and 2336 function evaluations here, whereas `kennedy_carpenter_5` takes only 245 successful steps but requires 9278 function evaluations, 173 Jacobian evaluations, and 315 matrix factorizations.  The function-evaluation count makes this difference visible without assuming a fixed number of evaluations per step.  Comparing failed steps as well as successful steps exposes retries, while Jacobian evaluations and matrix factorizations distinguish some of the extra work done by the implicit methods.  These counters complement one another, but a ranking by wall-clock time still requires timing the same problem at comparable accuracy.
 
 The final result illustrates the PI step-size controller.  Applying it to `runge_kutta_45` raises the successful-step count from 582 to 1106, but reduces failed steps from 87 to zero for this problem.  Function evaluations nevertheless increase from 4015 to 6637.  The statistics make this tradeoff explicit: a smoother sequence of step sizes can avoid retries while still requiring more accepted steps and more model evaluations overall.  This can be valuable when the error estimate is noisy or when stability rather than accuracy is limiting the step, but fewer failed steps alone do not establish greater efficiency.  Stability is not a concern for this problem, so the controller is shown here purely for illustration.  PI control is disabled by default and must be requested explicitly.  Note that the controller applies to the single-step integrators; `rosenbrock` and the two multi-step methods use step-size estimators of their own.
+
+### Event Detection
+
+[event_detection_example.f90](examples/event_detection_example.f90) models a
+bouncing ball with mass $m$ and height $y$. During each flight, the equations
+of motion are
+
+$$
+\dot{y} = v, \qquad \dot{v} = -g,
+$$
+
+where $v$ is the vertical velocity and $g$ is gravitational acceleration. The
+event callback returns the height $y$, so the integrator locates the zero
+crossing at ground contact and stops the solve at the impact time. The example
+then applies a coefficient of restitution $k = 0.7$ to reverse and reduce the
+velocity, $v_{\mathrm{after}} = -k v_{\mathrm{before}}$, and restarts the
+integration from the impact state. Setting `store_iv = .false.` on each
+restart avoids storing the impact state a second time:
+
+```fortran
+model%fcn => ball
+model%event_function => ball_ground_constraint
+call model%set_event_equation_count(1)
+
+call integrator%solve(model, [0.0d0, 10.0d0], [initial_height, initial_velocity])
+sol = integrator%get_solution()
+
+! Restart at impact, preserving the impact point already in the solution.
+v = sol(size(sol, 1), 3)
+ic = [0.0d0, -k * v]
+t(1) = sol(size(sol, 1), 1)
+call integrator%solve(model, t, ic, store_iv = .false.)
+```
+
+The complete example repeats this restart for another bounce and plots the
+height, kinetic energy $K = \frac{1}{2}mv^2$, potential energy $U = mgy$, and 
+the sum of the kinetic and potential energy.  During each flight, kinetic and 
+potential energy trade off as the ball rises and falls. At impact the height 
+(and thus potential energy) returns to zero, while kinetic energy drops 
+abruptly: because $K$ is proportional to $v^2$, the rebound retains $k^2 = 0.49$ 
+of the pre-impact kinetic energy, losing about 51% at each bounce. The resulting 
+lower rebounds are visible in both plots:
+
+![](images/event_detection_example.png?raw=true)
 
 ### Differential-Algebraic Equations
 This example illustrates the solution of a differential-algebraic equation (DAE) by means of a singular mass matrix.  The model is a simple pendulum expressed in Cartesian coordinates.  A mass $m$ swings from a pivot at the origin on a rigid, massless rod of length $L$, so the position of the mass $(x, y)$ must satisfy the constraint

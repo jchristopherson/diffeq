@@ -247,7 +247,7 @@ end subroutine
 ! ******************************************************************************
 ! SINGLE-STEP INTEGRATOR
 ! ------------------------------------------------------------------------------
-subroutine ssi_ode_solver(this, sys, x, iv, args)
+subroutine ssi_ode_solver(this, sys, x, iv, store_iv, args)
     !! Solves the supplied system of ODE's.
     class(single_step_integrator), intent(inout) :: this
         !! The single_step_integrator object.
@@ -258,12 +258,20 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
         !! the solution to the ODE's.
     real(real64), intent(in), dimension(:) :: iv
         !! An array containing the initial values for each ODE.
+    logical, intent(in), optional :: store_iv
+        !! An optional input that determines whether or not the 
+        !! initial values are stored as part of the output.  The
+        !! default is true such that the initial values are stored;
+        !! however, set to false to avoid storing the initial values.
+        !! This can be useful in cases of event detection where a 
+        !! restart of the integrator is desired.
     class(*), intent(inout), optional, target :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    logical :: dense, need_dense, success, forward, find_events, event_found
+    logical :: dense, need_dense, success, forward, find_events, event_found, &
+        first_successful_step
     integer :: i, j, n, neqn, nsteps, nstages, nevents
     real(real64) :: h, xo, xn, xmax, ei, eold, xe
     real(real64), allocatable, dimension(:) :: f, y, yn, fn, yerr, yi, ye
@@ -314,10 +322,15 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
     call this%estimate_inital_step_size(sys, xo, xmax, iv, f, h, args)
     
     ! Store the initial conditions
-    call this%append_to_buffer(x(1), iv)
+    if (present(store_iv)) then
+        if (store_iv) call this%append_to_buffer(x(1), iv)
+    else
+        call this%append_to_buffer(x(1), iv)
+    end if
     y = iv
 
     ! Cycle until integration is complete
+    first_successful_step = .true.
     do i = 1, nsteps
         call this%invalidate_dense_output()
         ! Perform any pre-step actions
@@ -349,7 +362,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
         call this%log_successful_step()
 
         ! Detect events
-        if (find_events) then
+        if (find_events .and. .not.first_successful_step) then
             event_found = this%event_solver%find_event(sys%event_function, &
                 this, nevents, xo, y, xn, yn, xe, ye, args = args)
             if (event_found) then
@@ -383,6 +396,9 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
             ! Store the values and move on
             call this%append_to_buffer(xn, yn)
         end if
+
+        ! We've taken at least 1 successful step
+        first_successful_step = .false.
 
         ! Are we done?
         if ((xmax - x(1)) * (xn - xmax) >= 0.0d0) then
