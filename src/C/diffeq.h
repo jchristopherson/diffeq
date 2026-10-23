@@ -77,15 +77,15 @@ typedef void (*c_ode_mass_matrix)(int n, double x, const double *y, double *m, i
 typedef void (*c_ode_event_function)(int neqn, int nstates, double x, const double *y, double *f);
 
 /**
- * @brief Evaluates algebraic constraint residuals \(g(x,y)\).
+ * @brief Evaluates algebraic constraint residuals @f$g(x,y)@f$.
  *
- * For \(N\) input state components and \(M\) constraints,
+ * For @f$N@f$ input state components and @f$M@f$ constraints,
  * the callback represents a mapping
- * \[
+ * @f[
  * g : \mathbb{R}\times\mathbb{R}^{N}
  * \longrightarrow \mathbb{R}^{M}.
- * \]
- * A consistent state satisfies \(g(x,y)=0\). Return the
+ * @f]
+ * A consistent state satisfies @f$g(x,y)=0@f$. Return the
  * residuals themselves, not their derivatives, a Boolean result,
  * or a projected state. A nonzero residual is a valid evaluation
  * at an inconsistent state, rather than a callback failure.
@@ -107,9 +107,9 @@ typedef void (*c_dae_algebraic_constraints)(int nconstraints, int nstates,
     double x, const double *y, double *g);
 
 /**
- * @brief Evaluates \(DG(q)[\mathrm{direction}]v\), without including
- * \(G\dot v\). Each component is
- * \(\mathrm{direction}^T\nabla^2 g_i(q)v\).
+ * @brief Evaluates @f$DG(q)[\mathrm{direction}]v@f$, without including
+ * @f$G\dot v@f$. Each component is
+ * @f$\mathrm{direction}^T\nabla^2 g_i(q)v@f$.
  * Assign every output element. For linear constraints return
  * zeros. The callback must support off-manifold coordinates and
  * arbitrary directions used during nonlinear/Jacobian evaluation.
@@ -118,7 +118,7 @@ typedef void (*c_dae_algebraic_constraints)(int nconstraints, int nstates,
  * @param nstates The number of state variables.
  * @param x The current value of the independent variable.
  * @param q The current coordinate vector.
- * @param direction The coordinate derivative \(\dot q\), including the 
+ * @param direction The coordinate derivative @f$\dot q@f$, including the
  * kinematic multiplier correction.
  * @param v The physical velocity components.
  * @param curvature The curvature terms in the order of teh constraint callback.
@@ -191,24 +191,24 @@ typedef struct {
  * with the stabilized index-1 Gear-Gupta-Leimkuhler (GGL) formulation.
  *
  * For N coordinates and M constraints the integrated state is
- * \(z = [q_N, v_N, \lambda_M, \mu_M]^T\), so the @p nstates argument supplied
- * to the DAE integrators must equal \(2(N + M)\), and the initial conditions
+ * @f$z = [q_N, v_N, \lambda_M, \mu_M]^T@f$, so the @p nstates argument supplied
+ * to the DAE integrators must equal @f$2(N + M)@f$, and the initial conditions
  * must use this ordering.  The model is
- * \[
+ * @f[
  * \dot q = v + G^T\mu, \qquad M(q)\dot v = F(x,q,v) - G^T\lambda,
- * \]
- * \[
+ * @f]
+ * @f[
  * 0 = G\dot q + \alpha g, \qquad
  * 0 = DG(q)[\dot q]v + GM^{-1}(F - G^T\lambda) + \beta Gv,
- * \]
- * where \(g(q)\) are the position constraints and
- * \(G = \partial g / \partial q\).  Every callback must accept perturbed,
+ * @f]
+ * where @f$g(q)@f$ are the position constraints and
+ * @f$G = \partial g / \partial q@f$.  Every callback must accept perturbed,
  * off-manifold states, and the constraint callbacks must not depend on the
  * independent variable.
  */
 typedef struct {
     /**
-     * Required callback computing the applied force \(F(x,q,v)\), excluding
+     * Required callback computing the applied force @f$F(x,q,v)@f$, excluding
      * multiplier forces.  It is called with n = 2N and receives the
      * 2N-element vector [q, v], but must write only the N-element force
      * vector.
@@ -229,17 +229,17 @@ typedef struct {
     c_ode_mass_matrix mass;
     /**
      * Required callback receiving the N-element coordinate vector q and
-     * writing the M position constraint residuals \(g(q)\).
+     * writing the M position constraint residuals @f$g(q)@f$.
      */
     c_dae_algebraic_constraints constraints;
     /**
      * Required callback receiving the N-element coordinate vector q and
-     * writing the M-by-N constraint Jacobian \(G = \partial g / \partial q\)
-     * in column-major order.  The rows of \(G\) must be linearly independent.
+     * writing the M-by-N constraint Jacobian @f$G = \partial g / \partial q@f$
+     * in column-major order.  The rows of @f$G@f$ must be linearly independent.
      */
     c_ode_jacobian gradient;
     /**
-     * Required callback computing the M curvature terms \(DG(q)[\dot q]v\).
+     * Required callback computing the M curvature terms @f$DG(q)[\dot q]v@f$.
      * Return zeros for linear constraints.
      */
     c_dae_constraint_curvature curvature;
