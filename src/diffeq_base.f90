@@ -732,9 +732,9 @@ end subroutine
 
 ! ------------------------------------------------------------------------------
 pure function oi_get_control_parameter(this) result(rst)
-    !! Gets the step size control parameter \f$ \beta \f$ used for PI control of 
+    !! Gets the step size control parameter \f$ \beta \f$ used for PI control of
     !! the step size.  A value of 0 provides a default step size controller
-    !! (non-PI); however, a nonzero value of \f$ \beta \f$ provides PI control 
+    !! (non-PI); however, a nonzero value of \f$ \beta \f$ provides PI control
     !! that improves stability, but comes with a potential for efficiency loss.
     !! A good estimate for a starting point for this parameter is \f$ \beta =
     !! \frac{0.4}{k} \f$ where \f$ k \f$ is the order of the integrator.
@@ -750,9 +750,9 @@ end function
 
 ! --------------------
 subroutine oi_set_control_parameter(this, x)
-    !! Sets the step size control parameter \f$ \beta \f$ used for PI control of 
+    !! Sets the step size control parameter \f$ \beta \f$ used for PI control of
     !! the step size.  A value of 0 provides a default step size controller
-    !! (non-PI); however, a nonzero value of \f$ \beta \f$ provides PI control 
+    !! (non-PI); however, a nonzero value of \f$ \beta \f$ provides PI control
     !! that improves stability, but comes with a potential for efficiency loss.
     !! A good estimate for a starting point for this parameter is \f$ \beta =
     !! \frac{0.4}{k} \f$ where \f$ k \f$ is the order of the integrator.
