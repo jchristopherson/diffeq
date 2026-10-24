@@ -1043,7 +1043,8 @@ contains
 ! EVENT HANDLING ODE SOLVERS
 ! ------------------------------------------------------------------------------
     function c_integrate_ode_events(method, nx, nstates, nevents, fcn, x, &
-        initcond, settings, esettings, efcn, output, jac, mass) result(rst)
+        initcond, settings, esettings, efcn, output, estats, jac, mass) &
+        result(rst)
         integer(c_int), intent(in) :: method
             !! The integrator to use.
         integer(c_int), intent(in) :: nx
@@ -1069,6 +1070,8 @@ contains
         type(c_ptr), intent(out) :: output
             !! The output c_ode_results object.  Memory must be freed by 
             !! c_free_ode_results.
+        type(c_ode_event_statistics), intent(out) :: estats
+            !! Event detection statistics.
         procedure(c_ode_jacobian), intent(in), pointer, optional :: jac
             !! A pointer to the Jacobian calculation routine.  If not supplied,
             !! a finite difference approach is utilized if a Jacobian matrix
@@ -1167,6 +1170,7 @@ contains
         call integrator%solve(model, x, initcond)
         ode_output = integrator%get_ode_results()
         call c_create_ode_results(output, ode_output)
+        estats = integrator%event_solver%solver_statistics
 
     contains
         subroutine internal_ode(x_, y_, dydx_, args_)
@@ -1204,7 +1208,7 @@ contains
 
 ! ------------------------------------------------------------------------------
     function c_runge_kutta_23_events(nx, nstates, nevents, fcn, x, initcond, &
-        settings, esettings, efcn, output) result(rst) &
+        settings, esettings, efcn, output, estats) result(rst) &
         bind(C, name = "c_runge_kutta_23_events")
         !! Utilizes the 3rd order Bogacki-Shampine Runge-Kutta integrator to 
         !! solve a system of first order differential equations.
@@ -1231,6 +1235,8 @@ contains
         type(c_ptr), intent(out) :: output
             !! The output c_ode_results object.  Memory must be freed by 
             !! c_free_ode_results.
+        type(c_ode_event_statistics), intent(out) :: estats
+            !! Event detection solver results and statistics.
         integer(c_int) :: rst
             !! An error flag denoting the status of the operation.
 
@@ -1247,13 +1253,13 @@ contains
         else
             event_ptr => null()
         end if
-        rst = c_integrate_ode_events(C_RK23, nx, nstates, nevents, fcn_ptr, x, initcond, &
-            settings, esettings, event_ptr, output)
+        rst = c_integrate_ode_events(C_RK23, nx, nstates, nevents, fcn_ptr, x, &
+            initcond, settings, esettings, event_ptr, output, estats)
     end function
 
 ! ------------------------------------------------------------------------------
     function c_runge_kutta_45_events(nx, nstates, nevents, fcn, x, initcond, &
-        settings, esettings, efcn, output) result(rst) &
+        settings, esettings, efcn, output, estats) result(rst) &
         bind(C, name = "c_runge_kutta_45_events")
         !! Utilizes the 5th order Dormand-Prince Runge-Kutta integrator to 
         !! solve a system of first order differential equations.
@@ -1280,6 +1286,8 @@ contains
         type(c_ptr), intent(out) :: output
             !! The output c_ode_results object.  Memory must be freed by 
             !! c_free_ode_results.
+        type(c_ode_event_statistics), intent(out) :: estats
+            !! Event detection solver results and statistics.
         integer(c_int) :: rst
             !! An error flag denoting the status of the operation.
 
@@ -1296,13 +1304,13 @@ contains
             event_ptr => null()
         end if
         call c_f_procpointer(fcn, fcn_ptr)
-        rst = c_integrate_ode_events(C_RK45, nx, nstates, nevents, fcn_ptr, x, initcond, &
-            settings, esettings, event_ptr, output)
+        rst = c_integrate_ode_events(C_RK45, nx, nstates, nevents, fcn_ptr, x, &
+            initcond, settings, esettings, event_ptr, output, estats)
     end function
 
 ! ------------------------------------------------------------------------------
     function c_runge_kutta_853_events(nx, nstates, nevents, fcn, x, initcond, &
-        settings, esettings, efcn, output) result(rst) &
+        settings, esettings, efcn, output, estats) result(rst) &
         bind(C, name = "c_runge_kutta_853_events")
         !! Utilizes the 8th order Hairer Runge-Kutta integrator to 
         !! solve a system of first order differential equations.
@@ -1329,6 +1337,8 @@ contains
         type(c_ptr), intent(out) :: output
             !! The output c_ode_results object.  Memory must be freed by 
             !! c_free_ode_results.
+        type(c_ode_event_statistics), intent(out) :: estats
+            !! Event detection solver results and statistics.
         integer(c_int) :: rst
             !! An error flag denoting the status of the operation.
 
@@ -1345,13 +1355,13 @@ contains
             event_ptr => null()
         end if
         call c_f_procpointer(fcn, fcn_ptr)
-        rst = c_integrate_ode_events(C_RK853, nx, nstates, nevents, fcn_ptr, x, initcond, &
-            settings, esettings, event_ptr, output)
+        rst = c_integrate_ode_events(C_RK853, nx, nstates, nevents, fcn_ptr, &
+            x, initcond, settings, esettings, event_ptr, output, estats)
     end function
 
 ! ------------------------------------------------------------------------------
     function c_tsitouras_events(nx, nstates, nevents, fcn, x, initcond, &
-        settings, esettings, efcn, output) result(rst) &
+        settings, esettings, efcn, output, estats) result(rst) &
         bind(C, name = "c_tsitouras_events")
         !! Utilizes the 5th order Tsitouras Runge-Kutta integrator to 
         !! solve a system of first order differential equations.
@@ -1378,6 +1388,8 @@ contains
         type(c_ptr), intent(out) :: output
             !! The output c_ode_results object.  Memory must be freed by 
             !! c_free_ode_results.
+        type(c_ode_event_statistics), intent(out) :: estats
+            !! Event detection solver results and statistics.
         integer(c_int) :: rst
             !! An error flag denoting the status of the operation.
 
@@ -1394,13 +1406,13 @@ contains
             event_ptr => null()
         end if
         call c_f_procpointer(fcn, fcn_ptr)
-        rst = c_integrate_ode_events(C_TSIT, nx, nstates, nevents, fcn_ptr, x, initcond, &
-            settings, esettings, event_ptr, output)
+        rst = c_integrate_ode_events(C_TSIT, nx, nstates, nevents, fcn_ptr, x, &
+            initcond, settings, esettings, event_ptr, output, estats)
     end function
 
 ! ------------------------------------------------------------------------------
     function c_adams_events(nx, nstates, nevents, fcn, x, initcond, settings, &
-        esettings, efcn, mass, output) result(rst) &
+        esettings, efcn, mass, output, estats) result(rst) &
         bind(C, name = "c_adams_events")
         !! Utilizes a variable order Adams predictor-corrector integrator to 
         !! solve a system of first order differential equations.
@@ -1431,6 +1443,8 @@ contains
         type(c_ptr), intent(out) :: output
             !! The output c_ode_results object.  Memory must be freed by 
             !! c_free_ode_results.
+        type(c_ode_event_statistics), intent(out) :: estats
+            !! Event detection solver results and statistics.
         integer(c_int) :: rst
             !! An error flag denoting the status of the operation.
 
@@ -1454,17 +1468,19 @@ contains
         end if
 
         if (use_mass) then
-            rst = c_integrate_ode_events(C_ADMS, nx, nstates, nevents, fcn_ptr, x, initcond, &
-                settings, esettings, event_ptr, output, mass = mass_ptr)
+            rst = c_integrate_ode_events(C_ADMS, nx, nstates, nevents, &
+                fcn_ptr, x, initcond, settings, esettings, event_ptr, &
+                output, estats, mass = mass_ptr)
         else
-            rst = c_integrate_ode_events(C_ADMS, nx, nstates, nevents, fcn_ptr, x, initcond, &
-                settings, esettings, event_ptr, output)
+            rst = c_integrate_ode_events(C_ADMS, nx, nstates, nevents, &
+                fcn_ptr, x, initcond, settings, esettings, event_ptr, output, &
+                estats)
         end if
     end function
 
 ! ------------------------------------------------------------------------------
     function c_rosenbrock_events(nx, nstates, nevents, fcn, x, initcond, &
-        settings, esettings, efcn, jac, mass, output) result(rst) &
+        settings, esettings, efcn, jac, mass, output, estats) result(rst) &
         bind(C, name = "c_rosenbrock_events")
         !! Utilizes a 4th order Rosenbrock integrator to solve a system of 
         !! first order differential equations or index-1 differential 
@@ -1499,6 +1515,8 @@ contains
         type(c_ptr), intent(out) :: output
             !! The output c_ode_results object.  Memory must be freed by 
             !! c_free_ode_results.
+        type(c_ode_event_statistics), intent(out) :: estats
+            !! Event detection solver results and statistics.
         integer(c_int) :: rst
             !! An error flag denoting the status of the operation.
 
@@ -1527,24 +1545,28 @@ contains
         end if
 
         if (use_jac .and. use_mass) then
-            rst = c_integrate_ode_events(C_RBRK, nx, nstates, nevents, fcn_ptr, x, initcond, &
-                settings, esettings, event_ptr, output, jac = jac_ptr, mass = mass_ptr)
+            rst = c_integrate_ode_events(C_RBRK, nx, nstates, nevents, &
+                fcn_ptr, x, initcond, settings, esettings, event_ptr, output, &
+                estats, jac = jac_ptr, mass = mass_ptr)
         else if (use_jac .and. .not.use_mass) then
-            rst = c_integrate_ode_events(C_RBRK, nx, nstates, nevents, fcn_ptr, x, initcond, &
-                settings, esettings, event_ptr, output, jac = jac_ptr)
+            rst = c_integrate_ode_events(C_RBRK, nx, nstates, nevents, &
+                fcn_ptr, x, initcond, settings, esettings, event_ptr, output, &
+                estats, jac = jac_ptr)
         else if (.not.use_jac .and. use_mass) then
-            rst = c_integrate_ode_events(C_RBRK, nx, nstates, nevents, fcn_ptr, x, initcond, &
-                settings, esettings, event_ptr, output, mass = mass_ptr)
+            rst = c_integrate_ode_events(C_RBRK, nx, nstates, nevents, &
+                fcn_ptr, x, initcond, settings, esettings, event_ptr, output, &
+                estats, mass = mass_ptr)
         else
-            rst = c_integrate_ode_events(C_RBRK, nx, nstates, nevents, fcn_ptr, x, initcond, &
-                settings, esettings, event_ptr, output)
+            rst = c_integrate_ode_events(C_RBRK, nx, nstates, nevents, &
+                fcn_ptr, x, initcond, settings, esettings, event_ptr, output, &
+                estats)
         end if
     end function
 
 ! ------------------------------------------------------------------------------
     function c_kennedy_carpenter_4_events(nx, nstates, nevents, fcn, x, &
-        initcond, settings, esettings, efcn, jac, mass, output) result(rst) &
-        bind(C, name = "c_kennedy_carpenter_4_events")
+        initcond, settings, esettings, efcn, jac, mass, output, estats) &
+        result(rst) bind(C, name = "c_kennedy_carpenter_4_events")
         !! Utilizes a 4th order Kennedy-Carpenter integrator to solve a system 
         !! of first order differential equations or index-1 differential 
         !! algebraic equations.
@@ -1578,6 +1600,8 @@ contains
         type(c_ptr), intent(out) :: output
             !! The output c_ode_results object.  Memory must be freed by 
             !! c_free_ode_results.
+        type(c_ode_event_statistics), intent(out) :: estats
+            !! Event detection solver results and statistics.
         integer(c_int) :: rst
             !! An error flag denoting the status of the operation.
 
@@ -1606,24 +1630,28 @@ contains
         end if
 
         if (use_jac .and. use_mass) then
-            rst = c_integrate_ode_events(C_KCARP4, nx, nstates, nevents, fcn_ptr, x, initcond, &
-                settings, esettings, event_ptr, output, jac = jac_ptr, mass = mass_ptr)
+            rst = c_integrate_ode_events(C_KCARP4, nx, nstates, nevents, &
+                fcn_ptr, x, initcond, settings, esettings, event_ptr, output, &
+                estats, jac = jac_ptr, mass = mass_ptr)
         else if (use_jac .and. .not.use_mass) then
-            rst = c_integrate_ode_events(C_KCARP4, nx, nstates, nevents, fcn_ptr, x, initcond, &
-                settings, esettings, event_ptr, output, jac = jac_ptr)
+            rst = c_integrate_ode_events(C_KCARP4, nx, nstates, nevents, &
+                fcn_ptr, x, initcond, settings, esettings, event_ptr, output, &
+                estats, jac = jac_ptr)
         else if (.not.use_jac .and. use_mass) then
-            rst = c_integrate_ode_events(C_KCARP4, nx, nstates, nevents, fcn_ptr, x, initcond, &
-                settings, esettings, event_ptr, output, mass = mass_ptr)
+            rst = c_integrate_ode_events(C_KCARP4, nx, nstates, nevents, &
+                fcn_ptr, x, initcond, settings, esettings, event_ptr, output, &
+                estats, mass = mass_ptr)
         else
-            rst = c_integrate_ode_events(C_KCARP4, nx, nstates, nevents, fcn_ptr, x, initcond, &
-                settings, esettings, event_ptr, output)
+            rst = c_integrate_ode_events(C_KCARP4, nx, nstates, nevents, &
+                fcn_ptr, x, initcond, settings, esettings, event_ptr, output, &
+                estats)
         end if
     end function
 
 ! ------------------------------------------------------------------------------
     function c_kennedy_carpenter_5_events(nx, nstates, nevents, fcn, x, &
-        initcond, settings, esettings, efcn, jac, mass, output) result(rst) &
-        bind(C, name = "c_kennedy_carpenter_5_events")
+        initcond, settings, esettings, efcn, jac, mass, output, estats) &
+        result(rst) bind(C, name = "c_kennedy_carpenter_5_events")
         !! Utilizes a 5th order Kennedy-Carpenter integrator to solve a system 
         !! of first order differential equations or index-1 differential 
         !! algebraic equations.
@@ -1657,6 +1685,8 @@ contains
         type(c_ptr), intent(out) :: output
             !! The output c_ode_results object.  Memory must be freed by 
             !! c_free_ode_results.
+        type(c_ode_event_statistics), intent(out) :: estats
+            !! Event detection solver results and statistics.
         integer(c_int) :: rst
             !! An error flag denoting the status of the operation.
 
@@ -1685,23 +1715,27 @@ contains
         end if
 
         if (use_jac .and. use_mass) then
-            rst = c_integrate_ode_events(C_KCARP5, nx, nstates, nevents, fcn_ptr, x, initcond, &
-                settings, esettings, event_ptr, output, jac = jac_ptr, mass = mass_ptr)
+            rst = c_integrate_ode_events(C_KCARP5, nx, nstates, nevents, &
+                fcn_ptr, x, initcond, settings, esettings, event_ptr, output, &
+                estats, jac = jac_ptr, mass = mass_ptr)
         else if (use_jac .and. .not.use_mass) then
-            rst = c_integrate_ode_events(C_KCARP5, nx, nstates, nevents, fcn_ptr, x, initcond, &
-                settings, esettings, event_ptr, output, jac = jac_ptr)
+            rst = c_integrate_ode_events(C_KCARP5, nx, nstates, nevents, &
+                fcn_ptr, x, initcond, settings, esettings, event_ptr, output, &
+                estats, jac = jac_ptr)
         else if (.not.use_jac .and. use_mass) then
-            rst = c_integrate_ode_events(C_KCARP5, nx, nstates, nevents, fcn_ptr, x, initcond, &
-                settings, esettings, event_ptr, output, mass = mass_ptr)
+            rst = c_integrate_ode_events(C_KCARP5, nx, nstates, nevents, &
+                fcn_ptr, x, initcond, settings, esettings, event_ptr, output, &
+                estats, mass = mass_ptr)
         else
-            rst = c_integrate_ode_events(C_KCARP5, nx, nstates, nevents, fcn_ptr, x, initcond, &
-                settings, esettings, event_ptr, output)
+            rst = c_integrate_ode_events(C_KCARP5, nx, nstates, nevents, &
+                fcn_ptr, x, initcond, settings, esettings, event_ptr, output, &
+                estats)
         end if
     end function
 
 ! ------------------------------------------------------------------------------
     function c_bdf_events(nx, nstates, nevents, fcn, x, initcond, settings, &
-        esettings, efcn, jac, mass, output) result(rst) &
+        esettings, efcn, jac, mass, output, estats) result(rst) &
         bind(C, name = "c_bdf_events")
         !! Utilizes a variable order BDF integrator to solve a system of 
         !! first order differential equations or index-1 differential 
@@ -1736,6 +1770,8 @@ contains
         type(c_ptr), intent(out) :: output
             !! The output c_ode_results object.  Memory must be freed by 
             !! c_free_ode_results.
+        type(c_ode_event_statistics), intent(out) :: estats
+            !! Event detection solver results and statistics.
         integer(c_int) :: rst
             !! An error flag denoting the status of the operation.
 
@@ -1764,17 +1800,21 @@ contains
         end if
 
         if (use_jac .and. use_mass) then
-            rst = c_integrate_ode_events(C_BACKDIFF, nx, nstates, nevents, fcn_ptr, x, &
-                initcond, settings, esettings, event_ptr, output, jac = jac_ptr, mass = mass_ptr)
+            rst = c_integrate_ode_events(C_BACKDIFF, nx, nstates, nevents, &
+                fcn_ptr, x, initcond, settings, esettings, event_ptr, output, &
+                estats, jac = jac_ptr, mass = mass_ptr)
         else if (use_jac .and. .not.use_mass) then
-            rst = c_integrate_ode_events(C_BACKDIFF, nx, nstates, nevents, fcn_ptr, x, &
-                initcond, settings, esettings, event_ptr, output, jac = jac_ptr)
+            rst = c_integrate_ode_events(C_BACKDIFF, nx, nstates, nevents, &
+                fcn_ptr, x, initcond, settings, esettings, event_ptr, output, &
+                estats, jac = jac_ptr)
         else if (.not.use_jac .and. use_mass) then
-            rst = c_integrate_ode_events(C_BACKDIFF, nx, nstates, nevents, fcn_ptr, x, &
-                initcond, settings, esettings, event_ptr, output, mass = mass_ptr)
+            rst = c_integrate_ode_events(C_BACKDIFF, nx, nstates, nevents, &
+                fcn_ptr, x, initcond, settings, esettings, event_ptr, output, &
+                estats, mass = mass_ptr)
         else
-            rst = c_integrate_ode_events(C_BACKDIFF, nx, nstates, nevents, fcn_ptr, x, &
-                initcond, settings, esettings, event_ptr, output)
+            rst = c_integrate_ode_events(C_BACKDIFF, nx, nstates, nevents, &
+                fcn_ptr, x, initcond, settings, esettings, event_ptr, output, &
+                estats)
         end if
     end function
 
