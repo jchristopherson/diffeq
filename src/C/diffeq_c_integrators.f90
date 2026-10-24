@@ -1154,8 +1154,10 @@ contains
         mass_matrix_dependent = .not.settings%mass_matrix_constant
         call model%set_is_mass_matrix_dependent(mass_matrix_dependent)
         
-        model%event_function => internal_events
-        call model%set_event_equation_count(nevents)
+        if (associated(efcn) .and. nevents > 0) then
+            model%event_function => internal_events
+            call model%set_event_equation_count(nevents)
+        end if
         call integrator%event_solver%set_max_allowed_iterations(esettings%max_allowed_iterations)
         call integrator%event_solver%set_solver_tolerance(esettings%tolerance)
 
