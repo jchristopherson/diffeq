@@ -131,6 +131,17 @@ foreach(integrator rk23 rk45 rk853 tsitouras adams rosenbrock kc4 kc5 bdf)
     )
 endforeach()
 
+add_executable(diffeq_c_event_tests diffeq_c_event_tests.c)
+target_include_directories(diffeq_c_event_tests PRIVATE ${PROJECT_SOURCE_DIR}/src/C)
+target_link_libraries(diffeq_c_event_tests diffeq)
+foreach(integrator rk23 rk45 rk853 tsitouras adams rosenbrock kc4 kc5 bdf)
+    add_test(
+        NAME diffeq_c_${integrator}_events
+        WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+        COMMAND $<TARGET_FILE:diffeq_c_event_tests> ${integrator}
+    )
+endforeach()
+
 add_executable(diffeq_c_rosenbrock_tests diffeq_c_rosenbrock_tests.c)
 target_include_directories(diffeq_c_rosenbrock_tests PRIVATE ${PROJECT_SOURCE_DIR}/src/C)
 target_link_libraries(diffeq_c_rosenbrock_tests diffeq)
@@ -175,6 +186,14 @@ if (${BUILD_SHARED_LIBS} AND WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy
         $<TARGET_RUNTIME_DLLS:diffeq_event_tests>
         $<TARGET_FILE_DIR:diffeq_event_tests>
+        COMMAND_EXPAND_LISTS
+    )
+    add_custom_command(
+        TARGET diffeq_c_event_tests
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        $<TARGET_RUNTIME_DLLS:diffeq_c_event_tests>
+        $<TARGET_FILE_DIR:diffeq_c_event_tests>
         COMMAND_EXPAND_LISTS
     )
 endif()
