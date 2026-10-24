@@ -882,7 +882,7 @@ subroutine mi_ode_solver(this, sys, x, iv, store_iv, args)
 
     ! Local Variables
     logical :: dense, need_dense, converged, forward, find_events, &
-        event_found, first_successful_step
+        event_found
     integer :: i, j, n, neqn, nsteps, k, nfail, nevents
     real(real64) :: h, xo, xn, xmax, e, minstep, xe
     real(real64), allocatable, dimension(:) :: f, y, yn, fn, fnew, ypred, &
@@ -952,7 +952,6 @@ subroutine mi_ode_solver(this, sys, x, iv, store_iv, args)
     end if
 
     ! Cycle until integration is complete
-    first_successful_step = .true.
     do i = 1, nsteps
         call this%invalidate_dense_output()
         ! The order can never exceed what the stored history will support
@@ -1019,7 +1018,7 @@ subroutine mi_ode_solver(this, sys, x, iv, store_iv, args)
         call this%log_successful_step()
 
         ! Detect events
-        if (find_events .and. .not.first_successful_step) then
+        if (find_events) then
             event_found = this%event_solver%find_event(sys%event_function, &
                 this, nevents, xo, y, xn, yn, xe, ye, args = args)
             if (event_found) then
@@ -1036,9 +1035,6 @@ subroutine mi_ode_solver(this, sys, x, iv, store_iv, args)
                 return
             end if
         end if
-
-        ! We've taken at least 1 successful step
-        first_successful_step = .false.
 
         ! Store the results
         if (dense) then

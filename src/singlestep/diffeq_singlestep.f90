@@ -270,8 +270,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, store_iv, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    logical :: dense, need_dense, success, forward, find_events, event_found, &
-        first_successful_step
+    logical :: dense, need_dense, success, forward, find_events, event_found
     integer :: i, j, n, neqn, nsteps, nstages, nevents
     real(real64) :: h, xo, xn, xmax, ei, eold, xe
     real(real64), allocatable, dimension(:) :: f, y, yn, fn, yerr, yi, ye
@@ -330,7 +329,6 @@ subroutine ssi_ode_solver(this, sys, x, iv, store_iv, args)
     y = iv
 
     ! Cycle until integration is complete
-    first_successful_step = .true.
     do i = 1, nsteps
         call this%invalidate_dense_output()
         ! Perform any pre-step actions
@@ -362,7 +360,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, store_iv, args)
         call this%log_successful_step()
 
         ! Detect events
-        if (find_events .and. .not.first_successful_step) then
+        if (find_events) then
             event_found = this%event_solver%find_event(sys%event_function, &
                 this, nevents, xo, y, xn, yn, xe, ye, args = args)
             if (event_found) then
@@ -396,9 +394,6 @@ subroutine ssi_ode_solver(this, sys, x, iv, store_iv, args)
             ! Store the values and move on
             call this%append_to_buffer(xn, yn)
         end if
-
-        ! We've taken at least 1 successful step
-        first_successful_step = .false.
 
         ! Are we done?
         if ((xmax - x(1)) * (xn - xmax) >= 0.0d0) then
