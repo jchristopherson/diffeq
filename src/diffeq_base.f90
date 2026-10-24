@@ -1328,7 +1328,9 @@ function oes_find_event(this, fcn, integrator, neqn, x1, y1, x2, y2, x, y, &
     !! of state equations).  If no events are found, this function simply
     !! returns false.  If a root, or roots, are found, the first occurring
     !! root is returned, and iteration statistics are updated in the
-    !! [[ode_event_solver]].
+    !! [[ode_event_solver]]. A root at the initial bound is ignored so an
+    !! integration restarted at an event can advance; a root at the terminal
+    !! bound is still reported.
     !!
     !! If no event function has been defined a DIFFEQ_NULL_POINTER_ERROR is
     !! thrown.
@@ -1471,7 +1473,7 @@ function oes_find_single_channel_event(this, fcn, integrator, index, nevents, &
     integer :: maxiter, nstates
     real(real64), allocatable, dimension(:) :: g1, g2, g, yinterp
     real(real64) :: a, b, c, d, e, fa, fb, fc, p, q, r, s, eps, tol, tol1, xm, &
-        min1, min2, mn
+        min1, min2, mn, endpoint_tol
 
     ! Initialization
     rst = .false.
@@ -1591,6 +1593,15 @@ function oes_find_single_channel_event(this, fcn, integrator, index, nevents, &
         fb = g(index)
         neval = neval + 1
     end do
+
+    if (rst) then
+        endpoint_tol = tol + 4.0d0 * eps * max(abs(x1), abs(x))
+        if (abs(x - x1) <= endpoint_tol) then
+            rst = .false.
+            x = ieee_value(0.0d0, ieee_quiet_nan)
+            y = ieee_value(0.0d0, ieee_quiet_nan)
+        end if
+    end if
 end function
 
 ! ------------------------------------------------------------------------------

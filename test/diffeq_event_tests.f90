@@ -86,6 +86,13 @@ program diffeq_event_tests
     call check(abs(event_y(1) - event_x) < 1.0d-12, "forward event state")
     call check(callback_count > 0, "find event forwards callback arguments")
 
+    root_a = x_end + 1.0d0
+    root_b = x_end
+    found = event_solver%find_event(model%event_function, integrator, 2, &
+        x_start, y1, x_end, y2, event_x, event_y)
+    call check(found .and. abs(event_x - x_end) < 1.0d-12, &
+        "terminal endpoint remains a valid event")
+
     event_mode = 3
     root_b = x_start + 0.4d0 * (x_end - x_start)
     found = event_solver%find_event(model%event_function, integrator, 2, &
@@ -217,6 +224,24 @@ contains
             solver_name // " later event preserves requested output")
         call check(maxval(abs(solution(:,2) - solution(:,1))) < 1.0d-10, &
             solver_name // " later event state")
+
+        ! An initial root is not a new event. The solver must advance from
+        ! the ground and detect the subsequent impact on the way back down.
+        call solver%clear_buffer()
+        call solver%set_dense_output_enabled(.false.)
+        model%fcn => bouncing_ball
+        model%event_function => ball_ground_event
+        integration_event_root = 0.0d0
+        call solver%solve(model, [0.0d0, 3.0d0], [0.0d0, 1.0d0])
+        solution = solver%get_solution()
+        call check(size(solution, 1) >= 2, &
+            solver_name // " advances from an initial event root")
+        call check(abs(solution(size(solution,1),1) - 2.0d0) < 1.0d-6, &
+            solver_name // " detects event after initial root")
+        call check(abs(solution(size(solution,1),2)) < 1.0d-6, &
+            solver_name // " returns event position after initial root")
+        call check(abs(solution(size(solution,1),3) + 1.0d0) < 1.0d-6, &
+            solver_name // " returns event velocity after initial root")
     end subroutine
 
     subroutine single_event_callback(x, y, values, args)
@@ -224,6 +249,20 @@ contains
         real(real64), intent(out) :: values(:)
         class(*), intent(inout), optional :: args
         values = x - integration_event_root
+    end subroutine
+
+    subroutine bouncing_ball(x, y, dydx, args)
+        real(real64), intent(in) :: x, y(:)
+        real(real64), intent(out) :: dydx(:)
+        class(*), intent(inout), optional :: args
+        dydx = [y(2), -1.0d0]
+    end subroutine
+
+    subroutine ball_ground_event(x, y, values, args)
+        real(real64), intent(in) :: x, y(:)
+        real(real64), intent(out) :: values(:)
+        class(*), intent(inout), optional :: args
+        values = y(1)
     end subroutine
 
     subroutine event_values_callback(x, y, values, args)
