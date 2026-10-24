@@ -753,12 +753,13 @@ void c_default_ode_event_solver_settings(c_ode_event_solver_settings *settings);
  * @param efcn The event function.
  * @param output A pointer to the output c_ode_results handle.  Memory must be
  * freed by c_free_ode_results.
+ * @param estats Event detection solver results and statistics.
  * @return An error flag denoting the status of the operation.
  */
 int c_runge_kutta_23_events(int nx, int nstates, int nevents, c_ode fcn, const double *x, 
     const double *initcond, const c_ode_settings *settings, 
     const c_ode_event_solver_settings *esettings, c_ode_event_function efcn,
-    c_ode_results *output);
+    c_ode_results *output, c_ode_event_statistics *estats);
 
 /**
  * @brief Utilizes the 5th order Dormand-Prince Runge-Kutta integrator to 
@@ -789,12 +790,13 @@ int c_runge_kutta_23_events(int nx, int nstates, int nevents, c_ode fcn, const d
  * @param efcn The event function.
  * @param output A pointer to the output c_ode_results handle.  Memory must be
  * freed by c_free_ode_results.
+ * @param estats Event detection solver results and statistics.
  * @return An error flag denoting the status of the operation.
  */
 int c_runge_kutta_45_events(int nx, int nstates, int nevents, c_ode fcn, const double *x, 
     const double *initcond, const c_ode_settings *settings, 
     const c_ode_event_solver_settings *esettings, c_ode_event_function efcn,
-    c_ode_results *output);
+    c_ode_results *output, c_ode_event_statistics *estats);
 
 /**
  * @brief Utilizes the 8th order Hairer Runge-Kutta integrator to 
@@ -825,12 +827,13 @@ int c_runge_kutta_45_events(int nx, int nstates, int nevents, c_ode fcn, const d
  * @param efcn The event function.
  * @param output A pointer to the output c_ode_results handle.  Memory must be
  * freed by c_free_ode_results.
+ * @param estats Event detection solver results and statistics.
  * @return An error flag denoting the status of the operation.
  */
 int c_runge_kutta_853_events(int nx, int nstates, int nevents, c_ode fcn, const double *x, 
     const double *initcond, const c_ode_settings *settings, 
     const c_ode_event_solver_settings *esettings, c_ode_event_function efcn,
-    c_ode_results *output);
+    c_ode_results *output, c_ode_event_statistics *estats);
 
 /**
  * @brief Utilizes the 5th order Tsitouras Runge-Kutta integrator to 
@@ -861,12 +864,13 @@ int c_runge_kutta_853_events(int nx, int nstates, int nevents, c_ode fcn, const 
  * @param efcn The event function.
  * @param output A pointer to the output c_ode_results handle.  Memory must be
  * freed by c_free_ode_results.
+ * @param estats Event detection solver results and statistics.
  * @return An error flag denoting the status of the operation.
  */
 int c_tsitouras_events(int nx, int nstates, int nevents, c_ode fcn, const double *x, 
     const double *initcond, const c_ode_settings *settings, 
     const c_ode_event_solver_settings *esettings, c_ode_event_function efcn,
-    c_ode_results *output);
+    c_ode_results *output, c_ode_event_statistics *estats);
 
 /**
  * @brief Utilizes a variable order Adams predictor-corrector integrator to 
@@ -900,12 +904,14 @@ int c_tsitouras_events(int nx, int nstates, int nevents, c_ode fcn, const double
  * matrices.
  * @param output A pointer to the output c_ode_results handle.  Memory must be
  * freed by c_free_ode_results.
+ * @param estats Event detection solver results and statistics.
  * @return An error flag denoting the status of the operation.
  */
 int c_adams_events(int nx, int nstates, int nevents, c_ode fcn, const double *x, 
     const double *initcond, const c_ode_settings *settings, 
     const c_ode_event_solver_settings *esettings, c_ode_event_function efcn,
-    c_ode_mass_matrix mass, c_ode_results *output);
+    c_ode_mass_matrix mass, c_ode_results *output, 
+    c_ode_event_statistics *estats);
 
 /**
  * @brief Utilizes a 4th order Rosenbrock integrator to solve a system of
@@ -942,12 +948,14 @@ int c_adams_events(int nx, int nstates, int nevents, c_ode fcn, const double *x,
  * NULL if no routine is necessary.
  * @param output A pointer to the output c_ode_results handle.  Memory must be
  * freed by c_free_ode_results.
+ * @param estats Event detection solver results and statistics.
  * @return An error flag denoting the status of the operation.
  */
 int c_rosenbrock_events(int nx, int nstates, int nevents, c_ode fcn, const double *x, 
     const double *initcond, const c_ode_settings *settings, 
     const c_ode_event_solver_settings *esettings, c_ode_event_function efcn,
-    c_ode_jacobian jac, c_ode_mass_matrix mass, c_ode_results *output);
+    c_ode_jacobian jac, c_ode_mass_matrix mass, c_ode_results *output,
+    c_ode_event_statistics *estats);
 
 /**
  * @brief Utilizes a 4th order Kennedy-Carpenter integrator to solve a system of
@@ -984,12 +992,14 @@ int c_rosenbrock_events(int nx, int nstates, int nevents, c_ode fcn, const doubl
  * NULL if no routine is necessary.
  * @param output A pointer to the output c_ode_results handle.  Memory must be
  * freed by c_free_ode_results.
+ * @param estats Event detection solver results and statistics.
  * @return An error flag denoting the status of the operation.
  */
 int c_kennedy_carpenter_4_events(int nx, int nstates, int nevents, c_ode fcn, const double *x, 
     const double *initcond, const c_ode_settings *settings, 
     const c_ode_event_solver_settings *esettings, c_ode_event_function efcn,
-    c_ode_jacobian jac, c_ode_mass_matrix mass, c_ode_results *output);
+    c_ode_jacobian jac, c_ode_mass_matrix mass, c_ode_results *output, 
+    c_ode_event_statistics *estats);
 
 /**
  * @brief Utilizes a 5th order Kennedy-Carpenter integrator to solve a system of
@@ -1026,12 +1036,14 @@ int c_kennedy_carpenter_4_events(int nx, int nstates, int nevents, c_ode fcn, co
  * NULL if no routine is necessary.
  * @param output A pointer to the output c_ode_results handle.  Memory must be
  * freed by c_free_ode_results.
+ * @param estats Event detection solver results and statistics.
  * @return An error flag denoting the status of the operation.
  */
 int c_kennedy_carpenter_5_events(int nx, int nstates, int nevents, c_ode fcn, const double *x, 
     const double *initcond, const c_ode_settings *settings, 
     const c_ode_event_solver_settings *esettings, c_ode_event_function efcn,
-    c_ode_jacobian jac, c_ode_mass_matrix mass, c_ode_results *output);
+    c_ode_jacobian jac, c_ode_mass_matrix mass, c_ode_results *output, 
+    c_ode_event_statistics *estats);
 
 /**
  * @brief Utilizes a variable order BDF integrator to solve a system of
@@ -1068,12 +1080,14 @@ int c_kennedy_carpenter_5_events(int nx, int nstates, int nevents, c_ode fcn, co
  * NULL if no routine is necessary.
  * @param output A pointer to the output c_ode_results handle.  Memory must be
  * freed by c_free_ode_results.
+ * @param estats Event detection solver results and statistics.
  * @return An error flag denoting the status of the operation.
  */
 int c_bdf_events(int nx, int nstates, int nevents, c_ode fcn, const double *x, 
     const double *initcond, const c_ode_settings *settings, 
     const c_ode_event_solver_settings *esettings, c_ode_event_function efcn,
-    c_ode_jacobian jac, c_ode_mass_matrix mass, c_ode_results *output);
+    c_ode_jacobian jac, c_ode_mass_matrix mass, c_ode_results *output, 
+    c_ode_event_statistics *estats);
 
 #ifdef __cplusplus
 }
