@@ -724,6 +724,357 @@ int c_dae_bdf(const c_ggl_container *model, int nx, int nstates,
  */
 void c_default_ode_event_solver_settings(c_ode_event_solver_settings *settings);
 
+/**
+ * @brief Utilizes the 3rd order Bogacki-Shampine Runge-Kutta integrator to 
+ * solve a system of first order differential equations.  This solver is 
+ * intended for solves requiring event detection; however, if no event function
+ * is supplied, or the number of event functions is less than 1, this solver
+ * falls back to its typical behavior without event detection.
+ * 
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nevents The number of event equations.  This value can be different
+ * than nstates; however, it must be at least 1 for event detection to be
+ * enabled.  If this value is less than 1, no event detection will be utilized.
+ * @param fcn A pointer to the function containing the equations to integrate.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param esettings The event solver settings.  Use 
+ * c_default_ode_event_solver_settings to utilize default settings.
+ * @param efcn The event function.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_runge_kutta_23_events(int nx, int nstates, int nevents, c_ode fcn, const double *x, 
+    const double *initcond, const c_ode_settings *settings, 
+    const c_ode_event_solver_settings *esettings, c_ode_event_function efcn,
+    c_ode_results *output);
+
+/**
+ * @brief Utilizes the 5th order Dormand-Prince Runge-Kutta integrator to 
+ * solve a system of first order differential equations.  This solver is 
+ * intended for solves requiring event detection; however, if no event function
+ * is supplied, or the number of event functions is less than 1, this solver
+ * falls back to its typical behavior without event detection.
+ * 
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nevents The number of event equations.  This value can be different
+ * than nstates; however, it must be at least 1 for event detection to be
+ * enabled.  If this value is less than 1, no event detection will be utilized.
+ * @param fcn A pointer to the function containing the equations to integrate.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param esettings The event solver settings.  Use 
+ * c_default_ode_event_solver_settings to utilize default settings.
+ * @param efcn The event function.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_runge_kutta_45_events(int nx, int nstates, int nevents, c_ode fcn, const double *x, 
+    const double *initcond, const c_ode_settings *settings, 
+    const c_ode_event_solver_settings *esettings, c_ode_event_function efcn,
+    c_ode_results *output);
+
+/**
+ * @brief Utilizes the 8th order Hairer Runge-Kutta integrator to 
+ * solve a system of first order differential equations.  This solver is 
+ * intended for solves requiring event detection; however, if no event function
+ * is supplied, or the number of event functions is less than 1, this solver
+ * falls back to its typical behavior without event detection.
+ * 
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nevents The number of event equations.  This value can be different
+ * than nstates; however, it must be at least 1 for event detection to be
+ * enabled.  If this value is less than 1, no event detection will be utilized.
+ * @param fcn A pointer to the function containing the equations to integrate.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param esettings The event solver settings.  Use 
+ * c_default_ode_event_solver_settings to utilize default settings.
+ * @param efcn The event function.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_runge_kutta_853_events(int nx, int nstates, int nevents, c_ode fcn, const double *x, 
+    const double *initcond, const c_ode_settings *settings, 
+    const c_ode_event_solver_settings *esettings, c_ode_event_function efcn,
+    c_ode_results *output);
+
+/**
+ * @brief Utilizes the 5th order Tsitouras Runge-Kutta integrator to 
+ * solve a system of first order differential equations.  This solver is 
+ * intended for solves requiring event detection; however, if no event function
+ * is supplied, or the number of event functions is less than 1, this solver
+ * falls back to its typical behavior without event detection.
+ * 
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nevents The number of event equations.  This value can be different
+ * than nstates; however, it must be at least 1 for event detection to be
+ * enabled.  If this value is less than 1, no event detection will be utilized.
+ * @param fcn A pointer to the function containing the equations to integrate.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param esettings The event solver settings.  Use 
+ * c_default_ode_event_solver_settings to utilize default settings.
+ * @param efcn The event function.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_tsitouras_events(int nx, int nstates, int nevents, c_ode fcn, const double *x, 
+    const double *initcond, const c_ode_settings *settings, 
+    const c_ode_event_solver_settings *esettings, c_ode_event_function efcn,
+    c_ode_results *output);
+
+/**
+ * @brief Utilizes a variable order Adams predictor-corrector integrator to 
+ * solve a system of first order differential equations.  This solver is 
+ * intended for solves requiring event detection; however, if no event function
+ * is supplied, or the number of event functions is less than 1, this solver
+ * falls back to its typical behavior without event detection.
+ * 
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nevents The number of event equations.  This value can be different
+ * than nstates; however, it must be at least 1 for event detection to be
+ * enabled.  If this value is less than 1, no event detection will be utilized.
+ * @param fcn A pointer to the function containing the equations to integrate.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param esettings The event solver settings.  Use 
+ * c_default_ode_event_solver_settings to utilize default settings.
+ * @param efcn The event function.
+ * @param mass A pointer to the routine for computing the mass matrix.  Pass
+ * NULL if no routine is necessary.  This routine cannot handle singular mass
+ * matrices.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_adams_events(int nx, int nstates, int nevents, c_ode fcn, const double *x, 
+    const double *initcond, const c_ode_settings *settings, 
+    const c_ode_event_solver_settings *esettings, c_ode_event_function efcn,
+    c_ode_mass_matrix mass, c_ode_results *output);
+
+/**
+ * @brief Utilizes a 4th order Rosenbrock integrator to solve a system of
+ * first order differential equations or index-1 differential algebraic 
+ * equations.  This solver is intended for solves requiring event detection; 
+ * however, if no event function is supplied, or the number of event functions 
+ * is less than 1, this solver falls back to its typical behavior without event 
+ * detection.
+ * 
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nevents The number of event equations.  This value can be different
+ * than nstates; however, it must be at least 1 for event detection to be
+ * enabled.  If this value is less than 1, no event detection will be utilized.
+ * @param fcn A pointer to the function containing the equations to integrate.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param esettings The event solver settings.  Use 
+ * c_default_ode_event_solver_settings to utilize default settings.
+ * @param efcn The event function.
+ * @param jac A pointer to the routine for computing the Jacobian matrix.
+ * Pass NULL if no routine is necessary and allowing the integrator to use 
+ * a finite-difference estimate is acceptable.
+ * @param mass A pointer to the routine for computing the mass matrix.  Pass
+ * NULL if no routine is necessary.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_rosenbrock_events(int nx, int nstates, int nevents, c_ode fcn, const double *x, 
+    const double *initcond, const c_ode_settings *settings, 
+    const c_ode_event_solver_settings *esettings, c_ode_event_function efcn,
+    c_ode_jacobian jac, c_ode_mass_matrix mass, c_ode_results *output);
+
+/**
+ * @brief Utilizes a 4th order Kennedy-Carpenter integrator to solve a system of
+ * first order differential equations or index-1 differential algebraic 
+ * equations.  This solver is intended for solves requiring event detection; 
+ * however, if no event function is supplied, or the number of event functions 
+ * is less than 1, this solver falls back to its typical behavior without event 
+ * detection.
+ * 
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nevents The number of event equations.  This value can be different
+ * than nstates; however, it must be at least 1 for event detection to be
+ * enabled.  If this value is less than 1, no event detection will be utilized.
+ * @param fcn A pointer to the function containing the equations to integrate.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param esettings The event solver settings.  Use 
+ * c_default_ode_event_solver_settings to utilize default settings.
+ * @param efcn The event function.
+ * @param jac A pointer to the routine for computing the Jacobian matrix.
+ * Pass NULL if no routine is necessary and allowing the integrator to use 
+ * a finite-difference estimate is acceptable.
+ * @param mass A pointer to the routine for computing the mass matrix.  Pass
+ * NULL if no routine is necessary.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_kennedy_carpenter_4_events(int nx, int nstates, int nevents, c_ode fcn, const double *x, 
+    const double *initcond, const c_ode_settings *settings, 
+    const c_ode_event_solver_settings *esettings, c_ode_event_function efcn,
+    c_ode_jacobian jac, c_ode_mass_matrix mass, c_ode_results *output);
+
+/**
+ * @brief Utilizes a 5th order Kennedy-Carpenter integrator to solve a system of
+ * first order differential equations or index-1 differential algebraic 
+ * equations.  This solver is intended for solves requiring event detection; 
+ * however, if no event function is supplied, or the number of event functions 
+ * is less than 1, this solver falls back to its typical behavior without event 
+ * detection.
+ * 
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nevents The number of event equations.  This value can be different
+ * than nstates; however, it must be at least 1 for event detection to be
+ * enabled.  If this value is less than 1, no event detection will be utilized.
+ * @param fcn A pointer to the function containing the equations to integrate.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param esettings The event solver settings.  Use 
+ * c_default_ode_event_solver_settings to utilize default settings.
+ * @param efcn The event function.
+ * @param jac A pointer to the routine for computing the Jacobian matrix.
+ * Pass NULL if no routine is necessary and allowing the integrator to use 
+ * a finite-difference estimate is acceptable.
+ * @param mass A pointer to the routine for computing the mass matrix.  Pass
+ * NULL if no routine is necessary.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_kennedy_carpenter_5_events(int nx, int nstates, int nevents, c_ode fcn, const double *x, 
+    const double *initcond, const c_ode_settings *settings, 
+    const c_ode_event_solver_settings *esettings, c_ode_event_function efcn,
+    c_ode_jacobian jac, c_ode_mass_matrix mass, c_ode_results *output);
+
+/**
+ * @brief Utilizes a variable order BDF integrator to solve a system of
+ * first order differential equations or index-1 differential algebraic 
+ * equations.  This solver is intended for solves requiring event detection; 
+ * however, if no event function is supplied, or the number of event functions 
+ * is less than 1, this solver falls back to its typical behavior without event 
+ * detection.
+ * 
+ * @param nx The number of solution points.  This value must be at least 2;
+ * else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nstates The number of state equations.  This value must be at least 
+ * 1; else, a C_INVALID_INPUT_ERROR is returned.
+ * @param nevents The number of event equations.  This value can be different
+ * than nstates; however, it must be at least 1 for event detection to be
+ * enabled.  If this value is less than 1, no event detection will be utilized.
+ * @param fcn A pointer to the function containing the equations to integrate.
+ * @param x An NX-element array containing the desired solution points.  If
+ * only 2 points are defined, the integrator will return all successful 
+ * intermediate integration points as well as the requested start and end 
+ * points.  If more points are specified, the integrator will utilize dense
+ * output and return the solution at the requested points via interpolation 
+ * as required.
+ * @param initcond An NSTATES-element array containing the initial conditions.
+ * @param settings The integrator settings.  Use c_default_ode_settings to
+ * utilize default settings.
+ * @param esettings The event solver settings.  Use 
+ * c_default_ode_event_solver_settings to utilize default settings.
+ * @param efcn The event function.
+ * @param jac A pointer to the routine for computing the Jacobian matrix.
+ * Pass NULL if no routine is necessary and allowing the integrator to use 
+ * a finite-difference estimate is acceptable.
+ * @param mass A pointer to the routine for computing the mass matrix.  Pass
+ * NULL if no routine is necessary.
+ * @param output A pointer to the output c_ode_results handle.  Memory must be
+ * freed by c_free_ode_results.
+ * @return An error flag denoting the status of the operation.
+ */
+int c_bdf_events(int nx, int nstates, int nevents, c_ode fcn, const double *x, 
+    const double *initcond, const c_ode_settings *settings, 
+    const c_ode_event_solver_settings *esettings, c_ode_event_function efcn,
+    c_ode_jacobian jac, c_ode_mass_matrix mass, c_ode_results *output);
+
 #ifdef __cplusplus
 }
 #endif
