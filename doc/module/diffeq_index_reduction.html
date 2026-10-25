@@ -199,11 +199,11 @@ not depend on the independent variable.</p>
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item">linalg</li>
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/ieee_arithmetic'>ieee_arithmetic</a></li>
                   <li class="list-inline-item"><a href='diffeq_base.html'>diffeq_base</a></li>
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
                   <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/ieee_arithmetic'>ieee_arithmetic</a></li>
+                  <li class="list-inline-item">linalg</li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
               </ul>
             </li>
         </ul>
@@ -368,7 +368,7 @@ subsequent consistency tolerance must respect that scaling.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~38"></span>
+              <span class="anchor" id="variable-x~48"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -385,7 +385,7 @@ ignore this argument.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~21"></span>
+              <span class="anchor" id="variable-y~17"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -403,7 +403,7 @@ modified by the callback.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-g~2"></span>
+              <span class="anchor" id="variable-g"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -422,7 +422,7 @@ corresponds to a zero vector.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~18"></span>
+              <span class="anchor" id="variable-args~14"></span>
               class(*),
             </td>
 <td>intent(inout),</td>
@@ -478,7 +478,7 @@ arbitrary directions used during nonlinear/Jacobian evaluation.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~39"></span>
+              <span class="anchor" id="variable-x~49"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -494,7 +494,7 @@ autonomous constraints must not depend on it.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-q~2"></span>
+              <span class="anchor" id="variable-q"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -555,7 +555,7 @@ including the kinematic multiplier correction.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~19"></span>
+              <span class="anchor" id="variable-args~15"></span>
               class(*),
             </td>
 <td>intent(inout),</td>
@@ -676,7 +676,7 @@ autonomous position residuals g(q), including off-manifold values.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-fcn"></span>
+              <span class="anchor" id="variable-fcn~21"></span>
               procedure(<a href='..\interface\ode.html'>ode</a>),
             </td>
               <td>public,</td>
@@ -764,12 +764,12 @@ retained. Invalid counts or gains cause DIFFEQ_INVALID_INPUT_ERROR.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ggl_container.html#boundprocedure-compute_mass_matrix~2'>compute_mass_matrix</a></strong> => ggl_mass</td>
+  <strong><a href='..\type\ggl_container.html#boundprocedure-compute_mass_matrix'>compute_mass_matrix</a></strong> => ggl_mass</td>
                 <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ggl_container.html#boundprocedure-compute_rhs~2'>compute_rhs</a></strong> => ggl_rhs</td>
+  <strong><a href='..\type\ggl_container.html#boundprocedure-compute_rhs'>compute_rhs</a></strong> => ggl_rhs</td>
                 <td></td>
               </tr>
               <tr>
@@ -789,7 +789,7 @@ retained. Invalid counts or gains cause DIFFEQ_INVALID_INPUT_ERROR.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ggl_container.html#boundprocedure-get_is_ode_defined~2'>get_is_ode_defined</a></strong> => ggl_is_defined</td>
+  <strong><a href='..\type\ggl_container.html#boundprocedure-get_is_ode_defined'>get_is_ode_defined</a></strong> => ggl_is_defined</td>
                 <td></td>
               </tr>
               <tr>
@@ -804,7 +804,7 @@ retained. Invalid counts or gains cause DIFFEQ_INVALID_INPUT_ERROR.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ggl_container.html#boundprocedure-has_mass_matrix~2'>has_mass_matrix</a></strong> => ggl_has_mass</td>
+  <strong><a href='..\type\ggl_container.html#boundprocedure-has_mass_matrix'>has_mass_matrix</a></strong> => ggl_has_mass</td>
                 <td></td>
               </tr>
               <tr>
@@ -874,7 +874,7 @@ retained. Invalid counts or gains cause DIFFEQ_INVALID_INPUT_ERROR.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-25 07:30              </p>
+ on 2026-10-25 12:43              </p>
           </div>
         </div>
         <br>
