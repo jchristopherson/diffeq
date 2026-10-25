@@ -349,8 +349,9 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
 cmake --build build --config Release
 ```
 
-Install the library, generated Fortran module files, CMake package files, and
-pkg-config metadata to a local prefix with:
+Install the library, generated Fortran module files, the C API header
+(`diffeq.h`), CMake package files, and pkg-config metadata to a local prefix
+with:
 
 ```sh
 cmake --install build --prefix "$PWD/install"
