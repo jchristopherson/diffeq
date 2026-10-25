@@ -21,7 +21,9 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "diffeq.h"
+#include "c_plot_helper.h"
 
 const double body_mass = 2.0;
 const double length = 1.5;
@@ -42,7 +44,8 @@ int main()
     c_ode_results rst;
     c_ode_settings settings;
     c_ode_event_statistics estats;
-    int flag;
+    int flag, m, n;
+    double *sol;
 
     /* NOTE:
     * The state vector for this example is a 6 component vector:
@@ -81,8 +84,26 @@ int main()
         fprintf(stderr, "Writing results failed: %d\n", flag);
     }
 
+    // Get a copy of the results and plot
+    c_get_ode_results_size(rst, &m, &n);
+    sol = (double*)malloc((size_t)(m * n * sizeof(double)));
+    if (!sol) {
+        fprintf(stderr, "Error allocating memory.\n");
+        c_free_ode_results(rst);
+        return EXIT_FAILURE;
+    }
+    flag = c_get_ode_results(rst, m, n, sol, m);
+    if (flag != C_NO_ERROR) {
+        fprintf(stderr, "Error copying the solution matrix: %d\n", flag);
+        c_free_ode_results(rst);
+        free(sol);
+        return flag;
+    }
+    c_plot_xy2(m, m, sol, &sol[m], " x", sol, &sol[2*m], " y", "t", "x(t), y(t)");
+
     // Clean up
     c_free_ode_results(rst);
+    free(sol);
     rst = NULL;
 
     // End
