@@ -323,10 +323,12 @@ static void test_events(dae_integrator solve, int reverse, int dense)
 int main(int argc, char **argv)
 {
     size_t i;
+    int matched = 0;
 
-    check(argc == 2, "expected one DAE integrator name");
+    check(argc <= 2, "expected at most one DAE integrator name");
     for (i = 0; i < sizeof(integrators) / sizeof(integrators[0]); ++i) {
-        if (strcmp(argv[1], integrators[i].name) == 0) {
+        if (argc == 1 || strcmp(argv[1], integrators[i].name) == 0) {
+            matched = 1;
             test_name = integrators[i].name;
             test_solution(integrators[i].solve, NULL, 0);
             test_solution(integrators[i].solve, NULL, 2);
@@ -337,10 +339,9 @@ int main(int argc, char **argv)
             test_events(integrators[i].solve, 0, 1);
             test_events(integrators[i].solve, 1, 0);
             test_events(integrators[i].solve, 1, 1);
-            return EXIT_SUCCESS;
         }
     }
     test_name = "arguments";
-    check(0, "unknown DAE integrator name");
-    return EXIT_FAILURE;
+    check(matched, "unknown DAE integrator name");
+    return EXIT_SUCCESS;
 }

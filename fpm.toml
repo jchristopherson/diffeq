@@ -9,6 +9,7 @@ homepage = "https://github.com/jchristopherson/spectrum"
 
 [library]
 source-dir = "src"
+include-dir = "src/C"
 
 [fortran]
 source-form = "default"
@@ -38,3 +39,28 @@ main = "diffeq_test.f90"
 name = "diffeq_dense_output_tests"
 source-dir = "test"
 main = "diffeq_dense_output_tests.f90"
+
+[[test]]
+name = "diffeq_c_api_tests"
+source-dir = "test"
+main = "diffeq_c_api_tests.c"
+
+[[test]]
+name = "diffeq_c_integrator_tests"
+source-dir = "test"
+main = "diffeq_c_integrator_tests.c"
+
+[[test]]
+name = "diffeq_c_event_tests"
+source-dir = "test"
+main = "diffeq_c_event_tests.c"
+
+[[test]]
+name = "diffeq_c_rosenbrock_tests"
+source-dir = "test"
+main = "diffeq_c_rosenbrock_tests.c"
+
+[[test]]
+name = "diffeq_c_dae_integrator_tests"
+source-dir = "test"
+main = "diffeq_c_dae_integrator_tests.c"
