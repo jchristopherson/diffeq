@@ -604,7 +604,7 @@ subroutine oc_eval_mass_matrix(this, x, y, m, args)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-pure function oc_is_event_fcn_defined(this) result(rst)
+function oc_is_event_fcn_defined(this) result(rst)
     !! Tests to see if the event function has been defined.
     class(ode_container), intent(in) :: this
         !! The [[ode_container]] object.
