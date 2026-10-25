@@ -83,15 +83,21 @@ module diffeq_c_index_reduction
             !! Required [[c_dae_constraint_curvature]] callback computing the
             !! M curvature terms \(DG(q)[\dot q]v\). Return zeros for linear
             !! constraints.
-        real(c_double) :: alpha
+        type(c_funptr) :: events
+            !! Optional [[c_ode_event_function]] for enabling event detection.
+            !! To fully enable event detection, event_equation_count must be
+            !! greater than zero as well.
+        real(c_double) :: alpha = 0.0d0
             !! Nonnegative, finite position-constraint decay rate, in inverse
             !! independent-variable units. Zero disables position damping.
-        real(c_double) :: beta
+        real(c_double) :: beta = 0.0d0
             !! Nonnegative, finite velocity-constraint decay rate, in inverse
             !! independent-variable units. Zero disables velocity damping.
-        integer(c_int) :: constraint_count
+        integer(c_int) :: constraint_count = 0
             !! The number M of independent constraints, with
             !! \(1 \le M \le N\).
+        integer(c_int) :: event_equation_count = 0
+            !! The number of event equations in events.
     end type
 
 end module

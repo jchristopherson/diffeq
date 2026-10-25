@@ -717,8 +717,8 @@ contains
 ! ******************************************************************************
 ! INDEX-REDUCTION DAE SOLVERS
 ! ------------------------------------------------------------------------------
-    function c_integrate_dae(method, model, nx, nstates, x, initcond, settings, output) &
-        result(rst)
+    function c_integrate_dae(method, model, nx, nstates, x, initcond, &
+        settings, output, estats) result(rst)
         integer(c_int), intent(in) :: method
             !! The integrator to use.
         type(c_ggl_container), intent(in) :: model
@@ -739,6 +739,8 @@ contains
         type(c_ptr), intent(out) :: output
             !! The output c_ode_results object.  Memory must be freed by 
             !! c_free_ode_results.
+        type(c_ode_event_statistics), intent(out) :: estats
+            !! Event detection solver results and statistics.
         integer(c_int) :: rst
             !! An error flag denoting the status of the operation.
 
@@ -748,6 +750,7 @@ contains
         procedure(c_ode_jacobian), pointer :: gradient_ptr, jacobian_ptr
         procedure(c_dae_algebraic_constraints), pointer :: constraint_ptr
         procedure(c_dae_constraint_curvature), pointer :: curvature_ptr
+        procedure(c_ode_event_function), pointer :: event_ptr
         type(rosenbrock), target :: rsbrk
         type(kennedy_carpenter_4), target :: kc4
         type(kennedy_carpenter_5), target :: kc5
@@ -856,11 +859,19 @@ contains
         mdl%constraint_curvature => curvature_routine
         mdl%constraints => constraint_routine
 
+        if (c_associated(model%events) .and. model%event_equation_count > 0) then
+            call c_f_procpointer(model%events, event_ptr)
+            mdl%event_function => internal_events
+            call mdl%set_event_equation_count(model%event_equation_count)
+        end if
+
         call mdl%initialize_multipliers(0.0d0, initcond)
 
         call integrator%solve(mdl, x, initcond)
         ode_output = integrator%get_ode_results()
         call c_create_ode_results(output, ode_output)
+
+        estats = integrator%event_solver%solver_statistics
 
     contains
         subroutine force_routine(x_, y_, dydx_, args_)
@@ -915,11 +926,19 @@ contains
             call jacobian_ptr(size(jac_, 1), size(jac_, 2), x_, y_, jac_, &
                 size(jac_, 1))
         end subroutine
+
+        subroutine internal_events(x_, y_, f_, args_)
+            real(real64), intent(in) :: x_
+            real(real64), intent(in), dimension(:) :: y_
+            real(real64), intent(out), dimension(:) :: f_
+            class(*), intent(inout), optional :: args_
+            call event_ptr(size(f_), size(y_), x_, y_, f_)
+        end subroutine
     end function
 
 ! ------------------------------------------------------------------------------
     function c_dae_rosenbrock(model, nx, nstates, x, initcond, settings, &
-        output) result(rst) bind(C, name = "c_dae_rosenbrock")
+        output, estats) result(rst) bind(C, name = "c_dae_rosenbrock")
         !! Utilizes a 4th order Rosenbrock integrator to solve the system of
         !! DAE's.
         type(c_ggl_container), intent(in) :: model
@@ -940,16 +959,18 @@ contains
         type(c_ptr), intent(out) :: output
             !! The output c_ode_results object.  Memory must be freed by 
             !! c_free_ode_results.
+        type(c_ode_event_statistics), intent(out) :: estats
+            !! Event detection solver results and statistics.
         integer(c_int) :: rst
             !! An error flag denoting the status of the operation.
 
         rst = c_integrate_dae(C_RBRK, model, nx, nstates, x, initcond, &
-            settings, output)
+            settings, output, estats)
     end function
 
 ! ------------------------------------------------------------------------------
     function c_dae_kennedy_carpenter_4(model, nx, nstates, x, initcond, &
-        settings, output) result(rst) &
+        settings, output, estats) result(rst) &
         bind(C, name = "c_dae_kennedy_carpenter_4")
         !! Utilizes a 4th order Kennedy-Carpenter integrator to solve the 
         !! system of DAE's.
@@ -971,16 +992,18 @@ contains
         type(c_ptr), intent(out) :: output
             !! The output c_ode_results object.  Memory must be freed by 
             !! c_free_ode_results.
+        type(c_ode_event_statistics), intent(out) :: estats
+            !! Event detection solver results and statistics.
         integer(c_int) :: rst
             !! An error flag denoting the status of the operation.
 
         rst = c_integrate_dae(C_KCARP4, model, nx, nstates, x, initcond, &
-            settings, output)
+            settings, output, estats)
     end function
 
 ! ------------------------------------------------------------------------------
     function c_dae_kennedy_carpenter_5(model, nx, nstates, x, initcond, &
-        settings, output) result(rst) &
+        settings, output, estats) result(rst) &
         bind(C, name = "c_dae_kennedy_carpenter_5")
         !! Utilizes a 5th order Kennedy-Carpenter integrator to solve the 
         !! system of DAE's.
@@ -1002,16 +1025,18 @@ contains
         type(c_ptr), intent(out) :: output
             !! The output c_ode_results object.  Memory must be freed by 
             !! c_free_ode_results.
+        type(c_ode_event_statistics), intent(out) :: estats
+            !! Event detection solver results and statistics.
         integer(c_int) :: rst
             !! An error flag denoting the status of the operation.
 
         rst = c_integrate_dae(C_KCARP5, model, nx, nstates, x, initcond, &
-            settings, output)
+            settings, output, estats)
     end function
 
 ! ------------------------------------------------------------------------------
     function c_dae_bdf(model, nx, nstates, x, initcond, settings, &
-        output) result(rst) bind(C, name = "c_dae_bdf")
+        output, estats) result(rst) bind(C, name = "c_dae_bdf")
         !! Utilizes a variable order BDF integrator to solve the system of
         !! DAE's.
         type(c_ggl_container), intent(in) :: model
@@ -1032,11 +1057,13 @@ contains
         type(c_ptr), intent(out) :: output
             !! The output c_ode_results object.  Memory must be freed by 
             !! c_free_ode_results.
+        type(c_ode_event_statistics), intent(out) :: estats
+            !! Event detection solver results and statistics.
         integer(c_int) :: rst
             !! An error flag denoting the status of the operation.
 
         rst = c_integrate_dae(C_BACKDIFF, model, nx, nstates, x, initcond, &
-            settings, output)
+            settings, output, estats)
     end function
 
 ! ******************************************************************************

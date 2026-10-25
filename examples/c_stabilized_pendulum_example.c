@@ -36,11 +36,12 @@ void curvature(int nc, int nstates, double t, const double *q,
 int main()
 {
     // Local Variables
-    c_ggl_container model;
+    c_ggl_container model = {0};
     double ic[] = {length, 0.0, 0.0, 0.0, 0.0, 0.0};
     double t[] = {0.0, 10.0};
     c_ode_results rst;
     c_ode_settings settings;
+    c_ode_event_statistics estats;
     int flag;
 
     /* NOTE:
@@ -68,7 +69,7 @@ int main()
     c_default_ode_settings(&settings);
 
     // Solve
-    flag = c_dae_bdf(&model, 2, 6, t, ic, &settings, &rst);
+    flag = c_dae_bdf(&model, 2, 6, t, ic, &settings, &rst, &estats);
     if (flag != C_NO_ERROR) {
         fprintf(stderr, "Constrained integration failed: %d\n", flag);
         return flag;

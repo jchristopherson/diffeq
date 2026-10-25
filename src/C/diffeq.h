@@ -244,6 +244,12 @@ typedef struct {
      */
     c_dae_constraint_curvature curvature;
     /**
+     * Optional callback for enabling event detection. The callback receives
+     * the full augmented state, including multipliers. A NULL callback or an
+     * event_equation_count less than one disables event detection.
+     */
+    c_ode_event_function events;
+    /**
      * Nonnegative, finite position-constraint decay rate, in inverse
      * independent-variable units.  Zero disables position damping.
      */
@@ -255,6 +261,11 @@ typedef struct {
     double beta;
     /** The number M of independent constraints, with 1 <= M <= N. */
     int constraint_count;
+    /**
+     * The number of event equations in events.  This value must be greater
+     * than zero when event detection is intended.
+     */
+    int event_equation_count;
 } c_ggl_container;
 
 /** An ODE event statistics container. */
@@ -633,11 +644,12 @@ int c_bdf(int nx, int nstates, c_ode fcn, const double *x,
  * utilize default settings.
  * @param output A pointer to the output c_ode_results handle.  Memory must be
  * freed by c_free_ode_results.
+ * @param estats Event detection solver results and statistics.
  * @return An error flag denoting the status of the operation.
  */
 int c_dae_rosenbrock(const c_ggl_container *model, int nx, int nstates,
     const double *x, double *initcond, const c_ode_settings *settings,
-    c_ode_results *output);
+    c_ode_results *output, c_ode_event_statistics *estats);
 
 /**
  * @brief Utilizes a 4th order Kennedy-Carpenter integrator to solve a system of
@@ -659,11 +671,12 @@ int c_dae_rosenbrock(const c_ggl_container *model, int nx, int nstates,
  * utilize default settings.
  * @param output A pointer to the output c_ode_results handle.  Memory must be
  * freed by c_free_ode_results.
+ * @param estats Event detection solver results and statistics.
  * @return An error flag denoting the status of the operation.
  */
 int c_dae_kennedy_carpenter_4(const c_ggl_container *model, int nx, int nstates,
     const double *x, double *initcond, const c_ode_settings *settings,
-    c_ode_results *output);
+    c_ode_results *output, c_ode_event_statistics *estats);
 
 /**
  * @brief Utilizes a 5th order Kennedy-Carpenter integrator to solve a system of
@@ -685,11 +698,12 @@ int c_dae_kennedy_carpenter_4(const c_ggl_container *model, int nx, int nstates,
  * utilize default settings.
  * @param output A pointer to the output c_ode_results handle.  Memory must be
  * freed by c_free_ode_results.
+ * @param estats Event detection solver results and statistics.
  * @return An error flag denoting the status of the operation.
  */
 int c_dae_kennedy_carpenter_5(const c_ggl_container *model, int nx, int nstates,
     const double *x, double *initcond, const c_ode_settings *settings,
-    c_ode_results *output);
+    c_ode_results *output, c_ode_event_statistics *estats);
 
 /**
  * @brief Utilizes a variable order BDF integrator to solve a system of
@@ -711,11 +725,12 @@ int c_dae_kennedy_carpenter_5(const c_ggl_container *model, int nx, int nstates,
  * utilize default settings.
  * @param output A pointer to the output c_ode_results handle.  Memory must be
  * freed by c_free_ode_results.
+ * @param estats Event detection solver results and statistics.
  * @return An error flag denoting the status of the operation.
  */
 int c_dae_bdf(const c_ggl_container *model, int nx, int nstates,
     const double *x, double *initcond, const c_ode_settings *settings,
-    c_ode_results *output);
+    c_ode_results *output, c_ode_event_statistics *estats);
 
 /**
  * @brief Populates a c_ode_solver_settings object with default values.
