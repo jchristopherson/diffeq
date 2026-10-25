@@ -130,3 +130,7 @@ target_include_directories(c_vanderpol_example PUBLIC ${CMAKE_SOURCE_DIR}/src/C)
 add_executable(c_dense_output_example c_dense_output_example.c)
 target_link_libraries(c_dense_output_example diffeq)
 target_include_directories(c_dense_output_example PUBLIC ${CMAKE_SOURCE_DIR}/src/C)
+
+add_executable(c_event_detection_example c_event_detection_example.c)
+target_link_libraries(c_event_detection_example diffeq)
+target_include_directories(c_event_detection_example PUBLIC ${CMAKE_SOURCE_DIR}/src/C)
