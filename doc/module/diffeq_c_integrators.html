@@ -1,0 +1,2544 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="DIFFEQ is a modern Fortran library providing an object-oriented approach to solving ordinary differential equations.">
+    <meta name="author" content="Jason Christopherson" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>diffeq_c_integrators &ndash; DIFFEQ</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">DIFFEQ </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>diffeq_c_integrators
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip"
+                 data-bs-placement="bottom" data-html="true"
+                 title="19.7% of total for modules and submodules.">1079 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/diffeq_c_integrators.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='..\sourcefile\diffeq_c_integrators.f90.html'>diffeq_c_integrators.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">diffeq_c_integrators</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function () {
+    $('[data-bs-toggle="tooltip"]').tooltip()
+    })
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/diffeq_c_integrators.html#type-c_ode_settings">c_ode_settings</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#funcs-0"
+         aria-expanded="false" aria-controls="funcs-0">
+         <h4 class="card-header bg-primary text-white">Functions</h4>
+      </a>
+      <div id="funcs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/diffeq_c_integrators.html#proc-c_adams">c_adams</a>
+            <a class="list-group-item" href="../module/diffeq_c_integrators.html#proc-c_bdf">c_bdf</a>
+            <a class="list-group-item" href="../module/diffeq_c_integrators.html#proc-c_dae_bdf">c_dae_bdf</a>
+            <a class="list-group-item" href="../module/diffeq_c_integrators.html#proc-c_dae_kennedy_carpenter_4">c_dae_kennedy_carpenter_4</a>
+            <a class="list-group-item" href="../module/diffeq_c_integrators.html#proc-c_dae_kennedy_carpenter_5">c_dae_kennedy_carpenter_5</a>
+            <a class="list-group-item" href="../module/diffeq_c_integrators.html#proc-c_dae_rosenbrock">c_dae_rosenbrock</a>
+            <a class="list-group-item" href="../module/diffeq_c_integrators.html#proc-c_kennedy_carpenter_4">c_kennedy_carpenter_4</a>
+            <a class="list-group-item" href="../module/diffeq_c_integrators.html#proc-c_kennedy_carpenter_5">c_kennedy_carpenter_5</a>
+            <a class="list-group-item" href="../module/diffeq_c_integrators.html#proc-c_rosenbrock">c_rosenbrock</a>
+            <a class="list-group-item" href="../module/diffeq_c_integrators.html#proc-c_runge_kutta_23">c_runge_kutta_23</a>
+            <a class="list-group-item" href="../module/diffeq_c_integrators.html#proc-c_runge_kutta_45">c_runge_kutta_45</a>
+            <a class="list-group-item" href="../module/diffeq_c_integrators.html#proc-c_runge_kutta_853">c_runge_kutta_853</a>
+            <a class="list-group-item" href="../module/diffeq_c_integrators.html#proc-c_tsitouras">c_tsitouras</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#subs-0"
+         aria-expanded="false" aria-controls="subs-0">
+         <h4 class="card-header bg-primary text-white">Subroutines</h4>
+      </a>
+      <div id="subs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/diffeq_c_integrators.html#proc-c_default_ode_settings">c_default_ode_settings</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='diffeq_c_function_pointers.html'>diffeq_c_function_pointers</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
+                  <li class="list-inline-item"><a href='diffeq_c_errors.html'>diffeq_c_errors</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='diffeq_c_index_reduction.html'>diffeq_c_index_reduction</a></li>
+                  <li class="list-inline-item"><a href='diffeq_c_containers.html'>diffeq_c_containers</a></li>
+                  <li class="list-inline-item"><a href='diffeq.html'>diffeq</a></li>
+              </ul>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      
+      <br>
+
+
+
+
+
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-c_ode_settings"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='..\type\c_ode_settings.html'>c_ode_settings</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A container for ODE settings.</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-absolute_tolerance"></span>
+              real(kind=c_double),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>absolute_tolerance</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>The absolute tolerance applied to each equation.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-allow_overshoot"></span>
+              logical(kind=c_bool),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>allow_overshoot</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>True if the solver is allowed to overshoot the final value in
+the integration range and interpolate back; else, false if the
+solver must terminate on the final value.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-beta~6"></span>
+              real(kind=c_double),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>beta</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>PI step size controller exponent.  Set to zero to turn off PI
+step size control.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mass_matrix_constant"></span>
+              logical(kind=c_bool),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mass_matrix_constant</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>True if the mass matrix is constant regardless of state, or
+false if the mass matrix is state-dependent.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-maximum_step_size"></span>
+              real(kind=c_double),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>maximum_step_size</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>The maximum allowed integrator step size.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-minimum_step_size"></span>
+              real(kind=c_double),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>minimum_step_size</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>The minimum allowed integrator step size.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-newton_step_limit"></span>
+              integer(kind=c_int),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>newton_step_limit</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>The maximum number of Newton iterations allowed per implicit
+solve (BDF and Kennedy-Carpenter).</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-newton_tolerance"></span>
+              real(kind=c_double),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>newton_tolerance</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>The convergence tolerance for Newton iteration (BDF and
+Kennedy-Carpenter).</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-relative_tolerance"></span>
+              real(kind=c_double),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>relative_tolerance</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>The relative tolerance applied to each equation.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-step_limit"></span>
+              integer(kind=c_int),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>step_limit</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>The limit on the maximum total number of integration steps.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Functions</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-c_adams"></span> <h3>public  function <a href='..\proc\c_adams.html'>c_adams</a>(nx, nstates, fcn, x, initcond, settings, mass, output) result(rst) bind(C, name = "c_adams")  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Utilizes a variable order Adams predictor-corrector integrator to 
+solve a system of first order differential equations.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nx~6"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nx</strong></td>
+            <td>
+<p>The number of solution points.  This value must be at least 2;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nstates~8"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nstates</strong></td>
+            <td>
+<p>The number of state equations.  This value must be at least 1;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fcn~9"></span>
+              type(c_funptr),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+            <td>
+<p>A pointer to the function containing the equations to integrate.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~57"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong>(nx)</td>
+            <td>
+<p>An NX-element array containing the desired solution points.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-initcond~6"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>initcond</strong>(nstates)</td>
+            <td>
+<p>An NSTATES-element array containing the initial conditions.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-settings~9"></span>
+              type(<a href='..\type\c_ode_settings.html'>c_ode_settings</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>settings</strong></td>
+            <td>
+<p>The integrator settings.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mass~7"></span>
+              type(c_funptr),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>mass</strong></td>
+            <td>
+<p>A pointer to the routine for computing the mass matrix.  Pass
+NULL if no routine is necessary.  This routine cannot handle
+singular mass matrices.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-output~6"></span>
+              type(c_ptr),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>output</strong></td>
+            <td>
+<p>The output c_ode_results object.  Memory must be freed by 
+c_free_ode_results.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer(kind=c_int)</small>
+    </h4>
+    <p>An error flag denoting the status of the operation.</p>
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-c_bdf"></span> <h3>public  function <a href='..\proc\c_bdf.html'>c_bdf</a>(nx, nstates, fcn, x, initcond, settings, jac, mass, output) result(rst) bind(C, name = "c_bdf")  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Utilizes a variable order BDF integrator to solve a system of 
+first order differential equations or index-1 differential 
+algebraic equations.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nx~10"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nx</strong></td>
+            <td>
+<p>The number of solution points.  This value must be at least 2;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nstates~12"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nstates</strong></td>
+            <td>
+<p>The number of state equations.  This value must be at least 1;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fcn~13"></span>
+              type(c_funptr),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+            <td>
+<p>A pointer to the function containing the equations to integrate.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~61"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong>(nx)</td>
+            <td>
+<p>An NX-element array containing the desired solution points.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-initcond~10"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>initcond</strong>(nstates)</td>
+            <td>
+<p>An NSTATES-element array containing the initial conditions.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-settings~13"></span>
+              type(<a href='..\type\c_ode_settings.html'>c_ode_settings</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>settings</strong></td>
+            <td>
+<p>The integrator settings.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-jac~8"></span>
+              type(c_funptr),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>jac</strong></td>
+            <td>
+<p>A pointer to the routine for computing the Jacobian matrix.
+Pass NULL if no routine is necessary and allowing the integrator
+to use a finite-difference estimate is acceptable.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mass~11"></span>
+              type(c_funptr),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>mass</strong></td>
+            <td>
+<p>A pointer to the routine for computing the mass matrix.  Pass
+NULL if no routine is necessary.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-output~10"></span>
+              type(c_ptr),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>output</strong></td>
+            <td>
+<p>The output c_ode_results object.  Memory must be freed by 
+c_free_ode_results.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer(kind=c_int)</small>
+    </h4>
+    <p>An error flag denoting the status of the operation.</p>
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-c_dae_bdf"></span> <h3>public  function <a href='..\proc\c_dae_bdf.html'>c_dae_bdf</a>(model, nx, nstates, x, initcond, settings, output, estats) result(rst) bind(C, name = "c_dae_bdf")  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Utilizes a variable order BDF integrator to solve the system of
+DAE's.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-model~6"></span>
+              type(<a href='..\type\c_ggl_container.html'>c_ggl_container</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>model</strong></td>
+            <td>
+<p>The <a href="..\type\c_ggl_container.html">c_ggl_container</a> containing the constraints and model.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nx~15"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nx</strong></td>
+            <td>
+<p>The number of solution points.  This value must be at least 2;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nstates~17"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nstates</strong></td>
+            <td>
+<p>The number of state equations, including the constraints.  This 
+value must be at least 1; else, a C_INVALID_INPUT_ERROR is 
+returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~66"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong>(nx)</td>
+            <td>
+<p>An NX-element array containing the desired solution points.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-initcond~15"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>initcond</strong>(nstates)</td>
+            <td>
+<p>An NSTATES-element array containing the initial conditions.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-settings~18"></span>
+              type(<a href='..\type\c_ode_settings.html'>c_ode_settings</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>settings</strong></td>
+            <td>
+<p>The integrator settings.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-output~15"></span>
+              type(c_ptr),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>output</strong></td>
+            <td>
+<p>The output c_ode_results object.  Memory must be freed by 
+c_free_ode_results.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-estats~5"></span>
+              type(<a href='..\type\c_ode_event_statistics.html'>c_ode_event_statistics</a>),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>estats</strong></td>
+            <td>
+<p>Event detection solver results and statistics.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer(kind=c_int)</small>
+    </h4>
+    <p>An error flag denoting the status of the operation.</p>
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-c_dae_kennedy_carpenter_4"></span> <h3>public  function <a href='..\proc\c_dae_kennedy_carpenter_4.html'>c_dae_kennedy_carpenter_4</a>(model, nx, nstates, x, initcond, settings, output, estats) result(rst) bind(C, name = "c_dae_kennedy_carpenter_4")  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Utilizes a 4th order Kennedy-Carpenter integrator to solve the 
+system of DAE's.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-model~4"></span>
+              type(<a href='..\type\c_ggl_container.html'>c_ggl_container</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>model</strong></td>
+            <td>
+<p>The <a href="..\type\c_ggl_container.html">c_ggl_container</a> containing the constraints and model.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nx~13"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nx</strong></td>
+            <td>
+<p>The number of solution points.  This value must be at least 2;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nstates~15"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nstates</strong></td>
+            <td>
+<p>The number of state equations, including the constraints.  This 
+value must be at least 1; else, a C_INVALID_INPUT_ERROR is 
+returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~64"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong>(nx)</td>
+            <td>
+<p>An NX-element array containing the desired solution points.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-initcond~13"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>initcond</strong>(nstates)</td>
+            <td>
+<p>An NSTATES-element array containing the initial conditions.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-settings~16"></span>
+              type(<a href='..\type\c_ode_settings.html'>c_ode_settings</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>settings</strong></td>
+            <td>
+<p>The integrator settings.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-output~13"></span>
+              type(c_ptr),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>output</strong></td>
+            <td>
+<p>The output c_ode_results object.  Memory must be freed by 
+c_free_ode_results.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-estats~3"></span>
+              type(<a href='..\type\c_ode_event_statistics.html'>c_ode_event_statistics</a>),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>estats</strong></td>
+            <td>
+<p>Event detection solver results and statistics.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer(kind=c_int)</small>
+    </h4>
+    <p>An error flag denoting the status of the operation.</p>
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-c_dae_kennedy_carpenter_5"></span> <h3>public  function <a href='..\proc\c_dae_kennedy_carpenter_5.html'>c_dae_kennedy_carpenter_5</a>(model, nx, nstates, x, initcond, settings, output, estats) result(rst) bind(C, name = "c_dae_kennedy_carpenter_5")  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Utilizes a 5th order Kennedy-Carpenter integrator to solve the 
+system of DAE's.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-model~5"></span>
+              type(<a href='..\type\c_ggl_container.html'>c_ggl_container</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>model</strong></td>
+            <td>
+<p>The <a href="..\type\c_ggl_container.html">c_ggl_container</a> containing the constraints and model.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nx~14"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nx</strong></td>
+            <td>
+<p>The number of solution points.  This value must be at least 2;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nstates~16"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nstates</strong></td>
+            <td>
+<p>The number of state equations, including the constraints.  This 
+value must be at least 1; else, a C_INVALID_INPUT_ERROR is 
+returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~65"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong>(nx)</td>
+            <td>
+<p>An NX-element array containing the desired solution points.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-initcond~14"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>initcond</strong>(nstates)</td>
+            <td>
+<p>An NSTATES-element array containing the initial conditions.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-settings~17"></span>
+              type(<a href='..\type\c_ode_settings.html'>c_ode_settings</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>settings</strong></td>
+            <td>
+<p>The integrator settings.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-output~14"></span>
+              type(c_ptr),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>output</strong></td>
+            <td>
+<p>The output c_ode_results object.  Memory must be freed by 
+c_free_ode_results.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-estats~4"></span>
+              type(<a href='..\type\c_ode_event_statistics.html'>c_ode_event_statistics</a>),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>estats</strong></td>
+            <td>
+<p>Event detection solver results and statistics.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer(kind=c_int)</small>
+    </h4>
+    <p>An error flag denoting the status of the operation.</p>
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-c_dae_rosenbrock"></span> <h3>public  function <a href='..\proc\c_dae_rosenbrock.html'>c_dae_rosenbrock</a>(model, nx, nstates, x, initcond, settings, output, estats) result(rst) bind(C, name = "c_dae_rosenbrock")  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Utilizes a 4th order Rosenbrock integrator to solve the system of
+DAE's.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-model~3"></span>
+              type(<a href='..\type\c_ggl_container.html'>c_ggl_container</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>model</strong></td>
+            <td>
+<p>The <a href="..\type\c_ggl_container.html">c_ggl_container</a> containing the constraints and model.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nx~12"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nx</strong></td>
+            <td>
+<p>The number of solution points.  This value must be at least 2;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nstates~14"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nstates</strong></td>
+            <td>
+<p>The number of state equations, including the constraints.  This 
+value must be at least 1; else, a C_INVALID_INPUT_ERROR is 
+returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~63"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong>(nx)</td>
+            <td>
+<p>An NX-element array containing the desired solution points.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-initcond~12"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>initcond</strong>(nstates)</td>
+            <td>
+<p>An NSTATES-element array containing the initial conditions.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-settings~15"></span>
+              type(<a href='..\type\c_ode_settings.html'>c_ode_settings</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>settings</strong></td>
+            <td>
+<p>The integrator settings.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-output~12"></span>
+              type(c_ptr),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>output</strong></td>
+            <td>
+<p>The output c_ode_results object.  Memory must be freed by 
+c_free_ode_results.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-estats~2"></span>
+              type(<a href='..\type\c_ode_event_statistics.html'>c_ode_event_statistics</a>),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>estats</strong></td>
+            <td>
+<p>Event detection solver results and statistics.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer(kind=c_int)</small>
+    </h4>
+    <p>An error flag denoting the status of the operation.</p>
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-c_kennedy_carpenter_4"></span> <h3>public  function <a href='..\proc\c_kennedy_carpenter_4.html'>c_kennedy_carpenter_4</a>(nx, nstates, fcn, x, initcond, settings, jac, mass, output) result(rst) bind(C, name = "c_kennedy_carpenter_4")  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Utilizes a 4th order Kennedy-Carpenter integrator to solve a system 
+of first order differential equations or index-1 differential 
+algebraic equations.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nx~8"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nx</strong></td>
+            <td>
+<p>The number of solution points.  This value must be at least 2;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nstates~10"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nstates</strong></td>
+            <td>
+<p>The number of state equations.  This value must be at least 1;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fcn~11"></span>
+              type(c_funptr),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+            <td>
+<p>A pointer to the function containing the equations to integrate.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~59"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong>(nx)</td>
+            <td>
+<p>An NX-element array containing the desired solution points.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-initcond~8"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>initcond</strong>(nstates)</td>
+            <td>
+<p>An NSTATES-element array containing the initial conditions.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-settings~11"></span>
+              type(<a href='..\type\c_ode_settings.html'>c_ode_settings</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>settings</strong></td>
+            <td>
+<p>The integrator settings.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-jac~6"></span>
+              type(c_funptr),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>jac</strong></td>
+            <td>
+<p>A pointer to the routine for computing the Jacobian matrix.
+Pass NULL if no routine is necessary and allowing the integrator
+to use a finite-difference estimate is acceptable.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mass~9"></span>
+              type(c_funptr),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>mass</strong></td>
+            <td>
+<p>A pointer to the routine for computing the mass matrix.  Pass
+NULL if no routine is necessary.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-output~8"></span>
+              type(c_ptr),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>output</strong></td>
+            <td>
+<p>The output c_ode_results object.  Memory must be freed by 
+c_free_ode_results.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer(kind=c_int)</small>
+    </h4>
+    <p>An error flag denoting the status of the operation.</p>
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-c_kennedy_carpenter_5"></span> <h3>public  function <a href='..\proc\c_kennedy_carpenter_5.html'>c_kennedy_carpenter_5</a>(nx, nstates, fcn, x, initcond, settings, jac, mass, output) result(rst) bind(C, name = "c_kennedy_carpenter_5")  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Utilizes a 5th order Kennedy-Carpenter integrator to solve a system 
+of first order differential equations or index-1 differential 
+algebraic equations.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nx~9"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nx</strong></td>
+            <td>
+<p>The number of solution points.  This value must be at least 2;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nstates~11"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nstates</strong></td>
+            <td>
+<p>The number of state equations.  This value must be at least 1;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fcn~12"></span>
+              type(c_funptr),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+            <td>
+<p>A pointer to the function containing the equations to integrate.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~60"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong>(nx)</td>
+            <td>
+<p>An NX-element array containing the desired solution points.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-initcond~9"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>initcond</strong>(nstates)</td>
+            <td>
+<p>An NSTATES-element array containing the initial conditions.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-settings~12"></span>
+              type(<a href='..\type\c_ode_settings.html'>c_ode_settings</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>settings</strong></td>
+            <td>
+<p>The integrator settings.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-jac~7"></span>
+              type(c_funptr),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>jac</strong></td>
+            <td>
+<p>A pointer to the routine for computing the Jacobian matrix.
+Pass NULL if no routine is necessary and allowing the integrator
+to use a finite-difference estimate is acceptable.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mass~10"></span>
+              type(c_funptr),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>mass</strong></td>
+            <td>
+<p>A pointer to the routine for computing the mass matrix.  Pass
+NULL if no routine is necessary.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-output~9"></span>
+              type(c_ptr),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>output</strong></td>
+            <td>
+<p>The output c_ode_results object.  Memory must be freed by 
+c_free_ode_results.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer(kind=c_int)</small>
+    </h4>
+    <p>An error flag denoting the status of the operation.</p>
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-c_rosenbrock"></span> <h3>public  function <a href='..\proc\c_rosenbrock.html'>c_rosenbrock</a>(nx, nstates, fcn, x, initcond, settings, jac, mass, output) result(rst) bind(C, name = "c_rosenbrock")  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Utilizes a 4th order Rosenbrock integrator to solve a system of 
+first order differential equations or index-1 differential 
+algebraic equations.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nx~7"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nx</strong></td>
+            <td>
+<p>The number of solution points.  This value must be at least 2;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nstates~9"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nstates</strong></td>
+            <td>
+<p>The number of state equations.  This value must be at least 1;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fcn~10"></span>
+              type(c_funptr),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+            <td>
+<p>A pointer to the function containing the equations to integrate.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~58"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong>(nx)</td>
+            <td>
+<p>An NX-element array containing the desired solution points.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-initcond~7"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>initcond</strong>(nstates)</td>
+            <td>
+<p>An NSTATES-element array containing the initial conditions.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-settings~10"></span>
+              type(<a href='..\type\c_ode_settings.html'>c_ode_settings</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>settings</strong></td>
+            <td>
+<p>The integrator settings.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-jac~5"></span>
+              type(c_funptr),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>jac</strong></td>
+            <td>
+<p>A pointer to the routine for computing the Jacobian matrix.
+Pass NULL if no routine is necessary and allowing the integrator
+to use a finite-difference estimate is acceptable.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mass~8"></span>
+              type(c_funptr),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>mass</strong></td>
+            <td>
+<p>A pointer to the routine for computing the mass matrix.  Pass
+NULL if no routine is necessary.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-output~7"></span>
+              type(c_ptr),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>output</strong></td>
+            <td>
+<p>The output c_ode_results object.  Memory must be freed by 
+c_free_ode_results.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer(kind=c_int)</small>
+    </h4>
+    <p>An error flag denoting the status of the operation.</p>
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-c_runge_kutta_23"></span> <h3>public  function <a href='..\proc\c_runge_kutta_23.html'>c_runge_kutta_23</a>(nx, nstates, fcn, x, initcond, settings, output) result(rst) bind(C, name = "c_runge_kutta_23")  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Utilizes the 3rd order Bogacki-Shampine Runge-Kutta integrator to 
+solve a system of first order differential equations.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nx~2"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nx</strong></td>
+            <td>
+<p>The number of solution points.  This value must be at least 2;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nstates~4"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nstates</strong></td>
+            <td>
+<p>The number of state equations.  This value must be at least 1;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fcn~5"></span>
+              type(c_funptr),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+            <td>
+<p>A pointer to the function containing the equations to integrate.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~53"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong>(nx)</td>
+            <td>
+<p>An NX-element array containing the desired solution points.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-initcond~2"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>initcond</strong>(nstates)</td>
+            <td>
+<p>An NSTATES-element array containing the initial conditions.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-settings~5"></span>
+              type(<a href='..\type\c_ode_settings.html'>c_ode_settings</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>settings</strong></td>
+            <td>
+<p>The integrator settings.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-output~2"></span>
+              type(c_ptr),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>output</strong></td>
+            <td>
+<p>The output c_ode_results object.  Memory must be freed by 
+c_free_ode_results.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer(kind=c_int)</small>
+    </h4>
+    <p>An error flag denoting the status of the operation.</p>
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-c_runge_kutta_45"></span> <h3>public  function <a href='..\proc\c_runge_kutta_45.html'>c_runge_kutta_45</a>(nx, nstates, fcn, x, initcond, settings, output) result(rst) bind(C, name = "c_runge_kutta_45")  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Utilizes the 5th order Dormand-Prince Runge-Kutta integrator to 
+solve a system of first order differential equations.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nx~3"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nx</strong></td>
+            <td>
+<p>The number of solution points.  This value must be at least 2;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nstates~5"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nstates</strong></td>
+            <td>
+<p>The number of state equations.  This value must be at least 1;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fcn~6"></span>
+              type(c_funptr),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+            <td>
+<p>A pointer to the function containing the equations to integrate.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~54"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong>(nx)</td>
+            <td>
+<p>An NX-element array containing the desired solution points.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-initcond~3"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>initcond</strong>(nstates)</td>
+            <td>
+<p>An NSTATES-element array containing the initial conditions.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-settings~6"></span>
+              type(<a href='..\type\c_ode_settings.html'>c_ode_settings</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>settings</strong></td>
+            <td>
+<p>The integrator settings.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-output~3"></span>
+              type(c_ptr),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>output</strong></td>
+            <td>
+<p>The output c_ode_results object.  Memory must be freed by 
+c_free_ode_results.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer(kind=c_int)</small>
+    </h4>
+    <p>An error flag denoting the status of the operation.</p>
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-c_runge_kutta_853"></span> <h3>public  function <a href='..\proc\c_runge_kutta_853.html'>c_runge_kutta_853</a>(nx, nstates, fcn, x, initcond, settings, output) result(rst) bind(C, name = "c_runge_kutta_853")  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Utilizes the 8th order Hairer Runge-Kutta integrator to 
+solve a system of first order differential equations.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nx~4"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nx</strong></td>
+            <td>
+<p>The number of solution points.  This value must be at least 2;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nstates~6"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nstates</strong></td>
+            <td>
+<p>The number of state equations.  This value must be at least 1;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fcn~7"></span>
+              type(c_funptr),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+            <td>
+<p>A pointer to the function containing the equations to integrate.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~55"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong>(nx)</td>
+            <td>
+<p>An NX-element array containing the desired solution points.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-initcond~4"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>initcond</strong>(nstates)</td>
+            <td>
+<p>An NSTATES-element array containing the initial conditions.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-settings~7"></span>
+              type(<a href='..\type\c_ode_settings.html'>c_ode_settings</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>settings</strong></td>
+            <td>
+<p>The integrator settings.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-output~4"></span>
+              type(c_ptr),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>output</strong></td>
+            <td>
+<p>The output c_ode_results object.  Memory must be freed by 
+c_free_ode_results.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer(kind=c_int)</small>
+    </h4>
+    <p>An error flag denoting the status of the operation.</p>
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-c_tsitouras"></span> <h3>public  function <a href='..\proc\c_tsitouras.html'>c_tsitouras</a>(nx, nstates, fcn, x, initcond, settings, output) result(rst) bind(C, name = "c_tsitouras")  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Utilizes the 5th order Tsitouras Runge-Kutta integrator to 
+solve a system of first order differential equations.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nx~5"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nx</strong></td>
+            <td>
+<p>The number of solution points.  This value must be at least 2;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nstates~7"></span>
+              integer(kind=c_int),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>nstates</strong></td>
+            <td>
+<p>The number of state equations.  This value must be at least 1;
+else, a C_INVALID_INPUT_ERROR is returned.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fcn~8"></span>
+              type(c_funptr),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>fcn</strong></td>
+            <td>
+<p>A pointer to the function containing the equations to integrate.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~56"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong>(nx)</td>
+            <td>
+<p>An NX-element array containing the desired solution points.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-initcond~5"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>initcond</strong>(nstates)</td>
+            <td>
+<p>An NSTATES-element array containing the initial conditions.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-settings~8"></span>
+              type(<a href='..\type\c_ode_settings.html'>c_ode_settings</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>settings</strong></td>
+            <td>
+<p>The integrator settings.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-output~5"></span>
+              type(c_ptr),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>output</strong></td>
+            <td>
+<p>The output c_ode_results object.  Memory must be freed by 
+c_free_ode_results.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer(kind=c_int)</small>
+    </h4>
+    <p>An error flag denoting the status of the operation.</p>
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Subroutines</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-c_default_ode_settings"></span> <h3>public  subroutine <a href='..\proc\c_default_ode_settings.html'>c_default_ode_settings</a>(settings) bind(C, name = "c_default_ode_settings")  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Fills the supplied <a href="..\type\c_ode_settings.html">c_ode_settings</a> object with default settings.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-settings~2"></span>
+              type(<a href='..\type\c_ode_settings.html'>c_ode_settings</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>settings</strong></td>
+            <td>
+<p>The <a href="..\type\c_ode_settings.html">c_ode_settings</a> object.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col"><p>DIFFEQ was developed by Jason Christopherson<br>&copy; 2026 
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-25 07:30              </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
+
+    <!-- MathJax JavaScript
+             ================================================== -->
+             <!-- Placed at the end of the document so the pages load faster -->
+        <script type="text/x-mathjax-config">
+          MathJax.Hub.Config({
+          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+          });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+          <script src="../tipuesearch/tipuesearch_content.js"></script>
+          <script src="../tipuesearch/tipuesearch_set.js"></script>
+          <script src="../tipuesearch/tipuesearch.js"></script>
+
+  </body>
+</html>

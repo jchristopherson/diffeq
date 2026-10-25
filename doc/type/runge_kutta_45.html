@@ -77,7 +77,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title="<p> 5.0% of total for derived types.</p>Including implementation: 466 statements,  6.7% of total for derived types.">16 statements</a>
+                 title="<p> 3.8% of total for derived types.</p>Including implementation: 550 statements,  6.4% of total for derived types.">16 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -110,7 +110,18 @@
       <div id="sidebar">
       <h3>Contents</h3>
   
-  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../type/runge_kutta_45.html#variable-event_solver">event_solver</a>
+        </div>
+      </div>
+    </div>
+
   
   
   
@@ -136,23 +147,29 @@
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-append_to_buffer">append_to_buffer</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-attempt_step">attempt_step</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-clear_buffer">clear_buffer</a>
+            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-compute_dense_output~3">compute_dense_output</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-compute_error_norm">compute_error_norm</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-estimate_inital_step_size">estimate_inital_step_size</a>
-            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-estimate_next_step_size~2">estimate_next_step_size</a>
+            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-estimate_next_step_size">estimate_next_step_size</a>
+            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-evaluate_dense">evaluate_dense</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_absolute_tolerance">get_absolute_tolerance</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_allow_overshoot">get_allow_overshoot</a>
+            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_dense_interval">get_dense_interval</a>
+            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_dense_output_enabled">get_dense_output_enabled</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_is_fsal">get_is_fsal</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_maximum_step_size">get_maximum_step_size</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_minimum_step_size">get_minimum_step_size</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_ode_results">get_ode_results</a>
-            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_order">get_order</a>
+            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_order~2">get_order</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_relative_tolerance">get_relative_tolerance</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_solution">get_solution</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_stage_count">get_stage_count</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_step_limit">get_step_limit</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_step_size_control_parameter">get_step_size_control_parameter</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_step_size_factor">get_step_size_factor</a>
+            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-has_dense_output">has_dense_output</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-interpolate">interpolate</a>
+            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-invalidate_dense_output">invalidate_dense_output</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-log_failed_step">log_failed_step</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-log_function_evaluation">log_function_evaluation</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-log_jacobian_evaluation">log_jacobian_evaluation</a>
@@ -160,11 +177,13 @@
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-log_successful_step">log_successful_step</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-post_step_action">post_step_action</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-pre_step_action">pre_step_action</a>
-            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-set_absolute_tolerance~2">set_absolute_tolerance</a>
+            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-set_absolute_tolerance~3">set_absolute_tolerance</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-set_allow_overshoot">set_allow_overshoot</a>
+            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-set_dense_interval">set_dense_interval</a>
+            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-set_dense_output_enabled">set_dense_output_enabled</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-set_maximum_step_size">set_maximum_step_size</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-set_minimum_step_size">set_minimum_step_size</a>
-            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-set_relative_tolerance~2">set_relative_tolerance</a>
+            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-set_relative_tolerance~3">set_relative_tolerance</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-set_step_limit">set_step_limit</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-set_step_size_control_parameter">set_step_size_control_parameter</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-set_step_size_factor">set_step_size_factor</a>
@@ -195,6 +214,41 @@ It is a general-purpose choice for moderate-to-high accuracy on
 non-stiff problems.</p>
     <br>
 
+    <section>
+    <h2>Components</h2>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-event_solver"></span>
+              type(<a href='ode_event_solver.html'>ode_event_solver</a>),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>event_solver</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                <p>The ODE event solver.  Enable event detection by defining the
+event_function in the <a href="..\type\ode_container.html">ode_container</a> object.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    </section>
+    <br>
     
 
 
@@ -560,6 +614,89 @@ in and out of the differential equation subroutine.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-compute_dense_output~3"></span>
+      <h3>
+          procedure, public ::
+  <strong>compute_dense_output</strong> => ssi_dense_output
+        
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine ssi_dense_output(this, x, y)  
+</h3>
+
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='single_step_integrator.html'>single_step_integrator</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>y</strong>(:)</td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
       <span class="anchor" id="boundprocedure-compute_error_norm"></span>
       <h3>
           procedure, public ::
@@ -833,7 +970,7 @@ in and out of the differential equation subroutine.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-estimate_next_step_size~2"></span>
+      <span class="anchor" id="boundprocedure-estimate_next_step_size"></span>
       <h3>
           procedure, public ::
   <strong>estimate_next_step_size</strong> => oi_next_step
@@ -948,6 +1085,100 @@ this variable is updated.</p>
     <small>real(kind=real64)</small>
     </h4>
     <p>The new step size estimate.</p>
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-evaluate_dense"></span>
+      <h3>
+          procedure, public ::
+  <strong>evaluate_dense</strong> => oi_evaluate_dense
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Evaluates the prepared step without advancing integration.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine oi_evaluate_dense(this, x, y)  
+</h3>
+
+  <p>Evaluates the interpolant for the last prepared accepted step at a
+requested independent-variable value. The query must be finite and
+within the step interval, including either endpoint. This operation
+does not advance or otherwise change solver state and does not evaluate
+the ODE function. An error stop occurs if no valid interpolant is
+available, the output array has the wrong size, or the query is
+non-finite or outside the interval.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_integrator.html'>ode_integrator</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The ODE integrator containing the prepared interpolant.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+            <td>
+                <p>The independent-variable value at which to evaluate the solution.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>y</strong>(:)</td>
+            <td>
+                <p>Receives the interpolated dependent-variable values. Its size must
+equal the number of dependent variables in the prepared step.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
 
         </li>
     </ul>
@@ -1091,6 +1322,158 @@ value in the integration range.</p>
     <p>True if the solver can overshoot, and then interpolate to achieve the
 required final value; else, false thereby indicating the solver 
 cannot overshoot.</p>
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-get_dense_interval"></span>
+      <h3>
+          procedure, public ::
+  <strong>get_dense_interval</strong> => oi_get_dense_interval
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Gets the prepared step's start and end in integration order.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine oi_get_dense_interval(this, x_start, x_end)  
+</h3>
+
+  <p>Gets the endpoints of the currently prepared dense-output interval.
+An error stop occurs if no valid interpolant is available.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_integrator.html'>ode_integrator</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The ODE integrator.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x_start</strong></td>
+            <td>
+                <p>Receives the first endpoint in integration order.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x_end</strong></td>
+            <td>
+                <p>Receives the second endpoint in integration order.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-get_dense_output_enabled"></span>
+      <h3>
+          procedure, public ::
+  <strong>get_dense_output_enabled</strong> => oi_get_dense_enabled
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Gets the explicit dense-output preparation setting.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private pure function oi_get_dense_enabled(this) result(rst)  
+</h3>
+
+  <p>Gets the explicit dense-output preparation setting.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_integrator.html'>ode_integrator</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The ODE integrator.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    <p>True if explicit dense-output preparation is enabled; otherwise,
+false. This setting is independent of preparation required to
+produce values on a requested output grid.</p>
 
         </li>
     </ul>
@@ -1351,7 +1734,7 @@ The integrator retains the original copy.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-get_order"></span>
+      <span class="anchor" id="boundprocedure-get_order~2"></span>
       <h3>
           procedure, public ::
   <strong>get_order</strong> => rk45_get_order
@@ -1816,6 +2199,68 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-has_dense_output"></span>
+      <h3>
+          procedure, public ::
+  <strong>has_dense_output</strong> => oi_has_dense_output
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Tests whether a prepared accepted-step interpolant is available.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private pure function oi_has_dense_output(this) result(rst)  
+</h3>
+
+  <p>Determines whether a prepared accepted-step interpolant is available.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_integrator.html'>ode_integrator</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The ODE integrator.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    <p>True if dense output is currently valid; otherwise, false.</p>
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
       <span class="anchor" id="boundprocedure-interpolate"></span>
       <h3>
           procedure, public ::
@@ -1982,6 +2427,63 @@ solution is computed.</p>
             <td>
                 <p>An N-element array where this routine will write the 
 solution values interpolated at x.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-invalidate_dense_output"></span>
+      <h3>
+          procedure, public ::
+  <strong>invalidate_dense_output</strong> => oi_invalidate_dense
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Invalidates the prepared interpolant before stepping or resetting.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine oi_invalidate_dense(this)  
+</h3>
+
+  <p>Marks any prepared dense-output interpolant as unavailable.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_integrator.html'>ode_integrator</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The ODE integrator.</p>
             </td>
         </tr>
     </tbody>
@@ -2738,7 +3240,7 @@ in and out of the differential equation subroutine.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-set_absolute_tolerance~2"></span>
+      <span class="anchor" id="boundprocedure-set_absolute_tolerance~3"></span>
       <h3>
           generic, public ::
   <strong>set_absolute_tolerance</strong> => oi_set_abs_tol, oi_set_abs_tols
@@ -2935,6 +3437,189 @@ cannot overshoot.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_dense_interval"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_dense_interval</strong> => oi_set_dense_interval
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Implementation hook publishing a prepared accepted step.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine oi_set_dense_interval(this, x_start, x_end, n)  
+</h3>
+
+  <p>Publishes the interval covered by retained dense-output interpolation
+data for one accepted step. The endpoints are recorded in integration
+order, which may be increasing or decreasing. The interpolant is marked
+valid after the interval and state dimension have been recorded.
+An error stop occurs if either endpoint is non-finite, the endpoints
+are equal, or the state dimension is less than one.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_integrator.html'>ode_integrator</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The ODE integrator.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x_start</strong></td>
+            <td>
+                <p>The first endpoint of the accepted step in integration order.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x_end</strong></td>
+            <td>
+                <p>The second endpoint of the accepted step in integration order.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+                <p>The number of dependent variables represented by the interpolant.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_dense_output_enabled"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_dense_output_enabled</strong> => oi_set_dense_enabled
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Enables dense output on every accepted step (default: false).</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine oi_set_dense_enabled(this, enabled)  
+</h3>
+
+  <p>Enables or disables explicit dense-output preparation.
+When enabled, the integrator prepares dense output for each accepted
+step independently of whether the requested output grid requires it.
+Disabling this setting does not prevent dense output needed to produce
+requested solution values. Any previously prepared step is invalidated.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_integrator.html'>ode_integrator</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The ODE integrator.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>enabled</strong></td>
+            <td>
+                <p>True to enable explicit dense-output preparation; false to disable it.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
       <span class="anchor" id="boundprocedure-set_maximum_step_size"></span>
       <h3>
           procedure, public ::
@@ -3079,7 +3764,7 @@ cannot overshoot.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-set_relative_tolerance~2"></span>
+      <span class="anchor" id="boundprocedure-set_relative_tolerance~3"></span>
       <h3>
           generic, public ::
   <strong>set_relative_tolerance</strong> => oi_set_rel_tol, oi_set_rel_tols
@@ -3441,7 +4126,7 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
     <ul class="list-group">
         <li class="list-group-item">
                   <h3>
-    public  subroutine <a href='..\proc\ssi_ode_solver.html'>ssi_ode_solver</a>(this, sys, x, iv, args)  
+    public  subroutine <a href='..\proc\ssi_ode_solver.html'>ssi_ode_solver</a>(this, sys, x, iv, store_iv, args)  
 </h3>
     
 
@@ -3522,6 +4207,26 @@ the solution to the ODE's.</p>
         <tr>
             <td>
               <span class="anchor" ></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>store_iv</strong></td>
+            <td>
+<p>An optional input that determines whether or not the 
+initial values are stored as part of the output.  The
+default is true such that the initial values are stored;
+however, set to false to avoid storing the initial values.
+This can be useful in cases of event detection where a 
+restart of the integrator is desired.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
               class(*),
             </td>
 <td>intent(inout),</td>
@@ -3562,7 +4267,7 @@ in and out of the differential equation subroutine.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-14 15:56              </p>
+ on 2026-10-25 07:30              </p>
           </div>
         </div>
         <br>

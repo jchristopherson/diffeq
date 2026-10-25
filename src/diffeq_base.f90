@@ -251,7 +251,7 @@ module diffeq_base
             ! The number of dense output equations.
         type(ode_event_solver), public :: event_solver
             !! The ODE event solver.  Enable event detection by defining the
-            !! event_function in the [[ode_controller]] object.
+            !! event_function in the [[ode_container]] object.
     contains
         procedure, public :: set_dense_output_enabled => oi_set_dense_enabled
             !! Enables dense output on every accepted step (default: false).
