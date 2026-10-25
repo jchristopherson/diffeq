@@ -39,7 +39,10 @@ module diffeq_singlestep
     type, abstract, extends(ode_integrator) :: single_step_integrator
         !! The most basic, single-step integrator object capable of integrating
         !! systems of ODE's.
+        real(real64), private, allocatable, dimension(:,:) :: m_denseState
     contains
+        procedure, public :: compute_dense_output => ssi_dense_output
+        procedure, private :: cache_dense_output => ssi_cache_dense
         procedure(attempt_single_step), public, pass, deferred :: attempt_step
             !! Attempts an integration step for a single-step integrator.
         procedure(get_single_step_logical_parameter), public, pass, &
@@ -212,10 +215,39 @@ module diffeq_singlestep
     end interface
 
 contains
+! ------------------------------------------------------------------------------
+subroutine ssi_cache_dense(this, x_start, x_end, y_start, y_end, f_start, f_end)
+    class(single_step_integrator), intent(inout) :: this
+    real(real64), intent(in) :: x_start, x_end
+    real(real64), intent(in) :: y_start(:), y_end(:), f_start(:), f_end(:)
+    integer :: n
+    n = size(y_start)
+    if (allocated(this%m_denseState)) then
+        if (size(this%m_denseState, 1) /= n) deallocate(this%m_denseState)
+    end if
+    if (.not.allocated(this%m_denseState)) allocate(this%m_denseState(n, 4))
+    this%m_denseState(:,1) = y_start
+    this%m_denseState(:,2) = f_start
+    this%m_denseState(:,3) = y_end
+    this%m_denseState(:,4) = f_end
+    call this%set_dense_interval(x_start, x_end, n)
+end subroutine
+
+subroutine ssi_dense_output(this, x, y)
+    class(single_step_integrator), intent(in) :: this
+    real(real64), intent(in) :: x
+    real(real64), intent(out) :: y(:)
+    real(real64) :: x_start, x_end
+    call this%get_dense_interval(x_start, x_end)
+    call this%interpolate(x, x_start, this%m_denseState(:,1), &
+        this%m_denseState(:,2), x_end, this%m_denseState(:,3), &
+        this%m_denseState(:,4), y)
+end subroutine
+
 ! ******************************************************************************
 ! SINGLE-STEP INTEGRATOR
 ! ------------------------------------------------------------------------------
-subroutine ssi_ode_solver(this, sys, x, iv, args)
+subroutine ssi_ode_solver(this, sys, x, iv, store_iv, args)
     !! Solves the supplied system of ODE's.
     class(single_step_integrator), intent(inout) :: this
         !! The single_step_integrator object.
@@ -226,24 +258,37 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
         !! the solution to the ODE's.
     real(real64), intent(in), dimension(:) :: iv
         !! An array containing the initial values for each ODE.
+    logical, intent(in), optional :: store_iv
+        !! An optional input that determines whether or not the 
+        !! initial values are stored as part of the output.  The
+        !! default is true such that the initial values are stored;
+        !! however, set to false to avoid storing the initial values.
+        !! This can be useful in cases of event detection where a 
+        !! restart of the integrator is desired.
     class(*), intent(inout), optional, target :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    logical :: dense, success, forward
-    integer :: i, j, n, neqn, nsteps, nstages
-    real(real64) :: h, xo, xn, xmax, ei, eold
-    real(real64), allocatable, dimension(:) :: f, y, yn, fn, yerr, yi
+    logical :: dense, need_dense, success, forward, find_events, event_found
+    integer :: i, j, n, neqn, nsteps, nstages, nevents
+    real(real64) :: h, xo, xn, xmax, ei, eold, xe
+    real(real64), allocatable, dimension(:) :: f, y, yn, fn, yerr, yi, ye
     real(real64), allocatable, dimension(:,:) :: k
     
     ! Initialization
     n = size(x)
     success = .true.
+    call this%invalidate_dense_output()
+    nevents = sys%get_event_equation_count()
+    find_events = sys%get_is_ode_event_function_defined() .and. nevents > 0
 
     ! Input Checking
     if (n < 2) error stop DIFFEQ_ARRAY_SIZE_ERROR
     if (.not.sys%get_is_ode_defined()) error stop DIFFEQ_MISSING_ARGUMENT_ERROR
+
+    ! Ensure interpolation is enabled if we're solving for events as well
+    if (find_events) call this%set_dense_output_enabled(.true.)
 
     ! Additional Initialization
     neqn = size(iv)
@@ -266,6 +311,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
         k(neqn, nstages), &
         yi(neqn) &
     )
+    if (find_events) allocate(ye(neqn))
 
     ! Estimate an initial step size
     !
@@ -275,11 +321,16 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
     call this%estimate_inital_step_size(sys, xo, xmax, iv, f, h, args)
     
     ! Store the initial conditions
-    call this%append_to_buffer(x(1), iv)
+    if (present(store_iv)) then
+        if (store_iv) call this%append_to_buffer(x(1), iv)
+    else
+        call this%append_to_buffer(x(1), iv)
+    end if
     y = iv
 
     ! Cycle until integration is complete
     do i = 1, nsteps
+        call this%invalidate_dense_output()
         ! Perform any pre-step actions
         call this%pre_step_action(success, sys, h, xo, y, f, args = args)
         
@@ -302,8 +353,30 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
 
         ! If we're here, the step has been successful.  Take any post-step
         ! action such as setting up interpolation routines, etc.
-        call this%post_step_action(sys, dense, xo, xn, y, yn, f, fn, k, args)
+        need_dense = dense .or. this%get_dense_output_enabled() .or. &
+            ((xmax - x(1)) * (xn - xmax) > 0.0d0)
+        call this%post_step_action(sys, need_dense, xo, xn, y, yn, f, fn, k, args)
+        if (need_dense) call this%cache_dense_output(xo, xn, y, yn, f, fn)
         call this%log_successful_step()
+
+        ! Detect events
+        if (find_events) then
+            event_found = this%event_solver%find_event(sys%event_function, &
+                this, nevents, xo, y, xn, yn, xe, ye, args = args)
+            if (event_found) then
+                if (dense) then
+                    interp_event : do while (j <= n .and. &
+                        ((forward .and. x(j) < xe) .or. &
+                        (.not.forward .and. x(j) > xe)))
+                        call this%evaluate_dense(x(j), yi)
+                        call this%append_to_buffer(x(j), yi)
+                        j = j + 1
+                    end do interp_event
+                end if
+                call this%append_to_buffer(xe, ye)
+                go to 100
+            end if
+        end if
 
         ! Do we need to interpolate for dense output, or can we just store
         ! values and move on
@@ -312,7 +385,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
             interp : do while (j <= n .and. &
                 ((forward .and. x(j) <= xn) .or. &
                 (.not.forward .and. x(j) >= xn)))
-                call this%interpolate(x(j), xo, y, f, xn, yn, fn, yi)
+                call this%evaluate_dense(x(j), yi)
                 call this%append_to_buffer(x(j), yi)
                 j = j + 1
                 if (j > n) exit interp
@@ -328,9 +401,8 @@ subroutine ssi_ode_solver(this, sys, x, iv, args)
             ! integration points and the solver oversteps the endpoint.
             if ((xmax - x(1)) * (xn - xmax) > 0.0d0) then
                 ! Interpolate to get the solution at xmax
-                call this%post_step_action(sys, .true., xo, xn, y, yn, f, fn, k)
                 if (j <= n) then
-                    call this%interpolate(xmax, xo, y, f, xn, yn, fn, yi)
+                    call this%evaluate_dense(xmax, yi)
                     call this%append_to_buffer(xmax, yi)
                 end if
             end if
