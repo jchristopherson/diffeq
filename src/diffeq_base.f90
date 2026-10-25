@@ -1368,7 +1368,8 @@ function oes_find_event(this, fcn, integrator, neqn, x1, y1, x2, y2, x, y, &
         !! True if the process converged to a root; else, false.
 
     ! Local Variables
-    integer :: i, nstates, niter, neval, ind
+    integer :: i, nstates, ind
+    integer, allocatable :: niter(:), neval(:)
     real(real64) :: eps
     real(real64), allocatable, dimension(:) :: xs
     real(real64), allocatable, dimension(:,:) :: ys
@@ -1385,7 +1386,9 @@ function oes_find_event(this, fcn, integrator, neqn, x1, y1, x2, y2, x, y, &
     allocate( &
         xs(neqn), &
         ys(nstates, neqn), &
-        found_event(neqn) &
+        found_event(neqn), &
+        niter(neqn), &
+        neval(neqn) &
     )
     x = ieee_value(0.0d0, ieee_quiet_nan)
     y = ieee_value(0.0d0, ieee_quiet_nan)
@@ -1399,7 +1402,7 @@ function oes_find_event(this, fcn, integrator, neqn, x1, y1, x2, y2, x, y, &
     ! Locate events
     do i = 1, neqn
         found_event(i) = this%find_channel_event(fcn, integrator, i, neqn, &
-            x1, y1, x2, y2, xs(i), ys(:,i), niter, neval, args = args)
+            x1, y1, x2, y2, xs(i), ys(:,i), niter(i), neval(i), args = args)
     end do
     rst = any(found_event)
     if (.not.rst) return
@@ -1420,8 +1423,8 @@ function oes_find_event(this, fcn, integrator, neqn, x1, y1, x2, y2, x, y, &
     y = ys(:,ind)
 
     ! Store the iteration statistics information
-    this%solver_statistics%function_evaluations = neval
-    this%solver_statistics%iteration_count = niter
+    this%solver_statistics%function_evaluations = neval(ind)
+    this%solver_statistics%iteration_count = niter(ind)
     this%solver_statistics%event_index = ind
 end function
 

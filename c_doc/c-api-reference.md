@@ -13,13 +13,22 @@ accept optional Jacobian and mass-matrix callbacks.
 
 DAE integrators instead take a `c_ggl_container`, requested point count, full
 augmented-state count, time grid, mutable initial state, settings, and output
-handle. For `N` coordinates and `M` constraints, pass
+handle, and an output `c_ode_event_statistics` object. For `N` coordinates and `M` constraints, pass
 `nstates = 2 * (N + M)`.  The solver requires the position and velocity values specified in the initial state vector satisfy the constraints; however, the solver will determine proper initial values for the multiplier components.
 
 The callback declarations describe the exact array lengths and storage. In
 particular, the DAE force callback receives the coordinate and velocity state
 but writes only the physical force vector; it must not write multiplier
 components.
+
+Zero-initialize `c_ggl_container` before assigning its callbacks and parameters.
+To enable event detection, set `events` to a `c_ode_event_function` callback
+and `event_equation_count` to a positive count. The callback receives the full
+augmented state, including both multiplier blocks. Integration stops at the
+earliest detected event in integration order and includes its time and state
+in the results. The statistics report the zero-based event index, or `-1` if
+no event is found. A `NULL` callback or a count less than one disables event
+detection.
 
 ## Results and errors
 

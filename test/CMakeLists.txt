@@ -173,6 +173,14 @@ endforeach()
 
 if (${BUILD_SHARED_LIBS} AND WIN32)
     add_custom_command(
+        TARGET diffeq_c_dae_integrator_tests
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        $<TARGET_RUNTIME_DLLS:diffeq_c_dae_integrator_tests>
+        $<TARGET_FILE_DIR:diffeq_c_dae_integrator_tests>
+        COMMAND_EXPAND_LISTS
+    )
+    add_custom_command(
         TARGET diffeq_tests
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
