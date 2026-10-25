@@ -1246,6 +1246,59 @@ program also copies the column-major solution matrix using
 `c_get_ode_results`. The output-point count is independent of the number of
 internal steps; use `c_get_ode_results_statistics` to measure the latter.
 
+### Event Detection
+
+[c_event_detection_example.c](examples/c_event_detection_example.c) models a
+ball falling from a height of 5 meters, stops at ground contact, and restarts
+the integration with an upward velocity to simulate a bounce. The ODE callback
+computes height and velocity; the event callback returns the height,
+whose zero marks an impact:
+
+```c
+void ball(int n, double t, const double *y, double *dydt)
+{
+    dydt[0] = y[1];
+    dydt[1] = -9.81;
+}
+
+void ball_ground_constraint(int neqn, int nstates, double t,
+    const double *y, double *f)
+{
+    f[0] = y[0];
+}
+
+double t[] = {0.0, 10.0};
+double ic[] = {5.0, 0.0};
+c_ode_settings settings;
+c_ode_event_solver_settings esettings;
+c_ode_results results;
+c_ode_event_statistics estats;
+
+c_default_ode_settings(&settings);
+c_default_ode_event_solver_settings(&esettings);
+int flag = c_tsitouras_events(2, 2, 1, ball, t, ic, &settings,
+    &esettings, ball_ground_constraint, &results, &estats);
+if (flag != C_NO_ERROR) {
+    fprintf(stderr, "Integration failed: %d\n", flag);
+    return flag;
+}
+
+/* Retrieve the impact time and state before releasing the results. */
+c_free_ode_results(results);
+```
+
+The returned solution ends at the detected event, with columns for time, height,
+and velocity. `estats` reports the zero-based event index, event-function
+evaluations, and root-finding iterations; an event index of `-1` indicates no
+event was found. Passing a `NULL` event callback or an event count less than one
+disables event detection.
+
+The full example retrieves the first impact from the column-major solution
+matrix and starts a second solve at that time with height zero and velocity
+`-0.7` times the impact velocity. A root at the starting bound is ignored so
+the ball can leave the ground before the next impact is detected. Each solve
+returns its own result handle, which must be released with `c_free_ode_results`.
+
 ### Stabilized Constrained Pendulum
 
 [c_stabilized_pendulum_example.c](examples/c_stabilized_pendulum_example.c)
