@@ -147,6 +147,9 @@ program test
     rst = test_kennedy_carpenter_singular_mass_matrix()
         if (.not.rst) flag = max(flag, 22)
 
+    rst = test_kennedy_carpenter_newton_settings()
+        if (.not.rst) flag = max(flag, 60)
+
     rst = test_solver_mass_dispatch()
         if (.not.rst) flag = max(flag, 57)
 

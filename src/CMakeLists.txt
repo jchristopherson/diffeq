@@ -26,6 +26,17 @@ set(DIFFEQ_SOURCES
     ${dir}/dae/diffeq_index_reduction.f90
 )
 
+set(DIFFEQ_C_SOURCES
+    ${dir}/C/diffeq_c_helpers.f90
+    ${dir}/C/diffeq_c_errors.f90
+    ${dir}/C/diffeq_c_containers.f90
+    ${dir}/C/diffeq_c_integrators.f90
+    ${dir}/C/diffeq_c_index_reduction.f90
+    ${dir}/C/diffeq_c_function_pointers.f90
+)
+list(APPEND DIFFEQ_SOURCES ${DIFFEQ_C_SOURCES})
+
+
 # Dependencies
 include(FetchContent)
 find_package(linalg 2.3.0 QUIET)
@@ -82,6 +93,10 @@ install(
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 install(DIRECTORY ${DIFFEQ_MOD_DIR} DESTINATION ${CMAKE_INSTALL_MODULEDIR})
+install(
+    FILES ${dir}/C/diffeq.h
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
 
 if (${BUILD_SHARED_LIBS})
     if (${BUILD_LINALG})

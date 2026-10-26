@@ -32,7 +32,7 @@ module diffeq_rosenbrock_constants
     real(real64), parameter :: d1 = 0.25d0;
     real(real64), parameter :: d2 = -0.1043d0;
     real(real64), parameter :: d3 = 0.1035d0;
-    real(real64), parameter :: d4 = -0.3620000000000023d1;
+    real(real64), parameter :: d4 = -0.3620000000000023d-1;
     real(real64), parameter :: a21 = 0.1544d1;
     real(real64), parameter :: a31 = 0.9466785280815826d0;
     real(real64), parameter :: a32 = 0.2557011698983284d0;

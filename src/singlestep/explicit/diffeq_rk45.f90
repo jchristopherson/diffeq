@@ -272,7 +272,7 @@ subroutine rk45_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k, args)
         bspl = h * f(i) - ydiff
         this%rc3(i) = bspl
         this%rc4(i) = ydiff - h * fn(i) - bspl
-        this%rc5 = h * (d1 * f(i) + d3 * k(i,3) + d4 * k(i,4) + &
+        this%rc5(i) = h * (d1 * f(i) + d3 * k(i,3) + d4 * k(i,4) + &
             d5 * k(i,5) + d6 * k(i,6) + d7 * fn(i))
     end do
 end subroutine

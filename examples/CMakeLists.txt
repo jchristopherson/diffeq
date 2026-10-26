@@ -93,6 +93,14 @@ add_executable(
 )
 target_link_libraries(ode_results_to_file_example diffeq)
 
+# Dense Output Example
+add_executable(dense_output_example dense_output_example.f90)
+target_link_libraries(dense_output_example diffeq diffeq_example_models ${fplot_LIBRARY})
+
+# Event Detection Example
+add_executable(event_detection_example event_detection_example.f90)
+target_link_libraries(event_detection_example diffeq diffeq_example_models ${fplot_LIBRARY})
+
 if (${BUILD_SHARED_LIBS} AND WIN32)
     add_custom_command(
         TARGET stiff_integrator_example
@@ -103,3 +111,26 @@ if (${BUILD_SHARED_LIBS} AND WIN32)
         COMMAND_EXPAND_LISTS
     )
 endif()
+
+# ------------------------------------------------------------------------------
+# C API Examples
+
+add_executable(c_comparison_example c_comparison_example.c)
+target_link_libraries(c_comparison_example diffeq)
+target_include_directories(c_comparison_example PUBLIC ${CMAKE_SOURCE_DIR}/src/C)
+
+add_executable(c_stabilized_pendulum_example c_stabilized_pendulum_example.c c_plot_helper.f90)
+target_link_libraries(c_stabilized_pendulum_example diffeq ${fplot_LIBRARY})
+target_include_directories(c_stabilized_pendulum_example PUBLIC ${CMAKE_SOURCE_DIR}/src/C ${CMAKE_SOURCE_DIR}/examples)
+
+add_executable(c_vanderpol_example c_vanderpol_example.c c_plot_helper.f90)
+target_link_libraries(c_vanderpol_example diffeq ${fplot_LIBRARY})
+target_include_directories(c_vanderpol_example PUBLIC ${CMAKE_SOURCE_DIR}/src/C ${CMAKE_SOURCE_DIR}/examples)
+
+add_executable(c_dense_output_example c_dense_output_example.c c_plot_helper.f90)
+target_link_libraries(c_dense_output_example diffeq ${fplot_LIBRARY})
+target_include_directories(c_dense_output_example PUBLIC ${CMAKE_SOURCE_DIR}/src/C ${CMAKE_SOURCE_DIR}/examples)
+
+add_executable(c_event_detection_example c_event_detection_example.c c_plot_helper.f90)
+target_link_libraries(c_event_detection_example diffeq ${fplot_LIBRARY})
+target_include_directories(c_event_detection_example PUBLIC ${CMAKE_SOURCE_DIR}/src/C ${CMAKE_SOURCE_DIR}/examples)

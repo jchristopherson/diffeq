@@ -6,7 +6,20 @@ A modern Fortran library providing an object-oriented approach to solving and ex
 [![Actions Status](https://github.com/jchristopherson/diffeq/workflows/fpm/badge.svg)](https://github.com/jchristopherson/diffeq/actions)
 
 ## Documentation
-The documentation can be found [here](https://jchristopherson.github.io/diffeq/).
+- [Fortran API Documentation](https://jchristopherson.github.io/diffeq/).
+- [C API Documentation](https://jchristopherson.github.io/diffeq/c-api/).
+
+## Capabilities
+| Capability | Summary |
+| --- | --- |
+| Ordinary differential equations (ODEs) | Solve initial-value problems with adaptive step-size control and configurable absolute and relative tolerances. |
+| Mass-matrix systems | Formulate problems as $M y' = f(x,y)$, including systems with state-dependent mass matrices. |
+| Index-1 differential-algebraic equations (DAEs) | Solve supported singular-mass-matrix systems with consistent initial conditions. |
+| Holonomically constrained mechanics | Use a stabilized index-1 GGL-inspired formulation with position and velocity constraint residual damping. |
+| Dense output | Request a specified output grid or evaluate the last prepared accepted step through a common solver interface. |
+| Event detection | Stop integration at zero crossings of user-defined event functions, then restart with updated initial conditions if needed. |
+| Solution diagnostics | Retrieve step counts, function and Jacobian evaluations, and matrix-factorization statistics. |
+| C interoperability | Integrate from C through the library's C API. |
 
 ## Available Integrators
 - Runge-Kutta, 5th Order with 4th-Order Embedded Estimate (Dormand-Prince)
@@ -84,7 +97,10 @@ than an ODE. The `rosenbrock` integrator forms and factors
 $\frac{1}{\gamma h} M - J$ by means of a QR factorization with column
 pivoting, so it is able to accommodate a singular $M$ and solve index-1
 DAEs. The Kennedy-Carpenter ESDIRK integrators use implicit stage solves
-and a consistent-derivative calculation, and `bdf` factors
+and a consistent-derivative calculation. Their stage solves use a simplified
+Newton iteration that reuses a single factorization of $M - \gamma h J$ for
+every stage, keeps the Jacobian across steps while the iteration converges
+quickly, and refreshes it only when convergence slows or fails. `bdf` factors
 $\frac{\alpha_0}{h} M - J$ in the same spirit. Consequently, all of these
 integrators can accommodate a singular $M$ and solve index-1 DAEs. The
 [Differential-Algebraic Equations](#differential-algebraic-equations) example
@@ -115,13 +131,18 @@ integrators:
 | `model%fcn` | Defines $f(x,y)$ for the problem. This callback is required. |
 | `model%jacobian` | Supplies $J = \partial f / \partial y$. If omitted, DIFFEQ estimates it by finite differences where needed. |
 | `model%mass_matrix` | Supplies $M(x,y)$ for a system written as $M y' = f(x,y)$. It is supported by the Rosenbrock, Kennedy-Carpenter, BDF, and Adams solvers. Only Adams requires $M$ to be nonsingular. |
-| `integrator%solve(model, x, y0)` | Integrates from `x(1)` to `x(size(x))` using initial state `y0`. |
+| `model%event_function` | Supplies one or more event values; DIFFEQ locates zero crossings and stops the solve at a detected event. Set the number of event values with `model%set_event_equation_count(count)`. |
+| `integrator%solve(model, x, y0, store_iv)` | Integrates from `x(1)` to `x(size(x))` using initial state `y0`. The optional `store_iv` defaults to true; set it to false when restarting at an event already present in the result buffer. |
 | `integrator%get_solution()` | Returns an $N \times (n+1)$ array with the independent variable in column 1 and state values in columns 2 through $n+1$. |
 | `integrator%get_ode_results()` | Returns an `ode_results` container that provides the solution and statistics on integrator performance, including step counts and function, Jacobian, and matrix-factorization evaluations. |
+| `integrator%set_dense_output_enabled(enabled)` | Opts into dense-output preparation on every accepted step. The default is false. |
+| `integrator%has_dense_output()` | Tests whether a prepared accepted-step interpolant is available. |
+| `integrator%get_dense_interval(x_start, x_end)` | Returns the prepared step's endpoints in integration order, including for backward integration. |
+| `integrator%evaluate_dense(x, y)` | Evaluates the prepared step at `x` into the state-sized array `y`, without advancing integration or evaluating the ODE. |
 | `set_absolute_tolerance` / `set_relative_tolerance` | Control the local error scale, approximately $\mathrm{atol} + \mathrm{rtol}|y|$. |
 | `set_step_size_control_parameter` | Sets the PI controller parameter used by the Kennedy-Carpenter solvers. Rosenbrock and the multi-step solvers use their own step-size estimators. |
 | `set_maximum_order` / `get_maximum_order` | Bound the order of a multi-step solver. A request above what the method supports is clamped rather than rejected. |
-| `set_newton_step_limit` / `set_newton_tolerance` | Govern the Newton iteration used by the implicit multi-step solvers, such as `bdf`. |
+| `set_newton_step_limit` / `set_newton_tolerance` | Govern the Newton iteration used by `bdf` and the Kennedy-Carpenter solvers. For the Kennedy-Carpenter solvers the defaults are 12 iterations and a tolerance of $10^{-8}$; the effective tolerance is further capped at 1% of the smallest integration tolerance so that the Newton error stays below the local error estimate. |
 | `set_maximum_step_size` / `set_minimum_step_size` | Bound adaptive step sizes. |
 | `set_allow_overshoot` | Controls whether a final integration step may pass the requested endpoint and be interpolated back. |
 
@@ -142,6 +163,55 @@ The `x` argument may contain only the start and end points, in which case the
 solver returns accepted step endpoints. When it contains more than two values,
 the solver returns values at those requested points using dense output. All
 solver types expose the same `solve` and `get_solution` workflow.
+
+### Local Dense Output (Fortran)
+
+All integrators expose the same interface for evaluating the last prepared
+accepted step, including through a `class(ode_integrator)` reference:
+
+```fortran
+call solver%set_dense_output_enabled(.true.)
+call solver%solve(model, [0.0d0, 1.0d0], initial_state, args)
+if (solver%has_dense_output()) then
+    call solver%get_dense_interval(x_start, x_end)
+    call solver%evaluate_dense(x_start + 0.5d0 * (x_end - x_start), y)
+end if
+```
+
+Declare `y` with one element per state variable. The interval includes both
+endpoints, and its endpoints follow integration order: `x_start > x_end` for
+backward integration. This is a local interpolant, not a continuous solution
+archive for the whole integration.
+
+Explicit preparation is disabled by default to preserve the cost of existing
+two-point solves. An output grid with more than two points, or interpolation
+back from an overshoot, prepares dense output automatically. The
+`get_dense_output_enabled` setting reports the explicit opt-in, whereas
+`has_dense_output` reports actual availability. In particular, event detection
+must not infer availability solely from the number of requested output points.
+RK853 preparation requires three additional RHS evaluations per prepared step;
+subsequent `evaluate_dense` calls require no RHS evaluations for any solver.
+
+The interpolant is invalidated when another step is attempted, a new solve
+starts, `clear_buffer` is called, the explicit preparation setting is set, or
+multistep history is reset. It remains available after `solve` returns if the
+final accepted step was prepared. Rejected steps do not publish dense output.
+Multistep dense output caches the accepted step's polynomial, independently of
+subsequent order selection. Interpolant accuracy remains method-specific.
+
+Calling `evaluate_dense` or `get_dense_interval` without a prepared step reports
+`DIFFEQ_INVALID_OPERATION_ERROR`. A wrongly sized output array reports
+`DIFFEQ_ARRAY_SIZE_ERROR`; nonfinite coordinates or coordinates outside the
+prepared interval report `DIFFEQ_INVALID_INPUT_ERROR`. No extrapolation is
+performed by this interface.
+
+Existing `interpolate` bindings retain their signatures and behavior. Custom
+types derived directly from `ode_integrator` must implement the new
+`compute_dense_output(this, x, y)` hook with `this` declared `intent(in)`.
+Solver implementations publish a prepared step with
+`set_dense_interval(x_start, x_end, state_count)` and invalidate it before
+altering interpolation data with `invalidate_dense_output`. These are
+implementation hooks; application code should use `evaluate_dense`.
 
 ### Choosing an Integrator
 - `runge_kutta_23`
@@ -258,6 +328,19 @@ cmake --build build --config Release
 ctest --test-dir build --output-on-failure
 ```
 
+The C API tests can be run separately with
+`ctest --test-dir build --output-on-failure -R '^diffeq_c_'`. They are organized as:
+
+- [diffeq_c_api_tests.c](test/diffeq_c_api_tests.c): default settings, result
+  access, matrix layout, error codes, and file output.
+- [diffeq_c_integrator_tests.c](test/diffeq_c_integrator_tests.c): table-driven
+  accuracy, forward/reverse integration, overshoot-setting, callback statistics,
+  and invalid-input tests shared by all C integrators. Each method has its own
+  CTest entry; add new methods to both the function table and the CMake test list.
+- [diffeq_c_rosenbrock_tests.c](test/diffeq_c_rosenbrock_tests.c): all combinations
+  of optional analytical Jacobian and mass-matrix callbacks, including
+  column-major matrix indexing and solver-specific statistics.
+
 The example programs are enabled separately:
 
 ```sh
@@ -266,8 +349,9 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
 cmake --build build --config Release
 ```
 
-Install the library, generated Fortran module files, CMake package files, and
-pkg-config metadata to a local prefix with:
+Install the library, generated Fortran module files, the C API header
+(`diffeq.h`), CMake package files, and pkg-config metadata to a local prefix
+with:
 
 ```sh
 cmake --install build --prefix "$PWD/install"
@@ -331,55 +415,23 @@ $$
 \dot{y}_1 = y_2, \qquad \dot{y}_2 = \mu \left( 1 - y_1^2 \right) y_2 - y_1.
 $$
 
-The following example solves this system for $\mu = 5$ over $0 \le x \le 50$ with $y_1(0) = 2$ and $y_2(0) = 0$ using a 4th-order Rosenbrock solver, but other solvers can be used in an identical manner.  The example also utilizes the [FPLOT](https://github.com/jchristopherson/fplot) library to plot the solution.
+The following example solves this system for $\mu = 5$ over $0 \le x \le 50$ with $y_1(0) = 2$ and $y_2(0) = 0$ using a 4th-order Rosenbrock solver. The solution is returned as an array whose first column contains $x$ and whose remaining columns contain the state.  The complete source is found at [rosenbrock_example.f90](examples/rosenbrock_example.f90).
+
 ```fortran
 program example
     use iso_fortran_env
     use diffeq
     use diffeq_models
-    use fplot_core
     implicit none
 
-    ! Local Variables
     type(rosenbrock) :: integrator
     type(ode_container) :: mdl
     real(real64), allocatable :: sol(:,:)
 
-    ! Plot Variables
-    type(plot_2d) :: plt
-    type(plot_data_2d) :: pd1, pd2
-    class(plot_axis), pointer :: xAxis, yAxis, y2Axis
-    class(legend), pointer :: lgnd
-
-    ! Define the model
     mdl%fcn => vanderpol
 
-    ! Compute the solution
     call integrator%solve(mdl, [0.0d0, 5.0d1], [2.0d0, 0.0d0])
     sol = integrator%get_solution()
-
-    ! Plot the results
-    call plt%initialize()
-    xAxis => plt%get_x_axis()
-    yAxis => plt%get_y_axis()
-    y2Axis => plt%get_y2_axis()
-    lgnd => plt%get_legend()
-    call xAxis%set_title("x")
-    call yAxis%set_title("y(x)")
-    call y2Axis%set_title("y'(x)")
-    call plt%set_use_y2_axis(.true.)
-    call lgnd%set_is_visible(.true.)
-    
-    call pd1%define_data(sol(:,1), sol(:,2))
-    call pd1%set_name("y(x)")
-    call plt%push(pd1)
-
-    call pd2%define_data(sol(:,1), sol(:,3))
-    call pd2%set_draw_against_y2(.true.)
-    call pd2%set_name("y'(x)")
-    call plt%push(pd2)
-
-    call plt%draw()
 end program
 ```
 The routine containing the ODE is located in a different module for this example.  This routine is as follows.
@@ -418,6 +470,43 @@ end subroutine
 
 The limit cycle is readily apparent in the results.  The solution $y(x)$ remains near $\pm 2$ while drifting slowly, and then reverses sign over a comparatively short span of the independent variable.  Each reversal appears in the derivative $y'(x)$ as a sharp spike whose magnitude is several times the amplitude of $y(x)$ itself.  This disparity between the slow and fast portions of the solution is precisely the behavior that an adaptive step-size algorithm is meant to accommodate, as the integrator must take small steps through each transition while being free to take much larger steps elsewhere.  It is also what makes the equation a useful problem against which to compare integrators, which is the subject of the next example.
 
+#### Dense Output
+The above analysis of the Van Der Pol equation can also be performed using dense output.  The code illustrates integration with evenly spaced sample points in comparison to the natural solution points from the integrator.  The complete source is available in [dense_output_example.f90](examples/dense_output_example.f90).
+
+```fortran
+program example
+    use iso_fortran_env
+    use diffeq
+    use diffeq_models
+    use fplot_core
+    implicit none
+
+    ! Local Variables
+    real(real64), parameter :: xmax = 5.0d1
+    integer, parameter :: npts = 50
+    real(real64) :: x(2), x_dense(npts), ic(2)
+    real(real64), allocatable, dimension(:,:) :: sol, dense_sol
+    type(kennedy_carpenter_5) :: integrator
+    type(ode_container) :: model
+
+    ! Define the x vectors & initial conditions
+    ic = [2.0d0, 0.0d0]
+    x = [0.0d0, xmax]
+    x_dense = linspace(0.0d0, xmax, npts)
+
+    ! Set up the integrator and solve
+    model%fcn => vanderpol
+    call integrator%solve(model, x, ic)
+    sol = integrator%get_solution()
+
+    ! Now, utilize dense output
+    call integrator%clear_buffer()  ! need to clear the solution buffer
+    call integrator%solve(model, x_dense, ic)   ! simply supply the dense time array
+    dense_sol = integrator%get_solution()
+end program
+```
+![](images/dense_output_example.png?raw=true)
+
 ### Comparing Integrators
 Here's another example comparing the behavior of several integrators on the same Van der Pol problem illustrated in the previous example.  Each integrator is used in the same manner; only its declared type changes.  Calling `get_ode_results()` retrieves an `ode_results` container holding both the solution and an `ode_results_statistics` member named `statistics`.  This provides a more informative comparison than the number of stored solution points alone:
 
@@ -427,19 +516,16 @@ Here's another example comparing the behavior of several integrators on the same
 - `statistics%function_evaluations`: the number of evaluations of the ODE model function.
 - `statistics%matrix_factorizations`: the number of matrix factorizations, relevant to methods that solve linear systems.
 
-The example reports solution points, step statistics, and function evaluations for every method, along with Jacobian evaluations and matrix factorizations for the implicit methods.  It also compares `runge_kutta_45` with and without a PI-type step-size controller.  The complete source is available in [comparison_example.f90](examples/comparison_example.f90).
+The following code solves the model with every integrator, retrieves each result, and repeats `runge_kutta_45` with a PI-type step-size controller. The print statements are omitted here; the complete source, including reporting, is in [comparison_example.f90](examples/comparison_example.f90).
 ```fortran
 program example
-    use iso_fortran_env
+    use iso_fortran_env, only : real64
     use diffeq
     use diffeq_models
     implicit none
 
-    ! Initial Conditions & Time Constraints
     real(real64), parameter :: t(2) = [0.0d0, 5.0d1]
     real(real64), parameter :: ic(2) = [2.0d0, 0.0d0]
-
-    ! Local Variables
     type(runge_kutta_23) :: integrator_1
     type(runge_kutta_45) :: integrator_2
     type(runge_kutta_853) :: integrator_3
@@ -452,111 +538,45 @@ program example
     type(ode_container) :: mdl
     type(ode_results) :: s1, s2, s2a, s3, s4, s5, s6, s7, s8, s9
 
-    ! Define the model
     mdl%fcn => vanderpol
 
-    ! Integrate the model with each integrator
     call integrator_1%solve(mdl, t, ic)
-    call integrator_2%solve(mdl, t, ic)
-    call integrator_3%solve(mdl, t, ic)
-    call integrator_4%solve(mdl, t, ic)
-    call integrator_5%solve(mdl, t, ic)
-    call integrator_6%solve(mdl, t, ic)
-    call integrator_7%solve(mdl, t, ic)
-    call integrator_8%solve(mdl, t, ic)
-    call integrator_9%solve(mdl, t, ic)
-
-    ! Retrieve the solution from each integrator
     s1 = integrator_1%get_ode_results()
+
+    call integrator_2%solve(mdl, t, ic)
     s2 = integrator_2%get_ode_results()
+
+    call integrator_3%solve(mdl, t, ic)
     s3 = integrator_3%get_ode_results()
+
+    call integrator_4%solve(mdl, t, ic)
     s4 = integrator_4%get_ode_results()
+
+    call integrator_5%solve(mdl, t, ic)
     s5 = integrator_5%get_ode_results()
+
+    call integrator_6%solve(mdl, t, ic)
     s6 = integrator_6%get_ode_results()
+
+    call integrator_7%solve(mdl, t, ic)
     s7 = integrator_7%get_ode_results()
+
+    call integrator_8%solve(mdl, t, ic)
     s8 = integrator_8%get_ode_results()
+
+    call integrator_9%solve(mdl, t, ic)
     s9 = integrator_9%get_ode_results()
 
-    ! Print out the size of each solution
-    print "(A)", "RUNGE_KUTTA_23: "
-    print "(A, I0, A)", achar(9), size(s1, 1), " Solution Points"
-    print "(A, I0, A)", achar(9), s1%statistics%successful_steps, " Successful Steps"
-    print "(A, I0, A)", achar(9), s1%statistics%failed_steps, " Failed Steps"
-    print "(A, I0, A)", achar(9), s1%statistics%function_evaluations, " Function Evaluations"
-
-    print "(A)", "RUNGE_KUTTA_45: "
-    print "(A, I0, A)", achar(9), size(s2, 1), " Solution Points"
-    print "(A, I0, A)", achar(9), s2%statistics%successful_steps, " Successful Steps"
-    print "(A, I0, A)", achar(9), s2%statistics%failed_steps, " Failed Steps"
-    print "(A, I0, A)", achar(9), s2%statistics%function_evaluations, " Function Evaluations"
-
-    print "(A)", "RUNGE_KUTTA_853: "
-    print "(A, I0, A)", achar(9), size(s3, 1), " Solution Points"
-    print "(A, I0, A)", achar(9), s3%statistics%successful_steps, " Successful Steps"
-    print "(A, I0, A)", achar(9), s3%statistics%failed_steps, " Failed Steps"
-    print "(A, I0, A)", achar(9), s3%statistics%function_evaluations, " Function Evaluations"
-
-    print "(A)", "ROSENBROCK: "
-    print "(A, I0, A)", achar(9), size(s4, 1), " Solution Points"
-    print "(A, I0, A)", achar(9), s4%statistics%successful_steps, " Successful Steps"
-    print "(A, I0, A)", achar(9), s4%statistics%failed_steps, " Failed Steps"
-    print "(A, I0, A)", achar(9), s4%statistics%jacobian_evaluations, " Jacobian Evaluations"
-    print "(A, I0, A)", achar(9), s4%statistics%function_evaluations, " Function Evaluations"
-    print "(A, I0, A)", achar(9), s4%statistics%matrix_factorizations, " Matrix Factorizations"
-
-    ! Now, implement a PI controller and check its effect.  This will likely
-    ! increase the number of steps (loss of efficiency), but if there were
-    ! any stability issues, stability will likely improve.  Stability is likely
-    ! not relevant on this problem, but it's here for illustration purposes.
+    ! Repeat Runge-Kutta 4/5 with PI step-size control.
     call integrator_2%clear_buffer()
     call integrator_2%set_step_size_control_parameter(0.1d0)
     call integrator_2%solve(mdl, t, ic)
     s2a = integrator_2%get_ode_results()
-    print "(A)", "RUNGE_KUTTA_45 w/ PI Controller: "
-    print "(A, I0, A)", achar(9), size(s2a, 1), " Solution Points"
-    print "(A, I0, A)", achar(9), s2a%statistics%successful_steps, " Successful Steps"
-    print "(A, I0, A)", achar(9), s2a%statistics%failed_steps, " Failed Steps"
-    print "(A, I0, A)", achar(9), s2a%statistics%function_evaluations, " Function Evaluations"
-
-    ! Kennedy-Carpenter Integrators
-    print "(A)", "KC4: "
-    print "(A, I0, A)", achar(9), size(s5, 1), " Solution Points"
-    print "(A, I0, A)", achar(9), s5%statistics%successful_steps, " Successful Steps"
-    print "(A, I0, A)", achar(9), s5%statistics%failed_steps, " Failed Steps"
-    print "(A, I0, A)", achar(9), s5%statistics%jacobian_evaluations, " Jacobian Evaluations"
-    print "(A, I0, A)", achar(9), s5%statistics%function_evaluations, " Function Evaluations"
-    print "(A, I0, A)", achar(9), s5%statistics%matrix_factorizations, " Matrix Factorizations"
-
-    print "(A)", "KC5: "
-    print "(A, I0, A)", achar(9), size(s6, 1), " Solution Points"
-    print "(A, I0, A)", achar(9), s6%statistics%successful_steps, " Successful Steps"
-    print "(A, I0, A)", achar(9), s6%statistics%failed_steps, " Failed Steps"
-    print "(A, I0, A)", achar(9), s6%statistics%jacobian_evaluations, " Jacobian Evaluations"
-    print "(A, I0, A)", achar(9), s6%statistics%function_evaluations, " Function Evaluations"
-    print "(A, I0, A)", achar(9), s6%statistics%matrix_factorizations, " Matrix Factorizations"
-
-    ! Additional Integrators
-    print "(A)", "TSITOURAS 4/5: "
-    print "(A, I0, A)", achar(9), size(s7, 1), " Solution Points"
-    print "(A, I0, A)", achar(9), s7%statistics%successful_steps, " Successful Steps"
-    print "(A, I0, A)", achar(9), s7%statistics%failed_steps, " Failed Steps"
-    print "(A, I0, A)", achar(9), s7%statistics%function_evaluations, " Function Evaluations"
-
-    print "(A)", "BDF: "
-    print "(A, I0, A)", achar(9), size(s8, 1), " Solution Points"
-    print "(A, I0, A)", achar(9), s8%statistics%successful_steps, " Successful Steps"
-    print "(A, I0, A)", achar(9), s8%statistics%failed_steps, " Failed Steps"
-    print "(A, I0, A)", achar(9), s8%statistics%jacobian_evaluations, " Jacobian Evaluations"
-    print "(A, I0, A)", achar(9), s8%statistics%function_evaluations, " Function Evaluations"
-    print "(A, I0, A)", achar(9), s8%statistics%matrix_factorizations, " Matrix Factorizations"
-
-    print "(A)", "ADAMS: "
-    print "(A, I0, A)", achar(9), size(s9, 1), " Solution Points"
-    print "(A, I0, A)", achar(9), s9%statistics%successful_steps, " Successful Steps"
-    print "(A, I0, A)", achar(9), s9%statistics%failed_steps, " Failed Steps"
-    print "(A, I0, A)", achar(9), s9%statistics%function_evaluations, " Function Evaluations"
 end program
 ```
+
+The complete example reports the following results:
+
 ```txt
 RUNGE_KUTTA_23:
     2465 Solution Points
@@ -574,12 +594,12 @@ RUNGE_KUTTA_853:
     84 Failed Steps
     12097 Function Evaluations
 ROSENBROCK:
-    1185 Solution Points
-    1184 Successful Steps
-    94 Failed Steps
-    1184 Jacobian Evaluations
-    11221 Function Evaluations
-    1278 Matrix Factorizations
+    1101 Solution Points
+    1100 Successful Steps
+    37 Failed Steps
+    1100 Jacobian Evaluations
+    11260 Function Evaluations
+    1137 Matrix Factorizations
 RUNGE_KUTTA_45 w/ PI Controller:
     1107 Solution Points
     1106 Successful Steps
@@ -589,16 +609,16 @@ KC4:
     483 Solution Points
     482 Successful Steps
     145 Failed Steps
-    6244 Jacobian Evaluations
-    31728 Function Evaluations
-    6244 Matrix Factorizations
+    207 Jacobian Evaluations
+    11263 Function Evaluations
+    559 Matrix Factorizations
 KC5:
-    245 Solution Points
-    244 Successful Steps
+    246 Solution Points
+    245 Successful Steps
     73 Failed Steps
-    4840 Jacobian Evaluations
-    24042 Function Evaluations
-    4840 Matrix Factorizations
+    173 Jacobian Evaluations
+    9278 Function Evaluations
+    315 Matrix Factorizations
 TSITOURAS 4/5:
     522 Solution Points
     521 Successful Steps
@@ -622,15 +642,59 @@ Because the integration range is supplied as just its two end points, each solve
 
 Function evaluations and matrix factorizations make the cost comparison more informative because the work performed per step differs considerably from one method to the next.  Explicit Runge-Kutta methods evaluate the model at multiple stages; implicit methods may also form Jacobians, factor matrices, and iterate to convergence.  Comparing `function_evaluations` alongside step counts reveals how many model evaluations a method required, rather than inferring that work from its accepted steps.  The separate `matrix_factorizations` counter exposes work required to prepare linear systems for solution; it need not equal the number of Jacobian evaluations or successful steps.  These operations have different costs depending on the model, system size, and method, and the statistics do not measure elapsed time.  Fewer evaluations or factorizations therefore do not necessarily imply a shorter wall-clock time.
 
-For example, `rosenbrock` reports 1278 matrix factorizations but only 1184 Jacobian evaluations in this run.  The counters describe distinct operations rather than interchangeable estimates of implicit-solver work.  KC4, KC5, and BDF happen to report equal Jacobian-evaluation and factorization counts here; that equality should not be assumed for every method.
+For example, `rosenbrock` reports 1137 matrix factorizations but only 1100 Jacobian evaluations in this run.  The counters describe distinct operations rather than interchangeable estimates of implicit-solver work.  BDF happens to report equal Jacobian-evaluation and factorization counts here, whereas the Kennedy-Carpenter methods reuse a single Jacobian across many steps and refactor only when the step size changes; that equality should not be assumed for every method.
 
 With $\mu = 5$ the Van der Pol oscillator is only mildly stiff, so the explicit integrators remain competitive.  The low-order `runge_kutta_23` requires by far the most steps because its step size is limited by accuracy rather than by stability; the higher-order `tsitouras_54` and `runge_kutta_45` traverse the same interval in roughly a fifth as many steps.  The Kennedy-Carpenter methods accept the fewest steps of any integrator here, and `kennedy_carpenter_5` accepts the fewest of all, but each of those steps carries the cost of the Newton iteration noted above.  The implicit methods may accept fewer steps while doing more work per step than the explicit methods.
 
 The two multi-step methods make a useful counterpoint, because this problem is close to their worst case.  Van der Pol at $\mu = 5$ is a relaxation oscillator: long, smooth excursions punctuated by abrupt transitions.  A multi-step method earns its efficiency by carrying a history of accepted points and raising its order as that history proves reliable, and both `bdf` and `adams` restart at first order whenever the step is disturbed.  Repeated sharp transitions therefore deny them the sustained high order at which they excel, which is why `bdf` records the largest step count of any implicit method here.  Their advantage appears instead on smooth problems held to tight tolerances, where high order is sustainable; the order-selection study behind the `adams` entry above is a better illustration of that regime than this example is.
 
-Step counts are especially misleading for `adams`, which uses neither a Jacobian nor a linear solve.  It takes 1132 successful steps and 2336 function evaluations here, whereas `kennedy_carpenter_5` takes only 244 successful steps but requires 24042 function evaluations, 4840 Jacobian evaluations, and 4840 matrix factorizations.  The function-evaluation count makes this difference visible without assuming a fixed number of evaluations per step.  Comparing failed steps as well as successful steps exposes retries, while Jacobian evaluations and matrix factorizations distinguish some of the extra work done by the implicit methods.  These counters complement one another, but a ranking by wall-clock time still requires timing the same problem at comparable accuracy.
+Step counts are especially misleading for `adams`, which uses neither a Jacobian nor a linear solve.  It takes 1132 successful steps and 2336 function evaluations here, whereas `kennedy_carpenter_5` takes only 245 successful steps but requires 9278 function evaluations, 173 Jacobian evaluations, and 315 matrix factorizations.  The function-evaluation count makes this difference visible without assuming a fixed number of evaluations per step.  Comparing failed steps as well as successful steps exposes retries, while Jacobian evaluations and matrix factorizations distinguish some of the extra work done by the implicit methods.  These counters complement one another, but a ranking by wall-clock time still requires timing the same problem at comparable accuracy.
 
 The final result illustrates the PI step-size controller.  Applying it to `runge_kutta_45` raises the successful-step count from 582 to 1106, but reduces failed steps from 87 to zero for this problem.  Function evaluations nevertheless increase from 4015 to 6637.  The statistics make this tradeoff explicit: a smoother sequence of step sizes can avoid retries while still requiring more accepted steps and more model evaluations overall.  This can be valuable when the error estimate is noisy or when stability rather than accuracy is limiting the step, but fewer failed steps alone do not establish greater efficiency.  Stability is not a concern for this problem, so the controller is shown here purely for illustration.  PI control is disabled by default and must be requested explicitly.  Note that the controller applies to the single-step integrators; `rosenbrock` and the two multi-step methods use step-size estimators of their own.
+
+### Event Detection
+
+[event_detection_example.f90](examples/event_detection_example.f90) models a
+bouncing ball with mass $m$ and height $y$. During each flight, the equations
+of motion are
+
+$$
+\dot{y} = v, \qquad \dot{v} = -g,
+$$
+
+where $v$ is the vertical velocity and $g$ is gravitational acceleration. The
+event callback returns the height $y$, so the integrator locates the zero
+crossing at ground contact and stops the solve at the impact time. The example
+then applies a coefficient of restitution $k = 0.7$ to reverse and reduce the
+velocity, $v_{\mathrm{after}} = -k v_{\mathrm{before}}$, and restarts the
+integration from the impact state. Setting `store_iv = .false.` on each
+restart avoids storing the impact state a second time:
+
+```fortran
+model%fcn => ball
+model%event_function => ball_ground_constraint
+call model%set_event_equation_count(1)
+
+call integrator%solve(model, [0.0d0, 10.0d0], [initial_height, initial_velocity])
+sol = integrator%get_solution()
+
+! Restart at impact, preserving the impact point already in the solution.
+v = sol(size(sol, 1), 3)
+ic = [0.0d0, -k * v]
+t(1) = sol(size(sol, 1), 1)
+call integrator%solve(model, t, ic, store_iv = .false.)
+```
+
+The complete example repeats this restart for another bounce and plots the
+height, kinetic energy $K = \frac{1}{2}mv^2$, potential energy $U = mgy$, and 
+the sum of the kinetic and potential energy.  During each flight, kinetic and 
+potential energy trade off as the ball rises and falls. At impact the height 
+(and thus potential energy) returns to zero, while kinetic energy drops 
+abruptly: because $K$ is proportional to $v^2$, the rebound retains $k^2 = 0.49$ 
+of the pre-impact kinetic energy, losing about 51% at each bounce. The resulting 
+lower rebounds are visible in both plots:
+
+![](images/event_detection_example.png?raw=true)
 
 ### Differential-Algebraic Equations
 This example illustrates the solution of a differential-algebraic equation (DAE) by means of a singular mass matrix.  The model is a simple pendulum expressed in Cartesian coordinates.  A mass $m$ swings from a pivot at the origin on a rigid, massless rod of length $L$, so the position of the mass $(x, y)$ must satisfy the constraint
@@ -675,7 +739,7 @@ $$
 
 this equation determines $\lambda$, and the problem is therefore of index 1.  The multiplier is not computed by the model.  It is carried as a state and the solver determines it, along with the four differential states, from the coupled system.  Two consequences are worth noting.  The initial conditions must be consistent, meaning they must satisfy both the constraint and the algebraic equation, and because the constraint has been differentiated the position constraint is only enforced to within the accuracy of the integration.  A slow drift in $x^2 + y^2 - L^2$ is expected over a long enough integration.
 
-The model parameters are passed to the solver by means of the optional `args` argument.  A derived type is used to carry both quantities.
+The model parameters are passed to the solver by means of the optional `args` argument.  A derived type is used to carry both quantities.  The complete source is available in [dae_example.f90](examples/dae_example.f90).
 ```fortran
 type cartesian_pendulum_properties
     real(real64) :: mass
@@ -757,72 +821,28 @@ program example
     use iso_fortran_env
     use diffeq
     use diffeq_models
-    use fplot_core
     implicit none
 
-    ! Model Parameters
     real(real64), parameter :: length = 1.5d0
     real(real64), parameter :: mass = 2.0d0
 
-    ! Local Variables
     type(rosenbrock) :: integrator
     type(ode_container) :: mdl
     type(cartesian_pendulum_properties) :: args
     real(real64), allocatable, dimension(:,:) :: sol
 
-    ! Plot Variables
-    type(plot_2d) :: plt
-    type(plot_data_2d) :: pd1, pd2
-    class(plot_axis), pointer :: xAxis, yAxis, y2Axis
-    class(legend), pointer :: lgnd
-
-    ! Pass in the model parameters
     args%length = length
     args%mass = mass
 
-    ! Define the model
     mdl%fcn => cartesian_pendulum
     mdl%mass_matrix => cartesian_pendulum_mass_matrix
     call mdl%set_is_mass_matrix_dependent(.false.)
 
-    ! Compute the solution
     call integrator%solve( &
-        mdl, &                                  ! model to solve
-        [0.0d0, 1.0d1], &                       ! time bounds
-        [length, 0.0d0, 0.0d0, 0.0d0, 0.0d0], & ! initial conditions - must satisfy algebraic constraints
-        args = args &                           ! arguments to pass to the model
+        mdl, [0.0d0, 1.0d1], &
+        [length, 0.0d0, 0.0d0, 0.0d0, 0.0d0], args = args &
     )
     sol = integrator%get_solution()
-
-    ! Plot the results
-    call plt%initialize()
-    xAxis => plt%get_x_axis()
-    yAxis => plt%get_y_axis()
-    y2Axis => plt%get_y2_axis()
-    lgnd => plt%get_legend()
-    call plt%set_use_y2_axis(.true.)
-    call xAxis%set_title("t")
-    call yAxis%set_title("x(t)")
-    call y2Axis%set_title("y(t)")
-    call lgnd%set_is_visible(.true.)
-    call lgnd%set_draw_border(.false.)
-    call lgnd%set_draw_inside_axes(.false.)
-    call lgnd%set_vertical_position(LEGEND_BOTTOM)
-    call lgnd%set_horizontal_position(LEGEND_CENTER)
-    call lgnd%set_layout(LEGEND_ARRANGE_HORIZONTALLY)
-
-    call pd1%define_data(sol(:,1), sol(:,2))
-    call pd1%set_name("x(t)")
-    call pd1%set_line_width(2.0)
-    call plt%push(pd1)
-
-    call pd2%define_data(sol(:,1), sol(:,4))
-    call pd2%set_name("y(t)")
-    call pd2%set_line_width(2.0)
-    call pd2%set_draw_against_y2(.true.)
-    call plt%push(pd2)
-
-    call plt%draw()
 end program
 ```
 ![](images/dae_results.png?raw=true)
@@ -908,36 +928,23 @@ Here is a complete pendulum example with $g(q)=q^Tq-L^2$, $G=2q^T$, and
 $DG(q)[\dot q]v=2\dot q^Tv$. Its state ordering differs from the preceding
 acceleration-level pendulum example: `[qx,qy,vx,vy,lambda,mu]`.
 The complete source is available in
-[stabilized_pendulum_example.f90](examples/stabilized_pendulum_example.f90).
-It uses FPLOT to plot the Cartesian position and pendulum angle over 10 seconds.
+[stabilized_pendulum_example.f90](examples/stabilized_pendulum_example.f90);
+the excerpt focuses on model setup, consistency checks, and integration.
 
 ```fortran
 program stabilized_pendulum
     use iso_fortran_env, only : real64
     use diffeq, only : ggl_container, bdf
-    use fplot_core
     implicit none
 
-    ! Parameters
-    real(real64), parameter :: pi = 2.0d0 * acos(0.0d0)
-
-    ! Model Parameters
     real(real64), parameter :: length = 1.5d0
     real(real64), parameter :: body_mass = 2.0d0
 
-    ! Local Variables
     type(ggl_container) :: model
     type(bdf) :: solver
     real(real64), dimension(6) :: initial_state
-    real(real64), allocatable, dimension(:) :: theta
     real(real64), allocatable, dimension(:,:) :: sol
 
-    ! Plot Variables
-    type(multiplot) :: plt
-    type(plot_2d) :: pltxy, plttheta
-    class(legend), pointer :: lgnd
-
-    ! Set up the model and constraints
     call model%initialize(2, 1, alpha = 2.0d0, beta = 3.0d0)
     model%fcn => force
     model%mass_matrix => physical_mass
@@ -946,55 +953,16 @@ program stabilized_pendulum
     model%constraint_curvature => constraint_curvature
     call model%set_is_mass_matrix_dependent(.false.)
 
-    ! Define the initial conditions and validate against the constraints.  The
-    ! initial conditions must satisfy the constraints.
     initial_state = [length, 0.0d0, 0.0d0, 0.0d0, 0.0d0, 0.0d0]
     if (.not.model%validate_initial_conditions(0.0d0, initial_state, 1.0d-10)) &
         error stop "Inconsistent physical initial conditions"
     call model%initialize_multipliers(0.0d0, initial_state)
 
-    ! Set up the solver and adjust tolerances.  Utilize the same tolerance for
-    ! every equation.
     call solver%set_absolute_tolerance(1.0d-9)
     call solver%set_relative_tolerance(1.0d-9)
 
-    ! Solve the model and retrieve the results
     call solver%solve(model, [0.0d0, 1.0d1], initial_state)
     sol = solver%get_solution()
-
-    ! Compute the angular representation of the solution
-    theta = atan2(sol(:,3), sol(:,2)) * 1.8d2 / pi
-
-! ------------------------------------------------------------------------------
-    ! Set up the plot
-    call plt%initialize(1, 2, width = 1200)
-
-    ! Plot the X-Y results
-    call pltxy%initialize()
-    lgnd => pltxy%get_legend()
-    call pltxy%set_x_axis_title("t")
-    call pltxy%set_y_axis_title("x(t), y(t)")
-    call lgnd%set_is_visible(.true.)
-    call lgnd%set_draw_border(.false.)
-    call lgnd%set_draw_inside_axes(.false.)
-    call lgnd%set_vertical_position(LEGEND_BOTTOM)
-    call lgnd%set_horizontal_position(LEGEND_CENTER)
-    call lgnd%set_layout(LEGEND_ARRANGE_HORIZONTALLY)
-
-    call pltxy%push(sol(:,1), sol(:,2), name = "x(t)")
-    call pltxy%push(sol(:,1), sol(:,3), name = "y(t)")
-
-    call plt%set(1, 1, pltxy)
-
-    ! Plot the angular results
-    call plttheta%initialize()
-    call plttheta%set_x_axis_title("t")
-    call plttheta%set_y_axis_title("{/Symbol q} [deg]")
-    call plttheta%push(sol(:,1), theta)
-    
-    call plt%set(1, 2, plttheta)
-
-    call plt%draw()
 contains
     subroutine force(x, y, applied_force, args)
         real(real64), intent(in) :: x
@@ -1082,6 +1050,349 @@ formulation is more accurate or efficient. A numerical comparison should also
 plot $r_p$ and $r_v$, measure energy drift, and compare solver work at matched
 tolerances. Small constraint violations or accumulated phase errors can remain
 invisible on the position and angle scales shown here.
+
+## C API Examples
+
+The C interface exposes the same adaptive integrators through functions declared
+in [diffeq.h](src/C/diffeq.h). Initialize a `c_ode_settings` structure, supply
+model callbacks, and call a solver to obtain an opaque `c_ode_results` handle.
+Release each successful result with `c_free_ode_results` when finished.
+The four programs below are built with `BUILD_DIFFEQ_EXAMPLES=ON` as described
+in [Building DIFFEQ](#building-diffeq).
+
+The excerpts focus on integration and results access rather than printing or
+plotting. API functions returning an `int` report `C_NO_ERROR` on success;
+check these return codes before using their outputs. The comparison excerpts
+omit repetitive error checks for readability.
+
+### Solving the Van der Pol Equation
+
+[c_vanderpol_example.c](examples/c_vanderpol_example.c) solves the same
+$\mu=5$ oscillator as the Fortran example using `c_tsitouras`. A C model
+callback receives the state count, independent variable, input state, and
+an output array that it must fill with every derivative:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include "diffeq.h"
+
+void vanderpol(int n, double x, const double *y, double *dydx)
+{
+    const double mu = 5.0;
+    dydx[0] = y[1];
+    dydx[1] = mu * (1.0 - y[0] * y[0]) * y[1] - y[0];
+}
+
+int main(void)
+{
+    double x[] = {0.0, 50.0};
+    double ic[] = {2.0, 0.0};
+    c_ode_settings settings;
+    c_ode_results rst;
+    int m, n;
+
+    c_default_ode_settings(&settings);
+    int flag = c_tsitouras(2, 2, vanderpol, x, ic, &settings, &rst);
+    if (flag != C_NO_ERROR) {
+        fprintf(stderr, "Integration failed: %d\n", flag);
+        return flag;
+    }
+
+    flag = c_get_ode_results_size(rst, &m, &n);
+    if (flag != C_NO_ERROR) {
+        fprintf(stderr, "Result-size query failed: %d\n", flag);
+        c_free_ode_results(rst);
+        return flag;
+    }
+
+    double *sol = malloc((size_t)m * (size_t)n * sizeof(*sol));
+    if (sol == NULL) {
+        fprintf(stderr, "Could not allocate the solution matrix.\n");
+        c_free_ode_results(rst);
+        return EXIT_FAILURE;
+    }
+
+    flag = c_get_ode_results(rst, m, n, sol, m);
+    if (flag != C_NO_ERROR) {
+        fprintf(stderr, "Result copy failed: %d\n", flag);
+    }
+
+    free(sol);
+    c_free_ode_results(rst);
+    return flag;
+}
+```
+
+The first two solver arguments are the number of supplied independent-variable
+values and the number of states. With only the two endpoints supplied, the
+returned rows follow the solver's accepted steps.
+
+`c_get_ode_results` copies an $m \times n$ matrix in **column-major** order.
+The final argument is its leading dimension, here `m`. For zero-based row
+`i`, `sol[i]` contains the independent variable, `sol[i + m]` contains
+$y_1$, and `sol[i + 2*m]` contains $y_2$. Alternatively,
+`c_write_ode_results("example file.txt", rst, ',')` writes the result directly
+to a delimited file without allocating a separate matrix.
+
+### Comparing Integrators and Solver Work
+
+[c_comparison_example.c](examples/c_comparison_example.c) runs all nine
+integrators on the Van der Pol problem and retrieves the same diagnostic
+counters used in the Fortran comparison. The following excerpt shows every
+solver call and statistics query without the `printf` statements. It uses
+the `vanderpol` callback defined above.
+
+```c
+double x[] = {0.0, 50.0};
+double ic[] = {2.0, 0.0};
+c_ode_settings settings;
+c_ode_results rst;
+c_ode_results_statistics stats;
+
+c_default_ode_settings(&settings);
+
+c_runge_kutta_23(2, 2, vanderpol, x, ic, &settings, &rst);
+c_get_ode_results_statistics(rst, &stats);
+c_free_ode_results(rst);
+
+c_runge_kutta_45(2, 2, vanderpol, x, ic, &settings, &rst);
+c_get_ode_results_statistics(rst, &stats);
+c_free_ode_results(rst);
+
+c_runge_kutta_853(2, 2, vanderpol, x, ic, &settings, &rst);
+c_get_ode_results_statistics(rst, &stats);
+c_free_ode_results(rst);
+
+c_rosenbrock(2, 2, vanderpol, x, ic, &settings, NULL, NULL, &rst);
+c_get_ode_results_statistics(rst, &stats);
+c_free_ode_results(rst);
+
+c_kennedy_carpenter_4(2, 2, vanderpol, x, ic, &settings, NULL, NULL, &rst);
+c_get_ode_results_statistics(rst, &stats);
+c_free_ode_results(rst);
+
+c_kennedy_carpenter_5(2, 2, vanderpol, x, ic, &settings, NULL, NULL, &rst);
+c_get_ode_results_statistics(rst, &stats);
+c_free_ode_results(rst);
+
+c_tsitouras(2, 2, vanderpol, x, ic, &settings, &rst);
+c_get_ode_results_statistics(rst, &stats);
+c_free_ode_results(rst);
+
+c_bdf(2, 2, vanderpol, x, ic, &settings, NULL, NULL, &rst);
+c_get_ode_results_statistics(rst, &stats);
+c_free_ode_results(rst);
+
+c_adams(2, 2, vanderpol, x, ic, &settings, NULL, &rst);
+c_get_ode_results_statistics(rst, &stats);
+c_free_ode_results(rst);
+
+settings.beta = 0.1;
+c_runge_kutta_45(2, 2, vanderpol, x, ic, &settings, &rst);
+c_get_ode_results_statistics(rst, &stats);
+c_free_ode_results(rst);
+settings.beta = 0.0;
+```
+
+Inspect or save `stats` before the next query overwrites it. Its fields are
+`successful_steps`, `failed_steps`, `function_evaluations`,
+`jacobian_evaluations`, and `matrix_factorizations`. A separate
+`c_get_ode_results_size` query supplies the stored solution-point count.
+These counters distinguish accepted steps from retries and from the extra
+linear-algebra work performed by implicit methods; they do not measure elapsed
+time.
+
+For Rosenbrock, Kennedy-Carpenter, and BDF, the two `NULL` arguments omit the
+analytical Jacobian and mass-matrix callbacks, respectively. The solver
+estimates the Jacobian and uses an identity mass matrix. Adams accepts an
+optional mass-matrix callback but no Jacobian callback. Setting
+`settings.beta = 0.1` enables PI step-size control for the repeated
+Runge-Kutta 4/5 solve; resetting it to zero restores the default.
+
+### Dense Output on a Requested Grid
+
+[c_dense_output_example.c](examples/c_dense_output_example.c) changes the
+Van der Pol example from two endpoints to 50 evenly spaced output locations.
+The solver still chooses its internal adaptive steps, but uses dense output
+to return the solution on the requested grid:
+
+```c
+enum { npts = 50, nvars = 2 };
+double x[npts];
+double ic[] = {2.0, 0.0};
+c_ode_settings settings;
+c_ode_results rst;
+
+for (int i = 0; i < npts; ++i) {
+    x[i] = i * 50.0 / (npts - 1);
+}
+
+c_default_ode_settings(&settings);
+int flag = c_tsitouras(npts, nvars, vanderpol, x, ic, &settings, &rst);
+if (flag != C_NO_ERROR) {
+    fprintf(stderr, "Integration failed: %d\n", flag);
+    return flag;
+}
+
+flag = c_write_ode_results("dense output example file.txt", rst, ',');
+if (flag != C_NO_ERROR) {
+    fprintf(stderr, "Writing results failed: %d\n", flag);
+}
+c_free_ode_results(rst);
+```
+
+This returns 50 rows with three columns: $x$, $y_1$, and $y_2$. The full
+program also copies the column-major solution matrix using
+`c_get_ode_results`. The output-point count is independent of the number of
+internal steps; use `c_get_ode_results_statistics` to measure the latter.
+
+### Event Detection
+
+[c_event_detection_example.c](examples/c_event_detection_example.c) models a
+ball falling from a height of 5 meters, stops at ground contact, and restarts
+the integration with an upward velocity to simulate a bounce. The ODE callback
+computes height and velocity; the event callback returns the height,
+whose zero marks an impact:
+
+```c
+void ball(int n, double t, const double *y, double *dydt)
+{
+    dydt[0] = y[1];
+    dydt[1] = -9.81;
+}
+
+void ball_ground_constraint(int neqn, int nstates, double t,
+    const double *y, double *f)
+{
+    f[0] = y[0];
+}
+
+double t[] = {0.0, 10.0};
+double ic[] = {5.0, 0.0};
+c_ode_settings settings;
+c_ode_event_solver_settings esettings;
+c_ode_results results;
+c_ode_event_statistics estats;
+
+c_default_ode_settings(&settings);
+c_default_ode_event_solver_settings(&esettings);
+int flag = c_tsitouras_events(2, 2, 1, ball, t, ic, &settings,
+    &esettings, ball_ground_constraint, &results, &estats);
+if (flag != C_NO_ERROR) {
+    fprintf(stderr, "Integration failed: %d\n", flag);
+    return flag;
+}
+
+/* Retrieve the impact time and state before releasing the results. */
+c_free_ode_results(results);
+```
+
+The returned solution ends at the detected event, with columns for time, height,
+and velocity. `estats` reports the zero-based event index, event-function
+evaluations, and root-finding iterations; an event index of `-1` indicates no
+event was found. Passing a `NULL` event callback or an event count less than one
+disables event detection.
+
+The full example retrieves the first impact from the column-major solution
+matrix and starts a second solve at that time with height zero and velocity
+`-0.7` times the impact velocity. A root at the starting bound is ignored so
+the ball can leave the ground before the next impact is detected. Each solve
+returns its own result handle, which must be released with `c_free_ode_results`.
+
+### Stabilized Constrained Pendulum
+
+[c_stabilized_pendulum_example.c](examples/c_stabilized_pendulum_example.c)
+uses `c_ggl_container` and `c_dae_bdf` for the
+[stabilized index-1 GGL formulation](#stabilized-index-1-ggl). Instead of
+assembling the augmented DAE manually, supply the physical force, mass,
+position constraint, constraint gradient, and curvature callbacks.
+For this pendulum, $g(q)=q_x^2+q_y^2-L^2$:
+
+```c
+const double body_mass = 2.0;
+const double length = 1.5;
+
+void force(int n, double t, const double *x, double *frc)
+{
+    frc[0] = 0.0;
+    frc[1] = -body_mass * 9.81;
+}
+
+void physical_mass(int n, double t, const double *x, double *m, int ldm)
+{
+    m[0] = body_mass;
+    m[1] = 0.0;
+    m[ldm] = 0.0;
+    m[1 + ldm] = body_mass;
+}
+
+void constraints(int nc, int nstates, double t, const double *q, double *g)
+{
+    g[0] = q[0] * q[0] + q[1] * q[1] - length * length;
+}
+
+void gradient(int m, int n, double t, const double *q, double *grad, int ldg)
+{
+    for (int i = 0; i < n; ++i) {
+        grad[i * ldg] = 2.0 * q[i];
+    }
+}
+
+void curvature(int nc, int nstates, double t, const double *q,
+    const double *direction, const double *v, double *crv)
+{
+    crv[0] = 2.0 * (direction[0] * v[0] + direction[1] * v[1]);
+}
+```
+
+Matrix callbacks use column-major storage with the supplied leading dimension.
+The following setup releases the pendulum from rest at $(L,0)$ and integrates
+for 10 seconds:
+
+```c
+c_ggl_container model;
+c_ode_settings settings;
+c_ode_results rst;
+double ic[] = {length, 0.0, 0.0, 0.0, 0.0, 0.0};
+double t[] = {0.0, 10.0};
+
+model.alpha = 2.0;
+model.beta = 3.0;
+model.constraint_count = 1;
+model.constraints = constraints;
+model.curvature = curvature;
+model.force = force;
+model.gradient = gradient;
+model.mass = physical_mass;
+model.jacobian = NULL;
+
+c_default_ode_settings(&settings);
+int flag = c_dae_bdf(&model, 2, 6, t, ic, &settings, &rst);
+if (flag != C_NO_ERROR) {
+    fprintf(stderr, "Constrained integration failed: %d\n", flag);
+    return flag;
+}
+
+flag = c_write_ode_results("pendulum_example.txt", rst, ',');
+if (flag != C_NO_ERROR) {
+    fprintf(stderr, "Writing results failed: %d\n", flag);
+}
+c_free_ode_results(rst);
+```
+
+The six states are `[qx, qy, vx, vy, lambda, mu]`; the result adds time as
+its first column. Supply physically consistent initial positions and velocities.
+The C wrapper initializes the multiplier slots before solving and may modify
+`ic`. The gains `model.alpha` and `model.beta` damp position and velocity
+constraint violations; they are not physical damping or the PI-controller
+parameter `settings.beta`. A `NULL` `model.jacobian` selects a finite-difference
+Jacobian for the augmented system.
+
+The same container can also be passed to `c_dae_rosenbrock`,
+`c_dae_kennedy_carpenter_4`, or `c_dae_kennedy_carpenter_5`. Explicit
+Runge-Kutta and Adams solvers are unsuitable for its singular augmented mass
+matrix.
 
 ## External Libraries
 Here is a list of external code libraries utilized by this library.  The CMake build script will include these dependencies automatically; however, it is highly recommended that an optimized BLAS and LAPACK already reside on your system for best performance (used by LINALG for linear algebra calculations).

@@ -371,4 +371,26 @@ subroutine cartesian_pendulum_mass_matrix(t, x, m, args)
 end subroutine
 
 ! ------------------------------------------------------------------------------
+! Defines the equations of motion for a bouncing ball.
+subroutine ball(t, x, dxdt, args)
+    real(real64), intent(in) :: t
+    real(real64), intent(in), dimension(:) :: x
+    real(real64), intent(out), dimension(:) :: dxdt
+    class(*), intent(inout), optional :: args
+
+    real(real64), parameter :: g = 9.81d0
+
+    dxdt(1) = x(2)
+    dxdt(2) = -g
+end subroutine
+
+subroutine ball_ground_constraint(t, x, f, args)
+    real(real64), intent(in) :: t
+    real(real64), intent(in), dimension(:) :: x
+    real(real64), intent(out), dimension(:) :: f
+    class(*), intent(inout), optional :: args
+    f(1) = x(1)     ! we just need to find when the position = 0
+end subroutine
+
+! ------------------------------------------------------------------------------
 end module

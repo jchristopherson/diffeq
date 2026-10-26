@@ -32,6 +32,8 @@ module diffeq_containers
     integer, parameter :: BUFFER_CAPACITY = 1000
 
     type ode_results_statistics
+        !! A container of performance statistics for an
+        !! integrator.
         integer :: successful_steps = 0
             !! The number of successful steps taken by the integrator.
         integer :: failed_steps = 0

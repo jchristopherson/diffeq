@@ -2,8 +2,8 @@
 cmake_minimum_required(VERSION 3.24)
 project(
     diffeq
-    LANGUAGES Fortran
-    VERSION 1.6.1
+    LANGUAGES Fortran C CXX
+    VERSION 2.0.0
 )
 set(CMAKE_Fortran_STANDARD 2018)
 set(CMAKE_Fortran_STNADARD_REQUIRED TRUE)

@@ -321,7 +321,7 @@ function test_adams_with_args() result(rst)
     call integrator%set_relative_tolerance(1.0d-8)
 
     ! Solve with the parameter supplied through args
-    call integrator%solve(mdl, x, [2.0d0, 0.0d0], mu)
+    call integrator%solve(mdl, x, [2.0d0, 0.0d0], args=mu)
     sol = integrator%get_solution()
 
     ! Solve the equivalent model carrying the parameter internally

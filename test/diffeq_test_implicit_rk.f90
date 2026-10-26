@@ -206,7 +206,7 @@ function check_ggl_solver(integrator) result(rst)
         call mdl%compute_rhs(times(1), state, rhs, args)
         rst = rst .and. maxval(abs(rhs(5:6))) < 1.0d-12
         call integrator%clear_buffer()
-        call integrator%solve(mdl, times, state, args)
+        call integrator%solve(mdl, times, state, args=args)
         sol = integrator%get_solution()
         do point = 1, size(sol,1)
             position = dot_product(sol(point,2:3), sol(point,2:3)) - args%length**2
@@ -317,7 +317,7 @@ function test_analytical_jacobian_usage() result(rst)
     mdl%jacobian => counted_linear_jacobian
     call integrator%set_absolute_tolerance(1.0d-9)
     call integrator%set_relative_tolerance(1.0d-9)
-    call integrator%solve(mdl, [0.0d0, 1.0d0], [1.0d0, 1.0d0], counter)
+    call integrator%solve(mdl, [0.0d0, 1.0d0], [1.0d0, 1.0d0], args=counter)
     sol = integrator%get_solution()
     rst = counter%calls > 0 .and. &
         abs(sol(size(sol,1),2) - exp(-1.0d0)) < 1.0d-6 .and. &
@@ -330,7 +330,7 @@ function test_analytical_jacobian_usage() result(rst)
     call mdl%set_is_mass_matrix_dependent(.false.)
     call mass_integrator%set_absolute_tolerance(1.0d-9)
     call mass_integrator%set_relative_tolerance(1.0d-9)
-    call mass_integrator%solve(mdl, [0.0d0, 1.0d0], [1.0d0, 1.0d0], counter)
+    call mass_integrator%solve(mdl, [0.0d0, 1.0d0], [1.0d0, 1.0d0], args=counter)
     sol = mass_integrator%get_solution()
     rst = rst .and. counter%mass_calls == 1 .and. &
         abs(sol(size(sol,1),2) - exp(-1.0d0)) < 1.0d-6 .and. &
@@ -349,7 +349,7 @@ function test_stiff_vanderpol() result(rst)
     mdl%fcn => vanderpol_args
     call integrator%set_absolute_tolerance(1.0d-8)
     call integrator%set_relative_tolerance(1.0d-8)
-    call integrator%solve(mdl, [0.0d0, 2.0d0], [2.0d0, 0.0d0], mu)
+    call integrator%solve(mdl, [0.0d0, 2.0d0], [2.0d0, 0.0d0], args=mu)
     sol = integrator%get_solution()
     rst = size(sol, 1) > 2 .and. all(sol == sol)
 end function
@@ -470,6 +470,76 @@ function test_kennedy_carpenter_5() result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
+function test_kennedy_carpenter_newton_settings() result(rst)
+    logical :: rst
+    type(kennedy_carpenter_4) :: kc4
+    type(kennedy_carpenter_5) :: kc5
+    type(ode_container) :: mdl
+    type(ode_results) :: res
+    real(real64), allocatable :: sol(:,:), ans(:)
+    integer(int32) :: nsteps
+
+    rst = .true.
+
+    ! Defaults
+    if (kc4%get_newton_step_limit() /= 12 .or. &
+        kc5%get_newton_step_limit() /= 12) then
+        rst = .false.
+        print "(A)", "TEST FAILED: Kennedy-Carpenter default Newton step limit"
+    end if
+    if (abs(kc4%get_newton_tolerance() - 1.0d-8) > 1.0d-20 .or. &
+        abs(kc5%get_newton_tolerance() - 1.0d-8) > 1.0d-20) then
+        rst = .false.
+        print "(A)", "TEST FAILED: Kennedy-Carpenter default Newton tolerance"
+    end if
+
+    ! Round trip
+    call kc4%set_newton_step_limit(20)
+    call kc4%set_newton_tolerance(1.0d-11)
+    call kc5%set_newton_step_limit(5)
+    call kc5%set_newton_tolerance(1.0d-6)
+    if (kc4%get_newton_step_limit() /= 20 .or. &
+        kc5%get_newton_step_limit() /= 5) then
+        rst = .false.
+        print "(A)", "TEST FAILED: Kennedy-Carpenter Newton step limit set/get"
+    end if
+    if (abs(kc4%get_newton_tolerance() - 1.0d-11) > 1.0d-24 .or. &
+        abs(kc5%get_newton_tolerance() - 1.0d-6) > 1.0d-20) then
+        rst = .false.
+        print "(A)", "TEST FAILED: Kennedy-Carpenter Newton tolerance set/get"
+    end if
+
+    ! Solve with the modified settings and verify accuracy and that the
+    ! Jacobian is reused across steps
+    mdl%fcn => test_1dof_1
+    call kc4%set_absolute_tolerance(1.0d-10)
+    call kc4%set_relative_tolerance(1.0d-10)
+    call kc4%solve(mdl, [0.0d0, 1.0d0], [2.0d0])
+    res = kc4%get_ode_results()
+    sol = kc4%get_solution()
+    ans = test_1dof_solution_1(sol(:,1))
+    if (.not.assert(ans, sol(:,2), 1.0d-5)) then
+        rst = .false.
+        print "(A)", "TEST FAILED: Kennedy-Carpenter solution w/ Newton settings"
+    end if
+    nsteps = res%statistics%successful_steps + res%statistics%failed_steps
+    if (res%statistics%jacobian_evaluations >= nsteps) then
+        rst = .false.
+        print "(A)", "TEST FAILED: Kennedy-Carpenter Jacobian reuse"
+    end if
+
+    call kc5%set_absolute_tolerance(1.0d-8)
+    call kc5%set_relative_tolerance(1.0d-8)
+    call kc5%solve(mdl, [0.0d0, 1.0d0], [2.0d0])
+    sol = kc5%get_solution()
+    ans = test_1dof_solution_1(sol(:,1))
+    if (.not.assert(ans, sol(:,2), 1.0d-5)) then
+        rst = .false.
+        print "(A)", "TEST FAILED: Kennedy-Carpenter 5 solution w/ Newton settings"
+    end if
+end function
+
+! ------------------------------------------------------------------------------
 function test_kennedy_carpenter_mass_matrix() result(rst)
     logical :: rst
     type(kennedy_carpenter_4) :: integrator
@@ -508,9 +578,9 @@ function test_kennedy_carpenter_singular_mass_matrix() result(rst)
     call integrator5%set_relative_tolerance(1.0d-9)
 
     call integrator4%solve(mdl, [0.0d0, 0.1d0], &
-        [length, 0.0d0, 0.0d0, 0.0d0, 0.0d0], args)
+        [length, 0.0d0, 0.0d0, 0.0d0, 0.0d0], args=args)
     call integrator5%solve(mdl, [0.0d0, 0.1d0], &
-        [length, 0.0d0, 0.0d0, 0.0d0, 0.0d0], args)
+        [length, 0.0d0, 0.0d0, 0.0d0, 0.0d0], args=args)
     sol4 = integrator4%get_solution()
     sol5 = integrator5%get_solution()
 
