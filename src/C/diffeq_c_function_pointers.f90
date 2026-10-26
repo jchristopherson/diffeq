@@ -48,7 +48,8 @@ module diffeq_c_function_pointers
                 !! The leading dimension of the mass matrix.
         end subroutine
         
-        subroutine c_dae_algebraic_constraints(nconstraints, nstates, x, y, g)
+        subroutine c_dae_algebraic_constraints(nconstraints, nstates, x, y, g) &
+            bind(C)
             !! Evaluates algebraic constraint residuals \(g(x,y)\).
             !!
             !! For \(N\) input state components and \(M\) constraints,
@@ -82,7 +83,7 @@ module diffeq_c_function_pointers
         end subroutine
 
         subroutine c_dae_constraint_curvature(nconstraints, ncoord, x, q, &
-            direction, v, curvature)
+            direction, v, curvature) bind(C)
             !! Evaluates \(DG(q)[\mathrm{direction}]v\), without including
             !! \(G\dot v\). Each component is
             !! \(\mathrm{direction}^T\nabla^2 g_i(q)v\).
@@ -107,7 +108,7 @@ module diffeq_c_function_pointers
                 !! The curvature terms in the order of teh constraint callback.
         end subroutine
 
-        subroutine c_ode_event_function(neqn, nstates, x, y, f)
+        subroutine c_ode_event_function(neqn, nstates, x, y, f) bind(C)
             !! Evaluates event functions for ODE event detection.  The solver
             !! seeks to locate roots for each equation.
             use iso_c_binding, only : c_int, c_double
