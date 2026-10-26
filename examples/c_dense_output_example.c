@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "diffeq.h"
+#include "c_plot_helper.h"
 
 void vanderpol(int n, double x, const double *y, double *dydx);
 
@@ -30,7 +31,7 @@ int main()
 {
     // Local Variables
     const double xmax = 50.0;
-    const int npts = 50;
+    const int npts = 100;
     const int nvars = 2;
     double x[npts];
     double ic[] = {2.0, 0.0};
@@ -93,6 +94,9 @@ int main()
         c_free_ode_results(rst);
         return flag;
     }
+
+    // Plot the results
+    c_plot_xy(m, sol, &sol[m], "x", "y");
 
     // Clean up
     free(sol);

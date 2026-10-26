@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "diffeq.h"
+#include "c_plot_helper.h"
 
 void vanderpol(int n, double x, const double *y, double *dydx);
 
@@ -88,6 +89,9 @@ int main()
         c_free_ode_results(rst);
         return flag;
     }
+
+    // Plot the results - plot the dy/dx term this time
+    c_plot_xy(m, sol, &sol[2 * m], "x", "dy/dx");
 
     // Clean up
     free(sol);

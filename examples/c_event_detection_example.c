@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "diffeq.h"
+#include "c_plot_helper.h"
 
 #define INDEX(i, j, ld) ((j) * (ld) + (i))
 
@@ -51,6 +52,12 @@ int main()
     // Get the default settings
     c_default_ode_settings(&settings);
     c_default_ode_event_solver_settings(&esettings);
+
+    // This is not necessary but is nice to allow for a smoother looking
+    // plot.  The integrator has no trouble taking large time steps for this 
+    // solution (see the c_event_detection_example_default plot in the images
+    // folder).
+    settings.maximum_step_size = 1.0e-2;
 
     // Solve for the first bounce
     flag = c_tsitouras_events(nt, neqn, nevents, ball, t, ic, &settings, 
@@ -118,6 +125,9 @@ int main()
 
     printf("\n");
     print_matrix(m2, n, s2, m2);
+
+    // Plot the solution
+    c_plot_xy2(m1, m2, s1, &s1[m1], "Bounce 1", s2, &s2[m2], "Bounce 2", "t", "y");
 
     // End
     clean_up(r1, r2, s1, s2);
