@@ -123,6 +123,9 @@ add_test(
 add_executable(diffeq_c_integrator_tests diffeq_c_integrator_tests.c)
 target_include_directories(diffeq_c_integrator_tests PRIVATE ${PROJECT_SOURCE_DIR}/src/C)
 target_link_libraries(diffeq_c_integrator_tests diffeq)
+if (UNIX)
+    target_link_libraries(diffeq_c_integrator_tests m)
+endif()
 foreach(integrator rk23 rk45 rk853 tsitouras adams rosenbrock kc4 kc5 bdf)
     add_test(
         NAME diffeq_c_${integrator}
@@ -145,6 +148,9 @@ endforeach()
 add_executable(diffeq_c_rosenbrock_tests diffeq_c_rosenbrock_tests.c)
 target_include_directories(diffeq_c_rosenbrock_tests PRIVATE ${PROJECT_SOURCE_DIR}/src/C)
 target_link_libraries(diffeq_c_rosenbrock_tests diffeq)
+if (UNIX)
+    target_link_libraries(diffeq_c_rosenbrock_tests m)
+endif()
 add_test(
     NAME diffeq_c_rosenbrock_callbacks
     WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
@@ -154,6 +160,9 @@ add_test(
 add_executable(diffeq_c_dae_integrator_tests diffeq_c_dae_integrator_tests.c)
 target_include_directories(diffeq_c_dae_integrator_tests PRIVATE ${PROJECT_SOURCE_DIR}/src/C)
 target_link_libraries(diffeq_c_dae_integrator_tests diffeq)
+if (UNIX)
+    target_link_libraries(diffeq_c_dae_integrator_tests m)
+endif()
 foreach(integrator dae_rosenbrock dae_kc4 dae_kc5 dae_bdf)
     add_test(
         NAME diffeq_c_${integrator}
