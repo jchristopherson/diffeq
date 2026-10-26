@@ -23,6 +23,8 @@
 module diffeq_base
     !! A collection of base types for the DIFFEQ library.
     use iso_fortran_env
+    use, intrinsic :: ieee_arithmetic, only : ieee_is_finite, ieee_value, &
+        ieee_quiet_nan
     use diffeq_errors
     use diffeq_containers, only : ode_results
     implicit none
@@ -34,6 +36,10 @@ module diffeq_base
     public :: ode_integrator
     public :: ode_solver
     public :: ode_integer_inquiry
+    public :: ode_dense_output
+    public :: ode_event_function
+    public :: ode_event_solver
+    public :: ode_event_statistics
     
 ! ------------------------------------------------------------------------------
     interface
@@ -85,6 +91,23 @@ module diffeq_base
                 !! An optional argument that can be used to pass information
                 !! in and out of the routine.
         end subroutine
+
+        subroutine ode_event_function(x, y, f, args)
+            !! A callback routine for evaluating event status.
+            use iso_fortran_env, only : real64
+            real(real64), intent(in) :: x
+                !! The current value of the independent variable.
+            real(real64), intent(in), dimension(:) :: y
+                !! An N-element array containing the current state vector.
+            real(real64), intent(out), dimension(:) :: f
+                !! An M-element array containing the values of the event
+                !! functions.  The solver attempts to find the situation 
+                !! where f equals zero thereby signaling an event.  Notice, M 
+                !! need not equal N (N is the number of state variables).
+            class(*), intent(inout), optional :: args
+                !! An optional argument that can be used to pass information
+                !! in and out of the routine.
+        end subroutine
     end interface
 
 ! ------------------------------------------------------------------------------
@@ -116,6 +139,12 @@ module diffeq_base
             !! A pointer to the routine containing the mass matrix for the
             !! system.  If set to null (the default), an identity mass matrix 
             !! will be assumed.
+        procedure(ode_event_function), pointer, public, nopass :: &
+            event_function => null()
+            !! A pointer to the event function.
+        integer, private :: m_nevents = 0
+            !! The number of event equations.  This number need not be equal
+            !! to the number of ODE's.
     contains
         procedure, private :: allocate_workspace => oc_alloc_workspace
         procedure, public :: get_finite_difference_step => oc_get_fd_step
@@ -131,6 +160,46 @@ module diffeq_base
         procedure, public :: compute_rhs => oc_eval_rhs
         procedure, public :: compute_mass_matrix => oc_eval_mass_matrix
         procedure, public :: has_mass_matrix => oc_has_mass_matrix
+        procedure, public :: get_is_ode_event_function_defined => &
+            oc_is_event_fcn_defined
+        procedure, public :: get_event_equation_count => oc_get_event_eqn_count
+        procedure, public :: set_event_equation_count => oc_set_event_eqn_count
+    end type
+
+! ------------------------------------------------------------------------------
+    type ode_event_statistics
+        !! An ODE event solver statistics container.
+        integer :: iteration_count = 0
+            !! The number of iterations taken by the solver.
+        integer :: function_evaluations = 0
+            !! The number of event function evaluations.
+        integer :: event_index = 0
+            !! The index of the event equation where an event was located.
+    end type
+
+    type ode_event_solver
+        !! Provides a mechanism for event detection.
+        integer, private :: m_maxIter = 1000
+            !! The maximum number of iterations allowed.
+        real(real64), private :: m_tol = 1.0d-12
+            !! The convergence tolerance.
+        type(ode_event_statistics), public :: solver_statistics
+            !! Event solver information.
+    contains
+        procedure, public :: get_max_allowed_iterations => oes_get_max_iter
+            !! Gets the number of iterations the solver is allowed to take.
+        procedure, public :: set_max_allowed_iterations => oes_set_max_iter
+            !! Sets the number of iterations the solver is allowed to take.
+        procedure, public :: get_solver_tolerance => oes_get_tol
+            !! Gets the solver tolerance.
+        procedure, public :: set_solver_tolerance => oes_set_tol
+            !! Sets the solver tolerance.
+        procedure, public :: is_event_suspected => oes_event_in_bracket
+            !! Determines if an event is suspected to exist within the &
+            !! specified bracket.
+        procedure, public :: find_event => oes_find_event
+            !! Attempts to find any events within a specified bracket.
+        procedure, private :: find_channel_event => oes_find_single_channel_event
     end type
 
 ! ------------------------------------------------------------------------------
@@ -171,7 +240,35 @@ module diffeq_base
             ! True if the solver is allowed to overshoot the final value and
             ! interpolate back.  False, if the solver must terminate on the
             ! final value.
+        logical, private :: m_denseEnabled = .false.
+            ! Dense output enabled?
+        logical, private :: m_denseValid = .false.
+            ! Is dense output valid for this solver type?
+        real(real64), private :: m_denseInterval(2) = 0.0d0
+            ! The interval over which the stored dense output interpolation
+            ! is defined
+        integer, private :: m_denseSize = 0
+            ! The number of dense output equations.
+        type(ode_event_solver), public :: event_solver
+            !! The ODE event solver.  Enable event detection by defining the
+            !! event_function in the [[ode_container]] object.
     contains
+        procedure, public :: set_dense_output_enabled => oi_set_dense_enabled
+            !! Enables dense output on every accepted step (default: false).
+        procedure, public :: get_dense_output_enabled => oi_get_dense_enabled
+            !! Gets the explicit dense-output preparation setting.
+        procedure, public :: has_dense_output => oi_has_dense_output
+            !! Tests whether a prepared accepted-step interpolant is available.
+        procedure, public :: get_dense_interval => oi_get_dense_interval
+            !! Gets the prepared step's start and end in integration order.
+        procedure, public :: evaluate_dense => oi_evaluate_dense
+            !! Evaluates the prepared step without advancing integration.
+        procedure(ode_dense_output), public, pass, deferred :: compute_dense_output
+            !! Implementation hook for evaluating a validated dense-output query.
+        procedure, public :: set_dense_interval => oi_set_dense_interval
+            !! Implementation hook publishing a prepared accepted step.
+        procedure, public :: invalidate_dense_output => oi_invalidate_dense
+            !! Invalidates the prepared interpolant before stepping or resetting.
         procedure(ode_solver), public, pass, deferred :: solve
             !! Solves the supplied system of ODE's.
         procedure(ode_integer_inquiry), public, pass, deferred :: get_order
@@ -245,8 +342,15 @@ module diffeq_base
             !! Logs a matrix factorization.
     end type
 
-    interface
-        subroutine ode_solver(this, sys, x, iv, args)
+    abstract interface
+        subroutine ode_dense_output(this, x, y)
+            import ode_integrator, real64
+            class(ode_integrator), intent(in) :: this
+            real(real64), intent(in) :: x
+            real(real64), intent(out) :: y(:)
+        end subroutine
+
+        subroutine ode_solver(this, sys, x, iv, store_iv, args)
             !! Solves the supplied system of ODE's.
             use iso_fortran_env
             import ode_integrator
@@ -263,6 +367,13 @@ module diffeq_base
                 !! values.
             real(real64), intent(in), dimension(:) :: iv
                 !! An array containing the initial values for each ODE.
+            logical, intent(in), optional :: store_iv
+                !! An optional input that determines whether or not the 
+                !! initial values are stored as part of the output.  The
+                !! default is true such that the initial values are stored;
+                !! however, set to false to avoid storing the initial values.
+                !! This can be useful in cases of event detection where a 
+                !! restart of the integrator is desired.
             class(*), intent(inout), optional, target :: args
                 !! An optional argument that can be used to pass information
                 !! in and out of the differential equation subroutine.
@@ -280,6 +391,8 @@ module diffeq_base
     end interface
 
 contains
+
+
 ! ******************************************************************************
 ! ODE_CONTAINER ROUTINES
 ! ------------------------------------------------------------------------------
@@ -386,7 +499,7 @@ subroutine oc_jacobian(this, x, y, jac, args)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-pure function oc_use_finite_difference_jacobian(this) result(rst)
+function oc_use_finite_difference_jacobian(this) result(rst)
     !! States if a finite difference approximation to the Jacobian is utilized.
     class(ode_container), intent(in) :: this
         !! The [[ode_container]] object.
@@ -490,6 +603,37 @@ subroutine oc_eval_mass_matrix(this, x, y, m, args)
     end if
 end subroutine
 
+! ------------------------------------------------------------------------------
+pure function oc_is_event_fcn_defined(this) result(rst)
+    !! Tests to see if the event function has been defined.
+    class(ode_container), intent(in) :: this
+        !! The [[ode_container]] object.
+    logical :: rst
+        !! True if the event function has been defined; else, false.
+
+    rst = associated(this%event_function)
+end function
+
+! ------------------------------------------------------------------------------
+pure function oc_get_event_eqn_count(this) result(rst)
+    !! Gets the number of event functions.
+    class(ode_container), intent(in) :: this
+        !! The [[ode_container]] object.
+    integer :: rst
+        !! The equation count.
+    rst = this%m_nevents
+end function
+
+! --------------------
+subroutine oc_set_event_eqn_count(this, x)
+    !! Sets the number of event functions.
+    class(ode_container), intent(inout) :: this
+        !! The [[ode_container]] object.
+    integer, intent(in) :: x
+        !! The equation count.
+    this%m_nevents = x
+end subroutine
+
 ! ******************************************************************************
 ! ODE_INTEGRATOR ROUTINES
 ! ------------------------------------------------------------------------------
@@ -543,6 +687,7 @@ subroutine oi_clear_buffer(this)
     class(ode_integrator), intent(inout) :: this
         !! The ode_integrator object.
 
+    call this%invalidate_dense_output()
     call this%m_buffer%clear_all()
     this%m_buffer%statistics%failed_steps = 0
     this%m_buffer%statistics%successful_steps = 0
@@ -1024,6 +1169,472 @@ subroutine oi_log_matrix_factorization(this, n)
             this%m_buffer%statistics%matrix_factorizations + 1
     end if
 end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine oi_set_dense_enabled(this, enabled)
+    !! Enables or disables explicit dense-output preparation.
+    !! When enabled, the integrator prepares dense output for each accepted
+    !! step independently of whether the requested output grid requires it.
+    !! Disabling this setting does not prevent dense output needed to produce
+    !! requested solution values. Any previously prepared step is invalidated.
+    class(ode_integrator), intent(inout) :: this
+        !! The ODE integrator.
+    logical, intent(in) :: enabled
+        !! True to enable explicit dense-output preparation; false to disable it.
+    this%m_denseEnabled = enabled
+    call this%invalidate_dense_output()
+end subroutine
+
+! ------------------------------------------------------------------------------
+pure function oi_get_dense_enabled(this) result(rst)
+    !! Gets the explicit dense-output preparation setting.
+    class(ode_integrator), intent(in) :: this
+        !! The ODE integrator.
+    logical :: rst
+        !! True if explicit dense-output preparation is enabled; otherwise,
+        !! false. This setting is independent of preparation required to
+        !! produce values on a requested output grid.
+    rst = this%m_denseEnabled
+end function
+
+! ------------------------------------------------------------------------------
+pure function oi_has_dense_output(this) result(rst)
+    !! Determines whether a prepared accepted-step interpolant is available.
+    class(ode_integrator), intent(in) :: this
+        !! The ODE integrator.
+    logical :: rst
+        !! True if dense output is currently valid; otherwise, false.
+    rst = this%m_denseValid
+end function
+
+! ------------------------------------------------------------------------------
+subroutine oi_invalidate_dense(this)
+    !! Marks any prepared dense-output interpolant as unavailable.
+    class(ode_integrator), intent(inout) :: this
+        !! The ODE integrator.
+    this%m_denseValid = .false.
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine oi_set_dense_interval(this, x_start, x_end, n)
+    !! Publishes the interval covered by retained dense-output interpolation
+    !! data for one accepted step. The endpoints are recorded in integration
+    !! order, which may be increasing or decreasing. The interpolant is marked
+    !! valid after the interval and state dimension have been recorded.
+    !! An error stop occurs if either endpoint is non-finite, the endpoints
+    !! are equal, or the state dimension is less than one.
+    class(ode_integrator), intent(inout) :: this
+        !! The ODE integrator.
+    real(real64), intent(in) :: x_start
+        !! The first endpoint of the accepted step in integration order.
+    real(real64), intent(in) :: x_end
+        !! The second endpoint of the accepted step in integration order.
+    integer, intent(in) :: n
+        !! The number of dependent variables represented by the interpolant.
+    if (.not.ieee_is_finite(x_start) .or. .not.ieee_is_finite(x_end)) &
+        error stop DIFFEQ_INVALID_INPUT_ERROR
+    if (x_start == x_end .or. n < 1) error stop DIFFEQ_INVALID_INPUT_ERROR
+    this%m_denseInterval = [x_start, x_end]
+    this%m_denseSize = n
+    this%m_denseValid = .true.
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine oi_get_dense_interval(this, x_start, x_end)
+    !! Gets the endpoints of the currently prepared dense-output interval.
+    !! An error stop occurs if no valid interpolant is available.
+    class(ode_integrator), intent(in) :: this
+        !! The ODE integrator.
+    real(real64), intent(out) :: x_start
+        !! Receives the first endpoint in integration order.
+    real(real64), intent(out) :: x_end
+        !! Receives the second endpoint in integration order.
+    if (.not.this%m_denseValid) error stop DIFFEQ_INVALID_OPERATION_ERROR
+    x_start = this%m_denseInterval(1)
+    x_end = this%m_denseInterval(2)
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine oi_evaluate_dense(this, x, y)
+    !! Evaluates the interpolant for the last prepared accepted step at a
+    !! requested independent-variable value. The query must be finite and
+    !! within the step interval, including either endpoint. This operation
+    !! does not advance or otherwise change solver state and does not evaluate
+    !! the ODE function. An error stop occurs if no valid interpolant is
+    !! available, the output array has the wrong size, or the query is
+    !! non-finite or outside the interval.
+    class(ode_integrator), intent(in) :: this
+        !! The ODE integrator containing the prepared interpolant.
+    real(real64), intent(in) :: x
+        !! The independent-variable value at which to evaluate the solution.
+    real(real64), intent(out) :: y(:)
+        !! Receives the interpolated dependent-variable values. Its size must
+        !! equal the number of dependent variables in the prepared step.
+    if (.not.this%m_denseValid) error stop DIFFEQ_INVALID_OPERATION_ERROR
+    if (size(y) /= this%m_denseSize) error stop DIFFEQ_ARRAY_SIZE_ERROR
+    if (.not.ieee_is_finite(x)) error stop DIFFEQ_INVALID_INPUT_ERROR
+    if (x < minval(this%m_denseInterval) .or. x > maxval(this%m_denseInterval)) &
+        error stop DIFFEQ_INVALID_INPUT_ERROR
+    call this%compute_dense_output(x, y)
+end subroutine
+
+! ******************************************************************************
+! ODE_EVENT_SOLVER_ROUTINES
+! ------------------------------------------------------------------------------
+pure function oes_get_max_iter(this) result(rst)
+    !! Gets the maximum number of iterations allowed for the root-finding solver.
+    class(ode_event_solver), intent(in) :: this
+        !! The [[ode_event_solver]] object.
+    integer :: rst
+        !! The iteration count limit.
+    rst = this%m_maxIter
+end function
+
+! --------------------
+subroutine oes_set_max_iter(this, x)
+    !! Sets the maximum number of iterations allowed for the root-finding solver.
+    class(ode_event_solver), intent(inout) :: this
+        !! The [[ode_event_solver]] object.
+    integer, intent(in) :: x
+        !! The iteration count limit.
+    this%m_maxIter = x
+end subroutine
+
+! ------------------------------------------------------------------------------
+pure function oes_get_tol(this) result(rst)
+    !! Gets the root-finding solver tolerance.
+    class(ode_event_solver), intent(in) :: this
+        !! The [[ode_event_solver]] object.
+    real(real64) :: rst
+        !! The tolerance value.
+    rst = this%m_tol
+end function
+
+! --------------------
+subroutine oes_set_tol(this, x)
+    !! Sets the root-finding solver tolerance.
+    class(ode_event_solver), intent(inout) :: this
+        !! The [[ode_event_solver]] object.
+    real(real64), intent(in) :: x
+        !! The tolerance value.
+    this%m_tol = x
+end subroutine
+
+! ------------------------------------------------------------------------------
+function oes_find_event(this, fcn, integrator, neqn, x1, y1, x2, y2, x, y, &
+    args) result(rst)
+    !! Attempts to find an event via Brent's method for root finding for each
+    !! of the M event equations (M does not have to be equal to the number
+    !! of state equations).  If no events are found, this function simply
+    !! returns false.  If a root, or roots, are found, the first occurring
+    !! root is returned, and iteration statistics are updated in the
+    !! [[ode_event_solver]]. A root at the initial bound is ignored so an
+    !! integration restarted at an event can advance; a root at the terminal
+    !! bound is still reported.
+    !!
+    !! If no event function has been defined a DIFFEQ_NULL_POINTER_ERROR is
+    !! thrown.
+    class(ode_event_solver), intent(inout) :: this
+        !! The [[ode_event_solver]] object.
+    procedure(ode_event_function), intent(in), pointer :: fcn
+        !! The [[ode_event_function]].
+    class(ode_integrator), intent(in) :: integrator
+        !! The [[ode_integrator]] being used to integrate the ODE's.
+    integer, intent(in) :: neqn
+        !! The number of event equations.  This value must be at least 1; else,
+        !! a DIFFEQ_INVALID_INPUT_ERROR is thrown.
+    real(real64), intent(in) :: x1
+        !! The initial bound of the search region.
+    real(real64), intent(in), dimension(:) :: y1
+        !! The N-element state vector at x1.
+    real(real64), intent(in) :: x2
+        !! The terminal bound of the search region.  This value must be
+        !! different than x2 by an amount larger than machine epsilon; else,
+        !! a DIFFEQ_INVALID_OPERATION_ERROR is thrown.
+    real(real64), intent(in), dimension(:) :: y2
+        !! The N-element state vector at x2.  This array must be sized to match
+        !! x1; else, a DIFFEQ_ARRAY_SIZE_ERROR is thrown.
+    real(real64), intent(out) :: x
+        !! The value of the independent variable at which the root is found.
+        !! If no root is found, this value is returned as a NaN.
+    real(real64), intent(out), dimension(:) :: y
+        !! The N-element array containing the state vector at x.  If no root
+        !! is found, this array is populated with NaN.  This array must be
+        !! sized to match x1; else, a DIFFEQ_ARRAY_SIZE_ERROR is thrown.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information in and out
+        !! of the routine.
+    logical :: rst
+        !! True if the process converged to a root; else, false.
+
+    ! Local Variables
+    integer :: i, nstates, ind
+    integer, allocatable :: niter(:), neval(:)
+    real(real64) :: eps
+    real(real64), allocatable, dimension(:) :: xs
+    real(real64), allocatable, dimension(:,:) :: ys
+    logical, allocatable, dimension(:) :: found_event
+
+    ! Input Validation
+    nstates = size(y1)
+    eps = epsilon(eps)
+    if (size(y2) /= nstates .or. size(y) /= nstates) error stop DIFFEQ_ARRAY_SIZE_ERROR
+    if (abs(x2 - x1) <= eps) error stop DIFFEQ_INVALID_OPERATION_ERROR
+    if (neqn < 1) error stop DIFFEQ_INVALID_INPUT_ERROR
+
+    ! Initialization
+    allocate( &
+        xs(neqn), &
+        ys(nstates, neqn), &
+        found_event(neqn), &
+        niter(neqn), &
+        neval(neqn) &
+    )
+    x = ieee_value(0.0d0, ieee_quiet_nan)
+    y = ieee_value(0.0d0, ieee_quiet_nan)
+    rst = .false.
+
+    ! Reset the iteration statistics information
+    this%solver_statistics%event_index = 0
+    this%solver_statistics%function_evaluations = 0
+    this%solver_statistics%iteration_count = 0
+
+    ! Locate events
+    do i = 1, neqn
+        found_event(i) = this%find_channel_event(fcn, integrator, i, neqn, &
+            x1, y1, x2, y2, xs(i), ys(:,i), niter(i), neval(i), args = args)
+    end do
+    rst = any(found_event)
+    if (.not.rst) return
+
+    ! If any events were found, find the first event
+    ind = 0
+    do i = 1, neqn
+        if (.not.found_event(i)) cycle
+        if (ind == 0) then
+            ind = i
+        else if (x1 < x2 .and. xs(i) < xs(ind)) then
+            ind = i
+        else if (x1 > x2 .and. xs(i) > xs(ind)) then
+            ind = i
+        end if
+    end do
+    x = xs(ind)
+    y = ys(:,ind)
+
+    ! Store the iteration statistics information
+    this%solver_statistics%function_evaluations = neval(ind)
+    this%solver_statistics%iteration_count = niter(ind)
+    this%solver_statistics%event_index = ind
+end function
+
+! ------------------------------------------------------------------------------
+function oes_find_single_channel_event(this, fcn, integrator, index, nevents, &
+    x1, y1, x2, y2, x, y, niter, neval, args) result(rst)
+    !! Performs the root finding iteration process via Brent's method for a
+    !! single channel.  As this routine is intended to stay private, there is
+    !! no error checking that is performed.  However, there is a call to other
+    !! type-bound procedures that do check their inputs courtesy of their public
+    !! interface; therefore, it is still possible that this routine would 
+    !! trigger an 'error stop' condition.  For this reason, be sure of the 
+    !! inputs supplied to this routine.
+    class(ode_event_solver), intent(in) :: this
+        !! The [[ode_event_solver]] object.
+    procedure(ode_event_function), intent(in), pointer :: fcn
+        !! The [[ode_event_function]].
+    class(ode_integrator), intent(in) :: integrator
+        !! The [[ode_integrator]] being used to integrate the ODE's.
+    integer, intent(in) :: index
+        !! The index of the channel on which to operate.
+    integer, intent(in) :: nevents
+        !! The number of event equations.
+    real(real64), intent(in) :: x1
+        !! The initial bound of the search region.
+    real(real64), intent(in), dimension(:) :: y1
+        !! The N-element state vector at x1.
+    real(real64), intent(in) :: x2
+        !! The terminal bound of the search region.
+    real(real64), intent(in), dimension(:) :: y2
+        !! The N-element state vector at x2.
+    real(real64), intent(out) :: x
+        !! The value of the independent variable at which the root is found.
+        !! If no root is found, this value is returned as a NaN.
+    real(real64), intent(out), dimension(:) :: y
+        !! The N-element array containing the state vector at x.  If no root
+        !! is found, this array is populated with NaN.
+    integer, intent(out) :: niter
+        !! The number of iterations taken.
+    integer, intent(out) :: neval
+        !! The number of event function evaluations taken.
+    class(*), intent(inout), optional :: args
+        !! An optional argument that can be used to pass information in and out
+        !! of the routine.
+    logical :: rst
+        !! True if the process converged to a root; else, false.
+
+    ! Local Variables
+    integer :: maxiter, nstates
+    real(real64), allocatable, dimension(:) :: g1, g2, g, yinterp
+    real(real64) :: a, b, c, d, e, fa, fb, fc, p, q, r, s, eps, tol, tol1, xm, &
+        min1, min2, mn, endpoint_tol
+
+    ! Initialization
+    rst = .false.
+    x = ieee_value(0.0d0, ieee_quiet_nan)
+    y = ieee_value(0.0d0, ieee_quiet_nan)
+    niter = 0
+    maxiter = this%get_max_allowed_iterations()
+    eps = epsilon(eps)
+    tol = this%get_solver_tolerance()
+    nstates = size(y)
+    allocate( &
+        g1(nevents), &
+        g2(nevents), &
+        g(nevents), &
+        yinterp(nstates) &
+    )
+
+    ! Evaluate the event functions.
+    call fcn(x1, y1, g1, args = args)
+    call fcn(x2, y2, g2, args = args)
+    neval = 2
+
+    ! Test to see if a root exists within this range for this index
+    if (.not.this%is_event_suspected(g1, g2, index)) then
+        ! No root is expected in this bracket, for this channel - return
+        rst = .false.
+        return
+    end if
+
+    ! Iteration Process
+    a = x1
+    b = x2
+    c = x2
+    fa = g1(index)
+    fb = g2(index)
+    fc = fb
+    do niter = 1, maxiter
+        ! Adjust the bounding interval
+        if ((fb > 0.0d0 .and. fc > 0.0d0) .or. &
+            (fb < 0.0d0 .and. fc < 0.0d0)) &
+        then
+            c = a
+            fc = fa
+            e = b - a
+            d = e
+        end if
+        if (abs(fc) < abs(fb)) then
+            a = b
+            b = c
+            c = a
+            fa = fb
+            fb = fc
+            fc = fa
+        end if
+
+        ! Convergence Check
+        tol1 = 2.0d0 * eps * abs(b) + 0.5d0 * tol
+        xm = 0.5d0 * (c - b)
+        if (abs(xm) <= tol1 .or. fb == 0.0d0) then
+            ! b is the root
+            rst = .true.
+            x = b
+            call integrator%evaluate_dense(x, y)
+            exit
+        end if
+
+        if (abs(e) >= tol1 .and. abs(fa) > abs(fb)) then
+            ! Attempt interpolation
+            s = fb / fa
+            if (a == c) then
+                p = 2.0d0 * xm * s
+                q = 1.0d0 - s
+            else
+                q = fa / fc
+                r = fb / fc
+                p = s * (2.0d0 * xm * q * (q - r) - (b - a) * (r - 1.0d0))
+                q = (q - 1.0d0) * (r - 1.0d0) * (s - 1.0d0)
+            end if
+
+            ! Bounds checking
+            if (p > 0.0d0) q = -q
+            p = abs(p)
+            min1 = 3.0d0 * xm * q - abs(tol1 * q)
+            min2 = abs(e * q)
+            if (min1 < min2) then
+                mn = min1
+            else
+                mn = min2
+            end if
+            if (2.0d0 * p < mn) then
+                ! Accept the interpolation
+                e = d
+                d = p / q
+            else
+                ! The interpolation failed, use bisection
+                d = xm
+                e = d
+            end if
+        else
+            ! The bounds are decreasing too slowly, use bisection
+            d = xm
+            e = d
+        end if
+
+        ! Update
+        a = b
+        fa = fb
+
+        ! Evaluate the new trial root
+        if (abs(d) > tol1) then
+            b = b + d
+        else
+            b = b + sign(tol1, xm)
+        end if
+        call integrator%evaluate_dense(b, yinterp)
+        call fcn(b, yinterp, g, args = args)
+        fb = g(index)
+        neval = neval + 1
+    end do
+
+    if (rst) then
+        endpoint_tol = tol + 4.0d0 * eps * max(abs(x1), abs(x))
+        if (abs(x - x1) <= endpoint_tol) then
+            rst = .false.
+            x = ieee_value(0.0d0, ieee_quiet_nan)
+            y = ieee_value(0.0d0, ieee_quiet_nan)
+        end if
+    end if
+end function
+
+! ------------------------------------------------------------------------------
+pure function oes_event_in_bracket(this, f1, f2, index) result(rst)
+    !! Tests to see if a root is likely to exist in the given bracket.
+    class(ode_event_solver), intent(in) :: this
+        !! The [[ode_event_solver]] object.
+    real(real64), intent(in), dimension(:) :: f1
+        !! An M-element array containing the values of the M event functions at
+        !! the initial interval point.
+    real(real64), intent(in), dimension(:) :: f2
+        !! An M-element array containing the values of the M event functions at
+        !! the terminal interval point.  An DIFFEQ_ARRAY_SIZE_ERROR is thrown
+        !! if this array is not the same size as f1.
+    integer(int32), intent(in) :: index
+        !! The index of the event function to validate.  The index must exist
+        !! on the interval [1, M], where M is the number of event functions.  A
+        !! DIFFEQ_INVALID_INPUT_ERROR is thrown if index is outside this 
+        !! interval.
+    logical :: rst
+        !! True if an event is suspected to exist within the bracket; else,
+        !! false.
+
+    ! Input Checking
+    if (size(f1) /= size(f2)) error stop DIFFEQ_ARRAY_SIZE_ERROR
+    if (index < 1 .or. index > size(f1)) error stop DIFFEQ_INVALID_INPUT_ERROR
+
+    ! Process
+    rst = f1(index) * f2(index) <= 0.0d0
+end function
 
 ! ------------------------------------------------------------------------------
 end module

@@ -77,7 +77,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title="14.0% of total for modules and submodules.">494 statements</a>
+                 title=" 9.9% of total for modules and submodules.">546 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -200,8 +200,8 @@ newton_multistep_integrator, which supplies that corrector.</p>
               <ul class="list-inline">
                   <li class="list-inline-item">linalg</li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
                   <li class="list-inline-item"><a href='diffeq_base.html'>diffeq_base</a></li>
+                  <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
               </ul>
             </li>
         </ul>
@@ -245,7 +245,7 @@ implicit step via Newton iteration.  This routine forms matrices
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~15"></span>
+              <span class="anchor" id="variable-this~172"></span>
               class(<a href='..\type\newton_multistep_integrator.html'>newton_multistep_integrator</a>),
             </td>
 <td>intent(inout)</td>
@@ -260,7 +260,7 @@ implicit step via Newton iteration.  This routine forms matrices
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-sys~6"></span>
+              <span class="anchor" id="variable-sys~35"></span>
               class(<a href='..\type\ode_container.html'>ode_container</a>),
             </td>
 <td>intent(inout)</td>
@@ -275,7 +275,7 @@ implicit step via Newton iteration.  This routine forms matrices
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-h~7"></span>
+              <span class="anchor" id="variable-h~32"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -290,7 +290,7 @@ implicit step via Newton iteration.  This routine forms matrices
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~7"></span>
+              <span class="anchor" id="variable-x~116"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -305,7 +305,7 @@ implicit step via Newton iteration.  This routine forms matrices
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~7"></span>
+              <span class="anchor" id="variable-y~65"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -336,7 +336,7 @@ implicit step via Newton iteration.  This routine forms matrices
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-b~2"></span>
+              <span class="anchor" id="variable-b~7"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -353,7 +353,7 @@ that the Newton update is <script type="math/tex">y \leftarrow y + \delta</scrip
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~6"></span>
+              <span class="anchor" id="variable-args~51"></span>
               class(*),
             </td>
 <td>intent(inout),</td>
@@ -402,7 +402,7 @@ in and out of the differential equation subroutine.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~17"></span>
+              <span class="anchor" id="variable-this~174"></span>
               class(<a href='..\type\multistep_integrator.html'>multistep_integrator</a>),
             </td>
 <td>intent(inout)</td>
@@ -417,7 +417,7 @@ in and out of the differential equation subroutine.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-sys~8"></span>
+              <span class="anchor" id="variable-sys~37"></span>
               class(<a href='..\type\ode_container.html'>ode_container</a>),
             </td>
 <td>intent(inout)</td>
@@ -432,7 +432,7 @@ in and out of the differential equation subroutine.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-h~9"></span>
+              <span class="anchor" id="variable-h~34"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -447,7 +447,7 @@ in and out of the differential equation subroutine.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~9"></span>
+              <span class="anchor" id="variable-x~118"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -462,7 +462,7 @@ in and out of the differential equation subroutine.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-ypred"></span>
+              <span class="anchor" id="variable-ypred~2"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -477,7 +477,7 @@ in and out of the differential equation subroutine.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-ynew"></span>
+              <span class="anchor" id="variable-ynew~2"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -492,7 +492,7 @@ in and out of the differential equation subroutine.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-converged"></span>
+              <span class="anchor" id="variable-converged~4"></span>
               logical,
             </td>
 <td>intent(out)</td>
@@ -508,7 +508,7 @@ the step is retried on a shorter step size.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~8"></span>
+              <span class="anchor" id="variable-args~53"></span>
               class(*),
             </td>
 <td>intent(inout),</td>
@@ -559,7 +559,7 @@ of the method at the requested order.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~19"></span>
+              <span class="anchor" id="variable-this~176"></span>
               class(<a href='..\type\multistep_integrator.html'>multistep_integrator</a>),
             </td>
 <td>intent(in)</td>
@@ -574,7 +574,7 @@ of the method at the requested order.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-k~5"></span>
+              <span class="anchor" id="variable-k~23"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -627,7 +627,7 @@ of the method at the requested order.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~18"></span>
+              <span class="anchor" id="variable-this~175"></span>
               class(<a href='..\type\multistep_integrator.html'>multistep_integrator</a>),
             </td>
 <td>intent(in)</td>
@@ -685,7 +685,7 @@ once per step attempt.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~16"></span>
+              <span class="anchor" id="variable-this~173"></span>
               class(<a href='..\type\multistep_integrator.html'>multistep_integrator</a>),
             </td>
 <td>intent(inout)</td>
@@ -700,7 +700,7 @@ once per step attempt.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-sys~7"></span>
+              <span class="anchor" id="variable-sys~36"></span>
               class(<a href='..\type\ode_container.html'>ode_container</a>),
             </td>
 <td>intent(inout)</td>
@@ -715,7 +715,7 @@ once per step attempt.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-h~8"></span>
+              <span class="anchor" id="variable-h~33"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -730,7 +730,7 @@ once per step attempt.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~8"></span>
+              <span class="anchor" id="variable-x~117"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -745,7 +745,7 @@ once per step attempt.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~8"></span>
+              <span class="anchor" id="variable-y~66"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -760,7 +760,7 @@ once per step attempt.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-f~5"></span>
+              <span class="anchor" id="variable-f~29"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -777,7 +777,7 @@ values of <script type="math/tex">y'</script> rather than of <script type="math/
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-yn~5"></span>
+              <span class="anchor" id="variable-yn~26"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -793,7 +793,7 @@ solution estimate at x + h.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-fn~5"></span>
+              <span class="anchor" id="variable-fn~25"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -809,7 +809,7 @@ derivative estimate at x + h.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~7"></span>
+              <span class="anchor" id="variable-args~52"></span>
               class(*),
             </td>
 <td>intent(inout),</td>
@@ -849,6 +849,38 @@ in and out of the differential equation subroutine.</p>
     <div class="card-body">
       <p>Defines the structure of a multi-step integrator.</p>
 
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-event_solver"></span>
+              type(<a href='..\type\ode_event_solver.html'>ode_event_solver</a>),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>event_solver</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>The ODE event solver.  Enable event detection by defining the
+event_function in the <a href="..\type\ode_container.html">ode_container</a> object.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
 
 
 
@@ -868,12 +900,17 @@ buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm'>compute_error_norm</a></strong> => oi_estimate_error</td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-compute_dense_output~3'>compute_dense_output</a></strong> => mi_dense_output</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
                 <td>..\..\<p>Computes the norm of the scaled error estimate.<\p></td>
               </tr>
               <tr>
                 <td>  procedure(<a href='..\interface\multistep_corrector.html'>multistep_corrector</a>), public, deferred, pass ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-correct'>correct</a></strong></td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-correct~2'>correct</a></strong></td>
                 <td>..\..\<p>Refines the prediction by applying the implicit formula.<\p></td>
               </tr>
               <tr>
@@ -883,12 +920,17 @@ buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size'>estimate_next_step_size</a></strong> => oi_next_step</td>
                 <td>..\..\<p>Estimates the next step size.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-evaluate_derivative'>evaluate_derivative</a></strong> => mi_evaluate_derivative</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-evaluate_dense'>evaluate_dense</a></strong> => oi_evaluate_dense</td>
+                <td>..\..\<p>Evaluates the prepared step without advancing integration.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-evaluate_derivative~2'>evaluate_derivative</a></strong> => mi_evaluate_derivative</td>
                 <td>..\..\<p>Evaluates the derivative stored in the solution history.<\p></td>
               </tr>
               <tr>
@@ -903,8 +945,18 @@ buffer.<\p></td>
 the final value in the integration range.<\p></td>
               </tr>
               <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_dense_interval'>get_dense_interval</a></strong> => oi_get_dense_interval</td>
+                <td>..\..\<p>Gets the prepared step's start and end in integration order.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_dense_output_enabled'>get_dense_output_enabled</a></strong> => oi_get_dense_enabled</td>
+                <td>..\..\<p>Gets the explicit dense-output preparation setting.<\p></td>
+              </tr>
+              <tr>
                 <td>  procedure(<a href='..\interface\multistep_error_constant.html'>multistep_error_constant</a>), public, deferred, pass ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_error_constant~2'>get_error_constant</a></strong></td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_error_constant~3'>get_error_constant</a></strong></td>
                 <td>..\..\<p>Gets the error constant for the requested order.<\p></td>
               </tr>
               <tr>
@@ -919,7 +971,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure(<a href='..\interface\multistep_integer_inquiry.html'>multistep_integer_inquiry</a>), public, deferred, pass ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_maximum_supported_order~2'>get_maximum_supported_order</a></strong></td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_maximum_supported_order~3'>get_maximum_supported_order</a></strong></td>
                 <td>..\..\<p>Gets the highest order the method is permitted to use.<\p></td>
               </tr>
               <tr>
@@ -934,7 +986,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_order~2'>get_order</a></strong> => mi_get_order</td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_order~9'>get_order</a></strong> => mi_get_order</td>
                 <td>..\..\<p>Gets the order currently in use.<\p></td>
               </tr>
               <tr>
@@ -984,13 +1036,23 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure(<a href='..\interface\multistep_error_constant.html'>multistep_error_constant</a>), public, deferred, pass ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_truncation_constant~2'>get_truncation_constant</a></strong></td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_truncation_constant~3'>get_truncation_constant</a></strong></td>
                 <td>..\..\<p>Gets the truncation error constant for the requested order.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-interpolate~2'>interpolate</a></strong> => mi_interpolate</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-has_dense_output'>has_dense_output</a></strong> => oi_has_dense_output</td>
+                <td>..\..\<p>Tests whether a prepared accepted-step interpolant is available.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-interpolate~8'>interpolate</a></strong> => mi_interpolate</td>
                 <td>..\..\<p>Interpolates the solution history to the requested point.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-invalidate_dense_output'>invalidate_dense_output</a></strong> => oi_invalidate_dense</td>
+                <td>..\..\<p>Invalidates the prepared interpolant before stepping or resetting.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
@@ -1019,12 +1081,12 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure(<a href='..\interface\predictor_step.html'>predictor_step</a>), public, deferred, pass ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-predictor~2'>predictor</a></strong></td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-predictor~3'>predictor</a></strong></td>
                 <td>..\..\<p>Evaluates the predictor.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-prepare_for_solve~2'>prepare_for_solve</a></strong> => mi_prepare_for_solve</td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-prepare_for_solve~3'>prepare_for_solve</a></strong> => mi_prepare_for_solve</td>
                 <td>..\..\<p>Prepares internal state for the beginning of an integration.<\p></td>
               </tr>
               <tr>
@@ -1034,7 +1096,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-set_absolute_tolerance~4'>set_absolute_tolerance</a></strong> => oi_set_abs_tol, oi_set_abs_tols</td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-set_absolute_tolerance~13'>set_absolute_tolerance</a></strong> => oi_set_abs_tol, oi_set_abs_tols</td>
                 <td>..\..\<p>Sets the absolute error tolerance.<\p></td>
               </tr>
               <tr>
@@ -1042,6 +1104,16 @@ the final value in the integration range.<\p></td>
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_allow_overshoot'>set_allow_overshoot</a></strong> => oi_set_allow_overshoot</td>
                 <td>..\..\<p>Sets a value determining if the solver is allowed to overshoot 
 the final value in the integration range.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_dense_interval'>set_dense_interval</a></strong> => oi_set_dense_interval</td>
+                <td>..\..\<p>Implementation hook publishing a prepared accepted step.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_dense_output_enabled'>set_dense_output_enabled</a></strong> => oi_set_dense_enabled</td>
+                <td>..\..\<p>Enables dense output on every accepted step (default: false).<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
@@ -1060,7 +1132,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-set_relative_tolerance~4'>set_relative_tolerance</a></strong> => oi_set_rel_tol, oi_set_rel_tols</td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-set_relative_tolerance~13'>set_relative_tolerance</a></strong> => oi_set_rel_tol, oi_set_rel_tols</td>
                 <td>..\..\<p>Sets the relative error tolerance.<\p></td>
               </tr>
               <tr>
@@ -1080,7 +1152,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-solve'>solve</a></strong> => mi_ode_solver</td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-solve~5'>solve</a></strong> => mi_ode_solver</td>
                 <td>..\..\<p>Solves the supplied system of ODE's.<\p></td>
               </tr>
           </tbody>
@@ -1100,6 +1172,38 @@ the final value in the integration range.<\p></td>
     <div class="card-body">
       <p>Defines the structure of a multi-step integrator whose corrector
 equation is solved by Newton iteration.</p><a href="../type/newton_multistep_integrator.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-event_solver"></span>
+              type(<a href='..\type\ode_event_solver.html'>ode_event_solver</a>),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>event_solver</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>The ODE event solver.  Enable event detection by defining the
+event_function in the <a href="..\type\ode_container.html">ode_container</a> object.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
 
 
 
@@ -1125,12 +1229,17 @@ buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm'>compute_error_norm</a></strong> => oi_estimate_error</td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-compute_dense_output~3'>compute_dense_output</a></strong> => mi_dense_output</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
                 <td>..\..\<p>Computes the norm of the scaled error estimate.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-correct~2'>correct</a></strong> => mi_newton_iteration</td>
+  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-correct~3'>correct</a></strong> => mi_newton_iteration</td>
                 <td>..\..\<p>Performs the Newton iteration process.<\p></td>
               </tr>
               <tr>
@@ -1140,12 +1249,17 @@ buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size'>estimate_next_step_size</a></strong> => oi_next_step</td>
                 <td>..\..\<p>Estimates the next step size.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-evaluate_derivative'>evaluate_derivative</a></strong> => mi_evaluate_derivative</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-evaluate_dense'>evaluate_dense</a></strong> => oi_evaluate_dense</td>
+                <td>..\..\<p>Evaluates the prepared step without advancing integration.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-evaluate_derivative~2'>evaluate_derivative</a></strong> => mi_evaluate_derivative</td>
                 <td>..\..\<p>Evaluates the derivative stored in the solution history.<\p></td>
               </tr>
               <tr>
@@ -1160,8 +1274,18 @@ buffer.<\p></td>
 the final value in the integration range.<\p></td>
               </tr>
               <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_dense_interval'>get_dense_interval</a></strong> => oi_get_dense_interval</td>
+                <td>..\..\<p>Gets the prepared step's start and end in integration order.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_dense_output_enabled'>get_dense_output_enabled</a></strong> => oi_get_dense_enabled</td>
+                <td>..\..\<p>Gets the explicit dense-output preparation setting.<\p></td>
+              </tr>
+              <tr>
                 <td>  procedure(<a href='..\interface\multistep_error_constant.html'>multistep_error_constant</a>), public, deferred, pass ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_error_constant~2'>get_error_constant</a></strong></td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_error_constant~3'>get_error_constant</a></strong></td>
                 <td>..\..\<p>Gets the error constant for the requested order.<\p></td>
               </tr>
               <tr>
@@ -1176,7 +1300,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure(<a href='..\interface\multistep_integer_inquiry.html'>multistep_integer_inquiry</a>), public, deferred, pass ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_maximum_supported_order~2'>get_maximum_supported_order</a></strong></td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_maximum_supported_order~3'>get_maximum_supported_order</a></strong></td>
                 <td>..\..\<p>Gets the highest order the method is permitted to use.<\p></td>
               </tr>
               <tr>
@@ -1186,12 +1310,12 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-get_newton_step_limit'>get_newton_step_limit</a></strong> => mi_get_newton_step_limit</td>
+  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-get_newton_step_limit~2'>get_newton_step_limit</a></strong> => mi_get_newton_step_limit</td>
                 <td>..\..\<p>Gets the maximum number of Newton iterations allowed.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-get_newton_tolerance'>get_newton_tolerance</a></strong> => mi_get_newton_tolerance</td>
+  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-get_newton_tolerance~2'>get_newton_tolerance</a></strong> => mi_get_newton_tolerance</td>
                 <td>..\..\<p>Gets the Newton iteration convergence tolerance.<\p></td>
               </tr>
               <tr>
@@ -1201,7 +1325,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_order~2'>get_order</a></strong> => mi_get_order</td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_order~9'>get_order</a></strong> => mi_get_order</td>
                 <td>..\..\<p>Gets the order currently in use.<\p></td>
               </tr>
               <tr>
@@ -1251,13 +1375,23 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure(<a href='..\interface\multistep_error_constant.html'>multistep_error_constant</a>), public, deferred, pass ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_truncation_constant~2'>get_truncation_constant</a></strong></td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_truncation_constant~3'>get_truncation_constant</a></strong></td>
                 <td>..\..\<p>Gets the truncation error constant for the requested order.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-interpolate~2'>interpolate</a></strong> => mi_interpolate</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-has_dense_output'>has_dense_output</a></strong> => oi_has_dense_output</td>
+                <td>..\..\<p>Tests whether a prepared accepted-step interpolant is available.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-interpolate~8'>interpolate</a></strong> => mi_interpolate</td>
                 <td>..\..\<p>Interpolates the solution history to the requested point.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-invalidate_dense_output'>invalidate_dense_output</a></strong> => oi_invalidate_dense</td>
+                <td>..\..\<p>Invalidates the prepared interpolant before stepping or resetting.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
@@ -1291,12 +1425,12 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure(<a href='..\interface\predictor_step.html'>predictor_step</a>), public, deferred, pass ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-predictor~2'>predictor</a></strong></td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-predictor~3'>predictor</a></strong></td>
                 <td>..\..\<p>Evaluates the predictor.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-prepare_for_solve~2'>prepare_for_solve</a></strong> => mi_prepare_for_solve</td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-prepare_for_solve~3'>prepare_for_solve</a></strong> => mi_prepare_for_solve</td>
                 <td>..\..\<p>Prepares internal state for the beginning of an integration.<\p></td>
               </tr>
               <tr>
@@ -1306,7 +1440,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-set_absolute_tolerance~5'>set_absolute_tolerance</a></strong> => oi_set_abs_tol, oi_set_abs_tols</td>
+  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-set_absolute_tolerance~14'>set_absolute_tolerance</a></strong> => oi_set_abs_tol, oi_set_abs_tols</td>
                 <td>..\..\<p>Sets the absolute error tolerance.<\p></td>
               </tr>
               <tr>
@@ -1314,6 +1448,16 @@ the final value in the integration range.<\p></td>
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_allow_overshoot'>set_allow_overshoot</a></strong> => oi_set_allow_overshoot</td>
                 <td>..\..\<p>Sets a value determining if the solver is allowed to overshoot 
 the final value in the integration range.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_dense_interval'>set_dense_interval</a></strong> => oi_set_dense_interval</td>
+                <td>..\..\<p>Implementation hook publishing a prepared accepted step.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_dense_output_enabled'>set_dense_output_enabled</a></strong> => oi_set_dense_enabled</td>
+                <td>..\..\<p>Enables dense output on every accepted step (default: false).<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
@@ -1332,17 +1476,17 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-set_newton_step_limit'>set_newton_step_limit</a></strong> => mi_set_newton_step_limit</td>
+  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-set_newton_step_limit~2'>set_newton_step_limit</a></strong> => mi_set_newton_step_limit</td>
                 <td>..\..\<p>Sets the maximum number of Newton iterations allowed.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-set_newton_tolerance'>set_newton_tolerance</a></strong> => mi_set_newton_tolerance</td>
+  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-set_newton_tolerance~2'>set_newton_tolerance</a></strong> => mi_set_newton_tolerance</td>
                 <td>..\..\<p>Sets the Newton iteration convergence tolerance.<\p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-set_relative_tolerance~5'>set_relative_tolerance</a></strong> => oi_set_rel_tol, oi_set_rel_tols</td>
+  <strong><a href='..\type\newton_multistep_integrator.html#boundprocedure-set_relative_tolerance~14'>set_relative_tolerance</a></strong> => oi_set_rel_tol, oi_set_rel_tols</td>
                 <td>..\..\<p>Sets the relative error tolerance.<\p></td>
               </tr>
               <tr>
@@ -1362,7 +1506,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-solve'>solve</a></strong> => mi_ode_solver</td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-solve~5'>solve</a></strong> => mi_ode_solver</td>
                 <td>..\..\<p>Solves the supplied system of ODE's.<\p></td>
               </tr>
           </tbody>
@@ -1396,7 +1540,7 @@ the final value in the integration range.<\p></td>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~18"></span>
+              <span class="anchor" id="variable-x~128"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -1411,7 +1555,7 @@ the final value in the integration range.<\p></td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-d~2"></span>
+              <span class="anchor" id="variable-d~6"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -1441,7 +1585,7 @@ the final value in the integration range.<\p></td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~13"></span>
+              <span class="anchor" id="variable-y~72"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -1482,7 +1626,7 @@ interpolating the supplied points.</p><a href="../proc/newton_divided_difference
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~17"></span>
+              <span class="anchor" id="variable-x~127"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -1497,7 +1641,7 @@ interpolating the supplied points.</p><a href="../proc/newton_divided_difference
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~12"></span>
+              <span class="anchor" id="variable-y~71"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -1512,7 +1656,7 @@ interpolating the supplied points.</p><a href="../proc/newton_divided_difference
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-d"></span>
+              <span class="anchor" id="variable-d~5"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -1552,7 +1696,7 @@ interpolating the supplied points.</p><a href="../proc/newton_divided_difference
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-14 15:56              </p>
+ on 2026-10-25 12:43              </p>
           </div>
         </div>
         <br>

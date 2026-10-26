@@ -77,7 +77,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title=" 6.3% of total for modules and submodules.">222 statements</a>
+                 title=" 4.2% of total for modules and submodules.">232 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -116,7 +116,18 @@
   
   
   
-  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#inters-0"
+         aria-expanded="false" aria-controls="inters-0">
+         <h4 class="card-header bg-primary text-white">Interfaces</h4>
+      </a>
+      <div id="inters-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/diffeq_index_reduction.html#interface-ggl_container">ggl_container</a>
+        </div>
+      </div>
+    </div>
+
       <div class="card mb-4">
       <a data-bs-toggle="collapse" href="#absints-0"
          aria-expanded="false" aria-controls="absints-0">
@@ -188,11 +199,11 @@ not depend on the independent variable.</p>
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item">linalg</li>
+                  <li class="list-inline-item"><a href='diffeq_base.html'>diffeq_base</a></li>
                   <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/ieee_arithmetic'>ieee_arithmetic</a></li>
-                  <li class="list-inline-item"><a href='diffeq_base.html'>diffeq_base</a></li>
+                  <li class="list-inline-item">linalg</li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
               </ul>
             </li>
         </ul>
@@ -205,6 +216,114 @@ not depend on the independent variable.</p>
 
 
 
+        <section>
+          <h2>Interfaces</h2>
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-ggl_container"></span>
+      <h3>public        interface <a href='..\interface\ggl_container.html'>ggl_container</a> 
+      </h3>
+    </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    private  function ggl_constructor_1(coordinate_count, constraint_count, alpha, beta) result(rst)  
+
+    </h3>
+  <p>Defines the mechanical dimensions and resets stabilization gains to one
+unless supplied. Callback associations and inherited model options are
+retained. Invalid counts or gains cause DIFFEQ_INVALID_INPUT_ERROR.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-coordinate_count"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>coordinate_count</strong></td>
+            <td>
+                <p>Positive number N of coordinates and physical velocities.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-constraint_count~2"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>constraint_count</strong></td>
+            <td>
+                <p>Number M of independent constraints, with 1 &lt;= M &lt;= N.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-alpha~3"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>alpha</strong></td>
+            <td>
+                <p>Nonnegative finite position and velocity decay rates, respectively,
+in inverse independent-variable units. Zero disables the respective
+damping term without disabling the differentiated constraint.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-beta~3"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>beta</strong></td>
+            <td>
+                <p>Nonnegative finite position and velocity decay rates, respectively,
+in inverse independent-variable units. Zero disables the respective
+damping term without disabling the differentiated constraint.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='..\type\ggl_container.html'>ggl_container</a>)</small>
+    </h4>
+    <p>The new <a href="..\type\ggl_container.html">ggl_container</a> object.</p>
+
+          </li>
+    </ul>
+  </div>
+
+        </section>
+        <br>
 
         <section>
           <h2>Abstract Interfaces</h2>
@@ -249,7 +368,7 @@ subsequent consistency tolerance must respect that scaling.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~26"></span>
+              <span class="anchor" id="variable-x~48"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -266,7 +385,7 @@ ignore this argument.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~19"></span>
+              <span class="anchor" id="variable-y~17"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -303,7 +422,7 @@ corresponds to a zero vector.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~16"></span>
+              <span class="anchor" id="variable-args~14"></span>
               class(*),
             </td>
 <td>intent(inout),</td>
@@ -359,7 +478,7 @@ arbitrary directions used during nonlinear/Jacobian evaluation.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~27"></span>
+              <span class="anchor" id="variable-x~49"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -421,7 +540,7 @@ including the kinematic multiplier correction.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-curvature"></span>
+              <span class="anchor" id="variable-curvature~2"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -436,7 +555,7 @@ including the kinematic multiplier correction.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~17"></span>
+              <span class="anchor" id="variable-args~15"></span>
               class(*),
             </td>
 <td>intent(inout),</td>
@@ -522,7 +641,7 @@ including the kinematic multiplier correction.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-constraints"></span>
+              <span class="anchor" id="variable-constraints~2"></span>
               procedure(<a href='..\interface\dae_algebraic_constraints.html'>dae_algebraic_constraints</a>),
             </td>
               <td>public,</td>
@@ -540,7 +659,24 @@ autonomous position residuals g(q), including off-manifold values.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-fcn"></span>
+              <span class="anchor" id="variable-event_function"></span>
+              procedure(<a href='..\interface\ode_event_function.html'>ode_event_function</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer, nopass
+            </td>
+            <td>::</td>
+            <td><strong>event_function</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+<p>A pointer to the event function.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fcn~21"></span>
               procedure(<a href='..\interface\ode.html'>ode</a>),
             </td>
               <td>public,</td>
@@ -557,7 +693,7 @@ autonomous position residuals g(q), including off-manifold values.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-jacobian"></span>
+              <span class="anchor" id="variable-jacobian~2"></span>
               procedure(<a href='..\interface\ode_jacobian.html'>ode_jacobian</a>),
             </td>
               <td>public,</td>
@@ -597,6 +733,25 @@ will be assumed.</p>
   </table>
 
 
+        <h4>Constructor</h4>
+          
+        <table class="table table-striped varlist">
+          <tbody>
+                <tr>
+                  <td>
+                        private
+
+                    
+                    function
+                    <strong>ggl_constructor_1</strong>
+                    (coordinate_count, constraint_count, alpha, beta)
+                  </td>
+                  <td><p>Defines the mechanical dimensions and resets stabilization gains to one
+unless supplied. Callback associations and inherited model options are
+retained. Invalid counts or gains cause DIFFEQ_INVALID_INPUT_ERROR.</p></td>
+                </tr>
+          </tbody>
+        </table>
 
 
         <h4>Type-Bound Procedures</h4>
@@ -619,6 +774,11 @@ will be assumed.</p>
               </tr>
               <tr>
                 <td>  procedure, public ::
+  <strong><a href='..\type\ode_container.html#boundprocedure-get_event_equation_count'>get_event_equation_count</a></strong> => oc_get_event_eqn_count</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-get_finite_difference_step'>get_finite_difference_step</a></strong> => oc_get_fd_step</td>
                 <td></td>
               </tr>
@@ -630,6 +790,11 @@ will be assumed.</p>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ggl_container.html#boundprocedure-get_is_ode_defined'>get_is_ode_defined</a></strong> => ggl_is_defined</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_container.html#boundprocedure-get_is_ode_event_function_defined'>get_is_ode_event_function_defined</a></strong> => oc_is_event_fcn_defined</td>
                 <td></td>
               </tr>
               <tr>
@@ -650,6 +815,11 @@ will be assumed.</p>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ggl_container.html#boundprocedure-initialize_multipliers'>initialize_multipliers</a></strong> => ggl_initialize_multipliers</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_container.html#boundprocedure-set_event_equation_count'>set_event_equation_count</a></strong> => oc_set_event_eqn_count</td>
                 <td></td>
               </tr>
               <tr>
@@ -704,7 +874,7 @@ will be assumed.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-14 15:56              </p>
+ on 2026-10-25 12:43              </p>
           </div>
         </div>
         <br>

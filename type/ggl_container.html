@@ -77,7 +77,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title="<p> 6.6% of total for derived types.</p>Including implementation: 219 statements,  3.1% of total for derived types.">21 statements</a>
+                 title="<p> 5.7% of total for derived types.</p>Including implementation: 234 statements,  2.7% of total for derived types.">24 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -119,16 +119,28 @@
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/ggl_container.html#variable-constraint_curvature">constraint_curvature</a>
             <a class="list-group-item" href="../type/ggl_container.html#variable-constraint_jacobian">constraint_jacobian</a>
-            <a class="list-group-item" href="../type/ggl_container.html#variable-constraints">constraints</a>
-            <a class="list-group-item" href="../type/ggl_container.html#variable-fcn">fcn</a>
-            <a class="list-group-item" href="../type/ggl_container.html#variable-jacobian">jacobian</a>
+            <a class="list-group-item" href="../type/ggl_container.html#variable-constraints~2">constraints</a>
+            <a class="list-group-item" href="../type/ggl_container.html#variable-event_function">event_function</a>
+            <a class="list-group-item" href="../type/ggl_container.html#variable-fcn~21">fcn</a>
+            <a class="list-group-item" href="../type/ggl_container.html#variable-jacobian~2">jacobian</a>
             <a class="list-group-item" href="../type/ggl_container.html#variable-mass_matrix">mass_matrix</a>
         </div>
       </div>
     </div>
 
   
-  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#cons-0"
+         aria-expanded="false" aria-controls="cons-0">
+         <h4 class="card-header bg-primary text-white">Constructor</h4>
+      </a>
+      <div id="cons-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../type/ggl_container.html#interface-ggl_container">ggl_container</a>
+        </div>
+      </div>
+    </div>
+
   
   
   
@@ -152,13 +164,16 @@
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-compute_jacobian">compute_jacobian</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-compute_mass_matrix">compute_mass_matrix</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-compute_rhs">compute_rhs</a>
+            <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-get_event_equation_count">get_event_equation_count</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-get_finite_difference_step">get_finite_difference_step</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-get_is_mass_matrix_dependent">get_is_mass_matrix_dependent</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-get_is_ode_defined">get_is_ode_defined</a>
+            <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-get_is_ode_event_function_defined">get_is_ode_event_function_defined</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-get_state_count">get_state_count</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-has_mass_matrix">has_mass_matrix</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-initialize">initialize</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-initialize_multipliers">initialize_multipliers</a>
+            <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-set_event_equation_count">set_event_equation_count</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-set_finite_difference_step">set_finite_difference_step</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-set_is_mass_matrix_dependent">set_is_mass_matrix_dependent</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-set_stabilization_parameters">set_stabilization_parameters</a>
@@ -259,7 +274,7 @@ workspace. Callbacks must accept perturbed, off-manifold states.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-constraints"></span>
+              <span class="anchor" id="variable-constraints~2"></span>
               procedure(<a href='..\interface\dae_algebraic_constraints.html'>dae_algebraic_constraints</a>),
             </td>
               <td>public,</td>
@@ -277,7 +292,24 @@ autonomous position residuals g(q), including off-manifold values.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-fcn"></span>
+              <span class="anchor" id="variable-event_function"></span>
+              procedure(<a href='..\interface\ode_event_function.html'>ode_event_function</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer, nopass
+            </td>
+            <td>::</td>
+            <td><strong>event_function</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+                <p>A pointer to the event function.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fcn~21"></span>
               procedure(<a href='..\interface\ode.html'>ode</a>),
             </td>
               <td>public,</td>
@@ -294,7 +326,7 @@ autonomous position residuals g(q), including off-manifold values.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-jacobian"></span>
+              <span class="anchor" id="variable-jacobian~2"></span>
               procedure(<a href='..\interface\ode_jacobian.html'>ode_jacobian</a>),
             </td>
               <td>public,</td>
@@ -336,6 +368,114 @@ will be assumed.</p>
     </section>
     <br>
     
+      <section>
+        <h2>Constructor</h2>
+            <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-ggl_container"></span>
+      <h3>public        interface <a href='..\interface\ggl_container.html'>ggl_container</a> 
+      </h3>
+    </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    private  function ggl_constructor_1(coordinate_count, constraint_count, alpha, beta) result(rst)  
+
+    </h3>
+  <p>Defines the mechanical dimensions and resets stabilization gains to one
+unless supplied. Callback associations and inherited model options are
+retained. Invalid counts or gains cause DIFFEQ_INVALID_INPUT_ERROR.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-coordinate_count"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>coordinate_count</strong></td>
+            <td>
+                <p>Positive number N of coordinates and physical velocities.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-constraint_count~2"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>constraint_count</strong></td>
+            <td>
+                <p>Number M of independent constraints, with 1 &lt;= M &lt;= N.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-alpha~3"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>alpha</strong></td>
+            <td>
+                <p>Nonnegative finite position and velocity decay rates, respectively,
+in inverse independent-variable units. Zero disables the respective
+damping term without disabling the differentiated constraint.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-beta~3"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>beta</strong></td>
+            <td>
+                <p>Nonnegative finite position and velocity decay rates, respectively,
+in inverse independent-variable units. Zero disables the respective
+damping term without disabling the differentiated constraint.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='ggl_container.html'>ggl_container</a>)</small>
+    </h4>
+    <p>The new <a href="..\type\ggl_container.html">ggl_container</a> object.</p>
+
+          </li>
+    </ul>
+  </div>
+
+      </section>
+      <br>
 
 
       <section>
@@ -695,6 +835,64 @@ position residual, and stabilized velocity residual.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-get_event_equation_count"></span>
+      <h3>
+          procedure, public ::
+  <strong>get_event_equation_count</strong> => oc_get_event_eqn_count
+        
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private pure function oc_get_event_eqn_count(this) result(rst)  
+</h3>
+
+  <p>Gets the number of event functions.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_container.html'>ode_container</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The <a href="..\type\ode_container.html">ode_container</a> object.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    <p>The equation count.</p>
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
       <span class="anchor" id="boundprocedure-get_finite_difference_step"></span>
       <h3>
           procedure, public ::
@@ -867,6 +1065,64 @@ not evaluate callbacks or certify constraint rank or mass regularity.</p>
     </h4>
     <p>True only for initialized dimensions and associated force, position,
 constraint-Jacobian, and curvature callbacks. Mass is optional.</p>
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-get_is_ode_event_function_defined"></span>
+      <h3>
+          procedure, public ::
+  <strong>get_is_ode_event_function_defined</strong> => oc_is_event_fcn_defined
+        
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private pure function oc_is_event_fcn_defined(this) result(rst)  
+</h3>
+
+  <p>Tests to see if the event function has been defined.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_container.html'>ode_container</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The <a href="..\type\ode_container.html">ode_container</a> object.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    <p>True if the event function has been defined; else, false.</p>
 
         </li>
     </ul>
@@ -1214,6 +1470,74 @@ output multipliers are algebraically consistent to solve accuracy.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_event_equation_count"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_event_equation_count</strong> => oc_set_event_eqn_count
+        
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine oc_set_event_eqn_count(this, x)  
+</h3>
+
+  <p>Sets the number of event functions.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_container.html'>ode_container</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The <a href="..\type\ode_container.html">ode_container</a> object.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+            <td>
+                <p>The equation count.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
       <span class="anchor" id="boundprocedure-set_finite_difference_step"></span>
       <h3>
           procedure, public ::
@@ -1453,7 +1777,7 @@ the corresponding residual in the exact solution.</p>
     <ul class="list-group">
         <li class="list-group-item">
                   <h3>
-    private pure function oc_use_finite_difference_jacobian(this) result(rst)  
+    private  function oc_use_finite_difference_jacobian(this) result(rst)  
 </h3>
 
   <p>States if a finite difference approximation to the Jacobian is utilized.</p>
@@ -1639,7 +1963,7 @@ cause DIFFEQ_INVALID_INPUT_ERROR.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-14 15:56              </p>
+ on 2026-10-25 12:43              </p>
           </div>
         </div>
         <br>

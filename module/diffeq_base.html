@@ -77,7 +77,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title="14.1% of total for modules and submodules.">498 statements</a>
+                 title="14.9% of total for modules and submodules.">817 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -124,15 +124,27 @@
       <div id="inters-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../module/diffeq_base.html#interface-ode">ode</a>
-            <a class="list-group-item" href="../module/diffeq_base.html#interface-ode_integer_inquiry">ode_integer_inquiry</a>
+            <a class="list-group-item" href="../module/diffeq_base.html#interface-ode_event_function">ode_event_function</a>
             <a class="list-group-item" href="../module/diffeq_base.html#interface-ode_jacobian">ode_jacobian</a>
             <a class="list-group-item" href="../module/diffeq_base.html#interface-ode_mass_matrix">ode_mass_matrix</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#absints-0"
+         aria-expanded="false" aria-controls="absints-0">
+         <h4 class="card-header bg-primary text-white">Abstract Interfaces</h4>
+      </a>
+      <div id="absints-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/diffeq_base.html#interface-ode_dense_output">ode_dense_output</a>
+            <a class="list-group-item" href="../module/diffeq_base.html#interface-ode_integer_inquiry">ode_integer_inquiry</a>
             <a class="list-group-item" href="../module/diffeq_base.html#interface-ode_solver">ode_solver</a>
         </div>
       </div>
     </div>
 
-  
       <div class="card mb-4">
       <a data-bs-toggle="collapse" href="#types-0"
          aria-expanded="false" aria-controls="types-0">
@@ -141,6 +153,8 @@
       <div id="types-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../module/diffeq_base.html#type-ode_container">ode_container</a>
+            <a class="list-group-item" href="../module/diffeq_base.html#type-ode_event_solver">ode_event_solver</a>
+            <a class="list-group-item" href="../module/diffeq_base.html#type-ode_event_statistics">ode_event_statistics</a>
             <a class="list-group-item" href="../module/diffeq_base.html#type-ode_integrator">ode_integrator</a>
         </div>
       </div>
@@ -172,6 +186,7 @@
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
                   <li class="list-inline-item"><a href='diffeq_containers.html'>diffeq_containers</a></li>
                   <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/ieee_arithmetic'>ieee_arithmetic</a></li>
               </ul>
             </li>
         </ul>
@@ -214,7 +229,7 @@ ODE's to integrate.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~33"></span>
+              <span class="anchor" id="variable-x~69"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -229,7 +244,7 @@ ODE's to integrate.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~25"></span>
+              <span class="anchor" id="variable-y~38"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -245,7 +260,7 @@ dependent variables.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dydx~3"></span>
+              <span class="anchor" id="variable-dydx~2"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -261,7 +276,7 @@ written.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~23"></span>
+              <span class="anchor" id="variable-args~31"></span>
               class(*),
             </td>
 <td>intent(inout),</td>
@@ -285,17 +300,17 @@ in and out of the routine.</p>
 
               <div class="card">
     <div class="card-header bg-light codesum">
-      <span class="anchor" id="interface-ode_integer_inquiry"></span>
+      <span class="anchor" id="interface-ode_event_function"></span>
       <h3>        interface
       </h3>
     </div>
     <ul class="list-group">
         <li class="list-group-item">
               <h3>
-    public pure function ode_integer_inquiry(this) result(rst)  
+    public  subroutine ode_event_function(x, y, f, args)  
 
     </h3>
-  <p>Returns an integer value from the ode_integrator object.</p>
+  <p>A callback routine for evaluating event status.</p>
 
   <h4>Arguments</h4>
       <table class="table table-striped varlist">
@@ -310,27 +325,71 @@ in and out of the routine.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~64"></span>
-              class(<a href='..\type\ode_integrator.html'>ode_integrator</a>),
+              <span class="anchor" id="variable-x~72"></span>
+              real(kind=real64),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
               
             </td>
             <td>::</td>
-            <td><strong>this</strong></td>
+            <td><strong>x</strong></td>
             <td>
-                <p>The ode_integrator object.</p>
+                <p>The current value of the independent variable.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-y~41"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              dimension(:)
+            </td>
+            <td>::</td>
+            <td><strong>y</strong></td>
+            <td>
+                <p>An N-element array containing the current state vector.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-f~22"></span>
+              real(kind=real64),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              dimension(:)
+            </td>
+            <td>::</td>
+            <td><strong>f</strong></td>
+            <td>
+                <p>An M-element array containing the values of the event
+functions.  The solver attempts to find the situation 
+where f equals zero thereby signaling an event.  Notice, M 
+need not equal N (N is the number of state variables).</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-args~34"></span>
+              class(*),
+            </td>
+<td>intent(inout),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>args</strong></td>
+            <td>
+                <p>An optional argument that can be used to pass information
+in and out of the routine.</p>
             </td>
         </tr>
     </tbody>
   </table>
 
-    <h4>
-    Return Value
-    <small>integer</small>
-    </h4>
-    <p>The requested value.</p>
 
         </li>
     </ul>
@@ -364,7 +423,7 @@ matrix of a system of first order ODE's.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~34"></span>
+              <span class="anchor" id="variable-x~70"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -379,7 +438,7 @@ matrix of a system of first order ODE's.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~26"></span>
+              <span class="anchor" id="variable-y~39"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -395,7 +454,7 @@ dependent variables.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-jac~2"></span>
+              <span class="anchor" id="variable-jac~12"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -410,7 +469,7 @@ dependent variables.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~24"></span>
+              <span class="anchor" id="variable-args~32"></span>
               class(*),
             </td>
 <td>intent(inout),</td>
@@ -460,7 +519,7 @@ for a system of differential equations.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~35"></span>
+              <span class="anchor" id="variable-x~71"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -475,7 +534,7 @@ for a system of differential equations.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~27"></span>
+              <span class="anchor" id="variable-y~40"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -491,7 +550,7 @@ dependent variables.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-m~6"></span>
+              <span class="anchor" id="variable-m~3"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -506,7 +565,7 @@ dependent variables.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~25"></span>
+              <span class="anchor" id="variable-args~33"></span>
               class(*),
             </td>
 <td>intent(inout),</td>
@@ -528,16 +587,146 @@ in and out of the routine.</p>
     </ul>
   </div>
 
+        </section>
+        <br>
+
+        <section>
+          <h2>Abstract Interfaces</h2>
               <div class="card">
-    <div class="card-header bg-light codesum">
-      <span class="anchor" id="interface-ode_solver"></span>
-      <h3>        interface
-      </h3>
-    </div>
+    <div class="card-header codesum"><span class="anchor" id="interface-ode_dense_output"></span><h3>abstract interface
+        
+    </h3></div>
     <ul class="list-group">
-        <li class="list-group-item">
-              <h3>
-    public  subroutine ode_solver(this, sys, x, iv, args)  
+      <li class="list-group-item">
+            <h3>
+    public  subroutine ode_dense_output(this, x, y)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~86"></span>
+              class(<a href='..\type\ode_integrator.html'>ode_integrator</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~73"></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-y~42"></span>
+              real(kind=real64),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>y</strong>(:)</td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+      </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="interface-ode_integer_inquiry"></span><h3>abstract interface
+        
+    </h3></div>
+    <ul class="list-group">
+      <li class="list-group-item">
+            <h3>
+    public pure function ode_integer_inquiry(this) result(rst)  
+
+    </h3>
+  <p>Returns an integer value from the ode_integrator object.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~88"></span>
+              class(<a href='..\type\ode_integrator.html'>ode_integrator</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The ode_integrator object.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    <p>The requested value.</p>
+
+      </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="interface-ode_solver"></span><h3>abstract interface
+        
+    </h3></div>
+    <ul class="list-group">
+      <li class="list-group-item">
+            <h3>
+    public  subroutine ode_solver(this, sys, x, iv, store_iv, args)  
 
     </h3>
   <p>Solves the supplied system of ODE's.</p>
@@ -555,7 +744,7 @@ in and out of the routine.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~63"></span>
+              <span class="anchor" id="variable-this~87"></span>
               class(<a href='..\type\ode_integrator.html'>ode_integrator</a>),
             </td>
 <td>intent(inout)</td>
@@ -570,7 +759,7 @@ in and out of the routine.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-sys~16"></span>
+              <span class="anchor" id="variable-sys~24"></span>
               class(<a href='..\type\ode_container.html'>ode_container</a>),
             </td>
 <td>intent(inout)</td>
@@ -585,7 +774,7 @@ in and out of the routine.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~36"></span>
+              <span class="anchor" id="variable-x~74"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -619,7 +808,27 @@ values.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~26"></span>
+              <span class="anchor" id="variable-store_iv~3"></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>store_iv</strong></td>
+            <td>
+                <p>An optional input that determines whether or not the 
+initial values are stored as part of the output.  The
+default is true such that the initial values are stored;
+however, set to false to avoid storing the initial values.
+This can be useful in cases of event detection where a 
+restart of the integrator is desired.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-args~35"></span>
               class(*),
             </td>
 <td>intent(inout),</td>
@@ -637,13 +846,12 @@ in and out of the differential equation subroutine.</p>
   </table>
 
 
-        </li>
+      </li>
     </ul>
   </div>
 
         </section>
         <br>
-
 
         <section>
           <h2>Derived Types</h2>
@@ -672,7 +880,24 @@ in and out of the differential equation subroutine.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-fcn"></span>
+              <span class="anchor" id="variable-event_function"></span>
+              procedure(<a href='..\interface\ode_event_function.html'>ode_event_function</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer, nopass
+            </td>
+            <td>::</td>
+            <td><strong>event_function</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+<p>A pointer to the event function.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fcn~21"></span>
               procedure(<a href='..\interface\ode.html'>ode</a>),
             </td>
               <td>public,</td>
@@ -689,7 +914,7 @@ in and out of the differential equation subroutine.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-jacobian"></span>
+              <span class="anchor" id="variable-jacobian~2"></span>
               procedure(<a href='..\interface\ode_jacobian.html'>ode_jacobian</a>),
             </td>
               <td>public,</td>
@@ -751,6 +976,11 @@ will be assumed.</p>
               </tr>
               <tr>
                 <td>  procedure, public ::
+  <strong><a href='..\type\ode_container.html#boundprocedure-get_event_equation_count'>get_event_equation_count</a></strong> => oc_get_event_eqn_count</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-get_finite_difference_step'>get_finite_difference_step</a></strong> => oc_get_fd_step</td>
                 <td></td>
               </tr>
@@ -766,7 +996,17 @@ will be assumed.</p>
               </tr>
               <tr>
                 <td>  procedure, public ::
+  <strong><a href='..\type\ode_container.html#boundprocedure-get_is_ode_event_function_defined'>get_is_ode_event_function_defined</a></strong> => oc_is_event_fcn_defined</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-has_mass_matrix~2'>has_mass_matrix</a></strong> => oc_has_mass_matrix</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_container.html#boundprocedure-set_event_equation_count'>set_event_equation_count</a></strong> => oc_set_event_eqn_count</td>
                 <td></td>
               </tr>
               <tr>
@@ -791,6 +1031,174 @@ will be assumed.</p>
 
               <div class="card">
     <div class="card-header codesum">
+      <span class="anchor" id="type-ode_event_solver"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='..\type\ode_event_solver.html'>ode_event_solver</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>Provides a mechanism for event detection.</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-solver_statistics"></span>
+              type(<a href='..\type\ode_event_statistics.html'>ode_event_statistics</a>),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>solver_statistics</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>Event solver information.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_event_solver.html#boundprocedure-find_event'>find_event</a></strong> => oes_find_event</td>
+                <td>..\..\<p>Attempts to find any events within a specified bracket.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_event_solver.html#boundprocedure-get_max_allowed_iterations'>get_max_allowed_iterations</a></strong> => oes_get_max_iter</td>
+                <td>..\..\<p>Gets the number of iterations the solver is allowed to take.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_event_solver.html#boundprocedure-get_solver_tolerance'>get_solver_tolerance</a></strong> => oes_get_tol</td>
+                <td>..\..\<p>Gets the solver tolerance.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_event_solver.html#boundprocedure-is_event_suspected'>is_event_suspected</a></strong> => oes_event_in_bracket</td>
+                <td>..\..\<p>Determines if an event is suspected to exist within the &amp;
+specified bracket.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_event_solver.html#boundprocedure-set_max_allowed_iterations'>set_max_allowed_iterations</a></strong> => oes_set_max_iter</td>
+                <td>..\..\<p>Sets the number of iterations the solver is allowed to take.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_event_solver.html#boundprocedure-set_solver_tolerance'>set_solver_tolerance</a></strong> => oes_set_tol</td>
+                <td>..\..\<p>Sets the solver tolerance.<\p></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-ode_event_statistics"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='..\type\ode_event_statistics.html'>ode_event_statistics</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>An ODE event solver statistics container.</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-event_index~2"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>event_index</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>The index of the event equation where an event was located.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-function_evaluations~4"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>function_evaluations</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>The number of event function evaluations.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-iteration_count~2"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>iteration_count</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>The number of iterations taken by the solver.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
       <span class="anchor" id="type-ode_integrator"></span>
       <h3>
         type, public&nbsp;::&nbsp;
@@ -800,6 +1208,38 @@ will be assumed.</p>
     </div>
     <div class="card-body">
       <p>Abstract base class for all DIFFEQ ODE integrators.</p><a href="../type/ode_integrator.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-event_solver"></span>
+              type(<a href='..\type\ode_event_solver.html'>ode_event_solver</a>),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>event_solver</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>The ODE event solver.  Enable event detection by defining the
+event_function in the <a href="..\type\ode_container.html">ode_container</a> object.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
 
 
 
@@ -819,8 +1259,13 @@ buffer.<\p></td>
                 <td>..\..\<p>Clears the contents of the buffer.<\p></td>
               </tr>
               <tr>
+                <td>  procedure(<a href='..\interface\ode_dense_output.html'>ode_dense_output</a>), public, deferred, pass ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_dense_output~2'>compute_dense_output</a></strong></td>
+                <td>..\..\<p>Implementation hook for evaluating a validated dense-output query.<\p></td>
+              </tr>
+              <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm'>compute_error_norm</a></strong> => oi_estimate_error</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
                 <td>..\..\<p>Computes the norm of the scaled error estimate.<\p></td>
               </tr>
               <tr>
@@ -830,8 +1275,13 @@ buffer.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size~2'>estimate_next_step_size</a></strong> => oi_next_step</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-estimate_next_step_size'>estimate_next_step_size</a></strong> => oi_next_step</td>
                 <td>..\..\<p>Estimates the next step size.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-evaluate_dense'>evaluate_dense</a></strong> => oi_evaluate_dense</td>
+                <td>..\..\<p>Evaluates the prepared step without advancing integration.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
@@ -843,6 +1293,16 @@ buffer.<\p></td>
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_allow_overshoot'>get_allow_overshoot</a></strong> => oi_get_allow_overshoot</td>
                 <td>..\..\<p>Gets a value determining if the solver is allowed to overshoot 
 the final value in the integration range.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_dense_interval'>get_dense_interval</a></strong> => oi_get_dense_interval</td>
+                <td>..\..\<p>Gets the prepared step's start and end in integration order.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_dense_output_enabled'>get_dense_output_enabled</a></strong> => oi_get_dense_enabled</td>
+                <td>..\..\<p>Gets the explicit dense-output preparation setting.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
@@ -861,7 +1321,7 @@ the final value in the integration range.<\p></td>
               </tr>
               <tr>
                 <td>  procedure(<a href='..\interface\ode_integer_inquiry.html'>ode_integer_inquiry</a>), public, deferred, pass ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_order~4'>get_order</a></strong></td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_order~7'>get_order</a></strong></td>
                 <td>..\..\<p>Returns the order of the integrator.<\p></td>
               </tr>
               <tr>
@@ -888,6 +1348,16 @@ the final value in the integration range.<\p></td>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_integrator.html#boundprocedure-get_step_size_factor'>get_step_size_factor</a></strong> => oi_get_safety_factor</td>
                 <td>..\..\<p>Gets the step size safety factor.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-has_dense_output'>has_dense_output</a></strong> => oi_has_dense_output</td>
+                <td>..\..\<p>Tests whether a prepared accepted-step interpolant is available.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-invalidate_dense_output'>invalidate_dense_output</a></strong> => oi_invalidate_dense</td>
+                <td>..\..\<p>Invalidates the prepared interpolant before stepping or resetting.<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
@@ -924,6 +1394,16 @@ the final value in the integration range.<\p></td>
   <strong><a href='..\type\ode_integrator.html#boundprocedure-set_allow_overshoot'>set_allow_overshoot</a></strong> => oi_set_allow_overshoot</td>
                 <td>..\..\<p>Sets a value determining if the solver is allowed to overshoot 
 the final value in the integration range.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_dense_interval'>set_dense_interval</a></strong> => oi_set_dense_interval</td>
+                <td>..\..\<p>Implementation hook publishing a prepared accepted step.<\p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-set_dense_output_enabled'>set_dense_output_enabled</a></strong> => oi_set_dense_enabled</td>
+                <td>..\..\<p>Enables dense output on every accepted step (default: false).<\p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
@@ -987,7 +1467,7 @@ the final value in the integration range.<\p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-14 15:56              </p>
+ on 2026-10-25 12:43              </p>
           </div>
         </div>
         <br>

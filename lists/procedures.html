@@ -72,6 +72,12 @@
 			 <thead><tr><th>Procedure</th><th>Location</th><th>Procedure Type</th><th>Description</th></tr></thead>
 			 <tbody>
 			   <tr>
+                 <td><a href='..\interface\assignment(=).html'>assignment(=)</a></td>
+                 <td><a href='..\module\diffeq_c_containers.html'>diffeq_c_containers</a></td>
+                 <td>Interface</td>
+                 <td></td>
+               </tr>
+			   <tr>
                  <td><a href='..\interface\attempt_single_step.html'>attempt_single_step</a></td>
                  <td><a href='..\module\diffeq_singlestep.html'>diffeq_singlestep</a></td>
                  <td>Interface</td>
@@ -84,6 +90,140 @@
                  <td></td>
                </tr>
 			   <tr>
+                 <td><a href='..\proc\c_adams.html'>c_adams</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes a variable order Adams predictor-corrector integrator to 
+solve a system of first order differential equations.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_bdf.html'>c_bdf</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes a variable order BDF integrator to solve a system of 
+first order differential equations or index-1 differential 
+algebraic equations.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_create_ode_results.html'>c_create_ode_results</a></td>
+                 <td><a href='..\module\diffeq_c_containers.html'>diffeq_c_containers</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Constructs a new <a href="..\type\ode_results.html">ode_results</a> pointer and returns its address to
+the supplied C pointer.  Be sure to call c_free_ode_results once
+finished with this object.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_dae_bdf.html'>c_dae_bdf</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes a variable order BDF integrator to solve the system of
+DAE's.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_dae_kennedy_carpenter_4.html'>c_dae_kennedy_carpenter_4</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes a 4th order Kennedy-Carpenter integrator to solve the 
+system of DAE's.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_dae_kennedy_carpenter_5.html'>c_dae_kennedy_carpenter_5</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes a 5th order Kennedy-Carpenter integrator to solve the 
+system of DAE's.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_dae_rosenbrock.html'>c_dae_rosenbrock</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes a 4th order Rosenbrock integrator to solve the system of
+DAE's.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_default_ode_event_solver_settings.html'>c_default_ode_event_solver_settings</a></td>
+                 <td><a href='..\module\diffeq_c_containers.html'>diffeq_c_containers</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Populates a <a href="..\type\c_ode_event_solver_settings.html">c_ode_event_solver_settings</a> object with default
+values.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_default_ode_settings.html'>c_default_ode_settings</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Fills the supplied <a href="..\type\c_ode_settings.html">c_ode_settings</a> object with default settings.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_free_ode_results.html'>c_free_ode_results</a></td>
+                 <td><a href='..\module\diffeq_c_containers.html'>diffeq_c_containers</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Frees memory allocated by c_create_ode_results.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_kennedy_carpenter_4.html'>c_kennedy_carpenter_4</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes a 4th order Kennedy-Carpenter integrator to solve a system 
+of first order differential equations or index-1 differential 
+algebraic equations.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_kennedy_carpenter_5.html'>c_kennedy_carpenter_5</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes a 5th order Kennedy-Carpenter integrator to solve a system 
+of first order differential equations or index-1 differential 
+algebraic equations.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_rosenbrock.html'>c_rosenbrock</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes a 4th order Rosenbrock integrator to solve a system of 
+first order differential equations or index-1 differential 
+algebraic equations.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_runge_kutta_23.html'>c_runge_kutta_23</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes the 3rd order Bogacki-Shampine Runge-Kutta integrator to 
+solve a system of first order differential equations.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_runge_kutta_45.html'>c_runge_kutta_45</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes the 5th order Dormand-Prince Runge-Kutta integrator to 
+solve a system of first order differential equations.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_runge_kutta_853.html'>c_runge_kutta_853</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes the 8th order Hairer Runge-Kutta integrator to 
+solve a system of first order differential equations.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_strlen.html'>c_strlen</a></td>
+                 <td><a href='..\module\diffeq_c_helpers.html'>diffeq_c_helpers</a></td>
+                 <td>Function</td>
+                 <td><p>Returns the length of a C-style null-terminated string.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_to_f_string.html'>c_to_f_string</a></td>
+                 <td><a href='..\module\diffeq_c_helpers.html'>diffeq_c_helpers</a></td>
+                 <td>Function</td>
+                 <td><p>Converts a null-terminated C-style string to a Fortran string.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_tsitouras.html'>c_tsitouras</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes the 5th order Tsitouras Runge-Kutta integrator to 
+solve a system of first order differential equations.</p></td>
+               </tr>
+			   <tr>
                  <td><a href='..\proc\evaluate_newton_polynomial.html'>evaluate_newton_polynomial</a></td>
                  <td><a href='..\module\diffeq_multistep.html'>diffeq_multistep</a></td>
                  <td>Subroutine</td>
@@ -92,6 +232,12 @@
 			   <tr>
                  <td><a href='..\interface\get_single_step_logical_parameter.html'>get_single_step_logical_parameter</a></td>
                  <td><a href='..\module\diffeq_singlestep.html'>diffeq_singlestep</a></td>
+                 <td>Interface</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\ggl_container.html'>ggl_container</a></td>
+                 <td><a href='..\module\diffeq_index_reduction.html'>diffeq_index_reduction</a></td>
                  <td>Interface</td>
                  <td></td>
                </tr>
@@ -127,7 +273,7 @@ interpolating the supplied points.</p><a href="../proc/newton_divided_difference
                  <td></td>
                </tr>
 			   <tr>
-                 <td><a href='..\interface\ode_integer_inquiry.html'>ode_integer_inquiry</a></td>
+                 <td><a href='..\interface\ode_event_function.html'>ode_event_function</a></td>
                  <td><a href='..\module\diffeq_base.html'>diffeq_base</a></td>
                  <td>Interface</td>
                  <td></td>
@@ -147,12 +293,6 @@ interpolating the supplied points.</p><a href="../proc/newton_divided_difference
 			   <tr>
                  <td><a href='..\interface\ode_results.html'>ode_results</a></td>
                  <td><a href='..\module\diffeq_containers.html'>diffeq_containers</a></td>
-                 <td>Interface</td>
-                 <td></td>
-               </tr>
-			   <tr>
-                 <td><a href='..\interface\ode_solver.html'>ode_solver</a></td>
-                 <td><a href='..\module\diffeq_base.html'>diffeq_base</a></td>
                  <td>Interface</td>
                  <td></td>
                </tr>
@@ -225,7 +365,7 @@ failures cause DIFFEQ_INVALID_OPERATION_ERROR.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-14 15:56              </p>
+ on 2026-10-25 12:43              </p>
           </div>
         </div>
         <br>

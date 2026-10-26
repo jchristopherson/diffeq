@@ -77,7 +77,7 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title="<p> 4.1% of total for derived types.</p>Including implementation: 411 statements,  5.9% of total for derived types.">13 statements</a>
+                 title="<p> 6.4% of total for derived types.</p>Including implementation: 519 statements,  6.1% of total for derived types.">27 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -110,7 +110,18 @@
       <div id="sidebar">
       <h3>Contents</h3>
   
-  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#variable-event_solver">event_solver</a>
+        </div>
+      </div>
+    </div>
+
   
   
   
@@ -134,41 +145,53 @@
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-append_to_buffer">append_to_buffer</a>
-            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-attempt_step~4">attempt_step</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-attempt_step">attempt_step</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-clear_buffer">clear_buffer</a>
-            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-compute_error_norm">compute_error_norm</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-compute_dense_output">compute_dense_output</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-compute_error_norm~2">compute_error_norm</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-estimate_inital_step_size">estimate_inital_step_size</a>
-            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-estimate_next_step_size~2">estimate_next_step_size</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-estimate_next_step_size">estimate_next_step_size</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-evaluate_dense">evaluate_dense</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_absolute_tolerance">get_absolute_tolerance</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_allow_overshoot">get_allow_overshoot</a>
-            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_is_fsal~4">get_is_fsal</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_dense_interval">get_dense_interval</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_dense_output_enabled">get_dense_output_enabled</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_is_fsal">get_is_fsal</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_maximum_step_size">get_maximum_step_size</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_minimum_step_size">get_minimum_step_size</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_newton_step_limit">get_newton_step_limit</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_newton_tolerance">get_newton_tolerance</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_ode_results">get_ode_results</a>
-            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_order~4">get_order</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_order~7">get_order</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_relative_tolerance">get_relative_tolerance</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_solution">get_solution</a>
-            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_stage_count~4">get_stage_count</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_stage_count">get_stage_count</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_step_limit">get_step_limit</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_step_size_control_parameter">get_step_size_control_parameter</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-get_step_size_factor">get_step_size_factor</a>
-            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-interpolate~5">interpolate</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-has_dense_output">has_dense_output</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-interpolate">interpolate</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-invalidate_dense_output">invalidate_dense_output</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-log_failed_step">log_failed_step</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-log_function_evaluation">log_function_evaluation</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-log_jacobian_evaluation">log_jacobian_evaluation</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-log_matrix_factorization">log_matrix_factorization</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-log_successful_step">log_successful_step</a>
-            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-post_step_action~4">post_step_action</a>
-            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-pre_step_action~4">pre_step_action</a>
-            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-set_absolute_tolerance~8">set_absolute_tolerance</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-post_step_action">post_step_action</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-pre_step_action">pre_step_action</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-set_absolute_tolerance~2">set_absolute_tolerance</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-set_allow_overshoot">set_allow_overshoot</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-set_dense_interval">set_dense_interval</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-set_dense_output_enabled">set_dense_output_enabled</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-set_maximum_step_size">set_maximum_step_size</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-set_minimum_step_size">set_minimum_step_size</a>
-            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-set_relative_tolerance~8">set_relative_tolerance</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-set_newton_step_limit">set_newton_step_limit</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-set_newton_tolerance">set_newton_tolerance</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-set_relative_tolerance~2">set_relative_tolerance</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-set_step_limit">set_step_limit</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-set_step_size_control_parameter">set_step_size_control_parameter</a>
             <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-set_step_size_factor">set_step_size_factor</a>
-            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-solve~4">solve</a>
+            <a class="list-group-item" href="../type/kennedy_carpenter.html#boundprocedure-solve">solve</a>
         </div>
       </div>
     </div>
@@ -185,13 +208,59 @@
       <h2>
         type, public, extends(<a href='single_step_integrator.html'>single_step_integrator</a>) :: kennedy_carpenter</h2>
     <p>Shared implementation for Kennedy--Carpenter ESDIRK methods.</p>
-<p>The stage equations are solved with Newton iteration.  A supplied
-mass matrix is incorporated in each stage system as
-<script type="math/tex">M-h a_{ii}J</script>, while the embedded tableau supplies the error
+<p>The stage equations are solved with a simplified Newton iteration.
+A supplied mass matrix is incorporated in each stage system as
+<script type="math/tex">M-h \gamma J</script>, while the embedded tableau supplies the error
 estimate used by the inherited adaptive driver.  These solvers use
 the inherited configurable PI step-size controller.</p>
+<p>Every implicit stage shares the diagonal coefficient <script type="math/tex">\gamma</script>, so
+a single factorization of <script type="math/tex">M-h \gamma J</script> serves every stage and
+Newton iteration within a step.  The factorization is retained
+until the step size changes, and the Jacobian is retained across
+steps until the Newton iteration converges slowly or fails.  A
+failed iteration first refreshes any stale Jacobian or
+factorization; if the iteration still fails, the step is rejected
+and retried with a smaller step size.</p>
+<p>The Newton iteration is governed by a user-defined iteration limit
+and convergence tolerance.  The applied tolerance never exceeds one
+percent of the smallest positive integration tolerance.</p>
     <br>
 
+    <section>
+    <h2>Components</h2>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-event_solver"></span>
+              type(<a href='ode_event_solver.html'>ode_event_solver</a>),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>event_solver</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                <p>The ODE event solver.  Enable event detection by defining the
+event_function in the <a href="..\type\ode_container.html">ode_container</a> object.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    </section>
+    <br>
     
 
 
@@ -288,7 +357,7 @@ buffer.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-attempt_step~4"></span>
+      <span class="anchor" id="boundprocedure-attempt_step"></span>
       <h3>
           procedure, public ::
   <strong>attempt_step</strong> => kc_attempt_step
@@ -564,7 +633,90 @@ in and out of the differential equation subroutine.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-compute_error_norm"></span>
+      <span class="anchor" id="boundprocedure-compute_dense_output"></span>
+      <h3>
+          procedure, public ::
+  <strong>compute_dense_output</strong> => ssi_dense_output
+        
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine ssi_dense_output(this, x, y)  
+</h3>
+
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='single_step_integrator.html'>single_step_integrator</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>y</strong>(:)</td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-compute_error_norm~2"></span>
       <h3>
           procedure, public ::
   <strong>compute_error_norm</strong> => oi_estimate_error
@@ -837,7 +989,7 @@ in and out of the differential equation subroutine.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-estimate_next_step_size~2"></span>
+      <span class="anchor" id="boundprocedure-estimate_next_step_size"></span>
       <h3>
           procedure, public ::
   <strong>estimate_next_step_size</strong> => oi_next_step
@@ -952,6 +1104,100 @@ this variable is updated.</p>
     <small>real(kind=real64)</small>
     </h4>
     <p>The new step size estimate.</p>
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-evaluate_dense"></span>
+      <h3>
+          procedure, public ::
+  <strong>evaluate_dense</strong> => oi_evaluate_dense
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Evaluates the prepared step without advancing integration.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine oi_evaluate_dense(this, x, y)  
+</h3>
+
+  <p>Evaluates the interpolant for the last prepared accepted step at a
+requested independent-variable value. The query must be finite and
+within the step interval, including either endpoint. This operation
+does not advance or otherwise change solver state and does not evaluate
+the ODE function. An error stop occurs if no valid interpolant is
+available, the output array has the wrong size, or the query is
+non-finite or outside the interval.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_integrator.html'>ode_integrator</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The ODE integrator containing the prepared interpolant.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+            <td>
+                <p>The independent-variable value at which to evaluate the solution.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>y</strong>(:)</td>
+            <td>
+                <p>Receives the interpolated dependent-variable values. Its size must
+equal the number of dependent variables in the prepared step.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
 
         </li>
     </ul>
@@ -1104,7 +1350,159 @@ cannot overshoot.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-get_is_fsal~4"></span>
+      <span class="anchor" id="boundprocedure-get_dense_interval"></span>
+      <h3>
+          procedure, public ::
+  <strong>get_dense_interval</strong> => oi_get_dense_interval
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Gets the prepared step's start and end in integration order.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine oi_get_dense_interval(this, x_start, x_end)  
+</h3>
+
+  <p>Gets the endpoints of the currently prepared dense-output interval.
+An error stop occurs if no valid interpolant is available.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_integrator.html'>ode_integrator</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The ODE integrator.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x_start</strong></td>
+            <td>
+                <p>Receives the first endpoint in integration order.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x_end</strong></td>
+            <td>
+                <p>Receives the second endpoint in integration order.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-get_dense_output_enabled"></span>
+      <h3>
+          procedure, public ::
+  <strong>get_dense_output_enabled</strong> => oi_get_dense_enabled
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Gets the explicit dense-output preparation setting.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private pure function oi_get_dense_enabled(this) result(rst)  
+</h3>
+
+  <p>Gets the explicit dense-output preparation setting.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_integrator.html'>ode_integrator</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The ODE integrator.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    <p>True if explicit dense-output preparation is enabled; otherwise,
+false. This setting is independent of preparation required to
+produce values on a requested output grid.</p>
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-get_is_fsal"></span>
       <h3>
           procedure, public ::
   <strong>get_is_fsal</strong> => kc_get_is_fsal
@@ -1292,6 +1690,133 @@ cannot overshoot.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-get_newton_step_limit"></span>
+      <h3>
+          procedure, public ::
+  <strong>get_newton_step_limit</strong> => kc_get_newton_step_limit
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Gets the maximum number of Newton iterations allowed per stage.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private pure function kc_get_newton_step_limit(this) result(rst)  
+</h3>
+
+  <p>Gets the maximum number of Newton iterations allowed per stage.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='kennedy_carpenter.html'>kennedy_carpenter</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The kennedy_carpenter object.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    <p>The iteration limit.</p>
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-get_newton_tolerance"></span>
+      <h3>
+          procedure, public ::
+  <strong>get_newton_tolerance</strong> => kc_get_newton_tolerance
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Gets the Newton iteration convergence tolerance.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private pure function kc_get_newton_tolerance(this) result(rst)  
+</h3>
+
+  <p>Gets the convergence tolerance on the estimated Newton iteration error,
+relative to the larger of one and the norm of the stage state.  The
+tolerance applied during integration is the lesser of this value and
+one percent of the smallest positive integration tolerance.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='kennedy_carpenter.html'>kennedy_carpenter</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The kennedy_carpenter object.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=real64)</small>
+    </h4>
+    <p>The convergence tolerance.</p>
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
       <span class="anchor" id="boundprocedure-get_ode_results"></span>
       <h3>
           procedure, public ::
@@ -1355,7 +1880,7 @@ The integrator retains the original copy.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-get_order~4"></span>
+      <span class="anchor" id="boundprocedure-get_order~7"></span>
       <h3>
           procedure(<a href='..\interface\ode_integer_inquiry.html'>ode_integer_inquiry</a>), public, deferred, pass ::
   <strong>get_order</strong>
@@ -1561,7 +2086,7 @@ before this routine.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-get_stage_count~4"></span>
+      <span class="anchor" id="boundprocedure-get_stage_count"></span>
       <h3>
           procedure, public ::
   <strong>get_stage_count</strong> => kc_get_stage_count
@@ -1820,7 +2345,69 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-interpolate~5"></span>
+      <span class="anchor" id="boundprocedure-has_dense_output"></span>
+      <h3>
+          procedure, public ::
+  <strong>has_dense_output</strong> => oi_has_dense_output
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Tests whether a prepared accepted-step interpolant is available.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private pure function oi_has_dense_output(this) result(rst)  
+</h3>
+
+  <p>Determines whether a prepared accepted-step interpolant is available.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_integrator.html'>ode_integrator</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The ODE integrator.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    <p>True if dense output is currently valid; otherwise, false.</p>
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-interpolate"></span>
       <h3>
           procedure, public ::
   <strong>interpolate</strong> => kc_interpolate
@@ -1988,6 +2575,63 @@ solution is computed.</p>
             <td>
                 <p>An N-element array where this routine will write the
 solution values interpolated at x.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-invalidate_dense_output"></span>
+      <h3>
+          procedure, public ::
+  <strong>invalidate_dense_output</strong> => oi_invalidate_dense
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Invalidates the prepared interpolant before stepping or resetting.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine oi_invalidate_dense(this)  
+</h3>
+
+  <p>Marks any prepared dense-output interpolant as unavailable.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_integrator.html'>ode_integrator</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The ODE integrator.</p>
             </td>
         </tr>
     </tbody>
@@ -2370,7 +3014,7 @@ supplied, this routine will log a single step.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-post_step_action~4"></span>
+      <span class="anchor" id="boundprocedure-post_step_action"></span>
       <h3>
           procedure, public ::
   <strong>post_step_action</strong> => kc_post_step
@@ -2581,7 +3225,7 @@ in and out of the differential equation subroutine.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-pre_step_action~4"></span>
+      <span class="anchor" id="boundprocedure-pre_step_action"></span>
       <h3>
           procedure, public ::
   <strong>pre_step_action</strong> => kc_pre_step
@@ -2598,9 +3242,10 @@ in and out of the differential equation subroutine.</p>
     private  subroutine kc_pre_step(this, prevs, sys, h, x, y, f, args)  
 </h3>
 
-  <p>Placeholder routine for any pre-step actions.</p>
-<p>The Jacobian and mass matrices are state-dependent within each stage,
-so they are formed by the stage iteration rather than here.</p>
+  <p>Marks the stored Jacobian as belonging to an earlier step once the
+solution has advanced.</p>
+<p>The Jacobian itself is formed lazily by the step attempt, as it is only
+re-evaluated when the Newton iteration requires it.</p>
 
   <h4>Arguments</h4>
       <table class="table table-striped varlist">
@@ -2749,7 +3394,7 @@ in and out of the differential equation subroutine.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-set_absolute_tolerance~8"></span>
+      <span class="anchor" id="boundprocedure-set_absolute_tolerance~2"></span>
       <h3>
           generic, public ::
   <strong>set_absolute_tolerance</strong> => oi_set_abs_tol, oi_set_abs_tols
@@ -2946,6 +3591,189 @@ cannot overshoot.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_dense_interval"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_dense_interval</strong> => oi_set_dense_interval
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Implementation hook publishing a prepared accepted step.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine oi_set_dense_interval(this, x_start, x_end, n)  
+</h3>
+
+  <p>Publishes the interval covered by retained dense-output interpolation
+data for one accepted step. The endpoints are recorded in integration
+order, which may be increasing or decreasing. The interpolant is marked
+valid after the interval and state dimension have been recorded.
+An error stop occurs if either endpoint is non-finite, the endpoints
+are equal, or the state dimension is less than one.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_integrator.html'>ode_integrator</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The ODE integrator.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x_start</strong></td>
+            <td>
+                <p>The first endpoint of the accepted step in integration order.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x_end</strong></td>
+            <td>
+                <p>The second endpoint of the accepted step in integration order.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+                <p>The number of dependent variables represented by the interpolant.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_dense_output_enabled"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_dense_output_enabled</strong> => oi_set_dense_enabled
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Enables dense output on every accepted step (default: false).</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine oi_set_dense_enabled(this, enabled)  
+</h3>
+
+  <p>Enables or disables explicit dense-output preparation.
+When enabled, the integrator prepares dense output for each accepted
+step independently of whether the requested output grid requires it.
+Disabling this setting does not prevent dense output needed to produce
+requested solution values. Any previously prepared step is invalidated.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_integrator.html'>ode_integrator</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The ODE integrator.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>enabled</strong></td>
+            <td>
+                <p>True to enable explicit dense-output preparation; false to disable it.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
       <span class="anchor" id="boundprocedure-set_maximum_step_size"></span>
       <h3>
           procedure, public ::
@@ -3090,7 +3918,156 @@ cannot overshoot.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-set_relative_tolerance~8"></span>
+      <span class="anchor" id="boundprocedure-set_newton_step_limit"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_newton_step_limit</strong> => kc_set_newton_step_limit
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Sets the maximum number of Newton iterations allowed per stage.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine kc_set_newton_step_limit(this, x)  
+</h3>
+
+  <p>Sets the maximum number of Newton iterations allowed per stage.  A
+value less than one causes DIFFEQ_INVALID_INPUT_ERROR.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='kennedy_carpenter.html'>kennedy_carpenter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The kennedy_carpenter object.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+            <td>
+                <p>The iteration limit.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_newton_tolerance"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_newton_tolerance</strong> => kc_set_newton_tolerance
+        
+      </h3>
+    </div>
+      <div class="card-body">
+        
+        <p>Sets the Newton iteration convergence tolerance.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+                  <h3>
+    private  subroutine kc_set_newton_tolerance(this, x)  
+</h3>
+
+  <p>Sets the convergence tolerance on the estimated Newton iteration error,
+relative to the larger of one and the norm of the stage state.  The
+tolerance applied during integration is the lesser of this value and
+one percent of the smallest positive integration tolerance.  A value
+that is not positive and finite causes DIFFEQ_INVALID_INPUT_ERROR.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='kennedy_carpenter.html'>kennedy_carpenter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The kennedy_carpenter object.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+            <td>
+                <p>The convergence tolerance.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_relative_tolerance~2"></span>
       <h3>
           generic, public ::
   <strong>set_relative_tolerance</strong> => oi_set_rel_tol, oi_set_rel_tols
@@ -3438,7 +4415,7 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-solve~4"></span>
+      <span class="anchor" id="boundprocedure-solve"></span>
       <h3>
           procedure, public ::
   <strong>solve</strong> => kc_solve
@@ -3448,7 +4425,7 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
     <ul class="list-group">
         <li class="list-group-item">
                   <h3>
-    private  subroutine kc_solve(this, sys, x, iv, args)  
+    private  subroutine kc_solve(this, sys, x, iv, store_iv, args)  
 </h3>
 
   
@@ -3476,7 +4453,7 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
             <td>::</td>
             <td><strong>this</strong></td>
             <td>
-                
+                <p>The kennedy_carpenter object.</p>
             </td>
         </tr>
         <tr>
@@ -3491,7 +4468,7 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
             <td>::</td>
             <td><strong>sys</strong></td>
             <td>
-                
+                <p>The ode_container object containing the ODE's to integrate.</p>
             </td>
         </tr>
         <tr>
@@ -3506,7 +4483,8 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
             <td>::</td>
             <td><strong>x</strong></td>
             <td>
-                
+                <p>An array of independent variable values at which to return the 
+the solution to the ODE's.</p>
             </td>
         </tr>
         <tr>
@@ -3521,7 +4499,27 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
             <td>::</td>
             <td><strong>iv</strong></td>
             <td>
-                
+                <p>An array containing the initial values for each ODE.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>store_iv</strong></td>
+            <td>
+                <p>An optional input that determines whether or not the 
+initial values are stored as part of the output.  The
+default is true such that the initial values are stored;
+however, set to false to avoid storing the initial values.
+This can be useful in cases of event detection where a 
+restart of the integrator is desired.</p>
             </td>
         </tr>
         <tr>
@@ -3536,7 +4534,8 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
             <td>::</td>
             <td><strong>args</strong></td>
             <td>
-                
+                <p>An optional argument that can be used to pass information
+in and out of the differential equation subroutine.</p>
             </td>
         </tr>
     </tbody>
@@ -3566,7 +4565,7 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-14 15:56              </p>
+ on 2026-10-25 12:43              </p>
           </div>
         </div>
         <br>

@@ -188,7 +188,32 @@ module diffeq_index_reduction
         procedure, private :: physical_mass => ggl_physical_mass
     end type
 
+    interface ggl_container
+        module procedure :: ggl_constructor_1
+    end interface
+
 contains
+! ------------------------------------------------------------------------------
+function ggl_constructor_1(coordinate_count, constraint_count, alpha, beta) &
+    result(rst)
+    !! Defines the mechanical dimensions and resets stabilization gains to one
+    !! unless supplied. Callback associations and inherited model options are
+    !! retained. Invalid counts or gains cause DIFFEQ_INVALID_INPUT_ERROR.
+    integer, intent(in) :: coordinate_count
+        !! Positive number N of coordinates and physical velocities.
+    integer, intent(in) :: constraint_count
+        !! Number M of independent constraints, with 1 <= M <= N.
+    real(real64), intent(in), optional :: alpha, beta
+        !! Nonnegative finite position and velocity decay rates, respectively,
+        !! in inverse independent-variable units. Zero disables the respective
+        !! damping term without disabling the differentiated constraint.
+    type(ggl_container) :: rst
+        !! The new [[ggl_container]] object.
+
+    call rst%initialize(coordinate_count, constraint_count, alpha = alpha, &
+        beta = beta)
+end function
+
 ! ------------------------------------------------------------------------------
 subroutine ggl_initialize(this, coordinate_count, constraint_count, alpha, beta)
     !! Defines the mechanical dimensions and resets stabilization gains to one
