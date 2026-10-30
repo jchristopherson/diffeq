@@ -41,7 +41,10 @@ module diffeq_containers
         integer :: jacobian_evaluations = 0
             !! The number of Jacobian matrix evaluations.
         integer :: function_evaluations = 0
-            !! The number of function evaluations.
+            !! The number of RHS callback evaluations, including calls used for
+            !! finite differences, AD Jacobian columns, and time derivatives.
+            !! Explicit Jacobian callbacks are counted separately; any RHS
+            !! calls made internally by user-owned Jacobian code are not tracked.
         integer :: matrix_factorizations = 0
             !! The number of matrix factorizations.
     end type

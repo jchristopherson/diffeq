@@ -32,6 +32,10 @@ module diffeq_c_containers
     public :: c_ode_results_statistics
     public :: c_create_ode_results
     public :: c_free_ode_results
+    public :: c_get_ode_results_statistics
+    public :: c_get_ode_results_size
+    public :: c_get_ode_results
+    public :: c_write_ode_results
     public :: c_ode_event_statistics
     public :: c_ode_event_solver_settings
     public :: c_default_ode_event_solver_settings

@@ -179,11 +179,7 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
     if (prevs) then
         call sys%compute_jacobian(x, y, this%jac, args = args)
         call this%log_jacobian_evaluation()
-        if (sys%use_finite_difference_jacobian()) then
-            ! The forward difference algorithm requires another n + 1 
-            ! function evaluations
-            call this%log_function_evaluation(n + 1)
-        end if
+        call this%log_function_evaluation(sys%get_jacobian_function_evaluations())
 
         ! Compute the mass matrix
         if (usemass) then
@@ -230,9 +226,8 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
 
     ! Compute df/dx
     fac = sys%get_finite_difference_step()
-    call sys%compute_rhs(x + fac, y, this%dfdx, args)
+    call sys%compute_time_derivative(x, y, f, this%dfdx, args)
     call this%log_function_evaluation()
-    this%dfdx = (this%dfdx - f) / fac ! forward differencing
     if (usemass .and. massDependent) then
         call sys%compute_mass_matrix(x + fac, y, mass_perturbed, args)
         this%dfdx = this%dfdx - &

@@ -325,11 +325,7 @@ subroutine bdf_build_linear_system(this, sys, h, x, y, A, b, args)
     this%m_ydot = this%m_c0 * y + this%m_histTerm
     call this%log_jacobian_evaluation()
     call this%log_function_evaluation()
-    if (sys%use_finite_difference_jacobian()) then
-        ! The forward difference algorithm requires another n + 1 
-        ! function evaluations
-        call this%log_function_evaluation(n + 1)
-    end if
+    call this%log_function_evaluation(sys%get_jacobian_function_evaluations())
 
     ! Form the system.  Only the derivative of f contributes to the iteration
     ! matrix; the dependence of a state-dependent mass matrix upon y is
