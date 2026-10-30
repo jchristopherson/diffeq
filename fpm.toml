@@ -36,6 +36,11 @@ source-dir = "test"
 main = "diffeq_test.f90"
 
 [[test]]
+name = "diffeq_ad_integration_tests"
+source-dir = "test"
+main = "diffeq_ad_integration_tests.f90"
+
+[[test]]
 name = "diffeq_auto_diff_tests"
 source-dir = "test"
 main = "diffeq_auto_diff_tests.f90"
