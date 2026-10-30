@@ -793,20 +793,28 @@ elemental function ad_acos(a) result(c)
 end function
 
 elemental function ad_atan(a) result(c)
-    !! Propagate da/(1+a**2), using HYPOT to avoid squaring large a.
+    !! Propagate da/(1+a**2), scaling large arguments to avoid overflow.
     type(real_ad), intent(in) :: a
     type(real_ad) :: c
-    c = real_ad(atan(a%x), (a%dx / hypot(1.0d0, a%x)) / hypot(1.0d0, a%x))
+    c%x = atan(a%x)
+    if (abs(a%x) <= 1.0d0) then
+        c%dx = a%dx / (1.0d0 + a%x * a%x)
+    else
+        c%dx = ((a%dx / a%x) / a%x) / (1.0d0 + (1.0d0 / a%x)**2)
+    end if
 end function
 
 elemental function ad_atan2(y, x) result(c)
-    !! Propagate (x*dy-y*dx)/(x**2+y**2) using a scaled radius.
+    !! Propagate (x*dy-y*dx)/(x**2+y**2) using normalized coordinates.
     type(real_ad), intent(in) :: y, x
     type(real_ad) :: c
-    real(real64) :: radius
-    radius = hypot(x%x, y%x)
+    real(real64) :: scale, xscaled, yscaled
+    scale = max(abs(x%x), abs(y%x))
+    xscaled = x%x / scale
+    yscaled = y%x / scale
     c%x = atan2(y%x, x%x)
-    c%dx = ((x%x / radius) * y%dx - (y%x / radius) * x%dx) / radius
+    c%dx = (xscaled * (y%dx / scale) - yscaled * (x%dx / scale)) / &
+        (xscaled * xscaled + yscaled * yscaled)
 end function
 
 elemental function ad_atan2_real(y, x) result(c)
