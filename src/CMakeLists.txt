@@ -24,6 +24,7 @@ set(DIFFEQ_SOURCES
     ${dir}/multistep/diffeq_bdf.f90
     ${dir}/multistep/diffeq_pece.f90
     ${dir}/dae/diffeq_index_reduction.f90
+    ${dir}/AD/diffeq_auto_diff.f90
 )
 
 set(DIFFEQ_C_SOURCES
