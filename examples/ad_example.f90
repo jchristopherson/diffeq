@@ -7,9 +7,12 @@ program example
 
     ! Parameters
     integer, parameter :: npts = 1000
+    integer, parameter :: ntime = 10000
     real(real64), parameter :: ic(2) = [2.0d0, 0.0d0]
+    real(real64), parameter :: xpts(2) = [0.0d0, 5.0d1]
+
     ! Timing Variables
-    integer(int64) :: tsAD, tfAD, tsFD, tfFD, ts, tf, rate
+    integer(int64) :: i, tsAD, tfAD, tsFD, tfFD, ts, tf, rate
     real(real64) :: timeAD, timeFD, time, drate, x(npts)
 
     ! Variables
@@ -26,36 +29,59 @@ program example
 
     ! Set up the AD version and solve
     modelAD%fcn_ad => vanderpol_ad
-    call system_clock(tsAD)
     call integrator%solve(modelAD, x, ic)
-    call system_clock(tfAD)
-    timeAD = real(tfAD - tsAD, real64) / drate
     rstAD = integrator%get_ode_results()
-    print "(A)", "AD RESULTS:"
-    call print_statistics(rstAD, timeAD)
-
+    
     ! Set up the FD version and solve
     modelFD%fcn => vanderpol
     call integrator%clear_buffer()
-    call system_clock(tsFD)
     call integrator%solve(modelFD, x, ic)
-    call system_clock(tfFD)
-    timeFD = real(tfFD - tsFD, real64) / drate
     rstFD = integrator%get_ode_results()
-    print "(A)", "FD RESULTS:"
-    call print_statistics(rstFD, timeFD)
-
+    
     ! Set up the analytical Jacobian version
     model%jacobian => vanderpol_analytical_jacobian
     model%fcn => vanderpol
     call integrator%clear_buffer()
-    call system_clock(ts)
     call integrator%solve(model, x, ic)
-    call system_clock(tf)
-    time = real(tf - ts, real64) / drate
     rst = integrator%get_ode_results()
+
+    ! Time each run by solving the problem NTIME times for each model
+    print "(A)", "Running AD timing..."
+    call system_clock(tsAD)
+    do i = 1, ntime
+        call integrator%clear_buffer()
+        call integrator%solve(modelAD, xpts, ic)
+    end do
+    call system_clock(tfAD)
+    timeAD = real(tfAD - tsAD, real64) / drate
+
+    print "(A)", "Running FD timing..."
+    call system_clock(tsFD)
+    do i = 1, ntime
+        call integrator%clear_buffer()
+        call integrator%solve(modelFD, xpts, ic)
+    end do
+    call system_clock(tfFD)
+    timeFD = real(tfFD - tsFD, real64) / drate
+
+    print "(A)", "Running analytical timing..."
+    call system_clock(ts)
+    do i = 1, ntime
+        call integrator%clear_buffer()
+        call integrator%solve(model, xpts, ic)
+    end do
+    call system_clock(tf)
+    time = real(tf - ts, real64) / drate    
+
+    ! Print out the results
+    print "(A)", "AD RESULTS:"
+    call print_statistics(rstAD, timeAD / ntime)
+
+    print "(A)", "FD RESULTS:"
+    call print_statistics(rstFD, timeFD / ntime)
+
     print "(A)", "ANALYTICAL JACOBIAN RESULTS:"
-    call print_statistics(rst, time)
+    call print_statistics(rst, time / ntime)
 
     ! Plot the results
     call plot_results()
