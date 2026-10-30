@@ -802,7 +802,7 @@ elemental function ad_atan(a) result(c)
         c%dx = a%dx / (1.0d0 + a%x * a%x)
     else
         inverse_x = 1.0d0 / a%x
-        c%dx = ((a%dx / a%x) / a%x) / (1.0d0 + inverse_x * inverse_x)
+        c%dx = (a%dx * inverse_x) * inverse_x / (1.0d0 + inverse_x * inverse_x)
     end if
 end function
 
