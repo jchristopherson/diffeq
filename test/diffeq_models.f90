@@ -53,6 +53,21 @@ function vanderpol_jacobian(x, y) result(rst)
     rst(2,2) = mu * (1.0d0 - y(1)**2)
 end function
 
+subroutine vanderpol_analytical_jacobian(x, y, jac, args)
+    real(real64), intent(in) :: x, y(:)
+    real(real64), intent(out) :: jac(:,:)
+    class(*), intent(inout), optional :: args
+
+    ! Model Constants
+    real(real64), parameter :: mu = 5.0d0
+
+    ! Jacobian
+    jac(1,1) = 0.0d0
+    jac(2,1) = -2.0d0 * mu * y(1) * y(2) - 1.0d0
+    jac(1,2) = 1.0d0
+    jac(2,2) = mu * (1.0d0 - y(1)**2)
+end subroutine
+
 subroutine vanderpol_args(x, y, dydx, args)
     ! Arguments
     real(real64), intent(in) :: x, y(:)

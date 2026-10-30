@@ -730,6 +730,81 @@ Step counts are especially misleading for `adams`, which uses neither a Jacobian
 
 The final result illustrates the PI step-size controller.  Applying it to `runge_kutta_45` raises the successful-step count from 582 to 1106, but reduces failed steps from 87 to zero for this problem.  Function evaluations nevertheless increase from 4015 to 6637.  The statistics make this tradeoff explicit: a smoother sequence of step sizes can avoid retries while still requiring more accepted steps and more model evaluations overall.  This can be valuable when the error estimate is noisy or when stability rather than accuracy is limiting the step, but fewer failed steps alone do not establish greater efficiency.  Stability is not a concern for this problem, so the controller is shown here purely for illustration.  PI control is disabled by default and must be requested explicitly.  Note that the controller applies to the single-step integrators; `rosenbrock` and the two multi-step methods use step-size estimators of their own.
 
+### Automatic Differentiation Example
+[ad_example.f90](examples/ad_example.f90) solves the Van der Pol equation ($\mu = 5$) on $0 \le x \le 50$ with `bdf` three times, varying only how the model supplies its derivatives:
+
+- `fcn_ad`: the right-hand side is written once with `real_ad` arguments, and the Jacobian is formed with AD.
+- `fcn`: the right-hand side is a real callback, and the Jacobian is formed by forward differences.
+- `jacobian` with `fcn`: the Jacobian is supplied analytically.
+
+The solution is requested at 1000 evenly spaced points. The timing wraps only the `solve` call. The essential setup for each version is:
+
+```fortran
+    ! AD version: the right-hand side uses real_ad arguments
+    modelAD%fcn_ad => vanderpol_ad
+    call integrator%solve(modelAD, x, ic)
+
+    ! Forward-difference version
+    modelFD%fcn => vanderpol
+    call integrator%clear_buffer()
+    call integrator%solve(modelFD, x, ic)
+
+    ! Analytical Jacobian version
+    model%jacobian => vanderpol_analytical_jacobian
+    model%fcn => vanderpol
+    call integrator%clear_buffer()
+    call integrator%solve(model, x, ic)
+```
+
+```fortran
+subroutine vanderpol_ad(x_, y_, dydx_, args_)
+    type(real_ad), intent(in) :: x_, y_(:)
+    type(real_ad), intent(out) :: dydx_(:)
+    class(*), intent(inout), optional :: args_
+
+    ! Model Constants
+    real(real64), parameter :: mu_ = 5.0d0
+
+    ! Equations
+    dydx_(1) = y_(2)
+    dydx_(2) = mu_ * (1.0d0 - y_(1)**2) * y_(2) - y_(1)
+end subroutine
+```
+
+The complete example, including the statistics reporting and plotting, is in [ad_example.f90](examples/ad_example.f90). Its output is:
+
+```txt
+AD RESULTS:
+    Execution Time: 14.36 ms
+    Successful Steps: 1600
+    Failed Steps: 57
+    Jacobian Evaluations: 3307
+    Function Evaluations: 13180
+    Matrix Factorizations: 3307
+FD RESULTS:
+    Execution Time: 14.70 ms
+    Successful Steps: 1583
+    Failed Steps: 59
+    Jacobian Evaluations: 3276
+    Function Evaluations: 16331
+    Matrix Factorizations: 3276
+ANALYTICAL JACOBIAN RESULTS:
+    Execution Time: 16.43 ms
+    Successful Steps: 1600
+    Failed Steps: 57
+    Jacobian Evaluations: 3307
+    Function Evaluations: 6566
+    Matrix Factorizations: 3307
+```
+
+![](images/ad_example.png?raw=true)
+
+The AD and analytical-Jacobian runs take the same 1600 successful steps, 57 failed steps, and 3307 Jacobian evaluations. This indicates that the AD Jacobian agrees closely enough with the analytical Jacobian to produce the same step sequence. Their function-evaluation counts differ by $13180 - 6566 = 6614 = 2 \times 3307$: an AD Jacobian for this two-state model makes one callback per state, whereas the analytical Jacobian requires no library-managed callbacks. The forward-difference run makes $N + 1 = 3$ callbacks per Jacobian, so it performs more function evaluations (16331) than the AD run despite using a similar number of Jacobian evaluations.
+
+The timings are $14.36$ ms (AD), $14.70$ ms (forward differences), and $16.43$ ms (analytical Jacobian). These come from a single run of a short computation, so the differences are small and should not be read as a ranking of the methods. The analytical Jacobian made the fewest callbacks yet was not the fastest in this run, which again shows that evaluation counts do not directly determine wall-clock time.
+
+The top row of the plot compares $y$ and $dy/dx$ for the three solutions, which overlap at this scale. The bottom row shows each solution's difference from the analytical solution. The AD error is not visible at this scale, whereas the forward-difference error reaches roughly $\pm 1.4 \times 10^{-4}$ in $y$ and $\pm 7 \times 10^{-4}$ in $dy/dx$. The forward-difference error is concentrated near the sharp transitions of the relaxation oscillation, where the solution changes most rapidly.
+
 ### Event Detection
 
 [event_detection_example.f90](examples/event_detection_example.f90) models a
