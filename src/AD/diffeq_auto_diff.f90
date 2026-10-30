@@ -793,15 +793,10 @@ elemental function ad_acos(a) result(c)
 end function
 
 elemental function ad_atan(a) result(c)
-    !! Propagate da/(1+a**2), scaling large arguments to avoid overflow.
+    !! Propagate da/(1+a**2), using HYPOT to avoid squaring large a.
     type(real_ad), intent(in) :: a
     type(real_ad) :: c
-    c%x = atan(a%x)
-    if (abs(a%x) <= 1.0d0) then
-        c%dx = a%dx / (1.0d0 + a%x * a%x)
-    else
-        c%dx = ((a%dx / a%x) / a%x) / (1.0d0 + (1.0d0 / a%x)**2)
-    end if
+    c = real_ad(atan(a%x), (a%dx / hypot(1.0d0, a%x)) / hypot(1.0d0, a%x))
 end function
 
 elemental function ad_atan2(y, x) result(c)
