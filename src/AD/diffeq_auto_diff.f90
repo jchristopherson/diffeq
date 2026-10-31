@@ -803,11 +803,32 @@ elemental function ad_atan(a) result(c)
         c%dx = a%dx / (1.0d0 + a%x * a%x)
     else
         ! x_inverse = 1.0d0 / abs(a%x)
-        call DLADIV(1.0d0, 0.0d0, abs(a%x), 0.0d0, x_inverse, temp)
-        c%dx = a%dx / abs(a%x)
-        c%dx = c%dx / abs(a%x)
+        ! call DLADIV(1.0d0, 0.0d0, abs(a%x), 0.0d0, x_inverse, temp)
+        x_inverse = safe_recip(abs(a%x))
+        ! c%dx = a%dx / abs(a%x)
+        ! c%dx = c%dx / abs(a%x)
+        c%dx = a%dx * x_inverse
+        c%dx = c%dx * x_inverse
         c%dx = c%dx / (1.0d0 + x_inverse * x_inverse)
     end if
+end function
+
+elemental function safe_recip(x) result(r)
+    use ieee_arithmetic
+    real(real64), intent(in) :: x
+    real(real64) :: r
+    real(real64) :: m
+    integer :: e
+
+    if (x == 0.0d0) then
+        r = ieee_value(x, ieee_positive_inf)
+        return
+    end if
+
+    m = fraction(x)
+    e = exponent(x)
+
+    r = scale(1.0d0 / m, -e)
 end function
 
 elemental function ad_atan2(y, x) result(c)
