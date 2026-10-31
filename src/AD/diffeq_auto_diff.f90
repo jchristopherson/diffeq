@@ -793,23 +793,18 @@ elemental function ad_acos(a) result(c)
 end function
 
 elemental function ad_atan(a) result(c)
-    use lapack, only : DLADIV
     !! Propagate da/(1+a**2), using reciprocal scaling for large a.
     type(real_ad), intent(in) :: a
     type(real_ad) :: c
-    real(real64) :: x_inverse, temp
+    real(real64) :: x_inverse
     c%x = atan(a%x)
     if (abs(a%x) <= 1.0d0) then
         c%dx = a%dx / (1.0d0 + a%x * a%x)
     else
-        ! x_inverse = 1.0d0 / abs(a%x)
-        ! call DLADIV(1.0d0, 0.0d0, abs(a%x), 0.0d0, x_inverse, temp)
         x_inverse = safe_recip(abs(a%x))
-        ! c%dx = a%dx / abs(a%x)
-        ! c%dx = c%dx / abs(a%x)
         c%dx = a%dx * x_inverse
         c%dx = c%dx * x_inverse
-        c%dx = c%dx / (1.0d0 + x_inverse * x_inverse)
+        if (x_inverse > epsilon(1.0d0)) c%dx = c%dx / (1.0d0 + x_inverse * x_inverse)
     end if
 end function
 
