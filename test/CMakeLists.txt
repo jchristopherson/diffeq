@@ -199,51 +199,11 @@ endforeach()
 
 if (${BUILD_SHARED_LIBS} AND WIN32)
     add_custom_command(
-        TARGET diffeq_ad_integration_tests
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_RUNTIME_DLLS:diffeq_ad_integration_tests>
-        $<TARGET_FILE_DIR:diffeq_ad_integration_tests>
-        COMMAND_EXPAND_LISTS
-    )
-    add_custom_command(
-        TARGET diffeq_auto_diff_tests
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_RUNTIME_DLLS:diffeq_auto_diff_tests>
-        $<TARGET_FILE_DIR:diffeq_auto_diff_tests>
-        COMMAND_EXPAND_LISTS
-    )
-    add_custom_command(
-        TARGET diffeq_c_dae_integrator_tests
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_RUNTIME_DLLS:diffeq_c_dae_integrator_tests>
-        $<TARGET_FILE_DIR:diffeq_c_dae_integrator_tests>
-        COMMAND_EXPAND_LISTS
-    )
-    add_custom_command(
         TARGET diffeq_tests
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
         $<TARGET_RUNTIME_DLLS:diffeq_tests>
         $<TARGET_FILE_DIR:diffeq_tests>
-        COMMAND_EXPAND_LISTS
-    )
-    add_custom_command(
-        TARGET diffeq_event_tests
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_RUNTIME_DLLS:diffeq_event_tests>
-        $<TARGET_FILE_DIR:diffeq_event_tests>
-        COMMAND_EXPAND_LISTS
-    )
-    add_custom_command(
-        TARGET diffeq_c_event_tests
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_RUNTIME_DLLS:diffeq_c_event_tests>
-        $<TARGET_FILE_DIR:diffeq_c_event_tests>
         COMMAND_EXPAND_LISTS
     )
 endif()
