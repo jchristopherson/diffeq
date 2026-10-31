@@ -13,14 +13,29 @@
     <title>All Procedures &ndash; DIFFEQ
 </title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <link href="../css/pygments.css" rel="stylesheet">
-    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
     <link href="../css/local.css" rel="stylesheet">
-      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
-
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <link href="../css/pygments.css" rel="stylesheet">
     <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
@@ -72,10 +87,64 @@
 			 <thead><tr><th>Procedure</th><th>Location</th><th>Procedure Type</th><th>Description</th></tr></thead>
 			 <tbody>
 			   <tr>
+                 <td><a href='..\interface\abs.html'>abs</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Absolute value; the derivative at zero is defined to be zero.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\acos.html'>acos</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Inverse cosine in radians; the active derivative is singular at +/-1.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\acosh.html'>acosh</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Inverse hyperbolic cosine for values &gt;= 1; active derivative singular at 1.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\asin.html'>asin</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Inverse sine in radians; the active derivative is singular at +/-1.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\asinh.html'>asinh</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Inverse hyperbolic sine.</p></td>
+               </tr>
+			   <tr>
                  <td><a href='..\interface\assignment(=).html'>assignment(=)</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Copy AD data, assign a constant (clearing dx), or extract a real value.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\assignment(=)~2.html'>assignment(=)</a></td>
                  <td><a href='..\module\diffeq_c_containers.html'>diffeq_c_containers</a></td>
                  <td>Interface</td>
                  <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\atan.html'>atan</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>One- or two-argument inverse tangent in radians.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\atan2.html'>atan2</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Quadrant-aware inverse tangent ATAN2(y,x); not defined at the origin.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\atanh.html'>atanh</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Inverse hyperbolic tangent for values strictly between -1 and 1.</p></td>
                </tr>
 			   <tr>
                  <td><a href='..\interface\attempt_single_step.html'>attempt_single_step</a></td>
@@ -97,7 +166,22 @@
 solve a system of first order differential equations.</p></td>
                </tr>
 			   <tr>
+                 <td><a href='..\proc\c_adams_events.html'>c_adams_events</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes a variable order Adams predictor-corrector integrator to 
+solve a system of first order differential equations.</p></td>
+               </tr>
+			   <tr>
                  <td><a href='..\proc\c_bdf.html'>c_bdf</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes a variable order BDF integrator to solve a system of 
+first order differential equations or index-1 differential 
+algebraic equations.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_bdf_events.html'>c_bdf_events</a></td>
                  <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
                  <td>Function</td>
                  <td><p>Utilizes a variable order BDF integrator to solve a system of 
@@ -160,7 +244,34 @@ values.</p></td>
                  <td><p>Frees memory allocated by c_create_ode_results.</p></td>
                </tr>
 			   <tr>
+                 <td><a href='..\proc\c_get_ode_results.html'>c_get_ode_results</a></td>
+                 <td><a href='..\module\diffeq_c_containers.html'>diffeq_c_containers</a></td>
+                 <td>Function</td>
+                 <td><p>Returns the contents of the <a href="..\type\ode_results.html">ode_results</a> object as a matrix.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_get_ode_results_size.html'>c_get_ode_results_size</a></td>
+                 <td><a href='..\module\diffeq_c_containers.html'>diffeq_c_containers</a></td>
+                 <td>Function</td>
+                 <td><p>Gets the size of the matrix required to hold the integration results.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_get_ode_results_statistics.html'>c_get_ode_results_statistics</a></td>
+                 <td><a href='..\module\diffeq_c_containers.html'>diffeq_c_containers</a></td>
+                 <td>Function</td>
+                 <td><p>Gets the integrator performance statistics from an <a href="..\type\ode_results.html">ode_results</a>
+object.</p></td>
+               </tr>
+			   <tr>
                  <td><a href='..\proc\c_kennedy_carpenter_4.html'>c_kennedy_carpenter_4</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes a 4th order Kennedy-Carpenter integrator to solve a system 
+of first order differential equations or index-1 differential 
+algebraic equations.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_kennedy_carpenter_4_events.html'>c_kennedy_carpenter_4_events</a></td>
                  <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
                  <td>Function</td>
                  <td><p>Utilizes a 4th order Kennedy-Carpenter integrator to solve a system 
@@ -176,7 +287,23 @@ of first order differential equations or index-1 differential
 algebraic equations.</p></td>
                </tr>
 			   <tr>
+                 <td><a href='..\proc\c_kennedy_carpenter_5_events.html'>c_kennedy_carpenter_5_events</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes a 5th order Kennedy-Carpenter integrator to solve a system 
+of first order differential equations or index-1 differential 
+algebraic equations.</p></td>
+               </tr>
+			   <tr>
                  <td><a href='..\proc\c_rosenbrock.html'>c_rosenbrock</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes a 4th order Rosenbrock integrator to solve a system of 
+first order differential equations or index-1 differential 
+algebraic equations.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_rosenbrock_events.html'>c_rosenbrock_events</a></td>
                  <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
                  <td>Function</td>
                  <td><p>Utilizes a 4th order Rosenbrock integrator to solve a system of 
@@ -191,6 +318,13 @@ algebraic equations.</p></td>
 solve a system of first order differential equations.</p></td>
                </tr>
 			   <tr>
+                 <td><a href='..\proc\c_runge_kutta_23_events.html'>c_runge_kutta_23_events</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes the 3rd order Bogacki-Shampine Runge-Kutta integrator to 
+solve a system of first order differential equations.</p></td>
+               </tr>
+			   <tr>
                  <td><a href='..\proc\c_runge_kutta_45.html'>c_runge_kutta_45</a></td>
                  <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
                  <td>Function</td>
@@ -198,7 +332,21 @@ solve a system of first order differential equations.</p></td>
 solve a system of first order differential equations.</p></td>
                </tr>
 			   <tr>
+                 <td><a href='..\proc\c_runge_kutta_45_events.html'>c_runge_kutta_45_events</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes the 5th order Dormand-Prince Runge-Kutta integrator to 
+solve a system of first order differential equations.</p></td>
+               </tr>
+			   <tr>
                  <td><a href='..\proc\c_runge_kutta_853.html'>c_runge_kutta_853</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes the 8th order Hairer Runge-Kutta integrator to 
+solve a system of first order differential equations.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_runge_kutta_853_events.html'>c_runge_kutta_853_events</a></td>
                  <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
                  <td>Function</td>
                  <td><p>Utilizes the 8th order Hairer Runge-Kutta integrator to 
@@ -224,10 +372,54 @@ solve a system of first order differential equations.</p></td>
 solve a system of first order differential equations.</p></td>
                </tr>
 			   <tr>
+                 <td><a href='..\proc\c_tsitouras_events.html'>c_tsitouras_events</a></td>
+                 <td><a href='..\module\diffeq_c_integrators.html'>diffeq_c_integrators</a></td>
+                 <td>Function</td>
+                 <td><p>Utilizes the 5th order Tsitouras Runge-Kutta integrator to 
+solve a system of first order differential equations.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\proc\c_write_ode_results.html'>c_write_ode_results</a></td>
+                 <td><a href='..\module\diffeq_c_containers.html'>diffeq_c_containers</a></td>
+                 <td>Function</td>
+                 <td><p>Writes the contents of an <a href="..\type\ode_results.html">ode_results</a> container to a
+delimited text file.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\cos.html'>cos</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Cosine, with arguments in radians.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\cosh.html'>cosh</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Hyperbolic cosine.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\erf.html'>erf</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Error function.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\erfc.html'>erfc</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Complementary error function.</p></td>
+               </tr>
+			   <tr>
                  <td><a href='..\proc\evaluate_newton_polynomial.html'>evaluate_newton_polynomial</a></td>
                  <td><a href='..\module\diffeq_multistep.html'>diffeq_multistep</a></td>
                  <td>Subroutine</td>
                  <td><p>Evaluates a polynomial stored in Newton divided-difference form.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\exp.html'>exp</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Natural exponential.</p></td>
                </tr>
 			   <tr>
                  <td><a href='..\interface\get_single_step_logical_parameter.html'>get_single_step_logical_parameter</a></td>
@@ -240,6 +432,30 @@ solve a system of first order differential equations.</p></td>
                  <td><a href='..\module\diffeq_index_reduction.html'>diffeq_index_reduction</a></td>
                  <td>Interface</td>
                  <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\log.html'>log</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Natural logarithm for positive values.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\log10.html'>log10</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Base-ten logarithm for positive values.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\max.html'>max</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Binary maximum, carrying the selected derivative; first argument wins ties.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\min.html'>min</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Binary minimum, carrying the selected derivative; first argument wins ties.</p></td>
                </tr>
 			   <tr>
                  <td><a href='..\interface\multistep_corrector.html'>multistep_corrector</a></td>
@@ -273,6 +489,12 @@ interpolating the supplied points.</p><a href="../proc/newton_divided_difference
                  <td></td>
                </tr>
 			   <tr>
+                 <td><a href='..\interface\ode_ad.html'>ode_ad</a></td>
+                 <td><a href='..\module\diffeq_base.html'>diffeq_base</a></td>
+                 <td>Interface</td>
+                 <td></td>
+               </tr>
+			   <tr>
                  <td><a href='..\interface\ode_event_function.html'>ode_event_function</a></td>
                  <td><a href='..\module\diffeq_base.html'>diffeq_base</a></td>
                  <td>Interface</td>
@@ -297,10 +519,91 @@ interpolating the supplied points.</p><a href="../proc/newton_divided_difference
                  <td></td>
                </tr>
 			   <tr>
+                 <td><a href='..\interface\operator(ASTERISK).html'>operator(*)</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Multiplication using the product rule.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\operator(ASTERISKASTERISK).html'>operator(**)</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Exponentiation with constant or variable base/exponent.
+Variable exponents require a positive base, except that a zero constant
+base with a positive exponent has zero derivative. Constant integral
+exponents also support negative bases.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\operator(+).html'>operator(+)</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Unary identity and addition, including constant operands in either order.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\operator(-).html'>operator(-)</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Unary negation and subtraction, including constant operands.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\operator(SLASH).html'>operator(/)</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Division using the quotient rule; the denominator must be nonzero.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\operator(SLASH=).html'>operator(/=)</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Inequality of values, independent of derivative seeds.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\operator(lt).html'>operator(<)</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Strict less-than comparison of values.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\operator(lt=).html'>operator(<=)</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Less-than-or-equal comparison of values.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\operator(==).html'>operator(==)</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Equality of values, independent of derivative seeds.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\operator(gt).html'>operator(>)</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Strict greater-than comparison of values.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\operator(gt=).html'>operator(>=)</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Greater-than-or-equal comparison of values.</p></td>
+               </tr>
+			   <tr>
                  <td><a href='..\interface\predictor_step.html'>predictor_step</a></td>
                  <td><a href='..\module\diffeq_multistep.html'>diffeq_multistep</a></td>
                  <td>Interface</td>
                  <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\sign.html'>sign</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Magnitude of a with the sign of b; ignores the derivative of b.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\sin.html'>sin</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Sine, with arguments in radians.</p></td>
                </tr>
 			   <tr>
                  <td><a href='..\interface\single_step_integer_inquiry.html'>single_step_integer_inquiry</a></td>
@@ -327,16 +630,40 @@ interpolating the supplied points.</p><a href="../proc/newton_divided_difference
                  <td></td>
                </tr>
 			   <tr>
+                 <td><a href='..\interface\sinh.html'>sinh</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Hyperbolic sine.</p></td>
+               </tr>
+			   <tr>
                  <td><a href='..\interface\size.html'>size</a></td>
                  <td><a href='..\module\diffeq_containers.html'>diffeq_containers</a></td>
                  <td>Interface</td>
                  <td></td>
                </tr>
 			   <tr>
+                 <td><a href='..\interface\sqrt.html'>sqrt</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Square root for nonnegative values; its active derivative is singular at zero.</p></td>
+               </tr>
+			   <tr>
                  <td><a href='..\proc\ssi_ode_solver.html'>ssi_ode_solver</a></td>
                  <td><a href='..\module\diffeq_singlestep.html'>diffeq_singlestep</a></td>
                  <td>Subroutine</td>
                  <td><p>Solves the supplied system of ODE's.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\tan.html'>tan</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Tangent, with arguments in radians and away from its poles.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='..\interface\tanh.html'>tanh</a></td>
+                 <td><a href='..\module\diffeq_auto_diff.html'>diffeq_auto_diff</a></td>
+                 <td>Interface</td>
+                 <td><p>Hyperbolic tangent.</p></td>
                </tr>
 			   <tr>
                  <td><a href='..\proc\write_ode_results.html'>write_ode_results</a></td>
@@ -358,40 +685,21 @@ failures cause DIFFEQ_INVALID_OPERATION_ERROR.</p></td>
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>DIFFEQ was developed by Jason Christopherson<br>&copy; 2026 
+          <div class="col">
+            <p>
+              DIFFEQ
+ was developed by Jason Christopherson<br>              &copy; 2026 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-25 12:43              </p>
+ on 2026-10-30 12:59 -0500             </p>
           </div>
         </div>
         <br>
       </div> <!-- /container -->
     </footer>
-
-    <!-- Bootstrap core JavaScript -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
-
-    <!-- MathJax JavaScript
-             ================================================== -->
-             <!-- Placed at the end of the document so the pages load faster -->
-        <script type="text/x-mathjax-config">
-          MathJax.Hub.Config({
-          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
-          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
-          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
-          });
-        </script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-          <script src="../tipuesearch/tipuesearch_content.js"></script>
-          <script src="../tipuesearch/tipuesearch_set.js"></script>
-          <script src="../tipuesearch/tipuesearch.js"></script>
-
   </body>
 </html>

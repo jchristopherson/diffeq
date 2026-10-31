@@ -506,9 +506,7 @@ subroutine kc_update_jacobian(this, sys, x, y, derivative, usemass, &
     n = size(y)
     call sys%compute_jacobian(x, y, this%m_jac, args)
     call this%log_jacobian_evaluation()
-    if (sys%use_finite_difference_jacobian()) then
-        call this%log_function_evaluation(n + 1)
-    end if
+    call this%log_function_evaluation(sys%get_jacobian_function_evaluations())
 
     if (usemass .and. massDependent) then
         fdstep = sys%get_finite_difference_step()
@@ -720,7 +718,7 @@ subroutine kc_consistent_derivative(this, sys, x, y, f, massDependent, &
     ! Local Variables
     real(real64), allocatable :: singular_values(:), left_vectors(:,:), &
         jac(:,:), fplus(:), augmented(:,:), rhs(:)
-    real(real64) :: fdstep, rank_tolerance, scale
+    real(real64) :: rank_tolerance, scale
     integer :: n, rank, nullity, i
 
     n = size(y)
@@ -743,19 +741,15 @@ subroutine kc_consistent_derivative(this, sys, x, y, f, massDependent, &
     if (massDependent) then
         call sys%compute_jacobian(x, y, jac, args)
         call this%log_jacobian_evaluation()
-        if (sys%use_finite_difference_jacobian()) then
-            call this%log_function_evaluation(n + 1)
-        end if
+        call this%log_function_evaluation(sys%get_jacobian_function_evaluations())
     else
         if (.not.this%m_jacCurrent) then
             call kc_update_jacobian(this, sys, x, y, f, .true., .false., args)
         end if
         jac = this%m_jac
     end if
-    fdstep = sys%get_finite_difference_step()
-    call sys%compute_rhs(x + fdstep, y, fplus, args)
+    call sys%compute_time_derivative(x, y, f, fplus, args)
     call this%log_function_evaluation()
-    fplus = (fplus - f) / fdstep
 
     augmented = 0.0d0
     rhs = 0.0d0

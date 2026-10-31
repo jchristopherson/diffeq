@@ -128,8 +128,9 @@ integrators:
 | --- | --- |
 | `ode_container` | Stores the right-hand-side callback, optional Jacobian, and optional mass-matrix callbacks. |
 | `ggl_container` | Adapts holonomically constrained mechanics to a stabilized index-1 DAE with position and velocity residual damping. Its force and physical-mass callbacks have specialized shapes documented below. |
-| `model%fcn` | Defines $f(x,y)$ for the problem. This callback is required. |
-| `model%jacobian` | Supplies $J = \partial f / \partial y$. If omitted, DIFFEQ estimates it by finite differences where needed. |
+| `model%fcn` | Defines $f(x,y)$ with real-valued arguments. Assign either this callback or `model%fcn_ad`, not both. |
+| `model%fcn_ad` | Defines the RHS using `real_ad` arguments, enabling automatic differentiation of its state and time dependence. |
+| `model%jacobian` | Supplies $J = \partial f / \partial y$. Takes precedence over AD and finite differences; otherwise the selected RHS callback determines the differentiation method. |
 | `model%mass_matrix` | Supplies $M(x,y)$ for a system written as $M y' = f(x,y)$. It is supported by the Rosenbrock, Kennedy-Carpenter, BDF, and Adams solvers. Only Adams requires $M$ to be nonsingular. |
 | `model%event_function` | Supplies one or more event values; DIFFEQ locates zero crossings and stops the solve at a detected event. Set the number of event values with `model%set_event_equation_count(count)`. |
 | `integrator%solve(model, x, y0, store_iv)` | Integrates from `x(1)` to `x(size(x))` using initial state `y0`. The optional `store_iv` defaults to true; set it to false when restarting at an event already present in the result buffer. |
@@ -163,6 +164,83 @@ The `x` argument may contain only the start and end points, in which case the
 solver returns accepted step endpoints. When it contains more than two values,
 the solver returns values at those requested points using dense output. All
 solver types expose the same `solve` and `get_solution` workflow.
+
+### Automatic Differentiation
+
+Fortran callers can implement their RHS once with `real_ad` arguments and assign
+it to `model%fcn_ad` instead of `model%fcn`. The integrator still uses real-valued
+states, solutions, tolerances, mass matrices, and event callbacks:
+
+```fortran
+program ad_example
+    use diffeq
+    use diffeq_auto_diff
+    implicit none
+    type(ode_container) :: model
+    type(rosenbrock) :: solver
+    real(real64), allocatable :: solution(:,:)
+
+    model%fcn_ad => rhs
+    call solver%solve(model, [0.0d0, 1.0d0], [1.0d0])
+    solution = solver%get_solution()
+    print *, solution(size(solution,1),:)
+contains
+    subroutine rhs(x, y, dydx, args)
+        !! Both the independent variable and state use AD arithmetic.
+        type(real_ad), intent(in) :: x, y(:)
+        type(real_ad), intent(out) :: dydx(:)
+        class(*), intent(inout), optional :: args
+        dydx(1) = -2.0d0 * y(1) + exp(-x)
+    end subroutine
+end program
+```
+
+The callback must assign every output element using AD expressions or constant
+assignment (which clears the derivative). Assigning only an output's `%x` is
+insufficient. The type stores a value `%x` and one directional derivative `%dx`;
+scalar and array expressions support arithmetic, comparisons, and common real 
+mathematical intrinsics. Comparisons use values only. At nonsmooth points, `abs`
+uses derivative zero at zero, binary `min`/`max` select the first argument on 
+ties, and `sign` treats the sign selection as constant. Underlying 
+real-intrinsic domain restrictions still apply; AD does not make 
+nondifferentiable expressions differentiable.
+
+Exactly one RHS representation is required. Assigning both callbacks raises
+`DIFFEQ_INVALID_OPERATION_ERROR`, even if an explicit Jacobian is supplied.
+An explicit `model%jacobian` always takes precedence; otherwise `fcn_ad` selects
+AD and `fcn` retains the existing forward-difference behavior. Existing real
+callbacks and the C API need no changes.
+
+Ordinary RHS evaluation uses zero derivative seeds and extracts values. For
+an N-state Jacobian, the container holds time fixed and seeds each state in
+turn, requiring N callback evaluations. Rosenbrock and Kennedy-Carpenter DAE
+initialization also use a time seed to obtain partial $\partial f/\partial x$
+in one callback evaluation. AD workspaces are reused and resized when needed.
+Optional `args` are forwarded unchanged; logging and counters may be updated,
+but repeated evaluations at the same numerical inputs must describe the same
+function regardless of derivative seeds.
+
+`statistics%function_evaluations` counts actual RHS callback invocations,
+including N calls per AD Jacobian, N+1 per finite-difference Jacobian, and one
+per partial time derivative. An explicit Jacobian contributes one
+`jacobian_evaluations` entry and no library-managed RHS calls. Calls made
+internally by user-written Jacobian code are not tracked. These are counts of
+evaluations, not estimates of equal computational cost.
+
+For direct container use, `compute_jacobian` and `compute_rhs` accept real
+inputs for either representation. `get_jacobian_function_evaluations()` reports
+the RHS calls made by the last `compute_jacobian`, initially zero.
+`compute_time_derivative(x, y, f, dfdx, args)` computes partial time dependence;
+for a real callback, supply the already evaluated `f(x,y)` for forward
+differencing. Container extensions overriding Jacobian evaluation should
+override the evaluation-count query when they perform additional RHS work.
+
+This feature differentiates the RHS, not the entire mass-matrix residual.
+State/time derivatives of mass matrices retain their existing finite-difference
+treatment. `ggl_container` does not support `fcn_ad`: its specialized force
+callback and real-valued constraint assembly require a separate AD design.
+It rejects `fcn_ad` explicitly; continue using its existing `fcn` and optional
+full augmented-system Jacobian.
 
 ### Local Dense Output (Fortran)
 
@@ -513,7 +591,7 @@ Here's another example comparing the behavior of several integrators on the same
 - `statistics%successful_steps`: the number of successful integration steps.
 - `statistics%failed_steps`: the number of unsuccessful step attempts.
 - `statistics%jacobian_evaluations`: the number of Jacobian matrix evaluations, relevant to methods that use a Jacobian.
-- `statistics%function_evaluations`: the number of evaluations of the ODE model function.
+- `statistics%function_evaluations`: the number of RHS callback evaluations, including finite-difference and AD evaluations used to form Jacobians or partial time derivatives.
 - `statistics%matrix_factorizations`: the number of matrix factorizations, relevant to methods that solve linear systems.
 
 The following code solves the model with every integrator, retrieves each result, and repeats `runge_kutta_45` with a PI-type step-size controller. The print statements are omitted here; the complete source, including reporting, is in [comparison_example.f90](examples/comparison_example.f90).
@@ -651,6 +729,81 @@ The two multi-step methods make a useful counterpoint, because this problem is c
 Step counts are especially misleading for `adams`, which uses neither a Jacobian nor a linear solve.  It takes 1132 successful steps and 2336 function evaluations here, whereas `kennedy_carpenter_5` takes only 245 successful steps but requires 9278 function evaluations, 173 Jacobian evaluations, and 315 matrix factorizations.  The function-evaluation count makes this difference visible without assuming a fixed number of evaluations per step.  Comparing failed steps as well as successful steps exposes retries, while Jacobian evaluations and matrix factorizations distinguish some of the extra work done by the implicit methods.  These counters complement one another, but a ranking by wall-clock time still requires timing the same problem at comparable accuracy.
 
 The final result illustrates the PI step-size controller.  Applying it to `runge_kutta_45` raises the successful-step count from 582 to 1106, but reduces failed steps from 87 to zero for this problem.  Function evaluations nevertheless increase from 4015 to 6637.  The statistics make this tradeoff explicit: a smoother sequence of step sizes can avoid retries while still requiring more accepted steps and more model evaluations overall.  This can be valuable when the error estimate is noisy or when stability rather than accuracy is limiting the step, but fewer failed steps alone do not establish greater efficiency.  Stability is not a concern for this problem, so the controller is shown here purely for illustration.  PI control is disabled by default and must be requested explicitly.  Note that the controller applies to the single-step integrators; `rosenbrock` and the two multi-step methods use step-size estimators of their own.
+
+### Automatic Differentiation Example
+[ad_example.f90](examples/ad_example.f90) solves the Van der Pol equation ($\mu = 5$) on $0 \le x \le 50$ with `bdf` three times, varying only how the model supplies its derivatives:
+
+- `fcn_ad`: the right-hand side is written once with `real_ad` arguments, and the Jacobian is formed with AD.
+- `fcn`: the right-hand side is a real callback, and the Jacobian is formed by forward differences.
+- `jacobian` with `fcn`: the Jacobian is supplied analytically.
+
+The solution is requested at 1000 evenly spaced points. The timing wraps only the `solve` call. The essential setup for each version is:
+
+```fortran
+    ! AD version: the right-hand side uses real_ad arguments
+    modelAD%fcn_ad => vanderpol_ad
+    call integrator%solve(modelAD, x, ic)
+
+    ! Forward-difference version
+    modelFD%fcn => vanderpol
+    call integrator%clear_buffer()
+    call integrator%solve(modelFD, x, ic)
+
+    ! Analytical Jacobian version
+    model%jacobian => vanderpol_analytical_jacobian
+    model%fcn => vanderpol
+    call integrator%clear_buffer()
+    call integrator%solve(model, x, ic)
+```
+
+```fortran
+subroutine vanderpol_ad(x_, y_, dydx_, args_)
+    type(real_ad), intent(in) :: x_, y_(:)
+    type(real_ad), intent(out) :: dydx_(:)
+    class(*), intent(inout), optional :: args_
+
+    ! Model Constants
+    real(real64), parameter :: mu_ = 5.0d0
+
+    ! Equations
+    dydx_(1) = y_(2)
+    dydx_(2) = mu_ * (1.0d0 - y_(1)**2) * y_(2) - y_(1)
+end subroutine
+```
+
+The complete example, including the statistics reporting and plotting, is in [ad_example.f90](examples/ad_example.f90). Its output is:
+
+```txt
+AD RESULTS:
+    Execution Time: 14.36 ms
+    Successful Steps: 1600
+    Failed Steps: 57
+    Jacobian Evaluations: 3307
+    Function Evaluations: 13180
+    Matrix Factorizations: 3307
+FD RESULTS:
+    Execution Time: 14.70 ms
+    Successful Steps: 1583
+    Failed Steps: 59
+    Jacobian Evaluations: 3276
+    Function Evaluations: 16331
+    Matrix Factorizations: 3276
+ANALYTICAL JACOBIAN RESULTS:
+    Execution Time: 16.43 ms
+    Successful Steps: 1600
+    Failed Steps: 57
+    Jacobian Evaluations: 3307
+    Function Evaluations: 6566
+    Matrix Factorizations: 3307
+```
+
+![](images/ad_example.png?raw=true)
+
+The AD and analytical-Jacobian runs take the same 1600 successful steps, 57 failed steps, and 3307 Jacobian evaluations. This indicates that the AD Jacobian agrees closely enough with the analytical Jacobian to produce the same step sequence. Their function-evaluation counts differ by $13180 - 6566 = 6614 = 2 \times 3307$: an AD Jacobian for this two-state model makes one callback per state, whereas the analytical Jacobian requires no library-managed callbacks. The forward-difference run makes $N + 1 = 3$ callbacks per Jacobian, so it performs more function evaluations (16331) than the AD run despite using a similar number of Jacobian evaluations.
+
+The timings are $9.29$ ms (AD), $8.99$ ms (forward differences), and $8.95$ ms (analytical Jacobian). These values are determined as an average across 10,000 runs of each solver.  The example was compiled using gfortran v16.1 and run on a 64-bit Windows 11 machine with an Intel i7 2.7 GHz CPU and 32 GB of RAM.
+
+The first column of the plot compares $y$ and $dy/dx$ for the three solutions, which overlap at this scale. The second column shows each solution's difference from the analytical solution. The AD error is not visible at this scale, whereas the forward-difference error reaches roughly $\pm 1.4 \times 10^{-4}$ in $y$ and $\pm 7 \times 10^{-4}$ in $dy/dx$. The forward-difference error is concentrated near the sharp transitions of the relaxation oscillation, where the solution changes most rapidly.
 
 ### Event Detection
 

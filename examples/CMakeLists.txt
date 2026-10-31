@@ -101,6 +101,10 @@ target_link_libraries(dense_output_example diffeq diffeq_example_models ${fplot_
 add_executable(event_detection_example event_detection_example.f90)
 target_link_libraries(event_detection_example diffeq diffeq_example_models ${fplot_LIBRARY})
 
+# AD Example
+add_executable(ad_example ad_example.f90)
+target_link_libraries(ad_example diffeq diffeq_example_models ${fplot_LIBRARY})
+
 if (${BUILD_SHARED_LIBS} AND WIN32)
     add_custom_command(
         TARGET stiff_integrator_example

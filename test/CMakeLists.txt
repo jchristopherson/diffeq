@@ -37,6 +37,23 @@ add_test(
     COMMAND $<TARGET_FILE:diffeq_tests>
 )
 
+# Value and derivative regression tests for the standalone AD module.
+add_executable(diffeq_auto_diff_tests diffeq_auto_diff_tests.f90)
+target_link_libraries(diffeq_auto_diff_tests diffeq)
+add_test(NAME diffeq_auto_diff_tests COMMAND $<TARGET_FILE:diffeq_auto_diff_tests>)
+
+add_executable(diffeq_ad_integration_tests diffeq_ad_integration_tests.f90)
+target_link_libraries(diffeq_ad_integration_tests diffeq)
+add_test(NAME diffeq_ad_integration_tests COMMAND $<TARGET_FILE:diffeq_ad_integration_tests>)
+foreach(error_case both_rhs both_jacobian both_solve both_inquiry both_time
+    rhs_size jacobian_size time_size missing_rhs ggl_ad ggl_ad_jacobian)
+    add_test(
+        NAME diffeq_ad_error_${error_case}
+        COMMAND $<TARGET_FILE:diffeq_ad_integration_tests> ${error_case}
+    )
+    set_tests_properties(diffeq_ad_error_${error_case} PROPERTIES WILL_FAIL TRUE)
+endforeach()
+
 add_executable(diffeq_error_tests diffeq_error_tests.f90)
 target_link_libraries(diffeq_error_tests diffeq)
 
@@ -182,35 +199,11 @@ endforeach()
 
 if (${BUILD_SHARED_LIBS} AND WIN32)
     add_custom_command(
-        TARGET diffeq_c_dae_integrator_tests
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_RUNTIME_DLLS:diffeq_c_dae_integrator_tests>
-        $<TARGET_FILE_DIR:diffeq_c_dae_integrator_tests>
-        COMMAND_EXPAND_LISTS
-    )
-    add_custom_command(
         TARGET diffeq_tests
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
         $<TARGET_RUNTIME_DLLS:diffeq_tests>
         $<TARGET_FILE_DIR:diffeq_tests>
-        COMMAND_EXPAND_LISTS
-    )
-    add_custom_command(
-        TARGET diffeq_event_tests
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_RUNTIME_DLLS:diffeq_event_tests>
-        $<TARGET_FILE_DIR:diffeq_event_tests>
-        COMMAND_EXPAND_LISTS
-    )
-    add_custom_command(
-        TARGET diffeq_c_event_tests
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_RUNTIME_DLLS:diffeq_c_event_tests>
-        $<TARGET_FILE_DIR:diffeq_c_event_tests>
         COMMAND_EXPAND_LISTS
     )
 endif()
