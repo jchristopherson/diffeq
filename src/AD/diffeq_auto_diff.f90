@@ -793,17 +793,18 @@ elemental function ad_acos(a) result(c)
 end function
 
 elemental function ad_atan(a) result(c)
-    !! Propagate da/(1+a**2), using a scaled hypotenuse for large a.
+    !! Propagate da/(1+a**2), using reciprocal scaling for large a.
     type(real_ad), intent(in) :: a
     type(real_ad) :: c
-    real(real64) :: x_scale
+    real(real64) :: x_inverse
     c%x = atan(a%x)
     if (abs(a%x) <= 1.0d0) then
         c%dx = a%dx / (1.0d0 + a%x * a%x)
     else
-        x_scale = hypot(a%x, 1.0d0)
-        c%dx = a%dx / x_scale
-        c%dx = c%dx / x_scale
+        x_inverse = 1.0d0 / abs(a%x)
+        c%dx = a%dx / abs(a%x)
+        c%dx = c%dx / abs(a%x)
+        c%dx = c%dx / (1.0d0 + x_inverse * x_inverse)
     end if
 end function
 
