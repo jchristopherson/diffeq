@@ -796,13 +796,14 @@ elemental function ad_atan(a) result(c)
     !! Propagate da/(1+a**2), avoiding overflow for large a.
     type(real_ad), intent(in) :: a
     type(real_ad) :: c
-    real(real64) :: inverse_x
+    real(real64) :: x_scale
     c%x = atan(a%x)
     if (abs(a%x) <= 1.0d0) then
         c%dx = a%dx / (1.0d0 + a%x * a%x)
     else
-        inverse_x = 1.0d0 / a%x
-        c%dx = (a%dx * inverse_x) * inverse_x / (1.0d0 + inverse_x * inverse_x)
+        x_scale = hypot(a%x, 1.0d0)
+        c%dx = a%dx / x_scale
+        c%dx = c%dx / x_scale
     end if
 end function
 
