@@ -804,7 +804,8 @@ elemental function ad_atan(a) result(c)
         x_inverse = safe_recip(abs(a%x))
         c%dx = a%dx * x_inverse
         c%dx = c%dx * x_inverse
-        if (x_inverse > epsilon(1.0d0)) c%dx = c%dx / (1.0d0 + x_inverse * x_inverse)
+        x_inverse = x_inverse * x_inverse
+        if (x_inverse > epsilon(1.0d0)) c%dx = c%dx / (1.0d0 + x_inverse)
     end if
 end function
 
