@@ -793,7 +793,7 @@ elemental function ad_acos(a) result(c)
 end function
 
 elemental function ad_atan(a) result(c)
-    !! Propagate da/(1+a**2), avoiding overflow for large a.
+    !! Propagate da/(1+a**2), using a scaled hypotenuse for large a.
     type(real_ad), intent(in) :: a
     type(real_ad) :: c
     real(real64) :: x_scale
