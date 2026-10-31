@@ -45,6 +45,15 @@ module diffeq_c_integrators
     public :: c_dae_kennedy_carpenter_4
     public :: c_dae_kennedy_carpenter_5
     public :: c_dae_bdf
+    public :: c_adams_events
+    public :: c_bdf_events
+    public :: c_runge_kutta_23_events
+    public :: c_runge_kutta_45_events
+    public :: c_runge_kutta_853_events
+    public :: c_tsitouras_events
+    public :: c_rosenbrock_events
+    public :: c_kennedy_carpenter_4_events
+    public :: c_kennedy_carpenter_5_events
 
     integer, parameter :: C_RK23 = 1
     integer, parameter :: C_RK45 = 2

@@ -12,14 +12,29 @@
 
     <title>ggl_container &ndash; DIFFEQ </title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <link href="../css/pygments.css" rel="stylesheet">
-    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
     <link href="../css/local.css" rel="stylesheet">
-      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
-
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <link href="../css/pygments.css" rel="stylesheet">
     <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
@@ -75,9 +90,8 @@
         <ul class="list-inline" style="margin-bottom:0px;display:inline">
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
-              <a data-bs-toggle="tooltip"
-                 data-bs-placement="bottom" data-html="true"
-                 title="<p> 5.7% of total for derived types.</p>Including implementation: 234 statements,  2.7% of total for derived types.">24 statements</a>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title="<p> 5.6% of total for derived types.</p>Including implementation: 278 statements,  3.2% of total for derived types.">24 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -98,9 +112,11 @@
     </div>
   </div>
   <script>
-    $(function () {
-    $('[data-bs-toggle="tooltip"]').tooltip()
-    })
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
   </script>
 
   </div>
@@ -119,10 +135,11 @@
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/ggl_container.html#variable-constraint_curvature">constraint_curvature</a>
             <a class="list-group-item" href="../type/ggl_container.html#variable-constraint_jacobian">constraint_jacobian</a>
-            <a class="list-group-item" href="../type/ggl_container.html#variable-constraints~2">constraints</a>
+            <a class="list-group-item" href="../type/ggl_container.html#variable-constraints">constraints</a>
             <a class="list-group-item" href="../type/ggl_container.html#variable-event_function">event_function</a>
             <a class="list-group-item" href="../type/ggl_container.html#variable-fcn~21">fcn</a>
-            <a class="list-group-item" href="../type/ggl_container.html#variable-jacobian~2">jacobian</a>
+            <a class="list-group-item" href="../type/ggl_container.html#variable-fcn_ad">fcn_ad</a>
+            <a class="list-group-item" href="../type/ggl_container.html#variable-jacobian">jacobian</a>
             <a class="list-group-item" href="../type/ggl_container.html#variable-mass_matrix">mass_matrix</a>
         </div>
       </div>
@@ -164,11 +181,13 @@
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-compute_jacobian">compute_jacobian</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-compute_mass_matrix">compute_mass_matrix</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-compute_rhs">compute_rhs</a>
+            <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-compute_time_derivative">compute_time_derivative</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-get_event_equation_count">get_event_equation_count</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-get_finite_difference_step">get_finite_difference_step</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-get_is_mass_matrix_dependent">get_is_mass_matrix_dependent</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-get_is_ode_defined">get_is_ode_defined</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-get_is_ode_event_function_defined">get_is_ode_event_function_defined</a>
+            <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-get_jacobian_function_evaluations">get_jacobian_function_evaluations</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-get_state_count">get_state_count</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-has_mass_matrix">has_mass_matrix</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-initialize">initialize</a>
@@ -192,7 +211,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>
+      <h2 id="type-def-statement">
         type, public, extends(<a href='ode_container.html'>ode_container</a>) :: ggl_container</h2>
     <p>Mechanical model adapter implementing stabilized index-1 GGL.</p>
 <p>Use this type instead of <a href="..\type\ode_container.html">ode_container</a> when reducing an index-3
@@ -222,7 +241,10 @@ dependency flag true whenever this matrix varies with x or q.</p>
 augmented RHS with respect to z, not just the applied force. Without
 it, the inherited finite-difference implementation differentiates
 this container's <code>compute_rhs</code>. User args are never used as internal
-workspace. Callbacks must accept perturbed, off-manifold states.</p>
+workspace. Callbacks must accept perturbed, off-manifold states.
+The inherited fcn_ad is not supported: differentiating only the
+applied force would omit the real-valued constraint assembly.
+Assigning fcn_ad causes DIFFEQ_INVALID_OPERATION_ERROR.</p>
     <br>
 
     <section>
@@ -274,7 +296,7 @@ workspace. Callbacks must accept perturbed, off-manifold states.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-constraints~2"></span>
+              <span class="anchor" id="variable-constraints"></span>
               procedure(<a href='..\interface\dae_algebraic_constraints.html'>dae_algebraic_constraints</a>),
             </td>
               <td>public,</td>
@@ -326,7 +348,34 @@ autonomous position residuals g(q), including off-manifold values.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-jacobian~2"></span>
+              <span class="anchor" id="variable-fcn_ad"></span>
+              procedure(<a href='..\interface\ode_ad.html'>ode_ad</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer, nopass
+            </td>
+            <td>::</td>
+            <td><strong>fcn_ad</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+                <p>A pointer to the routine containing the ODEs to integrate.  Use
+this pointer instead of <a href="..\type\ode_container.html#variable-fcn~21">fcn</a> when automatic differentiation is
+desired for calculation of the Jacobian.  Do not use both
+pointers as this will produce an error.  If <a href="..\type\ode_container.html#variable-fcn~21">fcn</a> is utilized,
+then the Jacobian will be computed by either a user-supplied
+Jacobian callback or by finite differences.  If this pointer
+is utilized, then the Jacobian will be computed by either a
+user-supplied Jacobian callback or automatic differentiation.
+In either case a user-supplied Jacobian callback is the preferred
+option falling back to either finite differences or automatic
+differentiation in its absence.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-jacobian"></span>
               procedure(<a href='..\interface\ode_jacobian.html'>ode_jacobian</a>),
             </td>
               <td>public,</td>
@@ -339,8 +388,8 @@ autonomous position residuals g(q), including off-manifold values.</p>
                 <td>null()</td>
             <td>
                 <p>A pointer to the routine containing the analytical Jacobian.
-If supplied, this routine is utilized; however, if null, a finite
-difference approximation is utilized.</p>
+Takes precedence over AD and finite differences. If null, the
+selected RHS representation determines the differentiation method.</p>
             </td>
         </tr>
         <tr>
@@ -414,7 +463,7 @@ retained. Invalid counts or gains cause DIFFEQ_INVALID_INPUT_ERROR.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-constraint_count~2"></span>
+              <span class="anchor" id="variable-constraint_count"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -429,7 +478,7 @@ retained. Invalid counts or gains cause DIFFEQ_INVALID_INPUT_ERROR.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-alpha~3"></span>
+              <span class="anchor" id="variable-alpha"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -446,7 +495,7 @@ damping term without disabling the differentiated constraint.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-beta~3"></span>
+              <span class="anchor" id="variable-beta"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -490,16 +539,17 @@ damping term without disabling the differentiated constraint.</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oc_jacobian(this, x, y, jac, args)  
 </h3>
 
-  <p>Computes the Jacobian matrix for the system of ODEs.  If
-a routine is provided with an analytical Jacobian, the supplied
-routine is utilized; else, the Jacobian is estimated via a forward
-difference approximation.</p>
+  <p>Computes df/dy, holding x fixed. Uses an explicit Jacobian if supplied,
+otherwise AD (N RHS calls) or forward differences (N+1 RHS calls).
+The most recent callback count is available through
+get_jacobian_function_evaluations. An explicit Jacobian counts as zero
+RHS calls; calls made inside user-owned Jacobian code are not tracked.</p>
 
   <h4>Arguments</h4>
       <table class="table table-striped varlist">
@@ -593,8 +643,8 @@ in and out of the differential equation subroutine.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -608,9 +658,9 @@ in and out of the differential equation subroutine.</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine ggl_mass(this, x, y, m, args)  
 </h3>
 
@@ -709,8 +759,8 @@ causes DIFFEQ_MATRIX_SIZE_ERROR.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -724,9 +774,9 @@ causes DIFFEQ_MATRIX_SIZE_ERROR.</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine ggl_rhs(this, x, y, dydx, args)  
 </h3>
 
@@ -827,8 +877,138 @@ position residual, and stabilized velocity residual.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-compute_time_derivative"></span>
+      <h3>
+          procedure, public ::
+  <strong>compute_time_derivative</strong> => oc_time_derivative
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine oc_time_derivative(this, x, y, f, dfdx, args)  
+</h3>
+
+  <p>Computes partial df/dx with y fixed, using one RHS callback evaluation.
+AD seeds x only. Real callbacks use a forward difference with the
+supplied unperturbed RHS f. Mass-matrix derivatives are not included.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_container.html'>ode_container</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The model to differentiate.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+            <td>
+                <p>Independent-variable value.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>y</strong>(:)</td>
+            <td>
+                <p>State and the previously computed RHS at (x,y).</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>f</strong>(:)</td>
+            <td>
+                <p>State and the previously computed RHS at (x,y).</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=real64),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dfdx</strong>(:)</td>
+            <td>
+                <p>Partial time derivative, with the same length as y.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(*),
+            </td>
+<td>intent(inout),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>args</strong></td>
+            <td>
+                <p>User-owned callback data, forwarded unchanged.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -842,9 +1022,9 @@ position residual, and stabilized velocity residual.</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function oc_get_event_eqn_count(this) result(rst)  
 </h3>
 
@@ -885,8 +1065,8 @@ position residual, and stabilized velocity residual.</p>
     </h4>
     <p>The equation count.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -900,9 +1080,9 @@ position residual, and stabilized velocity residual.</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function oc_get_fd_step(this) result(rst)  
 </h3>
 
@@ -944,8 +1124,8 @@ calculations used to estimate the Jacobian.</p>
     </h4>
     <p>The step size.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -959,9 +1139,9 @@ calculations used to estimate the Jacobian.</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function oc_get_is_mass_dependent(this) result(rst)  
 </h3>
 
@@ -1006,8 +1186,8 @@ requires updating at each integration step; else, false if the
 mass matrix is not state-dependent and can be treated as constant
 for all integration steps.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1021,9 +1201,9 @@ for all integration steps.</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  function ggl_is_defined(this) result(rst)  
 </h3>
 
@@ -1066,8 +1246,8 @@ not evaluate callbacks or certify constraint rank or mass regularity.</p>
     <p>True only for initialized dimensions and associated force, position,
 constraint-Jacobian, and curvature callbacks. Mass is optional.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1081,10 +1261,10 @@ constraint-Jacobian, and curvature callbacks. Mass is optional.</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
-    private pure function oc_is_event_fcn_defined(this) result(rst)  
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  function oc_is_event_fcn_defined(this) result(rst)  
 </h3>
 
   <p>Tests to see if the event function has been defined.</p>
@@ -1124,8 +1304,69 @@ constraint-Jacobian, and curvature callbacks. Mass is optional.</p>
     </h4>
     <p>True if the event function has been defined; else, false.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-get_jacobian_function_evaluations"></span>
+      <h3>
+          procedure, public ::
+  <strong>get_jacobian_function_evaluations</strong> => oc_get_jacobian_calls
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  function oc_get_jacobian_calls(this) result(rst)  
+</h3>
+
+  <p>Returns RHS calls made by the last compute_jacobian (initially zero).
+Solvers use this count for both AD and finite-difference statistics.
+Extensions overriding compute_jacobian should override this query if
+their implementation makes additional RHS calls.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_container.html'>ode_container</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                <p>The model whose most recent Jacobian work is queried.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    <p>Number of RHS calls, excluding the explicit Jacobian callback.</p>
+
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1139,9 +1380,9 @@ constraint-Jacobian, and curvature callbacks. Mass is optional.</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  function ggl_state_count(this) result(rst)  
 </h3>
 
@@ -1182,8 +1423,8 @@ constraint-Jacobian, and curvature callbacks. Mass is optional.</p>
     </h4>
     <p>Required length of the state, initial conditions, and RHS arrays.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1197,9 +1438,9 @@ constraint-Jacobian, and curvature callbacks. Mass is optional.</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  function ggl_has_mass(this) result(rst)  
 </h3>
 
@@ -1241,8 +1482,8 @@ physical matrix defaults to identity. Explicit ODE paths are unsuitable.</p>
     </h4>
     <p>True, indicating that a mass-matrix DAE path is required.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1256,9 +1497,9 @@ physical matrix defaults to identity. Explicit ODE paths are unsuitable.</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine ggl_initialize(this, coordinate_count, constraint_count, alpha, beta)  
 </h3>
 
@@ -1360,8 +1601,8 @@ damping term without disabling the differentiated constraint.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1375,9 +1616,9 @@ damping term without disabling the differentiated constraint.</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine ggl_initialize_multipliers(this, x, y, args)  
 </h3>
 
@@ -1462,8 +1703,8 @@ output multipliers are algebraically consistent to solve accuracy.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1477,9 +1718,9 @@ output multipliers are algebraically consistent to solve accuracy.</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oc_set_event_eqn_count(this, x)  
 </h3>
 
@@ -1530,8 +1771,8 @@ output multipliers are algebraically consistent to solve accuracy.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1545,9 +1786,9 @@ output multipliers are algebraically consistent to solve accuracy.</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oc_set_fd_step(this, x)  
 </h3>
 
@@ -1599,8 +1840,8 @@ calculations used to estimate the Jacobian.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1614,9 +1855,9 @@ calculations used to estimate the Jacobian.</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oc_set_is_mass_dependent(this, x)  
 </h3>
 
@@ -1671,8 +1912,8 @@ for all integration steps.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1686,9 +1927,9 @@ for all integration steps.</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine ggl_set_stabilization(this, alpha, beta)  
 </h3>
 
@@ -1759,8 +2000,8 @@ the corresponding residual in the exact solution.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1774,9 +2015,9 @@ the corresponding residual in the exact solution.</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  function oc_use_finite_difference_jacobian(this) result(rst)  
 </h3>
 
@@ -1818,8 +2059,8 @@ the corresponding residual in the exact solution.</p>
     <p>True if a finite difference approximation is being utilized; else,
 false.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1833,9 +2074,9 @@ false.</p>
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  function ggl_validate(this, x, y, tolerance, args) result(rst)  
 </h3>
 
@@ -1940,8 +2181,8 @@ cause DIFFEQ_INVALID_INPUT_ERROR.</p>
     </h4>
     <p>True when both physical residuals are finite and within tolerance.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1956,40 +2197,21 @@ cause DIFFEQ_INVALID_INPUT_ERROR.</p>
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>DIFFEQ was developed by Jason Christopherson<br>&copy; 2026 
+          <div class="col">
+            <p>
+              DIFFEQ
+ was developed by Jason Christopherson<br>              &copy; 2026 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-25 12:43              </p>
+ on 2026-10-30 12:59 -0500             </p>
           </div>
         </div>
         <br>
       </div> <!-- /container -->
     </footer>
-
-    <!-- Bootstrap core JavaScript -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
-
-    <!-- MathJax JavaScript
-             ================================================== -->
-             <!-- Placed at the end of the document so the pages load faster -->
-        <script type="text/x-mathjax-config">
-          MathJax.Hub.Config({
-          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
-          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
-          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
-          });
-        </script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-          <script src="../tipuesearch/tipuesearch_content.js"></script>
-          <script src="../tipuesearch/tipuesearch_set.js"></script>
-          <script src="../tipuesearch/tipuesearch.js"></script>
-
   </body>
 </html>

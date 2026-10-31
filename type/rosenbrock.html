@@ -12,14 +12,29 @@
 
     <title>rosenbrock &ndash; DIFFEQ </title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <link href="../css/pygments.css" rel="stylesheet">
-    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
     <link href="../css/local.css" rel="stylesheet">
-      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
-
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <link href="../css/pygments.css" rel="stylesheet">
     <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
@@ -75,9 +90,8 @@
         <ul class="list-inline" style="margin-bottom:0px;display:inline">
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
-              <a data-bs-toggle="tooltip"
-                 data-bs-placement="bottom" data-html="true"
-                 title="<p> 6.9% of total for derived types.</p>Including implementation: 573 statements,  6.7% of total for derived types.">29 statements</a>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title="<p> 6.8% of total for derived types.</p>Including implementation: 570 statements,  6.6% of total for derived types.">29 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -98,9 +112,11 @@
     </div>
   </div>
   <script>
-    $(function () {
-    $('[data-bs-toggle="tooltip"]').tooltip()
-    })
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
   </script>
 
   </div>
@@ -145,49 +161,49 @@
       <div id="boundprocs-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-append_to_buffer">append_to_buffer</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-attempt_step~7">attempt_step</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-attempt_step">attempt_step</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-clear_buffer">clear_buffer</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-compute_dense_output">compute_dense_output</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-compute_error_norm~2">compute_error_norm</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-compute_dense_output~2">compute_dense_output</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-compute_error_norm">compute_error_norm</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-estimate_inital_step_size">estimate_inital_step_size</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-estimate_next_step_size~2">estimate_next_step_size</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-estimate_next_step_size">estimate_next_step_size</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-evaluate_dense">evaluate_dense</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_absolute_tolerance">get_absolute_tolerance</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_allow_overshoot">get_allow_overshoot</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_dense_interval">get_dense_interval</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_dense_output_enabled">get_dense_output_enabled</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_is_fsal~7">get_is_fsal</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_is_fsal">get_is_fsal</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_maximum_step_size">get_maximum_step_size</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_minimum_step_size">get_minimum_step_size</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_ode_results">get_ode_results</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_order~8">get_order</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_order">get_order</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_relative_tolerance">get_relative_tolerance</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_solution">get_solution</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_stage_count~7">get_stage_count</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_stage_count">get_stage_count</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_step_limit">get_step_limit</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_step_size_control_parameter">get_step_size_control_parameter</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-get_step_size_factor">get_step_size_factor</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-has_dense_output">has_dense_output</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-interpolate~7">interpolate</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-interpolate">interpolate</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-invalidate_dense_output">invalidate_dense_output</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-log_failed_step">log_failed_step</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-log_function_evaluation">log_function_evaluation</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-log_jacobian_evaluation">log_jacobian_evaluation</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-log_matrix_factorization">log_matrix_factorization</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-log_successful_step">log_successful_step</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-post_step_action~7">post_step_action</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-pre_step_action~7">pre_step_action</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-set_absolute_tolerance~10">set_absolute_tolerance</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-post_step_action">post_step_action</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-pre_step_action">pre_step_action</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-set_absolute_tolerance~2">set_absolute_tolerance</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-set_allow_overshoot">set_allow_overshoot</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-set_dense_interval">set_dense_interval</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-set_dense_output_enabled">set_dense_output_enabled</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-set_maximum_step_size">set_maximum_step_size</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-set_minimum_step_size">set_minimum_step_size</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-set_relative_tolerance~10">set_relative_tolerance</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-set_relative_tolerance~2">set_relative_tolerance</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-set_step_limit">set_step_limit</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-set_step_size_control_parameter">set_step_size_control_parameter</a>
             <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-set_step_size_factor">set_step_size_factor</a>
-            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-solve~4">solve</a>
+            <a class="list-group-item" href="../type/rosenbrock.html#boundprocedure-solve">solve</a>
         </div>
       </div>
     </div>
@@ -201,7 +217,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>
+      <h2 id="type-def-statement">
         type, public, extends(<a href='single_step_integrator.html'>single_step_integrator</a>) :: rosenbrock</h2>
     <p>A fourth-order Rosenbrock integrator for stiff systems.</p>
 <p>Instead of solving a nonlinear equation at every stage, the method
@@ -273,14 +289,14 @@ event_function in the <a href="..\type\ode_container.html">ode_container</a> obj
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Appends the supplied solution point to the internal solution 
+        <div class="card-body">
+          
+          <p>Appends the supplied solution point to the internal solution 
 buffer.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_append_to_buffer(this, x, y)  
 </h3>
 
@@ -346,28 +362,28 @@ buffer.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-attempt_step~7"></span>
+      <span class="anchor" id="boundprocedure-attempt_step"></span>
       <h3>
           procedure, public ::
   <strong>attempt_step</strong> => rbrk_attempt_step
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Attempts an integration step for this integrator.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Attempts an integration step for this integrator.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)  
 </h3>
 
@@ -558,8 +574,8 @@ in and out of the differential equation subroutine.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -573,13 +589,13 @@ in and out of the differential equation subroutine.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Clears the contents of the buffer.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Clears the contents of the buffer.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_clear_buffer(this)  
 </h3>
 
@@ -615,24 +631,24 @@ in and out of the differential equation subroutine.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-compute_dense_output"></span>
+      <span class="anchor" id="boundprocedure-compute_dense_output~2"></span>
       <h3>
           procedure, public ::
   <strong>compute_dense_output</strong> => ssi_dense_output
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine ssi_dense_output(this, x, y)  
 </h3>
 
@@ -698,28 +714,28 @@ in and out of the differential equation subroutine.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-compute_error_norm~2"></span>
+      <span class="anchor" id="boundprocedure-compute_error_norm"></span>
       <h3>
           procedure, public ::
   <strong>compute_error_norm</strong> => oi_estimate_error
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Computes the norm of the scaled error estimate.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Computes the norm of the scaled error estimate.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function oi_estimate_error(this, y, yest, yerr) result(rst)  
 </h3>
 
@@ -808,8 +824,8 @@ equation.</p>
     </h4>
     <p>The norm of the scaled error.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -823,13 +839,13 @@ equation.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Computes an estimate of an initial step size.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Computes an estimate of an initial step size.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_initial_step(this, sys, xo, xf, yo, fo, h, args)  
 </h3>
 
@@ -971,28 +987,28 @@ in and out of the differential equation subroutine.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-estimate_next_step_size~2"></span>
+      <span class="anchor" id="boundprocedure-estimate_next_step_size"></span>
       <h3>
           procedure, public ::
   <strong>estimate_next_step_size</strong> => rbrk_next_step
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Estimates the next step size.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Estimates the next step size.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  function rbrk_next_step(this, e, eold, h, x) result(rst)  
 </h3>
 
@@ -1095,8 +1111,8 @@ this variable is updated.</p>
     </h4>
     <p>The new step size estimate.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1110,13 +1126,13 @@ this variable is updated.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Evaluates the prepared step without advancing integration.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Evaluates the prepared step without advancing integration.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_evaluate_dense(this, x, y)  
 </h3>
 
@@ -1189,8 +1205,8 @@ equal the number of dependent variables in the prepared step.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1204,13 +1220,13 @@ equal the number of dependent variables in the prepared step.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Gets the absolute error tolerance.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Gets the absolute error tolerance.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function oi_get_abs_tol(this, equation) result(rst)  
 </h3>
 
@@ -1266,8 +1282,8 @@ equal the number of dependent variables in the prepared step.</p>
     </h4>
     <p>The tolerance value.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1281,14 +1297,14 @@ equal the number of dependent variables in the prepared step.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Gets a value determining if the solver is allowed to overshoot 
+        <div class="card-body">
+          
+          <p>Gets a value determining if the solver is allowed to overshoot 
 the final value in the integration range.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function oi_get_allow_overshoot(this) result(rst)  
 </h3>
 
@@ -1332,8 +1348,8 @@ value in the integration range.</p>
 required final value; else, false thereby indicating the solver 
 cannot overshoot.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1347,13 +1363,13 @@ cannot overshoot.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Gets the prepared step's start and end in integration order.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Gets the prepared step's start and end in integration order.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_get_dense_interval(this, x_start, x_end)  
 </h3>
 
@@ -1420,8 +1436,8 @@ An error stop occurs if no valid interpolant is available.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1435,13 +1451,13 @@ An error stop occurs if no valid interpolant is available.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Gets the explicit dense-output preparation setting.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Gets the explicit dense-output preparation setting.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function oi_get_dense_enabled(this) result(rst)  
 </h3>
 
@@ -1484,29 +1500,29 @@ An error stop occurs if no valid interpolant is available.</p>
 false. This setting is independent of preparation required to
 produce values on a requested output grid.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-get_is_fsal~7"></span>
+      <span class="anchor" id="boundprocedure-get_is_fsal"></span>
       <h3>
           procedure, public ::
   <strong>get_is_fsal</strong> => rbrk_get_is_fsal
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Gets a logical parameter stating if this is a first-same-as-last
+        <div class="card-body">
+          
+          <p>Gets a logical parameter stating if this is a first-same-as-last
 (FSAL) integrator.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function rbrk_get_is_fsal(this) result(rst)  
 </h3>
 
@@ -1548,8 +1564,8 @@ produce values on a requested output grid.</p>
     </h4>
     <p>True for a FSAL integrator; else, false.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1563,13 +1579,13 @@ produce values on a requested output grid.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Gets the magnitude of the maximum allowed step size.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Gets the magnitude of the maximum allowed step size.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function oi_get_max_step(this) result(rst)  
 </h3>
 
@@ -1610,8 +1626,8 @@ produce values on a requested output grid.</p>
     </h4>
     <p>The step size limit.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1625,13 +1641,13 @@ produce values on a requested output grid.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Gets the magnitude of the minimum allowed step size.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Gets the magnitude of the minimum allowed step size.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function oi_get_min_step(this) result(rst)  
 </h3>
 
@@ -1672,8 +1688,8 @@ produce values on a requested output grid.</p>
     </h4>
     <p>The step size limit.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1687,13 +1703,13 @@ produce values on a requested output grid.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Returns the solution stored within an <a href="..\type\ode_results.html">ode_results</a> object.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Returns the solution stored within an <a href="..\type\ode_results.html">ode_results</a> object.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function oi_get_ode_results(this) result(rst)  
 </h3>
 
@@ -1735,28 +1751,28 @@ The integrator retains the original copy.</p>
     </h4>
     <p>The <a href="..\type\ode_results.html">ode_results</a> container.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-get_order~8"></span>
+      <span class="anchor" id="boundprocedure-get_order"></span>
       <h3>
           procedure, public ::
   <strong>get_order</strong> => rbrk_get_order
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Gets the order of the integrator.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Gets the order of the integrator.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function rbrk_get_order(this) result(rst)  
 </h3>
 
@@ -1797,8 +1813,8 @@ The integrator retains the original copy.</p>
     </h4>
     <p>The order.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1812,13 +1828,13 @@ The integrator retains the original copy.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Gets the relative error tolerance.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Gets the relative error tolerance.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function oi_get_rel_tol(this, equation) result(rst)  
 </h3>
 
@@ -1874,8 +1890,8 @@ The integrator retains the original copy.</p>
     </h4>
     <p>The tolerance value.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -1889,13 +1905,13 @@ The integrator retains the original copy.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Returns the solution computed by the integrator.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Returns the solution computed by the integrator.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function oi_get_solution(this) result(rst)  
 </h3>
 
@@ -1941,28 +1957,28 @@ before this routine.</p>
     </h4>
     <p>The resulting solution matrix.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-get_stage_count~7"></span>
+      <span class="anchor" id="boundprocedure-get_stage_count"></span>
       <h3>
           procedure, public ::
   <strong>get_stage_count</strong> => rbrk_get_stage_count
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Gets the stage count for this integrator.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Gets the stage count for this integrator.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function rbrk_get_stage_count(this) result(rst)  
 </h3>
 
@@ -2003,8 +2019,8 @@ before this routine.</p>
     </h4>
     <p>The stage count.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -2018,13 +2034,13 @@ before this routine.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Gets the limit on the number of integration steps.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Gets the limit on the number of integration steps.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function oi_get_step_limit(this) result(rst)  
 </h3>
 
@@ -2066,8 +2082,8 @@ before the solver terminates.</p>
     </h4>
     <p>The step limit.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -2081,13 +2097,13 @@ before the solver terminates.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Gets the step size PI control parameter.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Gets the step size PI control parameter.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function oi_get_control_parameter(this) result(rst)  
 </h3>
 
@@ -2136,8 +2152,8 @@ A good estimate for a starting point for this parameter is <script type="math/te
     </h4>
     <p>The control parameter.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -2151,13 +2167,13 @@ A good estimate for a starting point for this parameter is <script type="math/te
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Gets the step size safety factor.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Gets the step size safety factor.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function oi_get_safety_factor(this) result(rst)  
 </h3>
 
@@ -2200,8 +2216,8 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
     </h4>
     <p>The safety factor.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -2215,13 +2231,13 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Tests whether a prepared accepted-step interpolant is available.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Tests whether a prepared accepted-step interpolant is available.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private pure function oi_has_dense_output(this) result(rst)  
 </h3>
 
@@ -2262,28 +2278,28 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
     </h4>
     <p>True if dense output is currently valid; otherwise, false.</p>
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-interpolate~7"></span>
+      <span class="anchor" id="boundprocedure-interpolate"></span>
       <h3>
           procedure, public ::
   <strong>interpolate</strong> => rbrk_interp
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Performs the interpolation.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Performs the interpolation.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine rbrk_interp(this, x, xn, yn, fn, xn1, yn1, fn1, y)  
 </h3>
 
@@ -2442,8 +2458,8 @@ solution values interpolated at x.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -2457,13 +2473,13 @@ solution values interpolated at x.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Invalidates the prepared interpolant before stepping or resetting.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Invalidates the prepared interpolant before stepping or resetting.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_invalidate_dense(this)  
 </h3>
 
@@ -2499,8 +2515,8 @@ solution values interpolated at x.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -2514,13 +2530,13 @@ solution values interpolated at x.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Logs a failed integration step.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Logs a failed integration step.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_log_failed_step(this, n)  
 </h3>
 
@@ -2572,8 +2588,8 @@ supplied, this routine will log a single step.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -2587,13 +2603,13 @@ supplied, this routine will log a single step.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Logs a function evaluation.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Logs a function evaluation.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_log_function_eval(this, n)  
 </h3>
 
@@ -2646,8 +2662,8 @@ function evaluation.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -2661,13 +2677,13 @@ function evaluation.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Logs a Jacobian matrix evaluation.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Logs a Jacobian matrix evaluation.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_log_jacobian_eval(this, n)  
 </h3>
 
@@ -2720,8 +2736,8 @@ Jacobian evaluation.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -2735,13 +2751,13 @@ Jacobian evaluation.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Logs a matrix factorization.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Logs a matrix factorization.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_log_matrix_factorization(this, n)  
 </h3>
 
@@ -2794,8 +2810,8 @@ factorization.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -2809,13 +2825,13 @@ factorization.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Logs a successful integration step.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Logs a successful integration step.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_log_successful_step(this, n)  
 </h3>
 
@@ -2867,28 +2883,28 @@ supplied, this routine will log a single step.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-post_step_action~7"></span>
+      <span class="anchor" id="boundprocedure-post_step_action"></span>
       <h3>
           procedure, public ::
   <strong>post_step_action</strong> => rbrk_set_up_interp
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Sets up the interpolation process as the post-step action.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Sets up the interpolation process as the post-step action.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine rbrk_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k, args)  
 </h3>
 
@@ -3075,28 +3091,28 @@ in and out of the differential equation subroutine.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-pre_step_action~7"></span>
+      <span class="anchor" id="boundprocedure-pre_step_action"></span>
       <h3>
           procedure, public ::
   <strong>pre_step_action</strong> => rbrk_form_matrix
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Constructs the system matrix.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Constructs the system matrix.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)  
 </h3>
 
@@ -3242,24 +3258,24 @@ in and out of the differential equation subroutine.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-set_absolute_tolerance~10"></span>
+      <span class="anchor" id="boundprocedure-set_absolute_tolerance~2"></span>
       <h3>
           generic, public ::
   <strong>set_absolute_tolerance</strong> => oi_set_abs_tol, oi_set_abs_tols
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_set_abs_tol(this, x)  
 </h3>
 
@@ -3310,9 +3326,9 @@ in and out of the differential equation subroutine.</p>
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_set_abs_tols(this, x)  
 </h3>
 
@@ -3363,8 +3379,8 @@ in and out of the differential equation subroutine.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -3378,14 +3394,14 @@ in and out of the differential equation subroutine.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Sets a value determining if the solver is allowed to overshoot 
+        <div class="card-body">
+          
+          <p>Sets a value determining if the solver is allowed to overshoot 
 the final value in the integration range.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_set_allow_overshoot(this, x)  
 </h3>
 
@@ -3439,8 +3455,8 @@ cannot overshoot.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -3454,13 +3470,13 @@ cannot overshoot.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Implementation hook publishing a prepared accepted step.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Implementation hook publishing a prepared accepted step.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_set_dense_interval(this, x_start, x_end, n)  
 </h3>
 
@@ -3546,8 +3562,8 @@ are equal, or the state dimension is less than one.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -3561,13 +3577,13 @@ are equal, or the state dimension is less than one.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Enables dense output on every accepted step (default: false).</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Enables dense output on every accepted step (default: false).</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_set_dense_enabled(this, enabled)  
 </h3>
 
@@ -3622,8 +3638,8 @@ requested solution values. Any previously prepared step is invalidated.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -3637,13 +3653,13 @@ requested solution values. Any previously prepared step is invalidated.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Sets the magnitude of the maximum allowed step size.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Sets the magnitude of the maximum allowed step size.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_set_max_step(this, x)  
 </h3>
 
@@ -3694,8 +3710,8 @@ requested solution values. Any previously prepared step is invalidated.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -3709,13 +3725,13 @@ requested solution values. Any previously prepared step is invalidated.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Sets the magnitude of the minimum allowed step size.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Sets the magnitude of the minimum allowed step size.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_set_min_step(this, x)  
 </h3>
 
@@ -3766,24 +3782,24 @@ requested solution values. Any previously prepared step is invalidated.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-set_relative_tolerance~10"></span>
+      <span class="anchor" id="boundprocedure-set_relative_tolerance~2"></span>
       <h3>
           generic, public ::
   <strong>set_relative_tolerance</strong> => oi_set_rel_tol, oi_set_rel_tols
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_set_rel_tol(this, x)  
 </h3>
 
@@ -3834,9 +3850,9 @@ requested solution values. Any previously prepared step is invalidated.</p>
   </table>
 
 
-        </li>
-        <li class="list-group-item">
-                  <h3>
+          </li>
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_set_rel_tols(this, x)  
 </h3>
 
@@ -3887,8 +3903,8 @@ requested solution values. Any previously prepared step is invalidated.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -3902,13 +3918,13 @@ requested solution values. Any previously prepared step is invalidated.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Sets the limit on the number of integration steps.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Sets the limit on the number of integration steps.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_set_step_limit(this, x)  
 </h3>
 
@@ -3960,8 +3976,8 @@ before the solver terminates.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -3975,13 +3991,13 @@ before the solver terminates.</p>
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Sets the step size PI control parameter.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Sets the step size PI control parameter.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_set_control_parameter(this, x)  
 </h3>
 
@@ -4040,8 +4056,8 @@ A good estimate for a starting point for this parameter is <script type="math/te
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -4055,13 +4071,13 @@ A good estimate for a starting point for this parameter is <script type="math/te
         
       </h3>
     </div>
-      <div class="card-body">
-        
-        <p>Sets the step size safety factor.</p>
-      </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+        <div class="card-body">
+          
+          <p>Sets the step size safety factor.</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine oi_set_safety_factor(this, x)  
 </h3>
 
@@ -4114,24 +4130,24 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-solve~4"></span>
+      <span class="anchor" id="boundprocedure-solve"></span>
       <h3>
           procedure, public ::
   <strong>solve</strong> => rbrk_solve
         
       </h3>
     </div>
-    <ul class="list-group">
-        <li class="list-group-item">
-                  <h3>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
     private  subroutine rbrk_solve(this, sys, x, iv, store_iv, args)  
 </h3>
 
@@ -4249,8 +4265,8 @@ in and out of the differential equation subroutine.</p>
   </table>
 
 
-        </li>
-    </ul>
+          </li>
+      </ul>
   </div>
 
           </div>
@@ -4265,40 +4281,21 @@ in and out of the differential equation subroutine.</p>
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col"><p>DIFFEQ was developed by Jason Christopherson<br>&copy; 2026 
+          <div class="col">
+            <p>
+              DIFFEQ
+ was developed by Jason Christopherson<br>              &copy; 2026 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-25 12:43              </p>
+ on 2026-10-30 12:59 -0500             </p>
           </div>
         </div>
         <br>
       </div> <!-- /container -->
     </footer>
-
-    <!-- Bootstrap core JavaScript -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
-
-    <!-- MathJax JavaScript
-             ================================================== -->
-             <!-- Placed at the end of the document so the pages load faster -->
-        <script type="text/x-mathjax-config">
-          MathJax.Hub.Config({
-          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
-          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
-          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
-          });
-        </script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-          <script src="../tipuesearch/tipuesearch_content.js"></script>
-          <script src="../tipuesearch/tipuesearch_set.js"></script>
-          <script src="../tipuesearch/tipuesearch.js"></script>
-
   </body>
 </html>

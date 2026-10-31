@@ -162,6 +162,9 @@ module diffeq_index_reduction
         !! it, the inherited finite-difference implementation differentiates
         !! this container's `compute_rhs`. User args are never used as internal
         !! workspace. Callbacks must accept perturbed, off-manifold states.
+        !! The inherited fcn_ad is not supported: differentiating only the
+        !! applied force would omit the real-valued constraint assembly.
+        !! Assigning fcn_ad causes DIFFEQ_INVALID_OPERATION_ERROR.
         integer, private :: m_coordinates = 0
         integer, private :: m_constraints = 0
         real(real64), private :: m_alpha = 1.0d0
@@ -293,6 +296,7 @@ function ggl_is_defined(this) result(rst)
         !! True only for initialized dimensions and associated force, position,
         !! constraint-Jacobian, and curvature callbacks. Mass is optional.
 
+    if (associated(this%fcn_ad)) error stop DIFFEQ_INVALID_OPERATION_ERROR
     rst = this%m_coordinates > 0 .and. this%m_constraints > 0 .and. &
         associated(this%fcn) .and. associated(this%constraints) .and. &
         associated(this%constraint_jacobian) .and. associated(this%constraint_curvature)
