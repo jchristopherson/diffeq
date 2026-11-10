@@ -8,7 +8,7 @@ program example
 
     ! Parameters
     integer, parameter :: npts = 1000
-    integer, parameter :: ntime = 10000
+    integer, parameter :: ntime = 100
     real(real64), parameter :: ic(2) = [2.0d0, 0.0d0]
     real(real64), parameter :: xpts(2) = [0.0d0, 5.0d1]
 
@@ -30,7 +30,6 @@ program example
 
     ! Set up the AD version and solve
     modelAD%fcn_ad => vanderpol_ad
-    call modelAD%set_ad_thread_count(2)
     call integrator%solve(modelAD, x, ic)
     rstAD = integrator%get_ode_results()
     
