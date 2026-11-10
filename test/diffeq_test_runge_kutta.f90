@@ -104,7 +104,7 @@ subroutine buffer_test_ode(x, y, dydx, args)
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: y
     real(real64), intent(out), dimension(:) :: dydx
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
     dydx = 1.0d0
 end subroutine
 

@@ -20,10 +20,8 @@ module diffeq_test_implicit_rk
     use diffeq_models
     implicit none
 
-    type jacobian_counter
-        integer :: calls = 0
-        integer :: mass_calls = 0
-    end type
+    integer :: observed_jacobian_calls = 0
+    integer :: observed_mass_calls = 0
 
     type, extends(ode_container) :: mass_dispatch_model
         logical :: mass_enabled = .false.
@@ -50,7 +48,7 @@ subroutine ggl_pendulum_force(x, y, force, args)
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: y
     real(real64), intent(out), dimension(:) :: force
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     select type (args)
     type is (cartesian_pendulum_properties)
@@ -64,7 +62,7 @@ subroutine ggl_pendulum_mass(x, q, mass, args)
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: q
     real(real64), intent(out), dimension(:,:) :: mass
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     select type (args)
     type is (cartesian_pendulum_properties)
@@ -80,7 +78,7 @@ subroutine ggl_pendulum_variable_mass(x, q, mass, args)
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: q
     real(real64), intent(out), dimension(:,:) :: mass
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     call ggl_pendulum_mass(x, q, mass, args)
     mass = mass * (1.0d0 + x)
@@ -90,7 +88,7 @@ subroutine ggl_pendulum_constraint(x, q, g, args)
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: q
     real(real64), intent(out), dimension(:) :: g
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     select type (args)
     type is (cartesian_pendulum_properties)
@@ -104,7 +102,7 @@ subroutine ggl_pendulum_gradient(x, q, gradient, args)
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: q
     real(real64), intent(out), dimension(:,:) :: gradient
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     gradient(1,:) = 2.0d0 * q
 end subroutine
@@ -113,7 +111,7 @@ subroutine ggl_pendulum_curvature(x, q, direction, v, curvature, args)
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: q, direction, v
     real(real64), intent(out), dimension(:) :: curvature
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     curvature(1) = 2.0d0 * dot_product(direction, v)
 end subroutine
@@ -246,7 +244,7 @@ subroutine dispatch_mass_matrix(this, x, y, m, args)
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: y
     real(real64), intent(out), dimension(:,:) :: m
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     if (.not.this%mass_enabled) error stop "ODE path evaluated a mass matrix"
     this%mass_calls = this%mass_calls + 1
@@ -310,29 +308,31 @@ function test_analytical_jacobian_usage() result(rst)
     type(rosenbrock) :: integrator
     type(rosenbrock) :: mass_integrator
     type(ode_container) :: mdl
-    type(jacobian_counter) :: counter
+    integer :: counter
     real(real64), allocatable :: sol(:,:)
 
     mdl%fcn => counted_linear_ode
     mdl%jacobian => counted_linear_jacobian
     call integrator%set_absolute_tolerance(1.0d-9)
     call integrator%set_relative_tolerance(1.0d-9)
+    observed_jacobian_calls = 0
+    counter = 0
     call integrator%solve(mdl, [0.0d0, 1.0d0], [1.0d0, 1.0d0], args=counter)
     sol = integrator%get_solution()
-    rst = counter%calls > 0 .and. &
+    rst = observed_jacobian_calls > 0 .and. &
         abs(sol(size(sol,1),2) - exp(-1.0d0)) < 1.0d-6 .and. &
         abs(sol(size(sol,1),3) - exp(-2.0d0)) < 1.0d-6
 
-    counter%calls = 0
-    counter%mass_calls = 0
     mdl%fcn => counted_mass_ode
     mdl%mass_matrix => counted_mass_matrix
     call mdl%set_is_mass_matrix_dependent(.false.)
     call mass_integrator%set_absolute_tolerance(1.0d-9)
     call mass_integrator%set_relative_tolerance(1.0d-9)
+    observed_mass_calls = 0
+    counter = 0
     call mass_integrator%solve(mdl, [0.0d0, 1.0d0], [1.0d0, 1.0d0], args=counter)
     sol = mass_integrator%get_solution()
-    rst = rst .and. counter%mass_calls == 1 .and. &
+    rst = rst .and. observed_mass_calls == 1 .and. &
         abs(sol(size(sol,1),2) - exp(-1.0d0)) < 1.0d-6 .and. &
         abs(sol(size(sol,1),3) - exp(-2.0d0)) < 1.0d-6
 end function
@@ -358,7 +358,7 @@ end function
 subroutine counted_linear_ode(x, y, dydx, args)
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: dydx(:)
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     dydx(1) = -y(1)
     dydx(2) = -2.0d0 * y(2)
@@ -368,11 +368,11 @@ end subroutine
 subroutine counted_linear_jacobian(x, y, jac, args)
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: jac(:,:)
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     select type (args)
-    type is (jacobian_counter)
-        args%calls = args%calls + 1
+    type is (integer)
+        observed_jacobian_calls = observed_jacobian_calls + 1
     end select
     jac = 0.0d0
     jac(1,1) = -1.0d0
@@ -383,7 +383,7 @@ end subroutine
 subroutine counted_mass_ode(x, y, dydx, args)
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: dydx(:)
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     dydx(1) = -2.0d0 * y(1)
     dydx(2) = -6.0d0 * y(2)
@@ -393,11 +393,11 @@ end subroutine
 subroutine counted_mass_matrix(x, y, mass, args)
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: mass(:,:)
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     select type (args)
-    type is (jacobian_counter)
-        args%mass_calls = args%mass_calls + 1
+    type is (integer)
+        observed_mass_calls = observed_mass_calls + 1
     end select
     mass = 0.0d0
     mass(1,1) = 2.0d0
@@ -744,7 +744,7 @@ subroutine rosenbrock_mass_matrix(x, y, m, args)
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: y
     real(real64), intent(out), dimension(:,:) :: m
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     m(1,1) = 2.0d0
     m(1,2) = 0.0d0
@@ -757,7 +757,7 @@ subroutine rosenbrock_mass_ode(x, y, dydx, args)
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: y
     real(real64), intent(out), dimension(:) :: dydx
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     ! M * y' = g(y), with M = diag(2,3) and g(y) = [-2*y1, -6*y2]
     ! This is equivalent to y' = [-y1, -2*y2].
@@ -770,7 +770,7 @@ subroutine rosenbrock_reference_ode(x, y, dydx, args)
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: y
     real(real64), intent(out), dimension(:) :: dydx
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     dydx(1) = -1.0d0 * y(1)
     dydx(2) = -2.0d0 * y(2)

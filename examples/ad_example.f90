@@ -90,7 +90,7 @@ contains
 subroutine vanderpol_ad(x_, y_, dydx_, args_)
     type(real_ad), intent(in) :: x_, y_(:)
     type(real_ad), intent(out) :: dydx_(:)
-    class(*), intent(inout), optional :: args_
+    class(*), intent(in), optional :: args_
 
     ! Model Constants
     real(real64), parameter :: mu_ = 5.0d0

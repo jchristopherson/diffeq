@@ -6,14 +6,19 @@ program diffeq_ad_integration_tests
     implicit none
 
     type callback_counts
-        !! User-owned callback data; counters do not affect the equations.
+        !! User-owned callback data that configures the equations.
+        logical :: dae = .false.
+        logical :: variable_mass = .false.
+    end type
+
+    type callback_observations
         integer :: rhs = 0
         integer :: jac = 0
         integer :: state_seeds = 0
         integer :: time_seeds = 0
-        logical :: dae = .false.
-        logical :: variable_mass = .false.
     end type
+
+    type(callback_observations) :: observed
 
     character(40) :: mode
     call get_command_argument(1, mode)
@@ -54,16 +59,16 @@ contains
         !! Coupled nonlinear expression with explicit time dependence.
         type(real_ad), intent(in) :: x, y(:)
         type(real_ad), intent(out) :: f(:)
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         integer :: i
         if (present(args)) then
             select type (args)
             type is (callback_counts)
-                args%rhs = args%rhs + 1
+                observed%rhs = observed%rhs + 1
                 call check(count(y%dx /= 0.0d0) <= 1, "only one state seeded")
                 if (x%dx /= 0.0d0) then
                     call check(all(y%dx == 0.0d0), "time differentiation holds states fixed")
-                    args%time_seeds = args%time_seeds + 1
+                    observed%time_seeds = observed%time_seeds + 1
                 end if
             class default
                 error stop "Unexpected nonlinear callback data"
@@ -93,24 +98,25 @@ contains
             allocate(y(n), f(n), dt(n), jac(n,n), exact(n,n))
             y = [(0.2d0 * i, i = 1, n)]
             counts = callback_counts()
+            observed = callback_observations()
             call model%compute_rhs(x, y, f, counts)
             call near(f, x * y**2 + sin(y(1)), 1.0d-14, "AD values")
-            call check(counts%rhs == 1, "one RHS evaluation")
+            call check(observed%rhs == 1, "one RHS evaluation")
             exact = 0.0d0
             exact(:,1) = cos(y(1))
             do i = 1, n
                 exact(i,i) = exact(i,i) + 2.0d0 * x * y(i)
             end do
             do j = 1, 2
-                calls = counts%rhs
+                calls = observed%rhs
                 call model%compute_jacobian(x, y, jac, counts)
                 call near(reshape(jac, [n*n]), reshape(exact, [n*n]), 1.0d-14, "AD Jacobian")
-                call check(counts%rhs - calls == n, "one callback per column")
+                call check(observed%rhs - calls == n, "one callback per column")
                 call check(model%get_jacobian_function_evaluations() == n, "reported AD calls")
-                calls = counts%rhs
+                calls = observed%rhs
                 call model%compute_time_derivative(x, y, f, dt, counts)
                 call near(dt, y**2, 1.0d-14, "AD time derivative")
-                call check(counts%rhs == calls + 1, "one callback for time derivative")
+                call check(observed%rhs == calls + 1, "one callback for time derivative")
                 call model%compute_rhs(x, y, f, counts)
                 call near(f, x * y**2 + sin(y(1)), 1.0d-14, "values after seeded evaluation")
             end do
@@ -129,18 +135,19 @@ contains
         do i = 1, 4
             call configure(model, i)
             counts = callback_counts()
+            observed = callback_observations()
             call model%compute_jacobian(x, [1.0d0, 1.0d0], pair_jac, counts)
             call near(reshape(pair_jac, [4]), [-2.0d0, 0.0d0, 0.0d0, -3.0d0], 1.0d-7, "selected Jacobian")
             select case (i)
             case (1)
                 call check(model%use_finite_difference_jacobian(), "real RHS selects FD")
-                call check(counts%rhs == 3, "FD callback cost")
+                call check(observed%rhs == 3, "FD callback cost")
             case (2)
-                call check(counts%rhs == 2, "AD callback cost")
+                call check(observed%rhs == 2, "AD callback cost")
             case default
-                call check(counts%rhs == 0 .and. counts%jac == 1, "explicit Jacobian precedence")
+                call check(observed%rhs == 0 .and. observed%jac == 1, "explicit Jacobian precedence")
             end select
-            call check(model%get_jacobian_function_evaluations() == counts%rhs, "reported selected cost")
+            call check(model%get_jacobian_function_evaluations() == observed%rhs, "reported selected cost")
             call model%compute_rhs(x, [1.0d0, 1.0d0], pair_rhs, counts)
             call model%compute_time_derivative(x, [1.0d0, 1.0d0], pair_rhs, pair_dt, counts)
             call near(pair_dt, [-exp(-x), -2.0d0 * exp(-x)], 1.0d-7, "selected time derivative")
@@ -161,7 +168,7 @@ contains
         !! Assignment of a constant clears both output derivative components.
         type(real_ad), intent(in) :: x, y(:)
         type(real_ad), intent(out) :: f(:)
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         f = 2.0d0
     end subroutine
 
@@ -213,10 +220,10 @@ contains
         !! Manufactured ODE/DAE with known exponential solution.
         real(real64), intent(in) :: x, y(:)
         real(real64), intent(out) :: f(:)
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         select type (args)
         type is (callback_counts)
-            args%rhs = args%rhs + 1
+            observed%rhs = observed%rhs + 1
             if (args%dae) then
                 f(1) = -y(1)
                 if (args%variable_mass) f(1) = -(1.0d0 + x + y(1)) * y(1)
@@ -234,12 +241,12 @@ contains
         !! AD representation, counting every seed evaluation independently.
         type(real_ad), intent(in) :: x, y(:)
         type(real_ad), intent(out) :: f(:)
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         select type (args)
         type is (callback_counts)
-            args%rhs = args%rhs + 1
-            if (any(y%dx /= 0.0d0)) args%state_seeds = args%state_seeds + 1
-            if (x%dx /= 0.0d0) args%time_seeds = args%time_seeds + 1
+            observed%rhs = observed%rhs + 1
+            if (any(y%dx /= 0.0d0)) observed%state_seeds = observed%state_seeds + 1
+            if (x%dx /= 0.0d0) observed%time_seeds = observed%time_seeds + 1
             if (args%dae) then
                 f(1) = -y(1)
                 if (args%variable_mass) f(1) = -(1.0d0 + x + y(1)) * y(1)
@@ -257,10 +264,10 @@ contains
         !! Explicit Jacobian must override the AD or FD differentiation path.
         real(real64), intent(in) :: x, y(:)
         real(real64), intent(out) :: jac(:,:)
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         select type (args)
         type is (callback_counts)
-            args%jac = args%jac + 1
+            observed%jac = observed%jac + 1
             jac = 0.0d0
             if (args%dae) then
                 jac(1,1) = -1.0d0
@@ -280,7 +287,7 @@ contains
         !! Singular mass matrix, optionally dependent on both time and state.
         real(real64), intent(in) :: x, y(:)
         real(real64), intent(out) :: matrix(:,:)
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         select type (args)
         type is (callback_counts)
             matrix = 0.0d0
@@ -291,17 +298,17 @@ contains
         end select
     end subroutine
 
-    subroutine check_statistics(result, counts, representation)
+    subroutine check_statistics(result, observations, representation)
         !! Compare solver statistics to observed callbacks, not estimated costs.
         type(ode_results), intent(in) :: result
-        type(callback_counts), intent(in) :: counts
+        type(callback_observations), intent(in) :: observations
         integer, intent(in) :: representation
-        call check(result%statistics%function_evaluations == counts%rhs, "exact total RHS statistics")
+        call check(result%statistics%function_evaluations == observations%rhs, "exact total RHS statistics")
         if (representation >= 3) then
-            call check(result%statistics%jacobian_evaluations == counts%jac, "analytic Jacobian statistics")
-            call check(counts%state_seeds == 0, "explicit Jacobian suppresses AD columns")
+            call check(result%statistics%jacobian_evaluations == observations%jac, "analytic Jacobian statistics")
+            call check(observations%state_seeds == 0, "explicit Jacobian suppresses AD columns")
         else if (representation == 2) then
-            call check(counts%state_seeds == 2 * result%statistics%jacobian_evaluations, &
+            call check(observations%state_seeds == 2 * result%statistics%jacobian_evaluations, &
                 "two AD callbacks per Jacobian")
         end if
     end subroutine
@@ -322,19 +329,20 @@ contains
                 call make_solver(method, solver)
                 call configure(model, representation)
                 counts = callback_counts()
+                observed = callback_observations()
                 call solver%solve(model, [0.0d0, 0.2d0], [1.0d0, 1.0d0], args=counts)
                 result = solver%get_ode_results()
                 solution = solver%get_solution()
                 call near(solution(size(solution,1),2:3), [exp(-0.2d0), exp(-0.2d0)], 2.0d-6, "ODE accuracy")
-                call check_statistics(result, counts, representation)
+                call check_statistics(result, observed, representation)
                 if (method == 5 .and. (representation == 2 .or. representation == 4)) &
-                    call check(counts%time_seeds > 0, "Rosenbrock AD time derivative")
+                    call check(observed%time_seeds > 0, "Rosenbrock AD time derivative")
                 call solver%get_dense_interval(left, right)
                 query = (left + right) / 2.0d0
-                saved = counts%rhs
+                saved = observed%rhs
                 call solver%evaluate_dense(query, dense)
                 call near(dense, [exp(-query), exp(-query)], 3.0d-6, "AD dense accuracy")
-                call check(counts%rhs == saved, "dense output makes no RHS calls")
+                call check(observed%rhs == saved, "dense output makes no RHS calls")
                 deallocate(solver)
             end do
 
@@ -343,11 +351,12 @@ contains
             model%event_function => event
             call model%set_event_equation_count(1)
             counts = callback_counts()
+            observed = callback_observations()
             call solver%solve(model, [0.0d0, 0.4d0], [1.0d0, 1.0d0], args=counts)
             result = solver%get_ode_results()
             solution = solver%get_solution()
             call near([solution(size(solution,1),1)], [0.15d0], 5.0d-6, "AD event time")
-            call check_statistics(result, counts, 2)
+            call check_statistics(result, observed, 2)
             deallocate(solver)
         end do
     end subroutine
@@ -356,7 +365,7 @@ contains
         !! Terminal crossing at x = 0.15 along the manufactured ODE solution.
         real(real64), intent(in) :: x, y(:)
         real(real64), intent(out) :: values(:)
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         values(1) = y(1) - exp(-0.15d0)
     end subroutine
 
@@ -376,16 +385,17 @@ contains
                     call make_solver(method, solver)
                     call configure(model, representation)
                     counts = callback_counts(dae=.true., variable_mass=dependent == 1)
+                    observed = callback_observations()
                     model%mass_matrix => mass
                     call model%set_is_mass_matrix_dependent(dependent == 1)
                     call solver%solve(model, [0.0d0, 0.1d0], [1.0d0, 1.0d0], args=counts)
                     result = solver%get_ode_results()
                     solution = solver%get_solution()
                     call near(solution(size(solution,1),2:3), [exp(-0.1d0), exp(-0.2d0)], 3.0d-6, "DAE accuracy")
-                    call check_statistics(result, counts, representation)
+                    call check_statistics(result, observed, representation)
                     if ((method == 6 .or. method == 7) .and. &
                         (representation == 2 .or. representation == 4)) &
-                        call check(counts%time_seeds > 0, "KC DAE AD time derivative")
+                        call check(observed%time_seeds > 0, "KC DAE AD time derivative")
                     deallocate(solver)
                 end do
             end do

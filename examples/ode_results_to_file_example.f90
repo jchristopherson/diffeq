@@ -39,7 +39,7 @@ contains
         real(real64), intent(in) :: t
         real(real64), intent(in), dimension(:) :: x
         real(real64), intent(out), dimension(:) :: dxdt
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
 
         real(real64), parameter :: zeta = 0.1d0
         real(real64), parameter :: wn = 1.0d2

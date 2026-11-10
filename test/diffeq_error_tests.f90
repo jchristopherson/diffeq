@@ -97,7 +97,7 @@ contains
         real(real64), intent(in) :: x
         real(real64), intent(in), dimension(:) :: q
         real(real64), intent(out), dimension(:) :: g
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         g = q(1)
     end subroutine
 
@@ -105,7 +105,7 @@ contains
         real(real64), intent(in) :: x
         real(real64), intent(in), dimension(:) :: q
         real(real64), intent(out), dimension(:,:) :: gradient
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         gradient = 0.0d0
         gradient(:,1) = 1.0d0
     end subroutine
@@ -114,7 +114,7 @@ contains
         real(real64), intent(in) :: x
         real(real64), intent(in), dimension(:) :: q, direction, v
         real(real64), intent(out), dimension(:) :: curvature
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         curvature = 0.0d0
     end subroutine
 
@@ -122,14 +122,14 @@ contains
         real(real64), intent(in) :: x
         real(real64), intent(in), dimension(:) :: q
         real(real64), intent(out), dimension(:,:) :: mass
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         mass = 0.0d0
     end subroutine
 
     subroutine constant_ode(x, y, dydx, args)
         real(real64), intent(in) :: x, y(:)
         real(real64), intent(out) :: dydx(:)
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         dydx = 1.0d0
     end subroutine
 end program

@@ -56,7 +56,7 @@ module diffeq_base
             real(real64), intent(out), dimension(:) :: dydx
                 !! An N-element array where the derivative values will be
                 !! written.
-            class(*), intent(inout), optional :: args
+            class(*), intent(in), optional :: args
                 !! An optional argument that can be used to pass information
                 !! in and out of the routine.
         end subroutine
@@ -74,7 +74,7 @@ module diffeq_base
                 !! An N-element array where the derivative values will be
                 !! written. Assign both components of every element, using AD
                 !! expressions or constant assignment rather than setting x alone.
-            class(*), intent(inout), optional :: args
+            class(*), intent(in), optional :: args
                 !! An optional argument that can be used to pass information
                 !! in and out of the routine. Repeated evaluations at the same
                 !! values must describe the same function, regardless of seeds.
@@ -90,7 +90,7 @@ module diffeq_base
                 !! An N-element array containing the current state vector.
             real(real64), intent(out), dimension(:,:) :: jac
                 !! An M-by-N matrix where the Jacobian will be written.
-            class(*), intent(inout), optional :: args
+            class(*), intent(in), optional :: args
                 !! An optional argument that can be used to pass information
                 !! in and out of the routine.
         end subroutine
@@ -105,7 +105,7 @@ module diffeq_base
                 !! An N-element array containing the current state vector.
             real(real64), intent(out), dimension(:,:) :: m
                 !! An N-by-N matrix where the 
-            class(*), intent(inout), optional :: args
+            class(*), intent(in), optional :: args
                 !! An optional argument that can be used to pass information
                 !! in and out of the routine.
         end subroutine
@@ -122,7 +122,7 @@ module diffeq_base
                 !! functions.  The solver attempts to find the situation 
                 !! where f equals zero thereby signaling an event.  Notice, M 
                 !! need not equal N (N is the number of state variables).
-            class(*), intent(inout), optional :: args
+            class(*), intent(in), optional :: args
                 !! An optional argument that can be used to pass information
                 !! in and out of the routine.
         end subroutine
@@ -412,7 +412,7 @@ module diffeq_base
                 !! however, set to false to avoid storing the initial values.
                 !! This can be useful in cases of event detection where a 
                 !! restart of the integrator is desired.
-            class(*), intent(inout), optional, target :: args
+            class(*), intent(in), optional, target :: args
                 !! An optional argument that can be used to pass information
                 !! in and out of the differential equation subroutine.
         end subroutine
@@ -499,7 +499,7 @@ subroutine oc_jacobian(this, x, y, jac, args)
         !! variable values.
     real(real64), intent(out), dimension(:,:) :: jac
         !! An N-by-N matrix where the Jacobian will be written.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
@@ -608,7 +608,7 @@ subroutine oc_time_derivative(this, x, y, f, dfdx, args)
         !! State and the previously computed RHS at (x,y).
     real(real64), intent(out) :: dfdx(:)
         !! Partial time derivative, with the same length as y.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! User-owned callback data, forwarded unchanged.
     real(real64) :: h
 
@@ -678,7 +678,7 @@ subroutine oc_eval_rhs(this, x, y, dydx, args)
     real(real64), intent(out), dimension(:) :: dydx
         !! An N-element array where the derivative values will be
         !! written.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the routine.
 
@@ -720,7 +720,7 @@ subroutine oc_eval_mass_matrix(this, x, y, m, args)
         !! dependent variables.
     real(real64), intent(out), dimension(:,:) :: m
         !! An N-by-N matrix where the 
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the routine.
 
@@ -1125,7 +1125,7 @@ subroutine oi_initial_step(this, sys, xo, xf, yo, fo, h, args)
         !! An N-element array where the function values at xo will be written.
     real(real64), intent(out) :: h
         !! The initial step size estimate.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
@@ -1491,7 +1491,7 @@ function oes_find_event(this, fcn, integrator, neqn, x1, y1, x2, y2, x, y, &
         !! The N-element array containing the state vector at x.  If no root
         !! is found, this array is populated with NaN.  This array must be
         !! sized to match x1; else, a DIFFEQ_ARRAY_SIZE_ERROR is thrown.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information in and out
         !! of the routine.
     logical :: rst
@@ -1596,7 +1596,7 @@ function oes_find_single_channel_event(this, fcn, integrator, index, nevents, &
         !! The number of iterations taken.
     integer, intent(out) :: neval
         !! The number of event function evaluations taken.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information in and out
         !! of the routine.
     logical :: rst

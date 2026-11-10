@@ -8,6 +8,7 @@ program diffeq_dense_output_tests
     type(ode_results) :: before, after
     character(len=32) :: mode
     integer :: method, direction, output_mode, calls, saved_calls, i, problem
+    integer :: rhs_calls
     real(real64) :: x_start, x_end, x_query, y(2), repeated(2), wrong_size(1)
     real(real64), allocatable :: solution(:,:)
 
@@ -50,6 +51,7 @@ program diffeq_dense_output_tests
                 call solver%clear_buffer()
                 call solver%set_dense_output_enabled(output_mode == 1)
                 calls = 0
+                rhs_calls = 0
                 if (output_mode == 1) then
                     call solver%solve(model, [0.0d0, direction * 0.4d0], &
                         [1.0d0, 1.0d0], args=calls)
@@ -62,7 +64,7 @@ program diffeq_dense_output_tests
                 call check(direction * (x_end - x_start) > 0.0d0, "interval direction")
                 call check(abs(x_end - x_start) <= 0.0500000001d0, "interval is one step")
                 before = solver%get_ode_results()
-                saved_calls = calls
+                saved_calls = rhs_calls
                 do i = 0, 4
                     x_query = x_start + (x_end - x_start) * (i / 4.0d0)
                     if (i == 4) x_query = x_end
@@ -78,7 +80,7 @@ program diffeq_dense_output_tests
                 call solver%evaluate_dense(x_end, y)
                 call check(all(y == repeated), "repeatability")
                 after = solver%get_ode_results()
-                call check(calls == saved_calls, "evaluation does not call RHS")
+                call check(rhs_calls == saved_calls, "evaluation does not call RHS")
                 call check(before%statistics%function_evaluations == &
                     after%statistics%function_evaluations, "evaluation preserves statistics")
                 call check(before%count() == after%count(), "evaluation preserves buffer")
@@ -177,7 +179,7 @@ contains
     subroutine polynomial_rhs(x, state, derivative, args)
         real(real64), intent(in) :: x, state(:)
         real(real64), intent(out) :: derivative(:)
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         derivative = [4.0d0 * x**3, 8.0d0 * x**3]
     end subroutine
 
@@ -199,11 +201,11 @@ contains
     subroutine rhs(x, state, derivative, args)
         real(real64), intent(in) :: x, state(:)
         real(real64), intent(out) :: derivative(:)
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         if (.not.present(args)) error stop "Missing dense-output user arguments"
         select type (args)
         type is (integer)
-            args = args + 1
+            rhs_calls = rhs_calls + 1
         class default
             error stop "Unexpected user arguments"
         end select
@@ -214,7 +216,7 @@ contains
     subroutine mass_rhs(x, state, derivative, args)
         real(real64), intent(in) :: x, state(:)
         real(real64), intent(out) :: derivative(:)
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         call rhs(x, state, derivative, args)
         derivative = derivative * [2.0d0, 3.0d0]
     end subroutine
@@ -222,7 +224,7 @@ contains
     subroutine mass_matrix(x, state, mass, args)
         real(real64), intent(in) :: x, state(:)
         real(real64), intent(out) :: mass(:,:)
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         mass = 0.0d0
         mass(1,1) = 2.0d0
         mass(2,2) = 3.0d0
@@ -231,7 +233,7 @@ contains
     subroutine dae_rhs(x, state, derivative, args)
         real(real64), intent(in) :: x, state(:)
         real(real64), intent(out) :: derivative(:)
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         call rhs(x, state, derivative, args)
         derivative(2) = state(2) - exp(-2.0d0 * x)
     end subroutine
@@ -239,7 +241,7 @@ contains
     subroutine singular_mass(x, state, mass, args)
         real(real64), intent(in) :: x, state(:)
         real(real64), intent(out) :: mass(:,:)
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         mass = 0.0d0
         mass(1,1) = 1.0d0
     end subroutine
