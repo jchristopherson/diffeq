@@ -1,7 +1,7 @@
 @PACKAGE_INIT@
 
 include(CMakeFindDependencyMacro)
-find_dependency(linalg QUIET)
+find_dependency(linalg 3.0 QUIET)
 find_dependency(OpenMP REQUIRED COMPONENTS Fortran)
 find_dependency(autodiff 1.0 CONFIG REQUIRED)
 
