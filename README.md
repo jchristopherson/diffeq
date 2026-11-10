@@ -1550,7 +1550,7 @@ matrix.
 
 ## External Libraries
 Here is a list of external code libraries utilized by this library.  The CMake build script will include these dependencies automatically; however, it is highly recommended that an optimized BLAS and LAPACK already reside on your system for best performance (used by LINALG for linear algebra calculations).
-- [LINALG](https://github.com/jchristopherson/linalg)
+- [linalg](https://github.com/jchristopherson/linalg)
 - [autodiff](https://github.com/jchristopherson/autodiff) (dual numbers and parallel Jacobian calculations)
 - OpenMP (Fortran compiler/runtime support, required)
 
