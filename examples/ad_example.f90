@@ -1,6 +1,7 @@
 program example
     use iso_fortran_env
     use diffeq
+    use autodiff
     use diffeq_models
     use fplot_core
     implicit none
@@ -29,6 +30,7 @@ program example
 
     ! Set up the AD version and solve
     modelAD%fcn_ad => vanderpol_ad
+    call modelAD%set_ad_thread_count(2)
     call integrator%solve(modelAD, x, ic)
     rstAD = integrator%get_ode_results()
     
@@ -88,8 +90,8 @@ program example
 contains
 
 subroutine vanderpol_ad(x_, y_, dydx_, args_)
-    type(real_ad), intent(in) :: x_, y_(:)
-    type(real_ad), intent(out) :: dydx_(:)
+    type(dual), intent(in) :: x_, y_(:)
+    type(dual), intent(out) :: dydx_(:)
     class(*), intent(in), optional :: args_
 
     ! Model Constants

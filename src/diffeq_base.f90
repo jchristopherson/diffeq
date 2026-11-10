@@ -27,7 +27,7 @@ module diffeq_base
         ieee_quiet_nan
     use diffeq_errors
     use diffeq_containers, only : ode_results
-    use diffeq_auto_diff
+    use autodiff, only : dual, workspace, ad_jacobian => jacobian, assignment(=)
     implicit none
     private
     public :: ode
@@ -65,19 +65,20 @@ module diffeq_base
             !! An interface to a routine containing a system of first order
             !! ODE's to integrate leveraging automatic differentiation for
             !! Jacobian evaluations, where appropriate.
-            use diffeq_auto_diff, only : real_ad
-            type(real_ad), intent(in) :: x
+            use autodiff, only : dual
+            type(dual), intent(in) :: x
                 !! The current value of the independent variable.
-            type(real_ad), intent(in), dimension(:) :: y
+            type(dual), intent(in), dimension(:) :: y
                 !! An N-element array containing the current state vector.
-            type(real_ad), intent(out), dimension(:) :: dydx
+            type(dual), intent(out), dimension(:) :: dydx
                 !! An N-element array where the derivative values will be
                 !! written. Assign both components of every element, using AD
                 !! expressions or constant assignment rather than setting x alone.
             class(*), intent(in), optional :: args
                 !! An optional argument that can be used to pass information
-                !! in and out of the routine. Repeated evaluations at the same
-                !! values must describe the same function, regardless of seeds.
+                !! into the routine. Repeated evaluations at the same values
+                !! must describe the same function, regardless of seeds. The
+                !! callback must be thread-safe when AD threads exceed one.
         end subroutine
 
         subroutine ode_jacobian(x, y, jac, args)
@@ -146,8 +147,10 @@ module diffeq_base
             ! Jacobian calculation workspace array.
         real(real64), private :: m_fdStep = sqrt(epsilon(1.0d0))
             ! Finite difference step size.
-        type(real_ad), private, allocatable :: m_ad_state(:), m_ad_rhs(:)
-            !! Reusable AD input/output workspace, allocated only for AD models.
+        type(workspace), private :: m_ad_work
+            !! Reusable autodiff input/output and per-thread Jacobian buffers.
+        integer, private :: m_ad_threads = 1
+            !! Maximum number of threads for AD Jacobian calculations.
         integer, private :: m_jacobian_function_evaluations = 0
             !! RHS callback calls made by the most recent compute_jacobian.
         procedure(ode), pointer, public, nopass :: fcn => null()
@@ -185,6 +188,8 @@ module diffeq_base
         procedure, private :: allocate_ad_workspace => oc_alloc_ad_workspace
         procedure, public :: get_finite_difference_step => oc_get_fd_step
         procedure, public :: set_finite_difference_step => oc_set_fd_step
+        procedure, public :: get_ad_thread_count => oc_get_ad_threads
+        procedure, public :: set_ad_thread_count => oc_set_ad_threads
         procedure, public :: get_is_mass_matrix_dependent => &
             oc_get_is_mass_dependent
         procedure, public :: set_is_mass_matrix_dependent => &
@@ -506,6 +511,7 @@ subroutine oc_jacobian(this, x, y, jac, args)
     ! Local Variables
     integer :: i, ndof
     real(real64) :: h
+    procedure(ode_ad), pointer :: rhs_ad
     
     ! Initialization
     ndof = size(y)
@@ -526,15 +532,10 @@ subroutine oc_jacobian(this, x, y, jac, args)
     end if
 
     if (associated(this%fcn_ad)) then
-        call this%allocate_ad_workspace(ndof)
-        this%m_ad_state = y
-        do i = 1, ndof
-            this%m_ad_state(i)%dx = 1.0d0
-            call this%fcn_ad(real_ad(x, 0.0d0), this%m_ad_state, this%m_ad_rhs, args)
-            this%m_jacobian_function_evaluations = this%m_jacobian_function_evaluations + 1
-            jac(:,i) = this%m_ad_rhs%dx
-            this%m_ad_state(i)%dx = 0.0d0
-        end do
+        rhs_ad => this%fcn_ad
+        call ad_jacobian(evaluate_ad, y, jac, work=this%m_ad_work, args=args, &
+            nthreads=min(this%m_ad_threads, max(1, ndof)))
+        this%m_jacobian_function_evaluations = ndof
         return
     end if
 
@@ -554,6 +555,33 @@ subroutine oc_jacobian(this, x, y, jac, args)
         jac(:,i) = (jac(:,i) - this%m_jwork(ndof+1:)) / h
         this%m_jwork(i) = y(i)
     end do
+contains
+    subroutine evaluate_ad(state, derivative, args)
+        type(dual), intent(in) :: state(:)
+        type(dual), intent(out) :: derivative(:)
+        class(*), intent(in), optional :: args
+        call rhs_ad(dual(x, 0.0d0), state, derivative, args)
+    end subroutine
+end subroutine
+
+! ------------------------------------------------------------------------------
+pure function oc_get_ad_threads(this) result(rst)
+    !! Gets the maximum number of threads used for AD Jacobian columns.
+    class(ode_container), intent(in) :: this
+    integer :: rst
+    rst = this%m_ad_threads
+end function
+
+! ------------------------------------------------------------------------------
+subroutine oc_set_ad_threads(this, nthreads)
+    !! Sets the AD Jacobian thread limit (default 1). The callback must be
+    !! thread-safe when using multiple threads. At most N threads are used
+    !! for an N-state Jacobian; RHS and time-derivative calls remain serial.
+    class(ode_container), intent(inout) :: this
+    integer, intent(in) :: nthreads
+        !! Positive thread limit; otherwise DIFFEQ_INVALID_INPUT_ERROR.
+    if (nthreads < 1) error stop DIFFEQ_INVALID_INPUT_ERROR
+    this%m_ad_threads = nthreads
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -583,16 +611,13 @@ end function
 
 ! ------------------------------------------------------------------------------
 subroutine oc_alloc_ad_workspace(this, ndof)
-    !! Allocates or resizes AD buffers only when the number of states changes.
+    !! Reuses autodiff buffers, growing them only when necessary.
     class(ode_container), intent(inout) :: this
         !! The model owning the reusable workspace.
     integer, intent(in) :: ndof
         !! Required state and RHS length.
-    if (allocated(this%m_ad_state)) then
-        if (size(this%m_ad_state) == ndof) return
-        deallocate(this%m_ad_state, this%m_ad_rhs)
-    end if
-    allocate(this%m_ad_state(ndof), this%m_ad_rhs(ndof))
+    if (.not.this%m_ad_work%validate_size(ndof, ndof)) &
+        call this%m_ad_work%resize(ndof, ndof)
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -616,9 +641,10 @@ subroutine oc_time_derivative(this, x, y, f, dfdx, args)
     if (.not.this%get_is_ode_defined()) error stop DIFFEQ_NULL_POINTER_ERROR
     if (associated(this%fcn_ad)) then
         call this%allocate_ad_workspace(size(y))
-        this%m_ad_state = y
-        call this%fcn_ad(real_ad(x, 1.0d0), this%m_ad_state, this%m_ad_rhs, args)
-        dfdx = this%m_ad_rhs%dx
+        this%m_ad_work%xd(1:size(y)) = y
+        call this%fcn_ad(dual(x, 1.0d0), this%m_ad_work%xd(1:size(y)), &
+            this%m_ad_work%fd(1:size(y)), args)
+        dfdx = this%m_ad_work%fd(1:size(y))%dx
     else
         h = this%get_finite_difference_step()
         call this%compute_rhs(x + h, y, dfdx, args)
@@ -686,9 +712,10 @@ subroutine oc_eval_rhs(this, x, y, dydx, args)
     if (.not.this%get_is_ode_defined()) error stop DIFFEQ_NULL_POINTER_ERROR
     if (associated(this%fcn_ad)) then
         call this%allocate_ad_workspace(size(y))
-        this%m_ad_state = y
-        call this%fcn_ad(real_ad(x, 0.0d0), this%m_ad_state, this%m_ad_rhs, args)
-        dydx = this%m_ad_rhs%x
+        this%m_ad_work%xd(1:size(y)) = y
+        call this%fcn_ad(dual(x, 0.0d0), this%m_ad_work%xd(1:size(y)), &
+            this%m_ad_work%fd(1:size(y)), args)
+        dydx = this%m_ad_work%fd(1:size(y))%x
     else
         call this%fcn(x, y, dydx, args = args)
     end if

@@ -24,7 +24,6 @@ set(DIFFEQ_SOURCES
     ${dir}/multistep/diffeq_bdf.f90
     ${dir}/multistep/diffeq_pece.f90
     ${dir}/dae/diffeq_index_reduction.f90
-    ${dir}/AD/diffeq_auto_diff.f90
 )
 
 set(DIFFEQ_C_SOURCES
@@ -40,6 +39,21 @@ list(APPEND DIFFEQ_SOURCES ${DIFFEQ_C_SOURCES})
 
 # Dependencies
 include(FetchContent)
+find_package(OpenMP REQUIRED COMPONENTS Fortran)
+find_package(autodiff 1.0 CONFIG QUIET)
+if (NOT autodiff_FOUND)
+    message(STATUS "AUTODIFF could not be found. A reference version will be employed.")
+    FetchContent_Declare(
+        autodiff
+        GIT_TAG "origin/main"
+        GIT_REPOSITORY "https://github.com/jchristopherson/autodiff"
+    )
+    set(_diffeq_build_testing ${BUILD_TESTING})
+    set(BUILD_TESTING OFF)
+    set(AUTODIFF_ENABLE_OPENMP ON)
+    FetchContent_MakeAvailable(autodiff)
+    set(BUILD_TESTING ${_diffeq_build_testing})
+endif()
 find_package(linalg 2.3.0 QUIET)
 
 if (NOT linalg_FOUND)
@@ -62,6 +76,8 @@ target_link_libraries(
     ${PROJECT_NAME}
     PUBLIC
     ${LINALG_LIBRARIES}
+    autodiff::autodiff
+    OpenMP::OpenMP_Fortran
 )
 set_target_properties(
     ${PROJECT_NAME}

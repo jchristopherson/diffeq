@@ -37,16 +37,13 @@ add_test(
     COMMAND $<TARGET_FILE:diffeq_tests>
 )
 
-# Value and derivative regression tests for the standalone AD module.
-add_executable(diffeq_auto_diff_tests diffeq_auto_diff_tests.f90)
-target_link_libraries(diffeq_auto_diff_tests diffeq)
-add_test(NAME diffeq_auto_diff_tests COMMAND $<TARGET_FILE:diffeq_auto_diff_tests>)
-
 add_executable(diffeq_ad_integration_tests diffeq_ad_integration_tests.f90)
 target_link_libraries(diffeq_ad_integration_tests diffeq)
-add_test(NAME diffeq_ad_integration_tests COMMAND $<TARGET_FILE:diffeq_ad_integration_tests>)
+add_test(NAME diffeq_ad_integration_tests COMMAND $<TARGET_FILE:diffeq_ad_integration_tests> serial)
+add_test(NAME diffeq_ad_parallel_tests COMMAND $<TARGET_FILE:diffeq_ad_integration_tests> parallel)
 foreach(error_case both_rhs both_jacobian both_solve both_inquiry both_time
-    rhs_size jacobian_size time_size missing_rhs ggl_ad ggl_ad_jacobian)
+    rhs_size jacobian_size time_size missing_rhs ggl_ad ggl_ad_jacobian
+    zero_threads negative_threads)
     add_test(
         NAME diffeq_ad_error_${error_case}
         COMMAND $<TARGET_FILE:diffeq_ad_integration_tests> ${error_case}

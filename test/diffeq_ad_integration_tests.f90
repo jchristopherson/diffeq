@@ -1,7 +1,8 @@
 program diffeq_ad_integration_tests
     !! Container dispatch, solver accuracy, and exact RHS accounting for AD.
     use diffeq
-    use diffeq_auto_diff
+    use autodiff
+    use omp_lib, only : omp_set_dynamic, omp_get_num_threads
     use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
     implicit none
 
@@ -16,19 +17,29 @@ program diffeq_ad_integration_tests
         integer :: jac = 0
         integer :: state_seeds = 0
         integer :: time_seeds = 0
+        integer :: max_threads = 1
     end type
 
     type(callback_observations) :: observed
+    integer :: ad_threads = 1
+    integer :: first_threads = 1, last_threads = 2
 
     character(40) :: mode
     call get_command_argument(1, mode)
-    if (len_trim(mode) > 0) then
+    if (trim(mode) == "parallel") then
+        first_threads = 2
+    else if (trim(mode) == "serial") then
+        last_threads = 1
+    else if (len_trim(mode) > 0) then
         call error_case(trim(mode))
         stop
     end if
-    call test_container()
-    call test_solvers()
-    call test_dae()
+    call omp_set_dynamic(.false.)
+    do ad_threads = first_threads, last_threads
+        call test_container()
+        call test_solvers()
+        call test_dae()
+    end do
     print *, "AD integration tests passed."
 
 contains
@@ -57,18 +68,17 @@ contains
 
     subroutine nonlinear_ad(x, y, f, args)
         !! Coupled nonlinear expression with explicit time dependence.
-        type(real_ad), intent(in) :: x, y(:)
-        type(real_ad), intent(out) :: f(:)
+        type(dual), intent(in) :: x, y(:)
+        type(dual), intent(out) :: f(:)
         class(*), intent(in), optional :: args
         integer :: i
         if (present(args)) then
             select type (args)
             type is (callback_counts)
-                observed%rhs = observed%rhs + 1
+                call record_ad_call(x, y)
                 call check(count(y%dx /= 0.0d0) <= 1, "only one state seeded")
                 if (x%dx /= 0.0d0) then
                     call check(all(y%dx == 0.0d0), "time differentiation holds states fixed")
-                    observed%time_seeds = observed%time_seeds + 1
                 end if
             class default
                 error stop "Unexpected nonlinear callback data"
@@ -77,6 +87,23 @@ contains
         do i = 1, size(y)
             f(i) = x * y(i)**2 + sin(y(1))
         end do
+    end subroutine
+
+    subroutine record_ad_call(x, y)
+        type(dual), intent(in) :: x, y(:)
+        !$omp atomic update
+        observed%rhs = observed%rhs + 1
+        if (any(y%dx /= 0.0d0)) then
+            !$omp atomic update
+            observed%state_seeds = observed%state_seeds + 1
+        end if
+        if (x%dx /= 0.0d0) then
+            !$omp atomic update
+            observed%time_seeds = observed%time_seeds + 1
+        end if
+        !$omp critical(ad_observations)
+        observed%max_threads = max(observed%max_threads, omp_get_num_threads())
+        !$omp end critical(ad_observations)
     end subroutine
 
     subroutine test_container()
@@ -90,6 +117,9 @@ contains
 
         call check(.not.model%get_is_ode_defined(), "empty model")
         call check(model%get_jacobian_function_evaluations() == 0, "initial Jacobian count")
+        call check(model%get_ad_thread_count() == 1, "AD defaults to serial")
+        call model%set_ad_thread_count(ad_threads)
+        call check(model%get_ad_thread_count() == ad_threads, "AD thread setting")
         model%fcn_ad => nonlinear_ad
         call check(model%get_is_ode_defined(), "AD-only model is defined")
         call check(.not.model%use_finite_difference_jacobian(), "AD is not finite differences")
@@ -113,6 +143,7 @@ contains
                 call near(reshape(jac, [n*n]), reshape(exact, [n*n]), 1.0d-14, "AD Jacobian")
                 call check(observed%rhs - calls == n, "one callback per column")
                 call check(model%get_jacobian_function_evaluations() == n, "reported AD calls")
+                call check(observed%max_threads == min(ad_threads, n), "AD Jacobian uses requested threads")
                 calls = observed%rhs
                 call model%compute_time_derivative(x, y, f, dt, counts)
                 call near(dt, y**2, 1.0d-14, "AD time derivative")
@@ -131,6 +162,11 @@ contains
         model%fcn_ad => constant_ad
         call model%compute_jacobian(x, [0.2d0], small_jac)
         call near([small_jac(1,1)], [0.0d0], 0.0d0, "constant output clears derivative")
+        call model%set_ad_thread_count(1)
+        model%fcn_ad => nonlinear_ad
+        observed = callback_observations()
+        call model%compute_jacobian(x, [0.2d0], small_jac, counts)
+        call check(observed%max_threads == 1, "switch back to serial")
 
         do i = 1, 4
             call configure(model, i)
@@ -166,8 +202,8 @@ contains
 
     subroutine constant_ad(x, y, f, args)
         !! Assignment of a constant clears both output derivative components.
-        type(real_ad), intent(in) :: x, y(:)
-        type(real_ad), intent(out) :: f(:)
+        type(dual), intent(in) :: x, y(:)
+        type(dual), intent(out) :: f(:)
         class(*), intent(in), optional :: args
         f = 2.0d0
     end subroutine
@@ -208,6 +244,7 @@ contains
         !! Select FD, AD, real plus analytic, or AD plus analytic callbacks.
         type(ode_container), intent(out) :: model
         integer, intent(in) :: representation
+        call model%set_ad_thread_count(ad_threads)
         if (representation == 2 .or. representation == 4) then
             model%fcn_ad => model_ad
         else
@@ -239,14 +276,12 @@ contains
 
     subroutine model_ad(x, y, f, args)
         !! AD representation, counting every seed evaluation independently.
-        type(real_ad), intent(in) :: x, y(:)
-        type(real_ad), intent(out) :: f(:)
+        type(dual), intent(in) :: x, y(:)
+        type(dual), intent(out) :: f(:)
         class(*), intent(in), optional :: args
         select type (args)
         type is (callback_counts)
-            observed%rhs = observed%rhs + 1
-            if (any(y%dx /= 0.0d0)) observed%state_seeds = observed%state_seeds + 1
-            if (x%dx /= 0.0d0) observed%time_seeds = observed%time_seeds + 1
+            call record_ad_call(x, y)
             if (args%dae) then
                 f(1) = -y(1)
                 if (args%variable_mass) f(1) = -(1.0d0 + x + y(1)) * y(1)
@@ -310,6 +345,9 @@ contains
         else if (representation == 2) then
             call check(observations%state_seeds == 2 * result%statistics%jacobian_evaluations, &
                 "two AD callbacks per Jacobian")
+            if (result%statistics%jacobian_evaluations > 0) then
+                call check(observations%max_threads == ad_threads, "implicit solver AD thread count")
+            end if
         end if
     end subroutine
 
@@ -414,6 +452,10 @@ contains
 
         model%fcn_ad => nonlinear_ad
         select case (name)
+        case ("zero_threads")
+            call model%set_ad_thread_count(0)
+        case ("negative_threads")
+            call model%set_ad_thread_count(-1)
         case ("both_rhs", "both_jacobian", "both_solve", "both_inquiry", "both_time")
             model%fcn => model_real
             select case (name)
