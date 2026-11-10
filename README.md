@@ -130,7 +130,7 @@ integrators:
 | `ggl_container` | Adapts holonomically constrained mechanics to a stabilized index-1 DAE with position and velocity residual damping. Its force and physical-mass callbacks have specialized shapes documented below. |
 | `model%fcn` | Defines $f(x,y)$ with real-valued arguments. Assign either this callback or `model%fcn_ad`, not both. |
 | `model%fcn_ad` | Defines the RHS using autodiff `dual` arguments, enabling automatic differentiation of its state and time dependence. |
-| `model%set_ad_thread_count(n)` | Sets the maximum OpenMP thread count for AD Jacobian calculations (default 1). The AD callback must be thread-safe when using multiple threads. |
+| `model%set_thread_count(n)` | Sets the maximum OpenMP thread count for AD or finite-difference Jacobian calculations (default 1). The RHS callback must be thread-safe when using multiple threads. |
 | `model%jacobian` | Supplies $J = \partial f / \partial y$. Takes precedence over AD and finite differences; otherwise the selected RHS callback determines the differentiation method. |
 | `model%mass_matrix` | Supplies $M(x,y)$ for a system written as $M y' = f(x,y)$. It is supported by the Rosenbrock, Kennedy-Carpenter, BDF, and Adams solvers. Only Adams requires $M$ to be nonsingular. |
 | `model%event_function` | Supplies one or more event values; DIFFEQ locates zero crossings and stops the solve at a detected event. Set the number of event values with `model%set_event_equation_count(count)`. |
@@ -220,21 +220,27 @@ initialization also use a time seed to obtain partial $\partial f/\partial x$
 in one callback evaluation. The container uses autodiff's reusable workspace
 and `jacobian` routine.
 
-OpenMP is required by both the CMake and fpm builds. AD Jacobians are serial
-by default. Call `model%set_ad_thread_count(n)` with a positive integer to
-evaluate columns in parallel; `model%get_ad_thread_count()` returns the setting.
-At most N threads are requested for an N-state Jacobian, and OpenMP runtime
-limits may reduce the actual team size. Ordinary RHS and time-derivative
-evaluations remain serial. An explicit Jacobian or a real RHS is unaffected by
-this setting. Parallelism is usually useful for larger, more expensive models;
-thread overhead can outweigh its benefit for small systems.
+OpenMP is required by both the CMake and fpm builds. AD and finite-difference
+Jacobians are serial by default. Call `model%set_thread_count(n)` with a
+positive integer to evaluate columns in parallel; `model%get_thread_count()`
+returns the setting. The same setting applies to whichever differentiation
+method the model uses. At most N threads are requested for an N-state
+Jacobian, and OpenMP runtime limits may reduce the actual team size. With a
+thread count of one, a serial code path that makes no OpenMP calls is used.
+For finite differences, the unperturbed RHS is evaluated once, after which
+each thread perturbs its own copy of the state to compute its columns.
+Ordinary RHS and time-derivative evaluations remain serial. An explicit
+Jacobian is unaffected by this setting. Parallelism is usually useful for
+larger, more expensive models; thread overhead can outweigh its benefit for
+small systems.
 
 Optional `args` are `intent(in)` and forwarded unchanged. Repeated evaluations
 at the same numerical inputs must describe the same function regardless of
-derivative seeds. When using multiple threads, the AD callback must be
-thread-safe, including any code it calls: avoid unsynchronized logging,
-counters, mutable shared data, or other side effects. Do not concurrently use
-the same container for separate solves or Jacobian requests.
+derivative seeds. When using multiple threads, the RHS callback (`fcn` or
+`fcn_ad`) must be thread-safe, including any code it calls: avoid
+unsynchronized logging, counters, mutable shared data, or other side effects.
+Do not concurrently use the same container for separate solves or Jacobian
+requests.
 
 `statistics%function_evaluations` counts actual RHS callback invocations,
 including N calls per AD Jacobian, N+1 per finite-difference Jacobian, and one
@@ -758,7 +764,6 @@ The solution is requested at 1000 evenly spaced points. The timing wraps only th
 ```fortran
     ! AD version: use autodiff for dual numbers and overloaded arithmetic
     modelAD%fcn_ad => vanderpol_ad
-    call modelAD%set_ad_thread_count(2)
     call integrator%solve(modelAD, x, ic)
 
     ! Forward-difference version
@@ -789,18 +794,17 @@ end subroutine
 ```
 
 The complete example, including the statistics reporting and plotting, is in
-[ad_example.f90](examples/ad_example.f90). It requests two OpenMP threads for
-autodiff's Jacobian calculations and prints timings and solver statistics for
+[ad_example.f90](examples/ad_example.f90). It prints timings and solver statistics for
 each approach. Add `use autodiff` to access `dual` and its overloaded arithmetic.
 For this two-state example, serial AD may be faster than parallel AD because
-the callback is inexpensive; set the thread count to 1 to compare.
+the callback is inexpensive.
 
 ![](images/ad_example.png?raw=true)
 
 An AD Jacobian for this two-state model makes two RHS callbacks, whereas the
 analytical Jacobian requires no library-managed RHS callbacks. The
 forward-difference run makes three callbacks per Jacobian. These counts do not
-change with the AD thread count: parallel columns reduce elapsed time, not
+change with the thread count: parallel columns reduce elapsed time, not
 the amount of mathematical work. Timings depend on the machine, compiler,
 OpenMP runtime, and thread count, so run the example to compare locally.
 

@@ -28,6 +28,7 @@ module diffeq_base
     use diffeq_errors
     use diffeq_containers, only : ode_results
     use autodiff, only : dual, workspace, ad_jacobian => jacobian, assignment(=)
+    use omp_lib, only : omp_get_thread_num
     implicit none
     private
     public :: ode
@@ -78,7 +79,7 @@ module diffeq_base
                 !! An optional argument that can be used to pass information
                 !! into the routine. Repeated evaluations at the same values
                 !! must describe the same function, regardless of seeds. The
-                !! callback must be thread-safe when AD threads exceed one.
+                !! callback must be thread-safe when the thread count exceeds one.
         end subroutine
 
         subroutine ode_jacobian(x, y, jac, args)
@@ -143,14 +144,16 @@ module diffeq_base
         logical, private :: m_massDependent = .false.
             ! A value determining if the mass matrix is state dependent such 
             ! that it must be recomputed at each step. 
-        real(real64), private, allocatable, dimension(:) :: m_jwork
-            ! Jacobian calculation workspace array.
+        real(real64), private, allocatable, dimension(:,:) :: m_jwork
+            ! Finite difference perturbed-state workspace; one column per thread.
+        real(real64), private, allocatable, dimension(:) :: m_fwork
+            ! Finite difference unperturbed RHS workspace.
         real(real64), private :: m_fdStep = sqrt(epsilon(1.0d0))
             ! Finite difference step size.
         type(workspace), private :: m_ad_work
             !! Reusable autodiff input/output and per-thread Jacobian buffers.
-        integer, private :: m_ad_threads = 1
-            !! Maximum number of threads for AD Jacobian calculations.
+        integer, private :: m_threads = 1
+            !! Maximum number of threads for AD or FD Jacobian calculations.
         integer, private :: m_jacobian_function_evaluations = 0
             !! RHS callback calls made by the most recent compute_jacobian.
         procedure(ode), pointer, public, nopass :: fcn => null()
@@ -188,8 +191,8 @@ module diffeq_base
         procedure, private :: allocate_ad_workspace => oc_alloc_ad_workspace
         procedure, public :: get_finite_difference_step => oc_get_fd_step
         procedure, public :: set_finite_difference_step => oc_set_fd_step
-        procedure, public :: get_ad_thread_count => oc_get_ad_threads
-        procedure, public :: set_ad_thread_count => oc_set_ad_threads
+        procedure, public :: get_thread_count => oc_get_threads
+        procedure, public :: set_thread_count => oc_set_threads
         procedure, public :: get_is_mass_matrix_dependent => &
             oc_get_is_mass_dependent
         procedure, public :: set_is_mass_matrix_dependent => &
@@ -492,7 +495,8 @@ end subroutine
 subroutine oc_jacobian(this, x, y, jac, args)
     !! Computes df/dy, holding x fixed. Uses an explicit Jacobian if supplied,
     !! otherwise AD (N RHS calls) or forward differences (N+1 RHS calls).
-    !! The most recent callback count is available through
+    !! AD and finite-difference columns are evaluated in parallel when the
+    !! thread count (see set_thread_count) exceeds one. The most recent callback count is available through
     !! get_jacobian_function_evaluations. An explicit Jacobian counts as zero
     !! RHS calls; calls made inside user-owned Jacobian code are not tracked.
     class(ode_container), intent(inout) :: this
@@ -509,13 +513,12 @@ subroutine oc_jacobian(this, x, y, jac, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    integer :: i, ndof
-    real(real64) :: h
+    integer :: ndof, nthreads
     procedure(ode_ad), pointer :: rhs_ad
     
     ! Initialization
     ndof = size(y)
-    h = this%get_finite_difference_step()
+    nthreads = min(this%m_threads, max(1, ndof))
 
     ! Input Checking
     if (size(jac, 1) /= ndof .or. size(jac, 2) /= ndof) &
@@ -534,27 +537,20 @@ subroutine oc_jacobian(this, x, y, jac, args)
     if (associated(this%fcn_ad)) then
         rhs_ad => this%fcn_ad
         call ad_jacobian(evaluate_ad, y, jac, work=this%m_ad_work, args=args, &
-            nthreads=min(this%m_ad_threads, max(1, ndof)))
+            nthreads=nthreads)
         this%m_jacobian_function_evaluations = ndof
         return
     end if
 
-    ! Allocate workspace.  No action is taken if the proper workspace is
-    ! already allocated.
-    call this%allocate_workspace(ndof)
-
-    ! Finite Difference Approximation
-    ! J(i,j) = df(i) / dy(j)
-    this%m_jwork(1:ndof) = y
-    call this%compute_rhs(x, y, this%m_jwork(ndof+1:), args)
-    this%m_jacobian_function_evaluations = 1
-    do i = 1, ndof
-        this%m_jwork(i) = this%m_jwork(i) + h
-        call this%compute_rhs(x, this%m_jwork(1:ndof), jac(:,i), args)
-        this%m_jacobian_function_evaluations = this%m_jacobian_function_evaluations + 1
-        jac(:,i) = (jac(:,i) - this%m_jwork(ndof+1:)) / h
-        this%m_jwork(i) = y(i)
-    end do
+    ! Finite Difference Approximation: J(i,j) = df(i) / dy(j)
+    call this%allocate_workspace(ndof, nthreads)
+    call this%compute_rhs(x, y, this%m_fwork, args)
+    if (nthreads == 1) then
+        call oc_fd_jacobian_serial(this, x, y, jac, args)
+    else
+        call oc_fd_jacobian_parallel(this, x, y, jac, nthreads, args)
+    end if
+    this%m_jacobian_function_evaluations = ndof + 1
 contains
     subroutine evaluate_ad(state, derivative, args)
         type(dual), intent(in) :: state(:)
@@ -565,23 +561,75 @@ contains
 end subroutine
 
 ! ------------------------------------------------------------------------------
-pure function oc_get_ad_threads(this) result(rst)
-    !! Gets the maximum number of threads used for AD Jacobian columns.
+subroutine oc_fd_jacobian_serial(this, x, y, jac, args)
+    ! Forward-difference Jacobian columns computed without OpenMP.  Assumes
+    ! m_fwork holds f(x,y) and the workspace has been allocated.
+    class(ode_container), intent(inout) :: this
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:,:) :: jac
+    class(*), intent(in), optional :: args
+    integer :: i
+    real(real64) :: h
+
+    h = this%get_finite_difference_step()
+    this%m_jwork(:,1) = y
+    do i = 1, size(y)
+        this%m_jwork(i,1) = y(i) + h
+        call this%compute_rhs(x, this%m_jwork(:,1), jac(:,i), args)
+        jac(:,i) = (jac(:,i) - this%m_fwork) / h
+        this%m_jwork(i,1) = y(i)
+    end do
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine oc_fd_jacobian_parallel(this, x, y, jac, nthreads, args)
+    ! Forward-difference Jacobian columns distributed across OpenMP threads,
+    ! each perturbing its own m_jwork column.  Assumes m_fwork holds f(x,y).
+    class(ode_container), intent(inout) :: this
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:,:) :: jac
+    integer, intent(in) :: nthreads
+    class(*), intent(in), optional :: args
+    integer :: i, tid
+    real(real64) :: h
+
+    h = this%get_finite_difference_step()
+    !$omp parallel num_threads(nthreads) default(shared) private(i, tid)
+    tid = omp_get_thread_num() + 1
+    this%m_jwork(:,tid) = y
+    !$omp do schedule(static)
+    do i = 1, size(y)
+        this%m_jwork(i,tid) = y(i) + h
+        call this%compute_rhs(x, this%m_jwork(:,tid), jac(:,i), args)
+        jac(:,i) = (jac(:,i) - this%m_fwork) / h
+        this%m_jwork(i,tid) = y(i)
+    end do
+    !$omp end do
+    !$omp end parallel
+end subroutine
+
+! ------------------------------------------------------------------------------
+pure function oc_get_threads(this) result(rst)
+    !! Gets the maximum number of threads used for AD or finite-difference
+    !! Jacobian columns.
     class(ode_container), intent(in) :: this
     integer :: rst
-    rst = this%m_ad_threads
+    rst = this%m_threads
 end function
 
 ! ------------------------------------------------------------------------------
-subroutine oc_set_ad_threads(this, nthreads)
-    !! Sets the AD Jacobian thread limit (default 1). The callback must be
-    !! thread-safe when using multiple threads. At most N threads are used
-    !! for an N-state Jacobian; RHS and time-derivative calls remain serial.
+subroutine oc_set_threads(this, nthreads)
+    !! Sets the AD or finite-difference Jacobian thread limit (default 1). The
+    !! RHS callback must be thread-safe when using multiple threads. At most N
+    !! threads are used for an N-state Jacobian; RHS and time-derivative calls
+    !! remain serial. An explicit Jacobian callback is unaffected.
     class(ode_container), intent(inout) :: this
     integer, intent(in) :: nthreads
         !! Positive thread limit; otherwise DIFFEQ_INVALID_INPUT_ERROR.
     if (nthreads < 1) error stop DIFFEQ_INVALID_INPUT_ERROR
-    this%m_ad_threads = nthreads
+    this%m_threads = nthreads
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -653,23 +701,27 @@ subroutine oc_time_derivative(this, x, y, f, dfdx, args)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine oc_alloc_workspace(this, ndof)
+subroutine oc_alloc_workspace(this, ndof, nthreads)
     ! Use to allocate internal workspaces.  This routine only takes action
     ! if the workspace array(s) are not sized properly for the application.
     class(ode_container), intent(inout) :: this
         ! The ode_container object.
     integer, intent(in) :: ndof
         ! The number of degrees of freedom.
+    integer, intent(in) :: nthreads
+        ! The number of worker threads.
 
-    ! Jacobian Workspace Allocation
     if (allocated(this%m_jwork)) then
-        if (size(this%m_jwork) /= 2 * ndof) then
-            deallocate(this%m_jwork)
-            allocate(this%m_jwork(2 * ndof), source = 0.0d0)
-        end if
-    else
-        allocate(this%m_jwork(2 * ndof), source = 0.0d0)
+        if (size(this%m_jwork, 1) /= ndof .or. &
+            size(this%m_jwork, 2) /= nthreads) deallocate(this%m_jwork)
     end if
+    if (.not.allocated(this%m_jwork)) &
+        allocate(this%m_jwork(ndof, nthreads), source = 0.0d0)
+
+    if (allocated(this%m_fwork)) then
+        if (size(this%m_fwork) /= ndof) deallocate(this%m_fwork)
+    end if
+    if (.not.allocated(this%m_fwork)) allocate(this%m_fwork(ndof), source = 0.0d0)
 end subroutine
 
 ! ------------------------------------------------------------------------------

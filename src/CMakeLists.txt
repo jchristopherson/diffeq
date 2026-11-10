@@ -54,7 +54,7 @@ if (NOT autodiff_FOUND)
     FetchContent_MakeAvailable(autodiff)
     set(BUILD_TESTING ${_diffeq_build_testing})
 endif()
-find_package(linalg 2.3.0 QUIET)
+find_package(linalg 3.0 QUIET)
 
 if (NOT linalg_FOUND)
     message(STATUS "LINALG could not be found.  A reference version will be employed.")
