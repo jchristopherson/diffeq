@@ -22,9 +22,7 @@
 function lunr_search(term) {
     document.getElementById('lunrsearchresults').innerHTML = '<ul></ul>';
     if(term) {
-	var searchHeading = document.createElement('p');
-	searchHeading.textContent = "Search results for '" + term + "'";
-	document.getElementById('lunrsearchresults').insertBefore(searchHeading, document.getElementById('lunrsearchresults').firstChild);
+	document.getElementById('lunrsearchresults').innerHTML = "<p>Search results for '" + term + "'</p>" + document.getElementById('lunrsearchresults').innerHTML;
 	//put results on the screen.
 	var results = idx.search(term);
 	if(results.length>0){

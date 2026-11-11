@@ -124,7 +124,7 @@ subroutine rbrk_solve(this, sys, x, iv, store_iv, args)
         !! however, set to false to avoid storing the initial values.
         !! This can be useful in cases of event detection where a 
         !! restart of the integrator is desired.
-    class(*), intent(inout), optional, target :: args
+    class(*), intent(in), optional, target :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
@@ -157,7 +157,7 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
         !! An N-element array containing the current solution at x.
     real(real64), intent(in), dimension(:) :: f
         !! An N-element array containing the values of the derivatives at x.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
@@ -318,7 +318,7 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         !! of the error in each equation.
     real(real64), intent(out), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
@@ -437,7 +437,7 @@ subroutine rbrk_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k, args)
         !! An N-element array containing the derivatives at xn.
     real(real64), intent(inout), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 

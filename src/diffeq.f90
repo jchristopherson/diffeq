@@ -35,5 +35,4 @@ module diffeq
     use diffeq_rk45
     use diffeq_rk23
     use diffeq_rk853
-    use diffeq_auto_diff
 end module

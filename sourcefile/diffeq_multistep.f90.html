@@ -91,7 +91,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 8.7% of total for source files.">546 statements</a>
+                 title=" 9.7% of total for source files.">546 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -359,7 +359,7 @@
 <a id="ln-187" name="ln-187" href="#ln-187"></a><span class="w">                </span><span class="c">!! The N-element right-hand-side vector for the linear system.</span>
 <a id="ln-188" name="ln-188" href="#ln-188"></a><span class="w">                </span><span class="c">!! This vector is the negative of the corrector residual so</span>
 <a id="ln-189" name="ln-189" href="#ln-189"></a><span class="w">                </span><span class="c">!! that the Newton update is \(y \leftarrow y + \delta\).</span>
-<a id="ln-190" name="ln-190" href="#ln-190"></a><span class="w">            </span><span class="k">class</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span>
+<a id="ln-190" name="ln-190" href="#ln-190"></a><span class="w">            </span><span class="k">class</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span>
 <a id="ln-191" name="ln-191" href="#ln-191"></a><span class="w">                </span><span class="c">!! An optional argument that can be used to pass information</span>
 <a id="ln-192" name="ln-192" href="#ln-192"></a><span class="w">                </span><span class="c">!! in and out of the differential equation subroutine.</span>
 <a id="ln-193" name="ln-193" href="#ln-193"></a><span class="w">        </span><span class="k">end subroutine</span>
@@ -395,7 +395,7 @@
 <a id="ln-223" name="ln-223" href="#ln-223"></a><span class="w">            </span><span class="kt">real</span><span class="p">(</span><span class="n">real64</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">),</span><span class="w"> </span><span class="k">dimension</span><span class="p">(:)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fn</span>
 <a id="ln-224" name="ln-224" href="#ln-224"></a><span class="w">                </span><span class="c">!! An N-element array where this routine will write the next</span>
 <a id="ln-225" name="ln-225" href="#ln-225"></a><span class="w">                </span><span class="c">!! derivative estimate at x + h.</span>
-<a id="ln-226" name="ln-226" href="#ln-226"></a><span class="w">            </span><span class="k">class</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span>
+<a id="ln-226" name="ln-226" href="#ln-226"></a><span class="w">            </span><span class="k">class</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span>
 <a id="ln-227" name="ln-227" href="#ln-227"></a><span class="w">                </span><span class="c">!! An optional argument that can be used to pass information</span>
 <a id="ln-228" name="ln-228" href="#ln-228"></a><span class="w">                </span><span class="c">!! in and out of the differential equation subroutine.</span>
 <a id="ln-229" name="ln-229" href="#ln-229"></a><span class="w">        </span><span class="k">end subroutine</span>
@@ -421,7 +421,7 @@
 <a id="ln-249" name="ln-249" href="#ln-249"></a><span class="w">            </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">converged</span>
 <a id="ln-250" name="ln-250" href="#ln-250"></a><span class="w">                </span><span class="c">!! True if the corrector succeeded; else, false, in which case</span>
 <a id="ln-251" name="ln-251" href="#ln-251"></a><span class="w">                </span><span class="c">!! the step is retried on a shorter step size.</span>
-<a id="ln-252" name="ln-252" href="#ln-252"></a><span class="w">            </span><span class="k">class</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span>
+<a id="ln-252" name="ln-252" href="#ln-252"></a><span class="w">            </span><span class="k">class</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span>
 <a id="ln-253" name="ln-253" href="#ln-253"></a><span class="w">                </span><span class="c">!! An optional argument that can be used to pass information</span>
 <a id="ln-254" name="ln-254" href="#ln-254"></a><span class="w">                </span><span class="c">!! in and out of the differential equation subroutine.</span>
 <a id="ln-255" name="ln-255" href="#ln-255"></a><span class="w">        </span><span class="k">end subroutine</span>
@@ -516,7 +516,7 @@
 <a id="ln-344" name="ln-344" href="#ln-344"></a><span class="w">        </span><span class="c">!! The new estimate of the dependent variables.</span>
 <a id="ln-345" name="ln-345" href="#ln-345"></a><span class="w">    </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">converged</span>
 <a id="ln-346" name="ln-346" href="#ln-346"></a><span class="w">        </span><span class="c">!! True if the Newton iteration process converged; else, false.</span>
-<a id="ln-347" name="ln-347" href="#ln-347"></a><span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span>
+<a id="ln-347" name="ln-347" href="#ln-347"></a><span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span>
 <a id="ln-348" name="ln-348" href="#ln-348"></a><span class="w">        </span><span class="c">!! An optional argument that can be used to pass information in and </span>
 <a id="ln-349" name="ln-349" href="#ln-349"></a><span class="w">        </span><span class="c">!! out of the differential equation subroutine.</span>
 <a id="ln-350" name="ln-350" href="#ln-350"></a>
@@ -575,7 +575,7 @@
 <a id="ln-403" name="ln-403" href="#ln-403"></a><span class="w">        </span><span class="c">!! An N-element array containing the solution at x.</span>
 <a id="ln-404" name="ln-404" href="#ln-404"></a><span class="w">    </span><span class="kt">real</span><span class="p">(</span><span class="n">real64</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">),</span><span class="w"> </span><span class="k">dimension</span><span class="p">(:)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dydx</span>
 <a id="ln-405" name="ln-405" href="#ln-405"></a><span class="w">        </span><span class="c">!! An N-element array where the derivative will be written.</span>
-<a id="ln-406" name="ln-406" href="#ln-406"></a><span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span>
+<a id="ln-406" name="ln-406" href="#ln-406"></a><span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span>
 <a id="ln-407" name="ln-407" href="#ln-407"></a><span class="w">        </span><span class="c">!! An optional argument that can be used to pass information in and out</span>
 <a id="ln-408" name="ln-408" href="#ln-408"></a><span class="w">        </span><span class="c">!! of the differential equation subroutine.</span>
 <a id="ln-409" name="ln-409" href="#ln-409"></a><span class="w">    </span><span class="k">call </span><span class="n">sys</span><span class="p">%</span><span class="n">compute_rhs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">dydx</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">)</span>
@@ -1048,7 +1048,7 @@
 <a id="ln-876" name="ln-876" href="#ln-876"></a><span class="w">        </span><span class="c">!! however, set to false to avoid storing the initial values.</span>
 <a id="ln-877" name="ln-877" href="#ln-877"></a><span class="w">        </span><span class="c">!! This can be useful in cases of event detection where a </span>
 <a id="ln-878" name="ln-878" href="#ln-878"></a><span class="w">        </span><span class="c">!! restart of the integrator is desired.</span>
-<a id="ln-879" name="ln-879" href="#ln-879"></a><span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span>
+<a id="ln-879" name="ln-879" href="#ln-879"></a><span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="p">,</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span>
 <a id="ln-880" name="ln-880" href="#ln-880"></a><span class="w">        </span><span class="c">!! An optional argument that can be used to pass information</span>
 <a id="ln-881" name="ln-881" href="#ln-881"></a><span class="w">        </span><span class="c">!! in and out of the differential equation subroutine.</span>
 <a id="ln-882" name="ln-882" href="#ln-882"></a>
@@ -1274,7 +1274,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-30 12:59 -0500             </p>
+ on 2026-11-11 14:47 -0600             </p>
           </div>
         </div>
         <br>

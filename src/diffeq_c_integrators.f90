@@ -247,7 +247,7 @@ contains
             real(real64), intent(in) :: x_
             real(real64), intent(in), dimension(:) :: y_
             real(real64), intent(out), dimension(:) :: dydx_
-            class(*), intent(inout), optional :: args_
+            class(*), intent(in), optional :: args_
             call fcn(size(y_), x_, y_, dydx_)
         end subroutine
 
@@ -255,7 +255,7 @@ contains
             real(real64), intent(in) :: x_
             real(real64), intent(in), dimension(:) :: y_
             real(real64), intent(out), dimension(:,:) :: jac_
-            class(*), intent(inout), optional :: args_
+            class(*), intent(in), optional :: args_
             call jac(size(jac_, 1), size(jac_, 2), x_, y_, jac_, size(jac_, 1))
         end subroutine
 
@@ -263,7 +263,7 @@ contains
             real(real64), intent(in) :: x_
             real(real64), intent(in), dimension(:) :: y_
             real(real64), intent(out), dimension(:,:) :: m_
-            class(*), intent(inout), optional :: args_
+            class(*), intent(in), optional :: args_
             call mass(size(m_, 1), x_, y_, m_, size(m_, 1))
         end subroutine
     end function
@@ -887,7 +887,7 @@ contains
             real(real64), intent(in) :: x_
             real(real64), intent(in), dimension(:) :: y_
             real(real64), intent(out), dimension(:) :: dydx_
-            class(*), intent(inout), optional :: args_
+            class(*), intent(in), optional :: args_
             call force_ptr(size(y_), x_, y_, dydx_)
         end subroutine
 
@@ -895,7 +895,7 @@ contains
             real(real64), intent(in) :: x_
             real(real64), intent(in), dimension(:) :: y_
             real(real64), intent(out), dimension(:,:) :: m_
-            class(*), intent(inout), optional :: args_
+            class(*), intent(in), optional :: args_
             call mass_ptr(size(m_, 1), x_, y_, m_, size(m_, 1))
         end subroutine
 
@@ -903,7 +903,7 @@ contains
             real(real64), intent(in) :: x_
             real(real64), intent(in), dimension(:) :: y_
             real(real64), intent(out), dimension(:,:) :: jac_
-            class(*), intent(inout), optional :: args_
+            class(*), intent(in), optional :: args_
             call gradient_ptr(size(jac_, 1), size(jac_, 2), x_, y_, jac_, &
                 size(jac_, 1))
         end subroutine
@@ -912,7 +912,7 @@ contains
             real(real64), intent(in) :: x_
             real(real64), intent(in), dimension(:) :: y_
             real(real64), intent(out), dimension(:) :: g_
-            class(*), intent(inout), optional :: args_
+            class(*), intent(in), optional :: args_
             call constraint_ptr(size(g_), size(y_), x_, y_, g_)
         end subroutine
 
@@ -922,7 +922,7 @@ contains
             real(real64), intent(in), dimension(:) :: direction_
             real(real64), intent(in), dimension(:) :: v_
             real(real64), intent(out), dimension(:) :: curvature_
-            class(*), intent(inout), optional :: args_
+            class(*), intent(in), optional :: args_
             call curvature_ptr(size(curvature_), size(q_), x_, q_, direction_, &
                 v_, curvature_)
         end subroutine
@@ -931,7 +931,7 @@ contains
             real(real64), intent(in) :: x_
             real(real64), intent(in), dimension(:) :: y_
             real(real64), intent(out), dimension(:,:) :: jac_
-            class(*), intent(inout), optional :: args_
+            class(*), intent(in), optional :: args_
             call jacobian_ptr(size(jac_, 1), size(jac_, 2), x_, y_, jac_, &
                 size(jac_, 1))
         end subroutine
@@ -940,7 +940,7 @@ contains
             real(real64), intent(in) :: x_
             real(real64), intent(in), dimension(:) :: y_
             real(real64), intent(out), dimension(:) :: f_
-            class(*), intent(inout), optional :: args_
+            class(*), intent(in), optional :: args_
             call event_ptr(size(f_), size(y_), x_, y_, f_)
         end subroutine
     end function
@@ -1215,7 +1215,7 @@ contains
             real(real64), intent(in) :: x_
             real(real64), intent(in), dimension(:) :: y_
             real(real64), intent(out), dimension(:) :: dydx_
-            class(*), intent(inout), optional :: args_
+            class(*), intent(in), optional :: args_
             call fcn(size(y_), x_, y_, dydx_)
         end subroutine
 
@@ -1223,7 +1223,7 @@ contains
             real(real64), intent(in) :: x_
             real(real64), intent(in), dimension(:) :: y_
             real(real64), intent(out), dimension(:,:) :: jac_
-            class(*), intent(inout), optional :: args_
+            class(*), intent(in), optional :: args_
             call jac(size(jac_, 1), size(jac_, 2), x_, y_, jac_, size(jac_, 1))
         end subroutine
 
@@ -1231,7 +1231,7 @@ contains
             real(real64), intent(in) :: x_
             real(real64), intent(in), dimension(:) :: y_
             real(real64), intent(out), dimension(:,:) :: m_
-            class(*), intent(inout), optional :: args_
+            class(*), intent(in), optional :: args_
             call mass(size(m_, 1), x_, y_, m_, size(m_, 1))
         end subroutine
 
@@ -1239,7 +1239,7 @@ contains
             real(real64), intent(in) :: x_
             real(real64), intent(in), dimension(:) :: y_
             real(real64), intent(out), dimension(:) :: f_
-            class(*), intent(inout), optional :: args_
+            class(*), intent(in), optional :: args_
             call efcn(size(f_), size(y_), x_, y_, f_)
         end subroutine
     end function
