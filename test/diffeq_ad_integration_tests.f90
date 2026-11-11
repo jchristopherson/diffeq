@@ -117,9 +117,9 @@ contains
 
         call check(.not.model%get_is_ode_defined(), "empty model")
         call check(model%get_jacobian_function_evaluations() == 0, "initial Jacobian count")
-        call check(model%get_ad_thread_count() == 1, "AD defaults to serial")
-        call model%set_ad_thread_count(ad_threads)
-        call check(model%get_ad_thread_count() == ad_threads, "AD thread setting")
+        call check(model%get_thread_count() == 1, "AD defaults to serial")
+        call model%set_thread_count(ad_threads)
+        call check(model%get_thread_count() == ad_threads, "AD thread setting")
         model%fcn_ad => nonlinear_ad
         call check(model%get_is_ode_defined(), "AD-only model is defined")
         call check(.not.model%use_finite_difference_jacobian(), "AD is not finite differences")
@@ -162,7 +162,7 @@ contains
         model%fcn_ad => constant_ad
         call model%compute_jacobian(x, [0.2d0], small_jac)
         call near([small_jac(1,1)], [0.0d0], 0.0d0, "constant output clears derivative")
-        call model%set_ad_thread_count(1)
+        call model%set_thread_count(1)
         model%fcn_ad => nonlinear_ad
         observed = callback_observations()
         call model%compute_jacobian(x, [0.2d0], small_jac, counts)
@@ -178,6 +178,7 @@ contains
             case (1)
                 call check(model%use_finite_difference_jacobian(), "real RHS selects FD")
                 call check(observed%rhs == 3, "FD callback cost")
+                call check(observed%max_threads == ad_threads, "FD Jacobian uses requested threads")
             case (2)
                 call check(observed%rhs == 2, "AD callback cost")
             case default
@@ -244,7 +245,7 @@ contains
         !! Select FD, AD, real plus analytic, or AD plus analytic callbacks.
         type(ode_container), intent(out) :: model
         integer, intent(in) :: representation
-        call model%set_ad_thread_count(ad_threads)
+        call model%set_thread_count(ad_threads)
         if (representation == 2 .or. representation == 4) then
             model%fcn_ad => model_ad
         else
@@ -260,7 +261,11 @@ contains
         class(*), intent(in), optional :: args
         select type (args)
         type is (callback_counts)
+            !$omp atomic update
             observed%rhs = observed%rhs + 1
+            !$omp critical(ad_observations)
+            observed%max_threads = max(observed%max_threads, omp_get_num_threads())
+            !$omp end critical(ad_observations)
             if (args%dae) then
                 f(1) = -y(1)
                 if (args%variable_mass) f(1) = -(1.0d0 + x + y(1)) * y(1)
@@ -342,6 +347,10 @@ contains
         if (representation >= 3) then
             call check(result%statistics%jacobian_evaluations == observations%jac, "analytic Jacobian statistics")
             call check(observations%state_seeds == 0, "explicit Jacobian suppresses AD columns")
+        else if (representation == 1) then
+            if (result%statistics%jacobian_evaluations > 0) then
+                call check(observations%max_threads == ad_threads, "implicit solver FD thread count")
+            end if
         else if (representation == 2) then
             call check(observations%state_seeds == 2 * result%statistics%jacobian_evaluations, &
                 "two AD callbacks per Jacobian")
@@ -453,9 +462,9 @@ contains
         model%fcn_ad => nonlinear_ad
         select case (name)
         case ("zero_threads")
-            call model%set_ad_thread_count(0)
+            call model%set_thread_count(0)
         case ("negative_threads")
-            call model%set_ad_thread_count(-1)
+            call model%set_thread_count(-1)
         case ("both_rhs", "both_jacobian", "both_solve", "both_inquiry", "both_time")
             model%fcn => model_real
             select case (name)
