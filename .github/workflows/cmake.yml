@@ -132,9 +132,10 @@ jobs:
             -DBUILD_SHARED_LIBS=${{ matrix.shared && 'TRUE' || 'FALSE' }}
           )
           if [ "${{ runner.os }}" = "Windows" ] && [ "${{ matrix.compiler }}" = "intel" ]; then
+            MSVC_LINKER="$(cygpath -w "$(dirname "$(command -v cl.exe)")/link.exe")"
             CMAKE_OPTIONS+=(
               -G Ninja
-              -DCMAKE_Fortran_COMPILER="${CMPLR_ROOT}/bin/ifx.exe"
+              -DCMAKE_LINKER="${MSVC_LINKER}"
               -DBLA_VENDOR=Intel10_64lp_seq
               -DBLA_STATIC=ON
               -DBLA_SIZEOF_INTEGER=4
@@ -194,9 +195,10 @@ jobs:
           if [ "${{ runner.os }}" = "Windows" ]; then
             INSTALL_PREFIX="${GITHUB_WORKSPACE//\\//}/install"
             if [ "${{ matrix.compiler }}" = "intel" ]; then
+              MSVC_LINKER="$(cygpath -w "$(dirname "$(command -v cl.exe)")/link.exe")"
               CMAKE_OPTIONS+=(
                 -G Ninja
-                -DCMAKE_Fortran_COMPILER="${CMPLR_ROOT}/bin/ifx.exe"
+                -DCMAKE_LINKER="${MSVC_LINKER}"
                 -DBLA_VENDOR=Intel10_64lp_seq
                 -DBLA_STATIC=ON
                 -DBLA_SIZEOF_INTEGER=4
