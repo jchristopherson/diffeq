@@ -17,27 +17,27 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             compiler: gcc
             version: '14'
             shared: false
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             compiler: gcc
             version: '14'
             shared: true
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             compiler: gcc
             version: '15'
             shared: false
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             compiler: gcc
             version: '15'
             shared: true
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             compiler: intel
             version: '2023.2'
             shared: false
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             compiler: intel
             version: '2023.2'
             shared: true
