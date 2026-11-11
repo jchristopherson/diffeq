@@ -53,6 +53,11 @@ if (NOT autodiff_FOUND)
     set(AUTODIFF_ENABLE_OPENMP ON)
     FetchContent_MakeAvailable(autodiff)
     set(BUILD_TESTING ${_diffeq_build_testing})
+    set(AUTODIFF_LIBRARIES autodiff)
+    set(BUILD_AUTODIFF TRUE)
+else()
+    set(AUTODIFF_LIBRARIES autodiff::autodiff)
+    set(BUILD_AUTODIFF FALSE)
 endif()
 find_package(linalg 3.0 QUIET)
 
@@ -76,9 +81,23 @@ target_link_libraries(
     ${PROJECT_NAME}
     PUBLIC
     ${LINALG_LIBRARIES}
-    autodiff::autodiff
-    OpenMP::OpenMP_Fortran
+    ${AUTODIFF_LIBRARIES}
 )
+if (OpenMP_Fortran_FOUND)
+    target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_Fortran)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE USEOPENMP=1)
+
+    if (CMAKE_Fortran_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
+        target_compile_options(${PROJECT_NAME} PUBLIC $<$<COMPILE_LANGUAGE:Fortran>:-fopenmp>)
+        target_link_options(${PROJECT_NAME} PUBLIC $<$<LINK_LANGUAGE:Fortran>:-fopenmp>)
+    elseif (CMAKE_Fortran_COMPILER_ID MATCHES "Intel|IntelLLVM")
+        target_compile_options(${PROJECT_NAME} PUBLIC $<$<COMPILE_LANGUAGE:Fortran>:-qopenmp>)
+        target_link_options(${PROJECT_NAME} PUBLIC $<$<LINK_LANGUAGE:Fortran>:-qopenmp>)
+    elseif (MSVC)
+        target_compile_options(${PROJECT_NAME} PUBLIC $<$<COMPILE_LANGUAGE:Fortran>:/openmp>)
+        target_link_options(${PROJECT_NAME} PUBLIC $<$<LINK_LANGUAGE:Fortran>:/openmp>)
+    endif()
+endif()
 set_target_properties(
     ${PROJECT_NAME}
     PROPERTIES
@@ -122,9 +141,21 @@ if (${BUILD_SHARED_LIBS})
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     endif()
+    if (${BUILD_AUTODIFF})
+        install(TARGETS ${AUTODIFF_LIBRARIES}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
+    endif()
 else()
     if (${BUILD_LINALG})
         install(TARGETS ${LINALG_LIBRARIES}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
+    endif()
+    if (${BUILD_AUTODIFF})
+        install(TARGETS ${AUTODIFF_LIBRARIES}
             RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
