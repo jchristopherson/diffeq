@@ -198,6 +198,8 @@ module diffeq_base
         procedure, public :: set_is_mass_matrix_dependent => &
             oc_set_is_mass_dependent
         procedure, public :: compute_jacobian => oc_jacobian
+        procedure, private :: fd_jacobian_parallel => oc_fd_jacobian_parallel
+        procedure, private :: fd_jacobian_serial => oc_fd_jacobian_serial
         procedure, public :: get_jacobian_function_evaluations => oc_get_jacobian_calls
         procedure, public :: compute_time_derivative => oc_time_derivative
         procedure, public :: get_is_ode_defined => oc_get_is_ode_defined
@@ -546,9 +548,9 @@ subroutine oc_jacobian(this, x, y, jac, args)
     call this%allocate_workspace(ndof, nthreads)
     call this%compute_rhs(x, y, this%m_fwork, args)
     if (nthreads == 1) then
-        call oc_fd_jacobian_serial(this, x, y, jac, args)
+        call this%fd_jacobian_serial(x, y, jac, args)
     else
-        call oc_fd_jacobian_parallel(this, x, y, jac, nthreads, args)
+        call this%fd_jacobian_parallel(x, y, jac, nthreads, args)
     end if
     this%m_jacobian_function_evaluations = ndof + 1
 contains
