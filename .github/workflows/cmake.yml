@@ -57,6 +57,14 @@ jobs:
             compiler: gcc
             version: '14'
             shared: true
+          - os: windows-latest
+            compiler: intel
+            version: '2026.0'
+            shared: false
+          - os: windows-latest
+            compiler: intel
+            version: '2026.0'
+            shared: true
 
     steps:
       - uses: actions/checkout@v4
