@@ -82,7 +82,7 @@ jobs:
           elif [ "${{ runner.os }}" = "macOS" ]; then
             brew update
             brew install openblas
-          elif [ "${{ runner.os }}" = "Windows" ] && [ "${{ matrix.compiler }}" = "gcc" ]; then
+          elif [ "${{ runner.os }}" = "Windows" ]; then
             C:/msys64/usr/bin/pacman.exe -S --noconfirm mingw-w64-x86_64-blas mingw-w64-x86_64-lapack
             echo "MSYS2_MINGW_BIN=/c/msys64/mingw64/bin" >> "$GITHUB_ENV"
             echo "LIBRARY_PATH=C:/msys64/mingw64/lib" >> "$GITHUB_ENV"
@@ -115,7 +115,7 @@ jobs:
         shell: bash
         working-directory: build
         run: |
-          if [ "${{ runner.os }}" = "Windows" ] && [ "${{ matrix.compiler }}" = "gcc" ]; then
+          if [ "${{ runner.os }}" = "Windows" ]; then
             export PATH="$PATH:${MSYS2_MINGW_BIN}"
           fi
           ctest --output-on-failure -C ${{ env.BUILD_TYPE }}
@@ -152,11 +152,11 @@ jobs:
           )
           if [ "${{ runner.os }}" = "Windows" ]; then
             INSTALL_PREFIX="${GITHUB_WORKSPACE//\\//}/install"
-              CMAKE_OPTIONS+=(
-                -G "MinGW Makefiles"
-                -DBLAS_LIBRARIES="C:/msys64/mingw64/lib/libblas.dll.a"
-                -DLAPACK_LIBRARIES="C:/msys64/mingw64/lib/liblapack.dll.a;C:/msys64/mingw64/lib/libblas.dll.a"
-              )
+            CMAKE_OPTIONS+=( -G "MinGW Makefiles" )
+            CMAKE_OPTIONS+=(
+              -DBLAS_LIBRARIES="C:/msys64/mingw64/lib/libblas.dll.a"
+              -DLAPACK_LIBRARIES="C:/msys64/mingw64/lib/liblapack.dll.a;C:/msys64/mingw64/lib/libblas.dll.a"
+            )
           else
             INSTALL_PREFIX="${{ github.workspace }}/install"
           fi
