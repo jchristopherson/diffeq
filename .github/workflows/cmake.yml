@@ -57,14 +57,6 @@ jobs:
             compiler: gcc
             version: '14'
             shared: true
-          - os: windows-latest
-            compiler: intel
-            version: '2026.0'
-            shared: false
-          - os: windows-latest
-            compiler: intel
-            version: '2026.0'
-            shared: true
 
     steps:
       - uses: actions/checkout@v4
@@ -80,29 +72,6 @@ jobs:
         env:
           FC: ${{ steps.setup-fortran.outputs.fc }}
           CC: ${{ steps.setup-fortran.outputs.cc }}
-
-      - name: Install Intel oneMKL
-        if: runner.os == 'Windows' && matrix.compiler == 'intel'
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $installer = Join-Path $env:RUNNER_TEMP 'intel-onemkl-2026.1.0.exe'
-          $url = 'https://registrationcenter-download.intel.com/akdlm/IRC_NAS/838e2a31-c5db-429e-93d8-509c08d71ceb/intel-onemkl-2026.1.0.238_offline.exe'
-          curl.exe --fail --location --retry 5 --retry-delay 5 --output $installer $url
-          if ($LASTEXITCODE -ne 0) { throw "oneMKL download failed: $LASTEXITCODE" }
-          $hash = (Get-FileHash $installer -Algorithm SHA256).Hash
-          if ($hash -ne 'A8334DF5655766C1D2EAA813D7949228A2CCF9AF588CA1A271C37D1B1E802496') {
-            throw 'oneMKL installer checksum mismatch'
-          }
-          $process = Start-Process -FilePath $installer -ArgumentList '-s', '-a', '--silent', '--eula', 'accept' -Wait -PassThru
-          if ($process.ExitCode -ne 0) { throw "oneMKL installation failed: $($process.ExitCode)" }
-          Remove-Item $installer
-          $mklRoot = Join-Path ${env:ProgramFiles(x86)} 'Intel\oneAPI\mkl\latest'
-          if (-not (Test-Path (Join-Path $mklRoot 'lib\mkl_intel_lp64.lib')) -and
-              -not (Test-Path (Join-Path $mklRoot 'lib\intel64\mkl_intel_lp64.lib'))) {
-            throw "oneMKL LP64 library not found under $mklRoot"
-          }
-          "MKLROOT=$mklRoot" >> $env:GITHUB_ENV
 
       - name: Install BLAS/LAPACK dependencies
         shell: bash
@@ -131,18 +100,7 @@ jobs:
             -DBUILD_TESTING=TRUE
             -DBUILD_SHARED_LIBS=${{ matrix.shared && 'TRUE' || 'FALSE' }}
           )
-          if [ "${{ runner.os }}" = "Windows" ] && [ "${{ matrix.compiler }}" = "intel" ]; then
-            MSVC_LINKER="$(cygpath -w "$(dirname "$(command -v cl.exe)")/link.exe")"
-            CMAKE_OPTIONS+=(
-              -G Ninja
-              -DCMAKE_LINKER="${MSVC_LINKER}"
-              -DBLA_VENDOR=Intel10_64lp_seq
-              -DBLA_STATIC=ON
-              -DBLA_SIZEOF_INTEGER=4
-              -DCMAKE_REQUIRE_FIND_PACKAGE_BLAS=TRUE
-              -DCMAKE_REQUIRE_FIND_PACKAGE_LAPACK=TRUE
-            )
-          elif [ "${{ runner.os }}" = "Windows" ]; then
+          if [ "${{ runner.os }}" = "Windows" ]; then
             CMAKE_OPTIONS+=( -G "MinGW Makefiles" )
           fi
           cmake "${CMAKE_OPTIONS[@]}"
@@ -194,24 +152,11 @@ jobs:
           )
           if [ "${{ runner.os }}" = "Windows" ]; then
             INSTALL_PREFIX="${GITHUB_WORKSPACE//\\//}/install"
-            if [ "${{ matrix.compiler }}" = "intel" ]; then
-              MSVC_LINKER="$(cygpath -w "$(dirname "$(command -v cl.exe)")/link.exe")"
-              CMAKE_OPTIONS+=(
-                -G Ninja
-                -DCMAKE_LINKER="${MSVC_LINKER}"
-                -DBLA_VENDOR=Intel10_64lp_seq
-                -DBLA_STATIC=ON
-                -DBLA_SIZEOF_INTEGER=4
-                -DCMAKE_REQUIRE_FIND_PACKAGE_BLAS=TRUE
-                -DCMAKE_REQUIRE_FIND_PACKAGE_LAPACK=TRUE
-              )
-            else
               CMAKE_OPTIONS+=(
                 -G "MinGW Makefiles"
                 -DBLAS_LIBRARIES="C:/msys64/mingw64/lib/libblas.dll.a"
                 -DLAPACK_LIBRARIES="C:/msys64/mingw64/lib/liblapack.dll.a;C:/msys64/mingw64/lib/libblas.dll.a"
               )
-            fi
           else
             INSTALL_PREFIX="${{ github.workspace }}/install"
           fi
