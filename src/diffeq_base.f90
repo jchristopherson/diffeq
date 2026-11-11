@@ -28,6 +28,7 @@ module diffeq_base
     use diffeq_errors
     use diffeq_containers, only : ode_results
     use autodiff, only : dual, workspace, ad_jacobian => jacobian, assignment(=)
+    use omp_lib, only : omp_get_thread_num
     implicit none
     private
     public :: ode
@@ -144,7 +145,7 @@ module diffeq_base
             ! A value determining if the mass matrix is state dependent such 
             ! that it must be recomputed at each step. 
         real(real64), private, allocatable, dimension(:,:) :: m_jwork
-            ! Finite difference perturbed-state workspace.
+            ! Finite difference perturbed-state workspace; one column per thread.
         real(real64), private, allocatable, dimension(:) :: m_fwork
             ! Finite difference unperturbed RHS workspace.
         real(real64), private :: m_fdStep = sqrt(epsilon(1.0d0))
@@ -197,6 +198,7 @@ module diffeq_base
         procedure, public :: set_is_mass_matrix_dependent => &
             oc_set_is_mass_dependent
         procedure, public :: compute_jacobian => oc_jacobian
+        procedure, private :: fd_jacobian_parallel => oc_fd_jacobian_parallel
         procedure, private :: fd_jacobian_serial => oc_fd_jacobian_serial
         procedure, public :: get_jacobian_function_evaluations => oc_get_jacobian_calls
         procedure, public :: compute_time_derivative => oc_time_derivative
@@ -495,9 +497,8 @@ end subroutine
 subroutine oc_jacobian(this, x, y, jac, args)
     !! Computes df/dy, holding x fixed. Uses an explicit Jacobian if supplied,
     !! otherwise AD (N RHS calls) or forward differences (N+1 RHS calls).
-    !! AD columns are evaluated in parallel when the thread count (see
-    !! set_thread_count) exceeds one; finite-difference columns are always
-    !! serial. The most recent callback count is available through
+    !! AD and finite-difference columns are evaluated in parallel when the
+    !! thread count (see set_thread_count) exceeds one. The most recent callback count is available through
     !! get_jacobian_function_evaluations. An explicit Jacobian counts as zero
     !! RHS calls; calls made inside user-owned Jacobian code are not tracked.
     class(ode_container), intent(inout) :: this
@@ -544,9 +545,13 @@ subroutine oc_jacobian(this, x, y, jac, args)
     end if
 
     ! Finite Difference Approximation: J(i,j) = df(i) / dy(j)
-    call this%allocate_workspace(ndof, 1)
+    call this%allocate_workspace(ndof, nthreads)
     call this%compute_rhs(x, y, this%m_fwork, args)
-    call this%fd_jacobian_serial(x, y, jac, args)
+    if (nthreads == 1) then
+        call this%fd_jacobian_serial(x, y, jac, args)
+    else
+        call this%fd_jacobian_parallel(x, y, jac, nthreads, args)
+    end if
     this%m_jacobian_function_evaluations = ndof + 1
 contains
     subroutine evaluate_ad(state, derivative, args)
@@ -580,6 +585,34 @@ subroutine oc_fd_jacobian_serial(this, x, y, jac, args)
 end subroutine
 
 ! ------------------------------------------------------------------------------
+subroutine oc_fd_jacobian_parallel(this, x, y, jac, nthreads, args)
+    ! Forward-difference Jacobian columns distributed across OpenMP threads,
+    ! each perturbing its own m_jwork column.  Assumes m_fwork holds f(x,y).
+    class(ode_container), intent(inout) :: this
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:,:) :: jac
+    integer, intent(in) :: nthreads
+    class(*), intent(in), optional :: args
+    integer :: i, tid
+    real(real64) :: h
+
+    h = this%get_finite_difference_step()
+    !$omp parallel num_threads(nthreads) default(shared) private(i, tid)
+    tid = omp_get_thread_num() + 1
+    this%m_jwork(:,tid) = y
+    !$omp do schedule(static)
+    do i = 1, size(y)
+        this%m_jwork(i,tid) = y(i) + h
+        call this%compute_rhs(x, this%m_jwork(:,tid), jac(:,i), args)
+        jac(:,i) = (jac(:,i) - this%m_fwork) / h
+        this%m_jwork(i,tid) = y(i)
+    end do
+    !$omp end do
+    !$omp end parallel
+end subroutine
+
+! ------------------------------------------------------------------------------
 pure function oc_get_threads(this) result(rst)
     !! Gets the maximum number of threads used for AD or finite-difference
     !! Jacobian columns.
@@ -590,11 +623,10 @@ end function
 
 ! ------------------------------------------------------------------------------
 subroutine oc_set_threads(this, nthreads)
-    !! Sets the AD Jacobian thread limit (default 1). The RHS callback must be
-    !! thread-safe when using multiple threads. At most N threads are used for
-    !! an N-state AD Jacobian; finite-difference Jacobians, RHS, and
-    !! time-derivative calls remain serial. An explicit Jacobian callback is
-    !! unaffected.
+    !! Sets the AD or finite-difference Jacobian thread limit (default 1). The
+    !! RHS callback must be thread-safe when using multiple threads. At most N
+    !! threads are used for an N-state Jacobian; RHS and time-derivative calls
+    !! remain serial. An explicit Jacobian callback is unaffected.
     class(ode_container), intent(inout) :: this
     integer, intent(in) :: nthreads
         !! Positive thread limit; otherwise DIFFEQ_INVALID_INPUT_ERROR.

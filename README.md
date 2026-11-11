@@ -130,7 +130,7 @@ integrators:
 | `ggl_container` | Adapts holonomically constrained mechanics to a stabilized index-1 DAE with position and velocity residual damping. Its force and physical-mass callbacks have specialized shapes documented below. |
 | `model%fcn` | Defines $f(x,y)$ with real-valued arguments. Assign either this callback or `model%fcn_ad`, not both. |
 | `model%fcn_ad` | Defines the RHS using autodiff `dual` arguments, enabling automatic differentiation of its state and time dependence. |
-| `model%set_thread_count(n)` | Sets the maximum OpenMP thread count for AD Jacobian calculations (default 1). Finite-difference Jacobians are always serial. The RHS callback must be thread-safe when using multiple threads. |
+| `model%set_thread_count(n)` | Sets the maximum OpenMP thread count for AD or finite-difference Jacobian calculations (default 1). The RHS callback must be thread-safe when using multiple threads. |
 | `model%jacobian` | Supplies $J = \partial f / \partial y$. Takes precedence over AD and finite differences; otherwise the selected RHS callback determines the differentiation method. |
 | `model%mass_matrix` | Supplies $M(x,y)$ for a system written as $M y' = f(x,y)$. It is supported by the Rosenbrock, Kennedy-Carpenter, BDF, and Adams solvers. Only Adams requires $M$ to be nonsingular. |
 | `model%event_function` | Supplies one or more event values; DIFFEQ locates zero crossings and stops the solve at a detected event. Set the number of event values with `model%set_event_equation_count(count)`. |
@@ -222,15 +222,17 @@ and `jacobian` routine.
 
 OpenMP is required by both the CMake and fpm builds. AD and finite-difference
 Jacobians are serial by default. Call `model%set_thread_count(n)` with a
-positive integer to evaluate AD Jacobian columns in parallel;
-`model%get_thread_count()` returns the setting. Finite-difference Jacobians
-ignore this setting and are always evaluated serially. At most N threads are
-requested for an N-state AD Jacobian, and OpenMP runtime limits may reduce the
-actual team size. With a thread count of one, a serial code path that makes no
-OpenMP calls is used. Ordinary RHS and time-derivative evaluations remain
-serial. An explicit Jacobian is unaffected by this setting. Parallelism is
-usually useful for larger, more expensive models; thread overhead can outweigh
-its benefit for small systems.
+positive integer to evaluate columns in parallel; `model%get_thread_count()`
+returns the setting. The same setting applies to whichever differentiation
+method the model uses. At most N threads are requested for an N-state
+Jacobian, and OpenMP runtime limits may reduce the actual team size. With a
+thread count of one, a serial code path that makes no OpenMP calls is used.
+For finite differences, the unperturbed RHS is evaluated once, after which
+each thread perturbs its own copy of the state to compute its columns.
+Ordinary RHS and time-derivative evaluations remain serial. An explicit
+Jacobian is unaffected by this setting. Parallelism is usually useful for
+larger, more expensive models; thread overhead can outweigh its benefit for
+small systems.
 
 Optional `args` are `intent(in)` and forwarded unchanged. Repeated evaluations
 at the same numerical inputs must describe the same function regardless of
