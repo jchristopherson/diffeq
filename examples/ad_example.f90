@@ -1,13 +1,14 @@
 program example
     use iso_fortran_env
     use diffeq
+    use autodiff
     use diffeq_models
     use fplot_core
     implicit none
 
     ! Parameters
     integer, parameter :: npts = 1000
-    integer, parameter :: ntime = 10000
+    integer, parameter :: ntime = 100
     real(real64), parameter :: ic(2) = [2.0d0, 0.0d0]
     real(real64), parameter :: xpts(2) = [0.0d0, 5.0d1]
 
@@ -88,9 +89,9 @@ program example
 contains
 
 subroutine vanderpol_ad(x_, y_, dydx_, args_)
-    type(real_ad), intent(in) :: x_, y_(:)
-    type(real_ad), intent(out) :: dydx_(:)
-    class(*), intent(inout), optional :: args_
+    type(dual), intent(in) :: x_, y_(:)
+    type(dual), intent(out) :: dydx_(:)
+    class(*), intent(in), optional :: args_
 
     ! Model Constants
     real(real64), parameter :: mu_ = 5.0d0

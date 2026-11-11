@@ -91,7 +91,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 2.7% of total for modules and submodules.">169 statements</a>
+                 title=" 3.0% of total for modules and submodules.">169 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -181,11 +181,11 @@ requires neither a Jacobian nor the solution of a linear system.</p>
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='diffeq_base.html'>diffeq_base</a></li>
                   <li class="list-inline-item"><a href='diffeq_multistep.html'>diffeq_multistep</a></li>
+                  <li class="list-inline-item"><a href='diffeq_base.html'>diffeq_base</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
                   <li class="list-inline-item">lapack</li>
+                  <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
               </ul>
             </li>
         </ul>
@@ -266,17 +266,17 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-compute_dense_output'>compute_dense_output</a></strong> => mi_dense_output</td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-compute_dense_output~2'>compute_dense_output</a></strong> => mi_dense_output</td>
                   <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm'>compute_error_norm</a></strong> => oi_estimate_error</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
                   <td><p>Computes the norm of the scaled error estimate.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\adams.html#boundprocedure-correct~3'>correct</a></strong> => adams_correct</td>
+  <strong><a href='..\type\adams.html#boundprocedure-correct'>correct</a></strong> => adams_correct</td>
                   <td><p>Applies the Adams-Moulton corrector.</p></td>
               </tr>
               <tr>
@@ -296,7 +296,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\adams.html#boundprocedure-evaluate_derivative~2'>evaluate_derivative</a></strong> => adams_evaluate_derivative</td>
+  <strong><a href='..\type\adams.html#boundprocedure-evaluate_derivative'>evaluate_derivative</a></strong> => adams_evaluate_derivative</td>
                   <td><p>Evaluates the derivative, resolving any mass matrix.</p></td>
               </tr>
               <tr>
@@ -322,7 +322,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\adams.html#boundprocedure-get_error_constant~3'>get_error_constant</a></strong> => adams_error_constant</td>
+  <strong><a href='..\type\adams.html#boundprocedure-get_error_constant'>get_error_constant</a></strong> => adams_error_constant</td>
                   <td><p>Gets the error constant for the requested order.</p></td>
               </tr>
               <tr>
@@ -337,7 +337,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\adams.html#boundprocedure-get_maximum_supported_order~3'>get_maximum_supported_order</a></strong> => adams_max_order</td>
+  <strong><a href='..\type\adams.html#boundprocedure-get_maximum_supported_order'>get_maximum_supported_order</a></strong> => adams_max_order</td>
                   <td><p>Gets the highest order the method is permitted to use.</p></td>
               </tr>
               <tr>
@@ -352,7 +352,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_order~5'>get_order</a></strong> => mi_get_order</td>
+  <strong><a href='..\type\multistep_integrator.html#boundprocedure-get_order~4'>get_order</a></strong> => mi_get_order</td>
                   <td><p>Gets the order currently in use.</p></td>
               </tr>
               <tr>
@@ -402,7 +402,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\adams.html#boundprocedure-get_truncation_constant~3'>get_truncation_constant</a></strong> => adams_truncation_constant</td>
+  <strong><a href='..\type\adams.html#boundprocedure-get_truncation_constant'>get_truncation_constant</a></strong> => adams_truncation_constant</td>
                   <td><p>Gets the truncation error constant for the requested order.</p></td>
               </tr>
               <tr>
@@ -447,12 +447,12 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\adams.html#boundprocedure-predictor~3'>predictor</a></strong> => adams_predictor</td>
+  <strong><a href='..\type\adams.html#boundprocedure-predictor'>predictor</a></strong> => adams_predictor</td>
                   <td><p>Evaluates the Adams-Bashforth predictor.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\adams.html#boundprocedure-prepare_for_solve~3'>prepare_for_solve</a></strong> => adams_prepare_for_solve</td>
+  <strong><a href='..\type\adams.html#boundprocedure-prepare_for_solve'>prepare_for_solve</a></strong> => adams_prepare_for_solve</td>
                   <td><p>Discards the cached mass matrix factorization.</p></td>
               </tr>
               <tr>
@@ -462,7 +462,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='..\type\adams.html#boundprocedure-set_absolute_tolerance~14'>set_absolute_tolerance</a></strong> => oi_set_abs_tol, oi_set_abs_tols</td>
+  <strong><a href='..\type\adams.html#boundprocedure-set_absolute_tolerance~5'>set_absolute_tolerance</a></strong> => oi_set_abs_tol, oi_set_abs_tols</td>
                   <td><p>Sets the absolute error tolerance.</p></td>
               </tr>
               <tr>
@@ -498,7 +498,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  generic, public ::
-  <strong><a href='..\type\adams.html#boundprocedure-set_relative_tolerance~14'>set_relative_tolerance</a></strong> => oi_set_rel_tol, oi_set_rel_tols</td>
+  <strong><a href='..\type\adams.html#boundprocedure-set_relative_tolerance~5'>set_relative_tolerance</a></strong> => oi_set_rel_tol, oi_set_rel_tols</td>
                   <td><p>Sets the relative error tolerance.</p></td>
               </tr>
               <tr>
@@ -551,7 +551,7 @@ the final value in the integration range.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-30 12:59 -0500             </p>
+ on 2026-11-11 14:47 -0600             </p>
           </div>
         </div>
         <br>

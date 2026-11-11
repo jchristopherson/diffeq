@@ -63,7 +63,7 @@ subroutine nonlinear_reaction_ode(x, y, dydx, args)
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: y
     real(real64), intent(out), dimension(:) :: dydx
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     dydx(1) = 1000.0d0 * y(1) * y(2)
     dydx(2) = -dydx(1)
@@ -183,7 +183,7 @@ subroutine robustness_decay_ode(x, y, dydx, args)
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: y
     real(real64), intent(out), dimension(:) :: dydx
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
     dydx = -y
 end subroutine
 
@@ -231,7 +231,7 @@ subroutine stiff_relaxation_ode(x, y, dydx, args)
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: y
     real(real64), intent(out), dimension(:) :: dydx
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     select type (args)
     type is (real(real64))
@@ -499,7 +499,7 @@ subroutine bdf_mass_matrix(x, y, m, args)
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: y
     real(real64), intent(out), dimension(:,:) :: m
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     m(1,1) = 2.0d0
     m(1,2) = 0.0d0
@@ -512,7 +512,7 @@ subroutine bdf_mass_ode(x, y, dydx, args)
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: y
     real(real64), intent(out), dimension(:) :: dydx
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     ! M * y' = g(y), with M = diag(2,3) and g(y) = [-2*y1, -6*y2]
     dydx(1) = -2.0d0 * y(1)

@@ -81,7 +81,7 @@ subroutine rk23_pre_step(this, prevs, sys, h, x, y, f, args)
     real(real64), intent(in), dimension(:) :: f
         !! An N-element array containing the values of the derivatives
         !! at x.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
@@ -175,7 +175,7 @@ subroutine rk23_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         !! of the error in each equation.
     real(real64), intent(out), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
@@ -228,7 +228,7 @@ subroutine rk23_set_up_interp(this, sys, dense, x, xn, y, yn, f, fn, k, args)
         !! An N-element array containing the derivatives at xn.
     real(real64), intent(inout), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 

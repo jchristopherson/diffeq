@@ -91,7 +91,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p> 3.7% of total for derived types.</p>Including implementation: 550 statements,  6.4% of total for derived types.">16 statements</a>
+                 title="<p> 3.7% of total for derived types.</p>Including implementation: 550 statements,  6.3% of total for derived types.">16 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -163,8 +163,8 @@
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-append_to_buffer">append_to_buffer</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-attempt_step~3">attempt_step</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-clear_buffer">clear_buffer</a>
-            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-compute_dense_output~2">compute_dense_output</a>
-            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-compute_error_norm">compute_error_norm</a>
+            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-compute_dense_output">compute_dense_output</a>
+            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-compute_error_norm~2">compute_error_norm</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-estimate_inital_step_size">estimate_inital_step_size</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-estimate_next_step_size~2">estimate_next_step_size</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-evaluate_dense">evaluate_dense</a>
@@ -176,7 +176,7 @@
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_maximum_step_size">get_maximum_step_size</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_minimum_step_size">get_minimum_step_size</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_ode_results">get_ode_results</a>
-            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_order~3">get_order</a>
+            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_order~2">get_order</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_relative_tolerance">get_relative_tolerance</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_solution">get_solution</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-get_stage_count~3">get_stage_count</a>
@@ -203,7 +203,7 @@
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-set_step_limit">set_step_limit</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-set_step_size_control_parameter">set_step_size_control_parameter</a>
             <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-set_step_size_factor">set_step_size_factor</a>
-            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-solve~3">solve</a>
+            <a class="list-group-item" href="../type/runge_kutta_45.html#boundprocedure-solve">solve</a>
         </div>
       </div>
     </div>
@@ -550,7 +550,7 @@ of the error in each equation.</p>
               <span class="anchor" ></span>
               class(*),
             </td>
-<td>intent(inout),</td>
+<td>intent(in),</td>
               <td>optional</td>            <td>
               
             </td>
@@ -630,7 +630,7 @@ in and out of the differential equation subroutine.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-compute_dense_output~2"></span>
+      <span class="anchor" id="boundprocedure-compute_dense_output"></span>
       <h3>
           procedure, public ::
   <strong>compute_dense_output</strong> => ssi_dense_output
@@ -713,7 +713,7 @@ in and out of the differential equation subroutine.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-compute_error_norm"></span>
+      <span class="anchor" id="boundprocedure-compute_error_norm~2"></span>
       <h3>
           procedure, public ::
   <strong>compute_error_norm</strong> => oi_estimate_error
@@ -963,7 +963,7 @@ equation.</p>
               <span class="anchor" ></span>
               class(*),
             </td>
-<td>intent(inout),</td>
+<td>intent(in),</td>
               <td>optional</td>            <td>
               
             </td>
@@ -1750,7 +1750,7 @@ The integrator retains the original copy.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-get_order~3"></span>
+      <span class="anchor" id="boundprocedure-get_order~2"></span>
       <h3>
           procedure, public ::
   <strong>get_order</strong> => rk45_get_order
@@ -3067,7 +3067,7 @@ supplied, this routine will log a single step.</p>
               <span class="anchor" ></span>
               class(*),
             </td>
-<td>intent(inout),</td>
+<td>intent(in),</td>
               <td>optional</td>            <td>
               
             </td>
@@ -3233,7 +3233,7 @@ at x.</p>
               <span class="anchor" ></span>
               class(*),
             </td>
-<td>intent(inout),</td>
+<td>intent(in),</td>
               <td>optional</td>            <td>
               
             </td>
@@ -4128,7 +4128,7 @@ where <script type="math/tex"> f_{s} </script> is this safety factor.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-solve~3"></span>
+      <span class="anchor" id="boundprocedure-solve"></span>
       <h3>
           procedure, public ::
   <strong>solve</strong> => <a href='C:\Users\jason.christopherson\git\diffeq\doc\proc\ssi_ode_solver.html'>ssi_ode_solver</a>
@@ -4245,7 +4245,7 @@ restart of the integrator is desired.</p>
               <span class="anchor" ></span>
               class(*),
             </td>
-<td>intent(inout),</td>
+<td>intent(in),</td>
               <td>optional,</td>            <td>
               target
             </td>
@@ -4286,7 +4286,7 @@ in and out of the differential equation subroutine.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-30 12:59 -0500             </p>
+ on 2026-11-11 14:47 -0600             </p>
           </div>
         </div>
         <br>

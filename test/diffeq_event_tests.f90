@@ -22,6 +22,7 @@ program diffeq_event_tests
     real(real64) :: integration_event_root
     logical :: found
     integer :: event_mode
+    integer :: event_callback_calls
 
     call get_command_argument(1, test_name)
     if (len_trim(test_name) > 0) then
@@ -54,10 +55,11 @@ program diffeq_event_tests
     event_mode = 1
     root_a = 0.7d0
     root_b = 0.3d0
+    event_callback_calls = 0
     call model%event_function(0.25d0, [0.25d0], event_values, callback_count)
     call check(maxval(abs(event_values - [-0.45d0, -0.05d0])) < 1.0d-14, &
         "event callback evaluation")
-    call check(callback_count == 1, "event callback arguments")
+    call check(event_callback_calls == 1, "event callback arguments")
 
     call check(event_solver%is_event_suspected([-1.0d0, 1.0d0], &
         [1.0d0, 2.0d0], 1), "sign-changing bracket")
@@ -79,12 +81,13 @@ program diffeq_event_tests
     root_a = x_start + 0.7d0 * (x_end - x_start)
     root_b = x_start + 0.3d0 * (x_end - x_start)
     callback_count = 0
+    event_callback_calls = 0
     found = event_solver%find_event(model%event_function, integrator, 2, &
         x_start, y1, x_end, y2, event_x, event_y, callback_count)
     call check(found, "forward event found")
     call check(abs(event_x - root_b) < 1.0d-9, "earliest forward event")
     call check(abs(event_y(1) - event_x) < 1.0d-12, "forward event state")
-    call check(callback_count > 0, "find event forwards callback arguments")
+    call check(event_callback_calls > 0, "find event forwards callback arguments")
 
     root_a = x_end + 1.0d0
     root_b = x_end
@@ -143,7 +146,7 @@ contains
     subroutine unit_rate(x, y, dydx, args)
         real(real64), intent(in) :: x, y(:)
         real(real64), intent(out) :: dydx(:)
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         dydx = 1.0d0
     end subroutine
 
@@ -247,32 +250,32 @@ contains
     subroutine single_event_callback(x, y, values, args)
         real(real64), intent(in) :: x, y(:)
         real(real64), intent(out) :: values(:)
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         values = x - integration_event_root
     end subroutine
 
     subroutine bouncing_ball(x, y, dydx, args)
         real(real64), intent(in) :: x, y(:)
         real(real64), intent(out) :: dydx(:)
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         dydx = [y(2), -1.0d0]
     end subroutine
 
     subroutine ball_ground_event(x, y, values, args)
         real(real64), intent(in) :: x, y(:)
         real(real64), intent(out) :: values(:)
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         values = y(1)
     end subroutine
 
     subroutine event_values_callback(x, y, values, args)
         real(real64), intent(in) :: x, y(:)
         real(real64), intent(out) :: values(:)
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         if (present(args)) then
             select type (args)
             type is (integer)
-                args = args + 1
+                event_callback_calls = event_callback_calls + 1
             class default
                 error stop "Unexpected event callback argument"
             end select

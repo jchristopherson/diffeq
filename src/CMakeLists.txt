@@ -24,7 +24,6 @@ set(DIFFEQ_SOURCES
     ${dir}/multistep/diffeq_bdf.f90
     ${dir}/multistep/diffeq_pece.f90
     ${dir}/dae/diffeq_index_reduction.f90
-    ${dir}/AD/diffeq_auto_diff.f90
 )
 
 set(DIFFEQ_C_SOURCES
@@ -40,7 +39,27 @@ list(APPEND DIFFEQ_SOURCES ${DIFFEQ_C_SOURCES})
 
 # Dependencies
 include(FetchContent)
-find_package(linalg 2.3.0 QUIET)
+find_package(OpenMP REQUIRED COMPONENTS Fortran)
+find_package(autodiff 1.0 CONFIG QUIET)
+if (NOT autodiff_FOUND)
+    message(STATUS "AUTODIFF could not be found. A reference version will be employed.")
+    FetchContent_Declare(
+        autodiff
+        GIT_TAG "origin/main"
+        GIT_REPOSITORY "https://github.com/jchristopherson/autodiff"
+    )
+    set(_diffeq_build_testing ${BUILD_TESTING})
+    set(BUILD_TESTING OFF)
+    set(AUTODIFF_ENABLE_OPENMP ON)
+    FetchContent_MakeAvailable(autodiff)
+    set(BUILD_TESTING ${_diffeq_build_testing})
+    set(AUTODIFF_LIBRARIES autodiff)
+    set(BUILD_AUTODIFF TRUE)
+else()
+    set(AUTODIFF_LIBRARIES autodiff::autodiff)
+    set(BUILD_AUTODIFF FALSE)
+endif()
+find_package(linalg 3.0 QUIET)
 
 if (NOT linalg_FOUND)
     message(STATUS "LINALG could not be found.  A reference version will be employed.")
@@ -62,7 +81,23 @@ target_link_libraries(
     ${PROJECT_NAME}
     PUBLIC
     ${LINALG_LIBRARIES}
+    ${AUTODIFF_LIBRARIES}
 )
+if (OpenMP_Fortran_FOUND)
+    target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_Fortran)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE USEOPENMP=1)
+
+    if (CMAKE_Fortran_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
+        target_compile_options(${PROJECT_NAME} PUBLIC $<$<COMPILE_LANGUAGE:Fortran>:-fopenmp>)
+        target_link_options(${PROJECT_NAME} PUBLIC $<$<LINK_LANGUAGE:Fortran>:-fopenmp>)
+    elseif (CMAKE_Fortran_COMPILER_ID MATCHES "Intel|IntelLLVM")
+        target_compile_options(${PROJECT_NAME} PUBLIC $<$<COMPILE_LANGUAGE:Fortran>:-qopenmp>)
+        target_link_options(${PROJECT_NAME} PUBLIC $<$<LINK_LANGUAGE:Fortran>:-qopenmp>)
+    elseif (MSVC)
+        target_compile_options(${PROJECT_NAME} PUBLIC $<$<COMPILE_LANGUAGE:Fortran>:/openmp>)
+        target_link_options(${PROJECT_NAME} PUBLIC $<$<LINK_LANGUAGE:Fortran>:/openmp>)
+    endif()
+endif()
 set_target_properties(
     ${PROJECT_NAME}
     PROPERTIES
@@ -106,9 +141,21 @@ if (${BUILD_SHARED_LIBS})
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     endif()
+    if (${BUILD_AUTODIFF})
+        install(TARGETS ${AUTODIFF_LIBRARIES}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
+    endif()
 else()
     if (${BUILD_LINALG})
         install(TARGETS ${LINALG_LIBRARIES}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
+    endif()
+    if (${BUILD_AUTODIFF})
+        install(TARGETS ${AUTODIFF_LIBRARIES}
             RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )

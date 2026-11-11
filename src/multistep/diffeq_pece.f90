@@ -224,7 +224,7 @@ subroutine adams_evaluate_derivative(this, sys, x, y, dydx, args)
         !! An N-element array containing the solution at x.
     real(real64), intent(out), dimension(:) :: dydx
         !! An N-element array where the derivative will be written.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information in and out
         !! of the differential equation subroutine.
 
@@ -293,7 +293,7 @@ subroutine adams_predictor(this, sys, h, x, y, f, yn, fn, args)
     real(real64), intent(out), dimension(:) :: fn
         !! An N-element array where this routine will write the next
         !! derivative estimate at x + h.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information in and out
         !! of the differential equation subroutine.
 
@@ -348,7 +348,7 @@ subroutine adams_correct(this, sys, h, x, ypred, ynew, converged, args)
         !! The new estimate of the dependent variables.
     logical, intent(out) :: converged
         !! True if the corrector succeeded; else, false.
-    class(*), intent(inout), optional, target :: args
+    class(*), intent(in), optional, target :: args
         !! An optional argument that can be used to pass information in and out
         !! of the differential equation subroutine.
 

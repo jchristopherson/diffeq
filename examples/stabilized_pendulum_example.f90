@@ -108,7 +108,7 @@ contains
         real(real64), intent(in) :: x
         real(real64), intent(in), dimension(:) :: y
         real(real64), intent(out), dimension(:) :: applied_force
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         applied_force = [0.0d0, -body_mass * 9.81d0]
     end subroutine
 
@@ -116,7 +116,7 @@ contains
         real(real64), intent(in) :: x
         real(real64), intent(in), dimension(:) :: q
         real(real64), intent(out), dimension(:,:) :: mass
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         mass = 0.0d0
         mass(1,1) = body_mass
         mass(2,2) = body_mass
@@ -126,7 +126,7 @@ contains
         real(real64), intent(in) :: x
         real(real64), intent(in), dimension(:) :: q
         real(real64), intent(out), dimension(:) :: g
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         g(1) = dot_product(q, q) - length**2
     end subroutine
 
@@ -134,7 +134,7 @@ contains
         real(real64), intent(in) :: x
         real(real64), intent(in), dimension(:) :: q
         real(real64), intent(out), dimension(:,:) :: gradient
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         gradient(1,:) = 2.0d0 * q
     end subroutine
 
@@ -142,7 +142,7 @@ contains
         real(real64), intent(in) :: x
         real(real64), intent(in), dimension(:) :: q, direction, v
         real(real64), intent(out), dimension(:) :: curvature
-        class(*), intent(inout), optional :: args
+        class(*), intent(in), optional :: args
         curvature(1) = 2.0d0 * dot_product(direction, v)
     end subroutine
 end program

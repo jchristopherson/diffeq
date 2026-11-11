@@ -95,7 +95,7 @@ module diffeq_index_reduction
                 !! Every element must be assigned on every call; incoming
                 !! contents are undefined. Exact constraint satisfaction
                 !! corresponds to a zero vector.
-            class(*), intent(inout), optional :: args
+            class(*), intent(in), optional :: args
                 !! Optional user-owned model parameters or evaluation state.
                 !! Check presence and dynamic type before accessing it.
                 !! The callback may update this object, but repeated calls
@@ -124,7 +124,7 @@ module diffeq_index_reduction
                 !! N physical velocity components; these need not equal direction.
             real(real64), intent(out), dimension(:) :: curvature
                 !! M curvature terms in the order of the constraint callback.
-            class(*), intent(inout), optional :: args
+            class(*), intent(in), optional :: args
                 !! Optional user-owned parameters, forwarded unchanged.
         end subroutine
     end interface
@@ -331,7 +331,7 @@ subroutine ggl_physical_mass(this, x, q, mass, args)
         !! N coordinates, without velocities or multipliers.
     real(real64), intent(out), dimension(:,:) :: mass
         !! Physical N-by-N matrix, not the augmented singular matrix.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! Optional user-owned parameters forwarded to the callback.
 
     if (associated(this%mass_matrix)) then
@@ -357,7 +357,7 @@ subroutine ggl_rhs(this, x, y, dydx, args)
     real(real64), intent(out), dimension(:) :: dydx
         !! 2N+2M RHS entries, ordered as kinematics, momentum, stabilized
         !! position residual, and stabilized velocity residual.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! Optional user parameters forwarded unchanged to every callback.
     integer :: coordinates, constraints, physical
     real(real64), allocatable, dimension(:) :: position, curvature, qdot
@@ -404,7 +404,7 @@ subroutine ggl_mass(this, x, y, m, args)
     real(real64), intent(out), dimension(:,:) :: m
         !! Square augmented matrix with side length 2N+2M. A wrong shape
         !! causes DIFFEQ_MATRIX_SIZE_ERROR.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! Optional user parameters forwarded to the physical mass callback.
     integer :: coordinates
 
@@ -433,7 +433,7 @@ function ggl_validate(this, x, y, tolerance, args) result(rst)
     real(real64), intent(in) :: tolerance
         !! Finite nonnegative absolute residual threshold; invalid values
         !! cause DIFFEQ_INVALID_INPUT_ERROR.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! Optional user parameters forwarded without using internal workspace.
     logical :: rst
         !! True when both physical residuals are finite and within tolerance.
@@ -467,7 +467,7 @@ subroutine ggl_initialize_multipliers(this, x, y, args)
     real(real64), intent(inout), dimension(:) :: y
         !! Full [q,v,lambda,mu] state. Input multipliers are ignored and replaced;
         !! output multipliers are algebraically consistent to solve accuracy.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! Optional user-owned parameters forwarded to model callbacks.
     integer :: coordinates, constraints, physical
     real(real64), allocatable, dimension(:) :: position, rhs

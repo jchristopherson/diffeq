@@ -28,7 +28,7 @@ pure subroutine vanderpol(x, y, dydx, args)
     ! Arguments
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: dydx(:)
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     ! Model Constants
     real(real64), parameter :: mu = 5.0d0
@@ -56,7 +56,7 @@ end function
 subroutine vanderpol_analytical_jacobian(x, y, jac, args)
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: jac(:,:)
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     ! Model Constants
     real(real64), parameter :: mu = 5.0d0
@@ -72,7 +72,7 @@ subroutine vanderpol_args(x, y, dydx, args)
     ! Arguments
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: dydx(:)
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     ! Get the model constant
     real(real64) :: mu
@@ -92,7 +92,7 @@ pure subroutine duffing(x, y, dydx, args)
     ! Arguments
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: dydx(:)
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     ! Model Constants
     real(real64), parameter :: alpha = 1.0d0
@@ -130,7 +130,7 @@ pure subroutine mathieu(x, y, dydx, args)
     ! Arguments
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: dydx(:)
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     ! Model Constants
     real(real64), parameter :: a = 1.0d0
@@ -167,7 +167,7 @@ pure subroutine test_2dof_1(x, y, dydx, args)
     ! Arguments
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: dydx(:)
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     ! Model Constants
     real(real64), parameter :: wn = 2.0d1
@@ -208,7 +208,7 @@ pure subroutine test_1dof_1(x, y, dydx, args)
     ! Arguments
     real(real64), intent(in) :: x, y(:)
     real(real64), intent(out) :: dydx(:)
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     ! Equation
     dydx(1) = -y(1) * sin(x)**2
@@ -264,7 +264,7 @@ pure subroutine first_order_1(x, y, dydx, args)
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: y
     real(real64), intent(out), dimension(:) :: dydx
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     ! Process
     dydx(1) = y(1)**2 - y(1) - 6.0d0
@@ -277,7 +277,7 @@ pure subroutine first_order_2(x, y, dydx, args)
     real(real64), intent(in) :: x
     real(real64), intent(in), dimension(:) :: y
     real(real64), intent(out), dimension(:) :: dydx
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     ! Process
     dydx(1) = (y(1)**2 - 4.0d0) * (y(1) + 1.0d0)**2
@@ -289,7 +289,7 @@ subroutine parametric_model(t, x, dxdt, args)
     real(real64), intent(in) :: t
     real(real64), intent(in), dimension(:) :: x
     real(real64), intent(out), dimension(:) :: dxdt
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     ! Parameters
     real(real64), parameter :: pi = 2.0d0 * acos(0.0d0)
@@ -327,7 +327,7 @@ subroutine cartesian_pendulum(t, x, dxdt, args)
     real(real64), intent(in) :: t
     real(real64), intent(in), dimension(:) :: x
     real(real64), intent(out), dimension(:) :: dxdt
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     ! Local Variables
     real(real64), parameter :: gc = 9.81d0
@@ -365,7 +365,7 @@ subroutine cartesian_pendulum_mass_matrix(t, x, m, args)
     real(real64), intent(in) :: t
     real(real64), intent(in), dimension(:) :: x
     real(real64), intent(out), dimension(:,:) :: m
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     ! Parameters
     real(real64) :: mass, L
@@ -391,7 +391,7 @@ subroutine ball(t, x, dxdt, args)
     real(real64), intent(in) :: t
     real(real64), intent(in), dimension(:) :: x
     real(real64), intent(out), dimension(:) :: dxdt
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
 
     real(real64), parameter :: g = 9.81d0
 
@@ -403,7 +403,7 @@ subroutine ball_ground_constraint(t, x, f, args)
     real(real64), intent(in) :: t
     real(real64), intent(in), dimension(:) :: x
     real(real64), intent(out), dimension(:) :: f
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
     f(1) = x(1)     ! we just need to find when the position = 0
 end subroutine
 

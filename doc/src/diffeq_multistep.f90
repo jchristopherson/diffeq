@@ -187,7 +187,7 @@ module diffeq_multistep
                 !! The N-element right-hand-side vector for the linear system.
                 !! This vector is the negative of the corrector residual so
                 !! that the Newton update is \(y \leftarrow y + \delta\).
-            class(*), intent(inout), optional, target :: args
+            class(*), intent(in), optional, target :: args
                 !! An optional argument that can be used to pass information
                 !! in and out of the differential equation subroutine.
         end subroutine
@@ -223,7 +223,7 @@ module diffeq_multistep
             real(real64), intent(out), dimension(:) :: fn
                 !! An N-element array where this routine will write the next
                 !! derivative estimate at x + h.
-            class(*), intent(inout), optional :: args
+            class(*), intent(in), optional :: args
                 !! An optional argument that can be used to pass information
                 !! in and out of the differential equation subroutine.
         end subroutine
@@ -249,7 +249,7 @@ module diffeq_multistep
             logical, intent(out) :: converged
                 !! True if the corrector succeeded; else, false, in which case
                 !! the step is retried on a shorter step size.
-            class(*), intent(inout), optional, target :: args
+            class(*), intent(in), optional, target :: args
                 !! An optional argument that can be used to pass information
                 !! in and out of the differential equation subroutine.
         end subroutine
@@ -344,7 +344,7 @@ subroutine mi_newton_iteration(this, sys, h, x, ypred, ynew, converged, args)
         !! The new estimate of the dependent variables.
     logical, intent(out) :: converged
         !! True if the Newton iteration process converged; else, false.
-    class(*), intent(inout), optional, target :: args
+    class(*), intent(in), optional, target :: args
         !! An optional argument that can be used to pass information in and 
         !! out of the differential equation subroutine.
 
@@ -403,7 +403,7 @@ subroutine mi_evaluate_derivative(this, sys, x, y, dydx, args)
         !! An N-element array containing the solution at x.
     real(real64), intent(out), dimension(:) :: dydx
         !! An N-element array where the derivative will be written.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information in and out
         !! of the differential equation subroutine.
     call sys%compute_rhs(x, y, dydx, args)
@@ -876,7 +876,7 @@ subroutine mi_ode_solver(this, sys, x, iv, store_iv, args)
         !! however, set to false to avoid storing the initial values.
         !! This can be useful in cases of event detection where a 
         !! restart of the integrator is desired.
-    class(*), intent(inout), optional, target :: args
+    class(*), intent(in), optional, target :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
