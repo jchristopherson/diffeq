@@ -143,7 +143,7 @@ subroutine kc_solve(this, sys, x, iv, store_iv, args)
         !! however, set to false to avoid storing the initial values.
         !! This can be useful in cases of event detection where a 
         !! restart of the integrator is desired.
-    class(*), intent(inout), optional, target :: args
+    class(*), intent(in), optional, target :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
@@ -233,7 +233,7 @@ subroutine kc_pre_step(this, prevs, sys, h, x, y, f, args)
     real(real64), intent(in), dimension(:) :: f
         !! An N-element array containing the values of the derivatives
         !! at x.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
@@ -268,7 +268,7 @@ subroutine kc_post_step(this, sys, dense, x, xn, y, yn, f, fn, k, args)
         !! An N-element array containing the derivatives at xn.
     real(real64), intent(inout), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
@@ -358,7 +358,7 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         !! of the error in each equation.
     real(real64), intent(out), dimension(:,:) :: k
         !! An N-by-NSTAGES matrix containing the derivatives at each stage.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
@@ -494,7 +494,7 @@ subroutine kc_update_jacobian(this, sys, x, y, derivative, usemass, &
         !! The derivative at the start of the step.
     logical, intent(in) :: usemass, massDependent
         !! Mass-matrix configuration flags.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
@@ -590,7 +590,7 @@ subroutine kc_newton_stage(this, sys, x, base, hg, guess, usemass, &
         !! True if the iteration converged; else, false.
     real(real64), intent(out) :: thetaMax
         !! The largest observed contraction rate of the iteration.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 
@@ -711,7 +711,7 @@ subroutine kc_consistent_derivative(this, sys, x, y, f, massDependent, &
         !! True if the mass matrix depends upon the state.
     real(real64), intent(out) :: derivative(:)
         !! The consistent derivative.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information
         !! in and out of the differential equation subroutine.
 

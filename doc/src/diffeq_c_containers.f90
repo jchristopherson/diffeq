@@ -85,7 +85,7 @@ contains
 ! ------------------------------------------------------------------------------
     subroutine c_ode_results_stats_assign(lhs, rhs)
         type(c_ode_results_statistics), intent(out) :: lhs
-        type(ode_results_statistics) :: rhs
+        type(ode_results_statistics), intent(in) :: rhs
         lhs%successful_steps = int(rhs%successful_steps, c_int)
         lhs%failed_steps = int(rhs%failed_steps, c_int)
         lhs%jacobian_evaluations = int(rhs%jacobian_evaluations, c_int)

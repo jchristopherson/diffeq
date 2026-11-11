@@ -195,7 +195,7 @@ subroutine bdf_predictor(this, sys, h, x, y, f, yn, fn, args)
     real(real64), intent(out), dimension(:) :: fn
         !! An N-element array where this routine will write the next
         !! derivative estimate at x + h.
-    class(*), intent(inout), optional :: args
+    class(*), intent(in), optional :: args
         !! An optional argument that can be used to pass information in and out
         !! of the differential equation subroutine.
 
@@ -304,7 +304,7 @@ subroutine bdf_build_linear_system(this, sys, h, x, y, A, b, args)
         !! The N-by-N matrix \(A\), where \(A = \frac{\alpha_o}{h_n} M - J\).
     real(real64), intent(out), dimension(:) :: b
         !! The N-element right-hand-side vector for the linear system.
-    class(*), intent(inout), optional, target :: args
+    class(*), intent(in), optional, target :: args
         !! An optional argument that can be used to pass information in and out
         !! of the differential equation subroutine.
 

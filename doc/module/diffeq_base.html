@@ -91,7 +91,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="14.3% of total for modules and submodules.">895 statements</a>
+                 title="16.8% of total for modules and submodules.">944 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -200,10 +200,11 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/ieee_arithmetic'>ieee_arithmetic</a></li>
-                  <li class="list-inline-item"><a href='diffeq_auto_diff.html'>diffeq_auto_diff</a></li>
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
                   <li class="list-inline-item"><a href='diffeq_containers.html'>diffeq_containers</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/ieee_arithmetic'>ieee_arithmetic</a></li>
+                  <li class="list-inline-item"><a href='https://www.openmp.org/spec-html/5.1/openmpch3.html#x156-1890003'>omp_lib</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item">autodiff</li>
                   <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
               </ul>
             </li>
@@ -247,7 +248,7 @@ ODE's to integrate.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~76"></span>
+              <span class="anchor" id="variable-x~98"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -262,7 +263,7 @@ ODE's to integrate.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~41"></span>
+              <span class="anchor" id="variable-y~59"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -277,7 +278,7 @@ ODE's to integrate.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dydx~3"></span>
+              <span class="anchor" id="variable-dydx~5"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -293,10 +294,10 @@ written.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~31"></span>
+              <span class="anchor" id="variable-args~44"></span>
               class(*),
             </td>
-<td>intent(inout),</td>
+<td>intent(in),</td>
               <td>optional</td>            <td>
               
             </td>
@@ -344,8 +345,8 @@ Jacobian evaluations, where appropriate.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~77"></span>
-              type(<a href='..\type\real_ad.html'>real_ad</a>),
+              <span class="anchor" id="variable-x~99"></span>
+              type(dual),
             </td>
 <td>intent(in)</td>
               <td></td>            <td>
@@ -359,8 +360,8 @@ Jacobian evaluations, where appropriate.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~42"></span>
-              type(<a href='..\type\real_ad.html'>real_ad</a>),
+              <span class="anchor" id="variable-y~60"></span>
+              type(dual),
             </td>
 <td>intent(in),</td>
               <td></td>            <td>
@@ -374,8 +375,8 @@ Jacobian evaluations, where appropriate.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-dydx~4"></span>
-              type(<a href='..\type\real_ad.html'>real_ad</a>),
+              <span class="anchor" id="variable-dydx~6"></span>
+              type(dual),
             </td>
 <td>intent(out),</td>
               <td></td>            <td>
@@ -391,10 +392,10 @@ expressions or constant assignment rather than setting x alone.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~32"></span>
+              <span class="anchor" id="variable-args~45"></span>
               class(*),
             </td>
-<td>intent(inout),</td>
+<td>intent(in),</td>
               <td>optional</td>            <td>
               
             </td>
@@ -402,8 +403,9 @@ expressions or constant assignment rather than setting x alone.</p>
             <td><strong>args</strong></td>
             <td>
                 <p>An optional argument that can be used to pass information
-in and out of the routine. Repeated evaluations at the same
-values must describe the same function, regardless of seeds.</p>
+into the routine. Repeated evaluations at the same values
+must describe the same function, regardless of seeds. The
+callback must be thread-safe when the thread count exceeds one.</p>
             </td>
         </tr>
     </tbody>
@@ -441,7 +443,7 @@ values must describe the same function, regardless of seeds.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~80"></span>
+              <span class="anchor" id="variable-x~102"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -456,7 +458,7 @@ values must describe the same function, regardless of seeds.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~45"></span>
+              <span class="anchor" id="variable-y~63"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -471,7 +473,7 @@ values must describe the same function, regardless of seeds.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-f~20"></span>
+              <span class="anchor" id="variable-f~30"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -489,10 +491,10 @@ need not equal N (N is the number of state variables).</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~35"></span>
+              <span class="anchor" id="variable-args~48"></span>
               class(*),
             </td>
-<td>intent(inout),</td>
+<td>intent(in),</td>
               <td>optional</td>            <td>
               
             </td>
@@ -539,7 +541,7 @@ matrix of a system of first order ODE's.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~78"></span>
+              <span class="anchor" id="variable-x~100"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -554,7 +556,7 @@ matrix of a system of first order ODE's.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~43"></span>
+              <span class="anchor" id="variable-y~61"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -569,7 +571,7 @@ matrix of a system of first order ODE's.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-jac~12"></span>
+              <span class="anchor" id="variable-jac~14"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -584,10 +586,10 @@ matrix of a system of first order ODE's.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~33"></span>
+              <span class="anchor" id="variable-args~46"></span>
               class(*),
             </td>
-<td>intent(inout),</td>
+<td>intent(in),</td>
               <td>optional</td>            <td>
               
             </td>
@@ -634,7 +636,7 @@ for a system of differential equations.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~79"></span>
+              <span class="anchor" id="variable-x~101"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -649,7 +651,7 @@ for a system of differential equations.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~44"></span>
+              <span class="anchor" id="variable-y~62"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -664,7 +666,7 @@ for a system of differential equations.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-m~6"></span>
+              <span class="anchor" id="variable-m~7"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -679,10 +681,10 @@ for a system of differential equations.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~34"></span>
+              <span class="anchor" id="variable-args~47"></span>
               class(*),
             </td>
-<td>intent(inout),</td>
+<td>intent(in),</td>
               <td>optional</td>            <td>
               
             </td>
@@ -731,7 +733,7 @@ in and out of the routine.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~83"></span>
+              <span class="anchor" id="variable-this~133"></span>
               class(<a href='..\type\ode_integrator.html'>ode_integrator</a>),
             </td>
 <td>intent(in)</td>
@@ -746,7 +748,7 @@ in and out of the routine.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~81"></span>
+              <span class="anchor" id="variable-x~103"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -761,7 +763,7 @@ in and out of the routine.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y~46"></span>
+              <span class="anchor" id="variable-y~64"></span>
               real(kind=real64),
             </td>
 <td>intent(out)</td>
@@ -807,7 +809,7 @@ in and out of the routine.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~85"></span>
+              <span class="anchor" id="variable-this~135"></span>
               class(<a href='..\type\ode_integrator.html'>ode_integrator</a>),
             </td>
 <td>intent(in)</td>
@@ -858,7 +860,7 @@ in and out of the routine.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-this~84"></span>
+              <span class="anchor" id="variable-this~134"></span>
               class(<a href='..\type\ode_integrator.html'>ode_integrator</a>),
             </td>
 <td>intent(inout)</td>
@@ -873,7 +875,7 @@ in and out of the routine.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-sys~24"></span>
+              <span class="anchor" id="variable-sys~37"></span>
               class(<a href='..\type\ode_container.html'>ode_container</a>),
             </td>
 <td>intent(inout)</td>
@@ -888,7 +890,7 @@ in and out of the routine.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~82"></span>
+              <span class="anchor" id="variable-x~104"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -907,7 +909,7 @@ values.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-iv~4"></span>
+              <span class="anchor" id="variable-iv~5"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -922,7 +924,7 @@ values.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-store_iv~4"></span>
+              <span class="anchor" id="variable-store_iv~5"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -942,10 +944,10 @@ restart of the integrator is desired.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~36"></span>
+              <span class="anchor" id="variable-args~49"></span>
               class(*),
             </td>
-<td>intent(inout),</td>
+<td>intent(in),</td>
               <td>optional,</td>            <td>
               target
             </td>
@@ -1055,7 +1057,7 @@ differentiation in its absence.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-jacobian"></span>
+              <span class="anchor" id="variable-jacobian~2"></span>
               procedure(<a href='..\interface\ode_jacobian.html'>ode_jacobian</a>),
             </td>
               <td>public,</td>
@@ -1152,6 +1154,11 @@ will be assumed.</p>
               </tr>
               <tr>
                 <td>  procedure, public ::
+  <strong><a href='..\type\ode_container.html#boundprocedure-get_thread_count'>get_thread_count</a></strong> => oc_get_threads</td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-has_mass_matrix~2'>has_mass_matrix</a></strong> => oc_has_mass_matrix</td>
                   <td></td>
               </tr>
@@ -1168,6 +1175,11 @@ will be assumed.</p>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-set_is_mass_matrix_dependent'>set_is_mass_matrix_dependent</a></strong> => oc_set_is_mass_dependent</td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_container.html#boundprocedure-set_thread_count'>set_thread_count</a></strong> => oc_set_threads</td>
                   <td></td>
               </tr>
               <tr>
@@ -1290,7 +1302,7 @@ specified bracket.</p></td>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-event_index~2"></span>
+              <span class="anchor" id="variable-event_index"></span>
               integer,
             </td>
               <td>public</td>
@@ -1307,7 +1319,7 @@ specified bracket.</p></td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-function_evaluations~3"></span>
+              <span class="anchor" id="variable-function_evaluations~2"></span>
               integer,
             </td>
               <td>public</td>
@@ -1324,7 +1336,7 @@ specified bracket.</p></td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-iteration_count~2"></span>
+              <span class="anchor" id="variable-iteration_count"></span>
               integer,
             </td>
               <td>public</td>
@@ -1416,7 +1428,7 @@ buffer.</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm'>compute_error_norm</a></strong> => oi_estimate_error</td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-compute_error_norm~2'>compute_error_norm</a></strong> => oi_estimate_error</td>
                   <td><p>Computes the norm of the scaled error estimate.</p></td>
               </tr>
               <tr>
@@ -1472,7 +1484,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure(<a href='..\interface\ode_integer_inquiry.html'>ode_integer_inquiry</a>), public, deferred, pass ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_order~6'>get_order</a></strong></td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-get_order~9'>get_order</a></strong></td>
                   <td><p>Returns the order of the integrator.</p></td>
               </tr>
               <tr>
@@ -1588,7 +1600,7 @@ the final value in the integration range.</p></td>
               </tr>
               <tr>
                 <td>  procedure(<a href='..\interface\ode_solver.html'>ode_solver</a>), public, deferred, pass ::
-  <strong><a href='..\type\ode_integrator.html#boundprocedure-solve~4'>solve</a></strong></td>
+  <strong><a href='..\type\ode_integrator.html#boundprocedure-solve~5'>solve</a></strong></td>
                   <td><p>Solves the supplied system of ODE's.</p></td>
               </tr>
           </tbody>
@@ -1621,7 +1633,7 @@ the final value in the integration range.</p></td>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-30 12:59 -0500             </p>
+ on 2026-11-11 14:47 -0600             </p>
           </div>
         </div>
         <br>

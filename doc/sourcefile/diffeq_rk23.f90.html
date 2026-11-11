@@ -91,7 +91,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 2.0% of total for source files.">124 statements</a>
+                 title=" 2.2% of total for source files.">124 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -253,7 +253,7 @@
 <a id="ln-81" name="ln-81" href="#ln-81"></a><span class="w">    </span><span class="kt">real</span><span class="p">(</span><span class="n">real64</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">dimension</span><span class="p">(:)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">f</span>
 <a id="ln-82" name="ln-82" href="#ln-82"></a><span class="w">        </span><span class="c">!! An N-element array containing the values of the derivatives</span>
 <a id="ln-83" name="ln-83" href="#ln-83"></a><span class="w">        </span><span class="c">!! at x.</span>
-<a id="ln-84" name="ln-84" href="#ln-84"></a><span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span>
+<a id="ln-84" name="ln-84" href="#ln-84"></a><span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span>
 <a id="ln-85" name="ln-85" href="#ln-85"></a><span class="w">        </span><span class="c">!! An optional argument that can be used to pass information</span>
 <a id="ln-86" name="ln-86" href="#ln-86"></a><span class="w">        </span><span class="c">!! in and out of the differential equation subroutine.</span>
 <a id="ln-87" name="ln-87" href="#ln-87"></a>
@@ -347,7 +347,7 @@
 <a id="ln-175" name="ln-175" href="#ln-175"></a><span class="w">        </span><span class="c">!! of the error in each equation.</span>
 <a id="ln-176" name="ln-176" href="#ln-176"></a><span class="w">    </span><span class="kt">real</span><span class="p">(</span><span class="n">real64</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">),</span><span class="w"> </span><span class="k">dimension</span><span class="p">(:,:)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">k</span>
 <a id="ln-177" name="ln-177" href="#ln-177"></a><span class="w">        </span><span class="c">!! An N-by-NSTAGES matrix containing the derivatives at each stage.</span>
-<a id="ln-178" name="ln-178" href="#ln-178"></a><span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span>
+<a id="ln-178" name="ln-178" href="#ln-178"></a><span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span>
 <a id="ln-179" name="ln-179" href="#ln-179"></a><span class="w">        </span><span class="c">!! An optional argument that can be used to pass information</span>
 <a id="ln-180" name="ln-180" href="#ln-180"></a><span class="w">        </span><span class="c">!! in and out of the differential equation subroutine.</span>
 <a id="ln-181" name="ln-181" href="#ln-181"></a>
@@ -400,7 +400,7 @@
 <a id="ln-228" name="ln-228" href="#ln-228"></a><span class="w">        </span><span class="c">!! An N-element array containing the derivatives at xn.</span>
 <a id="ln-229" name="ln-229" href="#ln-229"></a><span class="w">    </span><span class="kt">real</span><span class="p">(</span><span class="n">real64</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">dimension</span><span class="p">(:,:)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">k</span>
 <a id="ln-230" name="ln-230" href="#ln-230"></a><span class="w">        </span><span class="c">!! An N-by-NSTAGES matrix containing the derivatives at each stage.</span>
-<a id="ln-231" name="ln-231" href="#ln-231"></a><span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span>
+<a id="ln-231" name="ln-231" href="#ln-231"></a><span class="w">    </span><span class="k">class</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">args</span>
 <a id="ln-232" name="ln-232" href="#ln-232"></a><span class="w">        </span><span class="c">!! An optional argument that can be used to pass information</span>
 <a id="ln-233" name="ln-233" href="#ln-233"></a><span class="w">        </span><span class="c">!! in and out of the differential equation subroutine.</span>
 <a id="ln-234" name="ln-234" href="#ln-234"></a>
@@ -473,7 +473,7 @@
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-30 12:59 -0500             </p>
+ on 2026-11-11 14:47 -0600             </p>
           </div>
         </div>
         <br>

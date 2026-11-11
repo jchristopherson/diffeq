@@ -91,7 +91,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p> 5.6% of total for derived types.</p>Including implementation: 278 statements,  3.2% of total for derived types.">24 statements</a>
+                 title="<p> 5.6% of total for derived types.</p>Including implementation: 287 statements,  3.3% of total for derived types.">24 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -139,7 +139,7 @@
             <a class="list-group-item" href="../type/ggl_container.html#variable-event_function">event_function</a>
             <a class="list-group-item" href="../type/ggl_container.html#variable-fcn~21">fcn</a>
             <a class="list-group-item" href="../type/ggl_container.html#variable-fcn_ad">fcn_ad</a>
-            <a class="list-group-item" href="../type/ggl_container.html#variable-jacobian">jacobian</a>
+            <a class="list-group-item" href="../type/ggl_container.html#variable-jacobian~2">jacobian</a>
             <a class="list-group-item" href="../type/ggl_container.html#variable-mass_matrix">mass_matrix</a>
         </div>
       </div>
@@ -189,6 +189,7 @@
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-get_is_ode_event_function_defined">get_is_ode_event_function_defined</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-get_jacobian_function_evaluations">get_jacobian_function_evaluations</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-get_state_count">get_state_count</a>
+            <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-get_thread_count">get_thread_count</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-has_mass_matrix">has_mass_matrix</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-initialize">initialize</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-initialize_multipliers">initialize_multipliers</a>
@@ -196,6 +197,7 @@
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-set_finite_difference_step">set_finite_difference_step</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-set_is_mass_matrix_dependent">set_is_mass_matrix_dependent</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-set_stabilization_parameters">set_stabilization_parameters</a>
+            <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-set_thread_count">set_thread_count</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-use_finite_difference_jacobian">use_finite_difference_jacobian</a>
             <a class="list-group-item" href="../type/ggl_container.html#boundprocedure-validate_initial_conditions">validate_initial_conditions</a>
         </div>
@@ -375,7 +377,7 @@ differentiation in its absence.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-jacobian"></span>
+              <span class="anchor" id="variable-jacobian~2"></span>
               procedure(<a href='..\interface\ode_jacobian.html'>ode_jacobian</a>),
             </td>
               <td>public,</td>
@@ -547,7 +549,8 @@ damping term without disabling the differentiated constraint.</p>
 
   <p>Computes df/dy, holding x fixed. Uses an explicit Jacobian if supplied,
 otherwise AD (N RHS calls) or forward differences (N+1 RHS calls).
-The most recent callback count is available through
+AD and finite-difference columns are evaluated in parallel when the
+thread count (see set_thread_count) exceeds one. The most recent callback count is available through
 get_jacobian_function_evaluations. An explicit Jacobian counts as zero
 RHS calls; calls made inside user-owned Jacobian code are not tracked.</p>
 
@@ -628,7 +631,7 @@ variable values.</p>
               <span class="anchor" ></span>
               class(*),
             </td>
-<td>intent(inout),</td>
+<td>intent(in),</td>
               <td>optional</td>            <td>
               
             </td>
@@ -745,7 +748,7 @@ causes DIFFEQ_MATRIX_SIZE_ERROR.</p>
               <span class="anchor" ></span>
               class(*),
             </td>
-<td>intent(inout),</td>
+<td>intent(in),</td>
               <td>optional</td>            <td>
               
             </td>
@@ -863,7 +866,7 @@ position residual, and stabilized velocity residual.</p>
               <span class="anchor" ></span>
               class(*),
             </td>
-<td>intent(inout),</td>
+<td>intent(in),</td>
               <td>optional</td>            <td>
               
             </td>
@@ -993,7 +996,7 @@ supplied unperturbed RHS f. Mass-matrix derivatives are not included.</p>
               <span class="anchor" ></span>
               class(*),
             </td>
-<td>intent(inout),</td>
+<td>intent(in),</td>
               <td>optional</td>            <td>
               
             </td>
@@ -1431,6 +1434,65 @@ their implementation makes additional RHS calls.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-get_thread_count"></span>
+      <h3>
+          procedure, public ::
+  <strong>get_thread_count</strong> => oc_get_threads
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private pure function oc_get_threads(this) result(rst)  
+</h3>
+
+  <p>Gets the maximum number of threads used for AD or finite-difference
+Jacobian columns.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_container.html'>ode_container</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
       <span class="anchor" id="boundprocedure-has_mass_matrix"></span>
       <h3>
           procedure, public ::
@@ -1689,7 +1751,7 @@ output multipliers are algebraically consistent to solve accuracy.</p>
               <span class="anchor" ></span>
               class(*),
             </td>
-<td>intent(inout),</td>
+<td>intent(in),</td>
               <td>optional</td>            <td>
               
             </td>
@@ -2008,6 +2070,77 @@ the corresponding residual in the exact solution.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_thread_count"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_thread_count</strong> => oc_set_threads
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine oc_set_threads(this, nthreads)  
+</h3>
+
+  <p>Sets the AD or finite-difference Jacobian thread limit (default 1). The
+RHS callback must be thread-safe when using multiple threads. At most N
+threads are used for an N-state Jacobian; RHS and time-derivative calls
+remain serial. An explicit Jacobian callback is unaffected.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='ode_container.html'>ode_container</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>nthreads</strong></td>
+            <td>
+                <p>Positive thread limit; otherwise DIFFEQ_INVALID_INPUT_ERROR.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
       <span class="anchor" id="boundprocedure-use_finite_difference_jacobian"></span>
       <h3>
           procedure, public ::
@@ -2162,7 +2295,7 @@ cause DIFFEQ_INVALID_INPUT_ERROR.</p>
               <span class="anchor" ></span>
               class(*),
             </td>
-<td>intent(inout),</td>
+<td>intent(in),</td>
               <td>optional</td>            <td>
               
             </td>
@@ -2207,7 +2340,7 @@ cause DIFFEQ_INVALID_INPUT_ERROR.</p>
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-10-30 12:59 -0500             </p>
+ on 2026-11-11 14:47 -0600             </p>
           </div>
         </div>
         <br>
