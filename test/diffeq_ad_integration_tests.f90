@@ -178,7 +178,7 @@ contains
             case (1)
                 call check(model%use_finite_difference_jacobian(), "real RHS selects FD")
                 call check(observed%rhs == 3, "FD callback cost")
-                call check(observed%max_threads == ad_threads, "FD Jacobian uses requested threads")
+                call check(observed%max_threads == 1, "FD Jacobian is serial")
             case (2)
                 call check(observed%rhs == 2, "AD callback cost")
             case default
@@ -349,7 +349,7 @@ contains
             call check(observations%state_seeds == 0, "explicit Jacobian suppresses AD columns")
         else if (representation == 1) then
             if (result%statistics%jacobian_evaluations > 0) then
-                call check(observations%max_threads == ad_threads, "implicit solver FD thread count")
+                call check(observations%max_threads == 1, "implicit solver FD Jacobian is serial")
             end if
         else if (representation == 2) then
             call check(observations%state_seeds == 2 * result%statistics%jacobian_evaluations, &
