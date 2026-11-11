@@ -554,11 +554,11 @@ subroutine oc_jacobian(this, x, y, jac, args)
     end if
     this%m_jacobian_function_evaluations = ndof + 1
 contains
-    subroutine evaluate_ad(state, derivative, args)
+    subroutine evaluate_ad(state, derivative, args_)
         type(dual), intent(in) :: state(:)
         type(dual), intent(out) :: derivative(:)
-        class(*), intent(in), optional :: args
-        call rhs_ad(dual(x, 0.0d0), state, derivative, args)
+        class(*), intent(in), optional :: args_
+        call rhs_ad(dual(x, 0.0d0), state, derivative, args = args_)
     end subroutine
 end subroutine
 
