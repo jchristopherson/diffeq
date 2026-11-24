@@ -216,6 +216,9 @@ program test
     rst = test_adams_high_order()
         if (.not.rst) flag = max(flag, 41)
 
+    rst = test_status_updates()
+        if (.not.rst) flag = max(flag, 61)
+
     ! Output
     stop flag
 end program
