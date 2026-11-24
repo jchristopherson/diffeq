@@ -1016,6 +1016,9 @@ subroutine mi_ode_solver(this, sys, x, iv, store_iv, args)
             ((xmax - x(1)) * (xn - xmax) > 0.0d0)
         if (need_dense) call this%cache_dense_output(xo, xn)
         call this%log_successful_step()
+        if (associated(sys%status_update)) then
+            call sys%status_update(xn, h, e, k)
+        end if
 
         ! Detect events
         if (find_events) then

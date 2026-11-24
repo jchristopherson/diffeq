@@ -358,6 +358,9 @@ subroutine ssi_ode_solver(this, sys, x, iv, store_iv, args)
         call this%post_step_action(sys, need_dense, xo, xn, y, yn, f, fn, k, args)
         if (need_dense) call this%cache_dense_output(xo, xn, y, yn, f, fn)
         call this%log_successful_step()
+        if (associated(sys%status_update)) then
+            call sys%status_update(xn, h, ei, this%get_order())
+        end if
 
         ! Detect events
         if (find_events) then

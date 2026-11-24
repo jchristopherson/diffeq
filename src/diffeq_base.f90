@@ -43,6 +43,7 @@ module diffeq_base
     public :: ode_event_function
     public :: ode_event_solver
     public :: ode_event_statistics
+    public :: ode_status
     
 ! ------------------------------------------------------------------------------
     interface
@@ -128,6 +129,21 @@ module diffeq_base
                 !! An optional argument that can be used to pass information
                 !! in and out of the routine.
         end subroutine
+
+        subroutine ode_status(x, h, e, order)
+            !! A callback routine for updating the caller regarding the status
+            !! of the integration.
+            use iso_fortran_env, only : real64
+            real(real64), intent(in) :: x
+                !! The current value of the independent variable.
+            real(real64), intent(in) :: h
+                !! The current step size.
+            real(real64), intent(in) :: e
+                !! The current error estimate.
+            integer, intent(in) :: order
+                !! The integrator order.  This is most relevant for variable
+                !! order methods such as Adams or BDF.
+        end subroutine
     end interface
 
 ! ------------------------------------------------------------------------------
@@ -186,6 +202,11 @@ module diffeq_base
         integer, private :: m_nevents = 0
             !! The number of event equations.  This number need not be equal
             !! to the number of ODE's.
+        procedure(ode_status), pointer, public, nopass :: status_update => null()
+            !! A pointer to the user-supplied routine that will be used to
+            !! return the integration status, if supplied.  No status will
+            !! be returned to the user if this routine is not supplied.  
+            !! This routine will only be called on successful steps.
     contains
         procedure, private :: allocate_workspace => oc_alloc_workspace
         procedure, private :: allocate_ad_workspace => oc_alloc_ad_workspace
