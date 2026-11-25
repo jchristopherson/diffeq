@@ -1017,7 +1017,7 @@ subroutine mi_ode_solver(this, sys, x, iv, store_iv, args)
         if (need_dense) call this%cache_dense_output(xo, xn)
         call this%log_successful_step()
         if (associated(sys%status_update)) then
-            call sys%status_update(xn, h, e, k)
+            call sys%status_update(ode_integration_status(xn, h, e, k))
         end if
 
         ! Detect events

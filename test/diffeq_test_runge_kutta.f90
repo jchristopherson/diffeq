@@ -191,17 +191,18 @@ function check_status_updates(integrator, variable_order) result(rst)
     if (.not.rst) print "(A,I0)", "Status update check failed; calls = ", status_calls
 end function
 
-subroutine record_status(x, h, e, order)
-    real(real64), intent(in) :: x, h, e
-    integer, intent(in) :: order
+subroutine record_status(info)
+    type(ode_integration_status), intent(in) :: info
 
     status_calls = status_calls + 1
-    if (.not.(x > status_last_x .and. h > 0.0d0)) status_valid = .false.
-    if (.not.(ieee_is_finite(e) .and. e >= 0.0d0)) status_valid = .false.
-    if (order < 1) status_valid = .false.
-    status_last_x = x
-    status_min_order = min(status_min_order, order)
-    status_max_order = max(status_max_order, order)
+    if (.not.(info%x > status_last_x .and. info%h > 0.0d0)) &
+        status_valid = .false.
+    if (.not.(ieee_is_finite(info%e) .and. info%e >= 0.0d0)) &
+        status_valid = .false.
+    if (info%order < 1) status_valid = .false.
+    status_last_x = info%x
+    status_min_order = min(status_min_order, info%order)
+    status_max_order = max(status_max_order, info%order)
 end subroutine
 
 ! ------------------------------------------------------------------------------
