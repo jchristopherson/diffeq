@@ -43,9 +43,28 @@ module diffeq_base
     public :: ode_event_function
     public :: ode_event_solver
     public :: ode_event_statistics
+    public :: ode_status
+    public :: ode_integration_status
     
 ! ------------------------------------------------------------------------------
-    interface
+    type ode_integration_status
+        !! Provides a container for information regarding integration status.
+        real(real64) :: x
+            !! The current value of the independent variable.
+        real(real64) :: h
+            !! The current step size.
+        real(real64) :: e
+            !! The current error estimate.
+        integer :: order
+            !! The integrator order.  This is most relevant for variable
+            !! order methods such as Adams or BDF.
+    end type
+
+    interface ode_integration_status
+        module procedure :: ois_init
+    end interface
+
+    abstract interface
         subroutine ode(x, y, dydx, args)
             !! An interface to a routine containing a system of first order
             !! ODE's to integrate.
@@ -128,6 +147,15 @@ module diffeq_base
                 !! An optional argument that can be used to pass information
                 !! in and out of the routine.
         end subroutine
+
+        subroutine ode_status(info)
+            !! A callback routine for updating the caller regarding the status
+            !! of the integration.
+            import ode_integration_status
+            type(ode_integration_status), intent(in) :: info
+                !! An [[ode_integration_status]] containing the current
+                !! integration status.
+        end subroutine
     end interface
 
 ! ------------------------------------------------------------------------------
@@ -186,6 +214,11 @@ module diffeq_base
         integer, private :: m_nevents = 0
             !! The number of event equations.  This number need not be equal
             !! to the number of ODE's.
+        procedure(ode_status), pointer, public, nopass :: status_update => null()
+            !! A pointer to the user-supplied routine that will be used to
+            !! return the integration status, if supplied.  No status will
+            !! be returned to the user if this routine is not supplied.  
+            !! This routine will only be called on successful steps.
     contains
         procedure, private :: allocate_workspace => oc_alloc_workspace
         procedure, private :: allocate_ad_workspace => oc_alloc_ad_workspace
@@ -439,7 +472,28 @@ module diffeq_base
     end interface
 
 contains
+! ******************************************************************************
+! ODE_INTEGRATION_STATUS ROUTINES
+! ------------------------------------------------------------------------------
+pure function ois_init(x, h, e, order) result(rst)
+    !! Initializes a new [[ode_integration_status]] object.
+    real(real64), intent(in) :: x
+        !! The current value of the independent variable.
+    real(real64), intent(in) :: h
+        !! The current step size.
+    real(real64), intent(in) :: e
+        !! The current error estimate.
+    integer, intent(in) :: order
+        !! The integrator order.  This is most relevant for variable
+        !! order methods such as Adams or BDF.
+    type(ode_integration_status) :: rst
+        !! The new new [[ode_integration_status]] object.
 
+    rst%x = x
+    rst%h = h
+    rst%e = e
+    rst%order = order
+end function
 
 ! ******************************************************************************
 ! ODE_CONTAINER ROUTINES

@@ -18,7 +18,14 @@ module diffeq_test_runge_kutta
     use diffeq
     use fortran_test_helper
     use diffeq_models
+    use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
     implicit none
+
+    integer :: status_calls = 0
+    logical :: status_valid = .true.
+    real(real64) :: status_last_x = 0.0d0
+    integer :: status_min_order = 0
+    integer :: status_max_order = 0
 
 contains
 function test_integrator_buffers() result(rst)
@@ -106,6 +113,96 @@ subroutine buffer_test_ode(x, y, dydx, args)
     real(real64), intent(out), dimension(:) :: dydx
     class(*), intent(in), optional :: args
     dydx = 1.0d0
+end subroutine
+
+! ------------------------------------------------------------------------------
+function test_status_updates() result(rst)
+    logical :: rst, passed
+    type(runge_kutta_23) :: rk23
+    type(runge_kutta_45) :: rk45
+    type(runge_kutta_853) :: rk853
+    type(tsitouras_54) :: tsit
+    type(rosenbrock) :: rb
+    type(kennedy_carpenter_4) :: kc4
+    type(kennedy_carpenter_5) :: kc5
+    type(bdf) :: bdf_integrator
+    type(adams) :: adams_integrator
+
+    rst = check_status_updates(rk23, .false.)
+    passed = check_status_updates(rk45, .false.)
+    rst = rst .and. passed
+    passed = check_status_updates(rk853, .false.)
+    rst = rst .and. passed
+    passed = check_status_updates(tsit, .false.)
+    rst = rst .and. passed
+    passed = check_status_updates(rb, .false.)
+    rst = rst .and. passed
+    passed = check_status_updates(kc4, .false.)
+    rst = rst .and. passed
+    passed = check_status_updates(kc5, .false.)
+    rst = rst .and. passed
+    passed = check_status_updates(bdf_integrator, .true.)
+    rst = rst .and. passed
+    passed = check_status_updates(adams_integrator, .true.)
+    rst = rst .and. passed
+    if (.not.rst) print "(A)", "TEST FAILED: test_status_updates"
+end function
+
+function check_status_updates(integrator, variable_order) result(rst)
+    ! Verifies the status callback is invoked on each successful step with
+    ! increasing x, positive step sizes, finite error estimates, and the
+    ! integrator order.  Fixed-order methods must report get_order(); variable
+    ! order methods must report orders of at least one.
+    class(ode_integrator), intent(inout) :: integrator
+    logical, intent(in) :: variable_order
+    logical :: rst
+    type(ode_container) :: model
+    real(real64), allocatable, dimension(:,:) :: solution
+    real(real64), dimension(2) :: grid
+    real(real64), dimension(1) :: initial
+    real(real64) :: expected
+
+    grid = [0.0d0, 2.0d0]
+    initial = [1.0d0]
+    expected = exp(-(grid(2) / 2.0d0 - sin(2.0d0 * grid(2)) / 4.0d0))
+
+    model%fcn => test_1dof_1
+    model%status_update => record_status
+    status_calls = 0
+    status_valid = .true.
+    status_last_x = grid(1)
+    status_min_order = huge(0)
+    status_max_order = 0
+
+    call integrator%solve(model, grid, initial)
+    solution = integrator%get_solution()
+
+    rst = status_calls > 0 .and. status_valid
+    if (variable_order) then
+        ! Multistep methods step past the end point and interpolate back to it
+        rst = rst .and. status_last_x > grid(2) - 1.0d-10
+        rst = rst .and. status_min_order >= 1
+    else
+        rst = rst .and. abs(status_last_x - grid(2)) < 1.0d-10
+        rst = rst .and. status_min_order == status_max_order
+        rst = rst .and. status_min_order == integrator%get_order()
+    end if
+    rst = rst .and. abs(solution(size(solution, 1), 2) - expected) < 1.0d-4
+    if (.not.rst) print "(A,I0)", "Status update check failed; calls = ", status_calls
+end function
+
+subroutine record_status(info)
+    type(ode_integration_status), intent(in) :: info
+
+    status_calls = status_calls + 1
+    if (.not.(info%x > status_last_x .and. info%h > 0.0d0)) &
+        status_valid = .false.
+    if (.not.(ieee_is_finite(info%e) .and. info%e >= 0.0d0)) &
+        status_valid = .false.
+    if (info%order < 1) status_valid = .false.
+    status_last_x = info%x
+    status_min_order = min(status_min_order, info%order)
+    status_max_order = max(status_max_order, info%order)
 end subroutine
 
 ! ------------------------------------------------------------------------------
