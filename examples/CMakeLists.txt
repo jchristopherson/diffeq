@@ -113,6 +113,10 @@ target_link_libraries(sparse_bdf_example diffeq ${fplot_LIBRARY})
 add_executable(adams_example adams_example.f90)
 target_link_libraries(adams_example diffeq diffeq_example_models ${fplot_LIBRARY})
 
+# Sparse GGL Example
+add_executable(sparse_ggl_example sparse_ggl_example.f90)
+target_link_libraries(sparse_ggl_example diffeq ${fplot_LIBRARY})
+
 if (${BUILD_SHARED_LIBS} AND WIN32)
     add_custom_command(
         TARGET stiff_integrator_example
