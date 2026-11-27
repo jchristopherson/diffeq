@@ -77,21 +77,6 @@ else()
     set(BUILD_LINALG FALSE)
 endif()
 
-find_package(nonlin 3.1 QUIET)
-if (NOT nonlin_FOUND)
-    message(STATUS "NONLIN could not be found.  A reference version will be employed.")
-    FetchContent_Declare(
-        nonlin
-        GIT_REPOSITORY "https://github.com/jchristopherson/nonlin"
-    )
-    FetchContent_MakeAvailable(nonlin)
-    set(NONLIN_LIBRARIES nonlin)
-    set(BUILD_NONLIN TRUE)
-else()
-    set(NONLIN_LIBRARIES nonlin::nonlin)
-    set(BUILD_NONLIN FALSE)
-endif()
-
 # Build
 add_library(${PROJECT_NAME} ${DIFFEQ_SOURCES})
 target_link_libraries(
@@ -165,12 +150,6 @@ if (${BUILD_SHARED_LIBS})
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     endif()
-    if (${BUILD_NONLIN})
-        install(TARGETS ${NONLIN_LIBRARIES}
-            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        )
-    endif()
 else()
     if (${BUILD_LINALG})
         install(TARGETS ${LINALG_LIBRARIES}
@@ -180,12 +159,6 @@ else()
     endif()
     if (${BUILD_AUTODIFF})
         install(TARGETS ${AUTODIFF_LIBRARIES}
-            RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        )
-    endif()
-    if (${BUILD_NONLIN})
-        install(TARGETS ${NONLIN_LIBRARIES}
             RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
