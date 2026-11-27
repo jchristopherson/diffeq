@@ -104,3 +104,49 @@ sol = integrator%get_solution()
 ```
 
 ![](../../images/dae_results.png?raw=true)
+
+#### Event Detection: Bouncing Ball
+[event_detection_example.f90](../../examples/event_detection_example.f90) models a ball dropped from a height of 5 m and uses `tsitouras_54` to integrate it. An event function, `ball_ground_constraint`, returns the ball's height. The integrator stops when that value crosses zero, which is the moment the ball hits the ground. The example then restarts the solve from the impact point. It reverses the impact velocity and scales it by a coefficient of restitution $k = 0.7$, which gives two bounces. Passing `store_iv = .false.` on each restart prevents the impact point from being stored twice, so the solution buffer accumulates the full trajectory across all three solves.
+
+```fortran
+type(ode_container) :: model
+type(tsitouras_54) :: integrator
+integer :: n
+real(real64) :: ic(2), t(2), v
+real(real64), allocatable :: sol(:,:)
+
+! Set up the model and the event detection
+model%fcn => ball
+model%event_function => ball_ground_constraint
+call model%set_event_equation_count(1)
+
+! Solve until the ball first impacts the ground
+t = [0.0d0, 1.0d1]
+ic = [initial_height, initial_velocity]
+call integrator%set_maximum_step_size(1.0d-2)
+call integrator%solve(model, t, ic)
+
+! Restart from the impact point with the rebound velocity
+sol = integrator%get_solution()
+n = size(sol, 1)
+v = sol(n, 3)
+ic = [0.0d0, -k * v]
+t(1) = sol(n, 1)
+call integrator%solve(model, t, ic, store_iv = .false.)
+```
+
+The event function has the same form as the right-hand side routine. It writes one value for each event equation, and an event occurs when one of those values changes sign:
+
+```fortran
+subroutine ball_ground_constraint(t, x, f, args)
+    real(real64), intent(in) :: t
+    real(real64), intent(in), dimension(:) :: x
+    real(real64), intent(out), dimension(:) :: f
+    class(*), intent(in), optional :: args
+    f(1) = x(1)     ! the event occurs when the height reaches zero
+end subroutine
+```
+
+The maximum step size is not needed to find the events. It is limited here only to give a smooth plot. The left plot shows the ball's height. The right plot shows its kinetic, potential, and total energy. The total energy stays constant during each flight and drops at each impact.
+
+![](../../images/event_detection_example.png?raw=true)
