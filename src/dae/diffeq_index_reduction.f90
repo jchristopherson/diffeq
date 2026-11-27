@@ -273,12 +273,13 @@ subroutine ggl_initialize(this, coordinate_count, constraint_count, alpha, beta)
         !! in inverse independent-variable units. Zero disables the respective
         !! damping term without disabling the differentiated constraint.
     real(real64) :: position_rate, velocity_rate
+    type(ggl_initial_workspace) :: empty_work
 
     if (coordinate_count < 1 .or. constraint_count < 1 .or. &
         constraint_count > coordinate_count) error stop DIFFEQ_INVALID_INPUT_ERROR
     if (coordinate_count /= this%m_coordinates .or. constraint_count /= this%m_constraints) then
         if (allocated(this%m_rhs_work)) deallocate(this%m_rhs_work)
-        this%m_initial_work = ggl_initial_workspace()
+        this%m_initial_work = empty_work
     end if
     this%m_coordinates = coordinate_count
     this%m_constraints = constraint_count
