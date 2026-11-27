@@ -45,6 +45,8 @@ module diffeq_base
     public :: ode_event_statistics
     public :: ode_status
     public :: ode_integration_status
+    public :: ode_sparse_jacobian
+    public :: ode_sparse_mass_matrix
     
 ! ------------------------------------------------------------------------------
     type ode_integration_status
@@ -156,6 +158,38 @@ module diffeq_base
                 !! An [[ode_integration_status]] containing the current
                 !! integration status.
         end subroutine
+
+        subroutine ode_sparse_jacobian(x, y, jac, args)
+            !! An interface to a routine capable of computing the sparse
+            !! Jacobian matrix of a system of first order ODE's.
+            use iso_fortran_env, only : real64
+            use linalg, only : csr_matrix
+            real(real64), intent(in) :: x
+                !! The current value of the independent variable.
+            real(real64), intent(in), dimension(:) :: y
+                !! An N-element array containing the current state vector.
+            type(csr_matrix), intent(out) :: jac
+                !! An M-by-N matrix where the Jacobian will be written.
+            class(*), intent(in), optional :: args
+                !! An optional argument that can be used to pass information
+                !! in and out of the routine.
+        end subroutine
+
+        subroutine ode_sparse_mass_matrix(x, y, m, args)
+            !! An interface to a routine capable of computing a sparse mass
+            !! matrix for a system of differential equations.
+            use iso_fortran_env, only : real64
+            use linalg, only : csr_matrix
+            real(real64), intent(in) :: x
+                !! The current value of the independent variable.
+            real(real64), intent(in), dimension(:) :: y
+                !! An N-element array containing the current state vector.
+            type(csr_matrix), intent(out) :: m
+                !! An N-by-N matrix where the
+            class(*), intent(in), optional :: args
+                !! An optional argument that can be used to pass information
+                !! in and out of the routine.
+        end subroutine
     end interface
 
 ! ------------------------------------------------------------------------------
@@ -219,6 +253,10 @@ module diffeq_base
             !! return the integration status, if supplied.  No status will
             !! be returned to the user if this routine is not supplied.  
             !! This routine will only be called on successful steps.
+        procedure(ode_sparse_jacobian), pointer, public, nopass :: &
+            sparse_jacobian => null()
+        procedure(ode_sparse_mass_matrix), pointer, public, nopass :: &
+            sparse_mass_matrix => null()
     contains
         procedure, private :: allocate_workspace => oc_alloc_workspace
         procedure, private :: allocate_ad_workspace => oc_alloc_ad_workspace
@@ -241,6 +279,10 @@ module diffeq_base
         procedure, public :: compute_rhs => oc_eval_rhs
         procedure, public :: compute_mass_matrix => oc_eval_mass_matrix
         procedure, public :: has_mass_matrix => oc_has_mass_matrix
+        procedure, public :: has_sparse_mass_matrix => oc_has_sparse_mass_matrix
+        procedure, public :: compute_sparse_mass_matrix => oc_eval_sparse_mass_matrix
+        procedure, public :: has_sparse_jacobian => oc_has_sparse_jacobian
+        procedure, public :: compute_sparse_jacobian => oc_eval_sparse_jacobian
         procedure, public :: get_is_ode_event_function_defined => &
             oc_is_event_fcn_defined
         procedure, public :: get_event_equation_count => oc_get_event_eqn_count
@@ -839,6 +881,70 @@ function oc_has_mass_matrix(this) result(rst)
 
     rst = associated(this%mass_matrix)
 end function
+
+! ------------------------------------------------------------------------------
+function oc_has_sparse_mass_matrix(this) result(rst)
+    !! Returns true if a sparse mass matrix routine has been assigned.
+    class(ode_container), intent(in) :: this
+        !! The [[ode_container]] object.
+    logical :: rst
+        !! True if a sparse mass matrix is utilized; else, false.
+
+    rst = associated(this%sparse_mass_matrix)
+end function
+
+! ------------------------------------------------------------------------------
+subroutine oc_eval_sparse_mass_matrix(this, x, y, m, args)
+    use linalg, only : csr_matrix
+    !! Evaluates the sparse mass matrix defined by 'sparse_mass_matrix'.
+    !! Derived types may override this to supply a matrix that is not
+    !! assigned directly to the pointer.
+    class(ode_container), intent(inout) :: this
+        !! The [[ode_container]] object.
+    real(real64), intent(in) :: x
+        !! The independent variable.
+    real(real64), intent(in), dimension(:) :: y
+        !! The dependent variables.
+    type(csr_matrix), intent(out) :: m
+        !! The sparse mass matrix.
+    class(*), intent(in), optional :: args
+        !! Optional user-owned parameters forwarded to the callback.
+
+    if (.not.associated(this%sparse_mass_matrix)) error stop DIFFEQ_NULL_POINTER_ERROR
+    call this%sparse_mass_matrix(x, y, m, args = args)
+end subroutine
+
+! ------------------------------------------------------------------------------
+function oc_has_sparse_jacobian(this) result(rst)
+    !! Returns true if a sparse Jacobian routine has been assigned.
+    class(ode_container), intent(in) :: this
+        !! The [[ode_container]] object.
+    logical :: rst
+        !! True if a sparse Jacobian is utilized; else, false.
+
+    rst = associated(this%sparse_jacobian)
+end function
+
+! ------------------------------------------------------------------------------
+subroutine oc_eval_sparse_jacobian(this, x, y, jac, args)
+    use linalg, only : csr_matrix
+    !! Evaluates the sparse Jacobian defined by 'sparse_jacobian'.  Derived
+    !! types may override this to supply a Jacobian that is not assigned
+    !! directly to the pointer.
+    class(ode_container), intent(inout) :: this
+        !! The [[ode_container]] object.
+    real(real64), intent(in) :: x
+        !! The independent variable.
+    real(real64), intent(in), dimension(:) :: y
+        !! The dependent variables.
+    type(csr_matrix), intent(out) :: jac
+        !! The sparse Jacobian.
+    class(*), intent(in), optional :: args
+        !! Optional user-owned parameters forwarded to the callback.
+
+    if (.not.associated(this%sparse_jacobian)) error stop DIFFEQ_NULL_POINTER_ERROR
+    call this%sparse_jacobian(x, y, jac, args = args)
+end subroutine
 
 ! ------------------------------------------------------------------------------
 subroutine oc_eval_mass_matrix(this, x, y, m, args)

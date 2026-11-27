@@ -12,29 +12,14 @@
 
     <title>diffeq_index_reduction &ndash; DIFFEQ</title>
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <!-- Font Awesome -->
-    <link href="../css/fontawesome.min.css" rel="stylesheet">
-    <link href="../css/brands.min.css" rel="stylesheet">
-    <link href="../css/regular.min.css" rel="stylesheet">
-    <link href="../css/solid.min.css" rel="stylesheet">
-    <link href="../css/v4-font-face.min.css" rel="stylesheet">
-    <link href="../css/v4-shims.min.css" rel="stylesheet">
-    <!-- MathJax -->
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Config({
-        TeX: { equationNumbers: { autoNumber: "AMS" } }
-      });
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
-            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
-    <!-- Other scripts and stylesheets -->
-    <link href="../css/local.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script src="../js/svg-pan-zoom.min.js"></script>
   </head>
 
@@ -90,8 +75,9 @@
         <ul class="list-inline" style="margin-bottom:0px;display:inline">
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
-              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 4.1% of total for modules and submodules.">233 statements</a>
+              <a data-bs-toggle="tooltip"
+                 data-bs-placement="bottom" data-html="true"
+                 title=" 5.8% of total for modules and submodules.">367 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -111,11 +97,9 @@
     </div>
   </div>
   <script>
-    // Enable Bootstrap tooltips
-    (function () {
-      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-    })();
+    $(function () {
+    $('[data-bs-toggle="tooltip"]').tooltip()
+    })
   </script>
 
   </div>
@@ -216,10 +200,14 @@ not depend on the independent variable.</p>
             <li class="list-group-item">
               <ul class="list-inline">
                   <li class="list-inline-item">linalg</li>
+                  <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
+                  <li class="list-inline-item"><a href='diffeq_sparse_workspace.html'>diffeq_sparse_workspace</a></li>
                   <li class="list-inline-item"><a href='diffeq_base.html'>diffeq_base</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/ieee_arithmetic'>ieee_arithmetic</a></li>
+                  <li class="list-inline-item">lapack</li>
+                  <li class="list-inline-item">linalg_errors</li>
+                  <li class="list-inline-item"><a href='https://www.openmp.org/spec-html/5.1/openmpch3.html#x156-1890003'>omp_lib</a></li>
                   <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
-                  <li class="list-inline-item"><a href='diffeq_errors.html'>diffeq_errors</a></li>
               </ul>
             </li>
         </ul>
@@ -278,7 +266,7 @@ retained. Invalid counts or gains cause DIFFEQ_INVALID_INPUT_ERROR.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-constraint_count"></span>
+              <span class="anchor" id="variable-constraint_count~2"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -293,7 +281,7 @@ retained. Invalid counts or gains cause DIFFEQ_INVALID_INPUT_ERROR.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-alpha"></span>
+              <span class="anchor" id="variable-alpha~3"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -310,7 +298,7 @@ damping term without disabling the differentiated constraint.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-beta"></span>
+              <span class="anchor" id="variable-beta~2"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -384,7 +372,7 @@ subsequent consistency tolerance must respect that scaling.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-x"></span>
+              <span class="anchor" id="variable-x~26"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -401,7 +389,7 @@ ignore this argument.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-y"></span>
+              <span class="anchor" id="variable-y~22"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -419,7 +407,7 @@ modified by the callback.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-g"></span>
+              <span class="anchor" id="variable-g~2"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -438,7 +426,7 @@ corresponds to a zero vector.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args"></span>
+              <span class="anchor" id="variable-args~14"></span>
               class(*),
             </td>
 <td>intent(in),</td>
@@ -494,7 +482,7 @@ arbitrary directions used during nonlinear/Jacobian evaluation.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-x~2"></span>
+              <span class="anchor" id="variable-x~27"></span>
               real(kind=real64),
             </td>
 <td>intent(in)</td>
@@ -510,7 +498,7 @@ autonomous constraints must not depend on it.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-q"></span>
+              <span class="anchor" id="variable-q~2"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -525,7 +513,7 @@ autonomous constraints must not depend on it.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-direction"></span>
+              <span class="anchor" id="variable-direction~2"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -541,7 +529,7 @@ including the kinematic multiplier correction.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-v"></span>
+              <span class="anchor" id="variable-v~2"></span>
               real(kind=real64),
             </td>
 <td>intent(in),</td>
@@ -556,7 +544,7 @@ including the kinematic multiplier correction.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-curvature"></span>
+              <span class="anchor" id="variable-curvature~3"></span>
               real(kind=real64),
             </td>
 <td>intent(out),</td>
@@ -571,7 +559,7 @@ including the kinematic multiplier correction.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~2"></span>
+              <span class="anchor" id="variable-args~15"></span>
               class(*),
             </td>
 <td>intent(in),</td>
@@ -657,7 +645,7 @@ including the kinematic multiplier correction.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-constraints"></span>
+              <span class="anchor" id="variable-constraints~2"></span>
               procedure(<a href='..\interface\dae_algebraic_constraints.html'>dae_algebraic_constraints</a>),
             </td>
               <td>public,</td>
@@ -692,7 +680,7 @@ autonomous position residuals g(q), including off-manifold values.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-fcn~21"></span>
+              <span class="anchor" id="variable-fcn"></span>
               procedure(<a href='..\interface\ode.html'>ode</a>),
             </td>
               <td>public,</td>
@@ -722,9 +710,9 @@ autonomous position residuals g(q), including off-manifold values.</p>
                 <td>null()</td>
             <td>
 <p>A pointer to the routine containing the ODEs to integrate.  Use
-this pointer instead of <a href="..\type\ode_container.html#variable-fcn~21">fcn</a> when automatic differentiation is
+this pointer instead of <a href="..\type\ode_container.html#variable-fcn">fcn</a> when automatic differentiation is
 desired for calculation of the Jacobian.  Do not use both
-pointers as this will produce an error.  If <a href="..\type\ode_container.html#variable-fcn~21">fcn</a> is utilized,
+pointers as this will produce an error.  If <a href="..\type\ode_container.html#variable-fcn">fcn</a> is utilized,
 then the Jacobian will be computed by either a user-supplied
 Jacobian callback or by finite differences.  If this pointer
 is utilized, then the Jacobian will be computed by either a
@@ -772,6 +760,60 @@ system.  If set to null (the default), an identity mass matrix
 will be assumed.</p>
             </td>
         </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sparse_jacobian"></span>
+              procedure(<a href='..\interface\ode_sparse_jacobian.html'>ode_sparse_jacobian</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer, nopass
+            </td>
+            <td>::</td>
+            <td><strong>sparse_jacobian</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sparse_mass_matrix"></span>
+              procedure(<a href='..\interface\ode_sparse_mass_matrix.html'>ode_sparse_mass_matrix</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer, nopass
+            </td>
+            <td>::</td>
+            <td><strong>sparse_mass_matrix</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-status_update"></span>
+              procedure(<a href='..\interface\ode_status.html'>ode_status</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer, nopass
+            </td>
+            <td>::</td>
+            <td><strong>status_update</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+<p>A pointer to the user-supplied routine that will be used to
+return the integration status, if supplied.  No status will
+be returned to the user if this routine is not supplied.<br>
+This routine will only be called on successful steps.</p>
+            </td>
+        </tr>
     </tbody>
   </table>
 
@@ -803,112 +845,132 @@ retained. Invalid counts or gains cause DIFFEQ_INVALID_INPUT_ERROR.</p></td>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-compute_jacobian'>compute_jacobian</a></strong> => oc_jacobian</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ggl_container.html#boundprocedure-compute_mass_matrix'>compute_mass_matrix</a></strong> => ggl_mass</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ggl_container.html#boundprocedure-compute_rhs'>compute_rhs</a></strong> => ggl_rhs</td>
-                  <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_container.html#boundprocedure-compute_sparse_jacobian'>compute_sparse_jacobian</a></strong> => oc_eval_sparse_jacobian</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ggl_container.html#boundprocedure-compute_sparse_mass_matrix'>compute_sparse_mass_matrix</a></strong> => ggl_sparse_mass</td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-compute_time_derivative'>compute_time_derivative</a></strong> => oc_time_derivative</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-get_event_equation_count'>get_event_equation_count</a></strong> => oc_get_event_eqn_count</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-get_finite_difference_step'>get_finite_difference_step</a></strong> => oc_get_fd_step</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-get_is_mass_matrix_dependent'>get_is_mass_matrix_dependent</a></strong> => oc_get_is_mass_dependent</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ggl_container.html#boundprocedure-get_is_ode_defined'>get_is_ode_defined</a></strong> => ggl_is_defined</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-get_is_ode_event_function_defined'>get_is_ode_event_function_defined</a></strong> => oc_is_event_fcn_defined</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-get_jacobian_function_evaluations'>get_jacobian_function_evaluations</a></strong> => oc_get_jacobian_calls</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ggl_container.html#boundprocedure-get_state_count'>get_state_count</a></strong> => ggl_state_count</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-get_thread_count'>get_thread_count</a></strong> => oc_get_threads</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ggl_container.html#boundprocedure-has_mass_matrix'>has_mass_matrix</a></strong> => ggl_has_mass</td>
-                  <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ode_container.html#boundprocedure-has_sparse_jacobian'>has_sparse_jacobian</a></strong> => oc_has_sparse_jacobian</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='..\type\ggl_container.html#boundprocedure-has_sparse_mass_matrix'>has_sparse_mass_matrix</a></strong> => ggl_has_sparse_mass</td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ggl_container.html#boundprocedure-initialize'>initialize</a></strong> => ggl_initialize</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ggl_container.html#boundprocedure-initialize_multipliers'>initialize_multipliers</a></strong> => ggl_initialize_multipliers</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-set_event_equation_count'>set_event_equation_count</a></strong> => oc_set_event_eqn_count</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-set_finite_difference_step'>set_finite_difference_step</a></strong> => oc_set_fd_step</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-set_is_mass_matrix_dependent'>set_is_mass_matrix_dependent</a></strong> => oc_set_is_mass_dependent</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ggl_container.html#boundprocedure-set_stabilization_parameters'>set_stabilization_parameters</a></strong> => ggl_set_stabilization</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-set_thread_count'>set_thread_count</a></strong> => oc_set_threads</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ode_container.html#boundprocedure-use_finite_difference_jacobian'>use_finite_difference_jacobian</a></strong> => oc_use_finite_difference_jacobian</td>
-                  <td></td>
+                <td></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
   <strong><a href='..\type\ggl_container.html#boundprocedure-validate_initial_conditions'>validate_initial_conditions</a></strong> => ggl_validate</td>
-                  <td></td>
+                <td></td>
               </tr>
           </tbody>
         </table>
@@ -930,21 +992,40 @@ retained. Invalid counts or gains cause DIFFEQ_INVALID_INPUT_ERROR.</p></td>
     <footer>
       <div class="container">
         <div class="row justify-content-between">
-          <div class="col">
-            <p>
-              DIFFEQ
- was developed by Jason Christopherson<br>              &copy; 2026 
+          <div class="col"><p>DIFFEQ was developed by Jason Christopherson<br>&copy; 2026 
 </p>
           </div>
           <div class="col">
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-11-11 14:47 -0600             </p>
+ on 2026-11-27 13:34              </p>
           </div>
         </div>
         <br>
       </div> <!-- /container -->
     </footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
+
+    <!-- MathJax JavaScript
+             ================================================== -->
+             <!-- Placed at the end of the document so the pages load faster -->
+        <script type="text/x-mathjax-config">
+          MathJax.Hub.Config({
+          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+          });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+          <script src="../tipuesearch/tipuesearch_content.js"></script>
+          <script src="../tipuesearch/tipuesearch_set.js"></script>
+          <script src="../tipuesearch/tipuesearch.js"></script>
+
   </body>
 </html>

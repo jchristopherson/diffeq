@@ -38,8 +38,15 @@ module diffeq_singlestep
     ! ------------------------------------------------------------------------------
     type, abstract, extends(ode_integrator) :: single_step_integrator
         !! The most basic, single-step integrator object capable of integrating
-        !! systems of ODE's.
+        !! systems of ODE's. Scratch buffers are retained and resized between
+        !! solves. A single instance must not be used for concurrent or nested
+        !! solves.
         real(real64), private, allocatable, dimension(:,:) :: m_denseState
+            !! Endpoint data retained for the current dense-output interpolant.
+        real(real64), private, allocatable :: m_f(:), m_y(:), m_yn(:), m_fn(:), m_yerr(:), m_yi(:), m_ye(:)
+            !! Current and trial values, errors, interpolation, and event scratch.
+        real(real64), private, allocatable :: m_stages(:,:)
+            !! Reusable stage derivatives, sized per system and tableau.
     contains
         procedure, public :: compute_dense_output => ssi_dense_output
         procedure, private :: cache_dense_output => ssi_cache_dense
@@ -273,8 +280,6 @@ subroutine ssi_ode_solver(this, sys, x, iv, store_iv, args)
     logical :: dense, need_dense, success, forward, find_events, event_found
     integer :: i, j, n, neqn, nsteps, nstages, nevents
     real(real64) :: h, xo, xn, xmax, ei, eold, xe
-    real(real64), allocatable, dimension(:) :: f, y, yn, fn, yerr, yi, ye
-    real(real64), allocatable, dimension(:,:) :: k
     
     ! Initialization
     n = size(x)
@@ -301,17 +306,18 @@ subroutine ssi_ode_solver(this, sys, x, iv, store_iv, args)
     nsteps = this%get_step_limit()
     nstages = this%get_stage_count()
     
-    ! Memory Allocations
-    allocate( &
-        f(neqn), &
-        y(neqn), &
-        yn(neqn), &
-        fn(neqn), &
-        yerr(neqn), &
-        k(neqn, nstages), &
-        yi(neqn) &
-    )
-    if (find_events) allocate(ye(neqn))
+    ! Reuse the integration buffers when the system dimensions are unchanged.
+    if (allocated(this%m_f)) then
+        if (size(this%m_f) /= neqn .or. size(this%m_stages,2) /= nstages) then
+            deallocate(this%m_f, this%m_y, this%m_yn, this%m_fn, this%m_yerr, this%m_yi, this%m_stages)
+            if (allocated(this%m_ye)) deallocate(this%m_ye)
+        end if
+    end if
+    if (.not.allocated(this%m_f)) allocate(this%m_f(neqn), this%m_y(neqn), this%m_yn(neqn), &
+        this%m_fn(neqn), this%m_yerr(neqn), this%m_yi(neqn), this%m_stages(neqn,nstages))
+    if (.not.allocated(this%m_ye)) allocate(this%m_ye(neqn))
+    associate(f => this%m_f, y => this%m_y, yn => this%m_yn, fn => this%m_fn, &
+        yerr => this%m_yerr, yi => this%m_yi, ye => this%m_ye, k => this%m_stages)
 
     ! Estimate an initial step size
     !
@@ -444,6 +450,7 @@ subroutine ssi_ode_solver(this, sys, x, iv, store_iv, args)
 
     ! End
 100 continue
+    end associate
     return
 end subroutine
 

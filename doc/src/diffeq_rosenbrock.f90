@@ -26,6 +26,7 @@ module diffeq_rosenbrock
     use diffeq_singlestep
     use diffeq_errors
     use linalg
+    use diffeq_dense_workspace, only : dense_solver_workspace
     implicit none
     private 
     public :: rosenbrock
@@ -49,23 +50,22 @@ module diffeq_rosenbrock
         !! A mass matrix may be constant or state-dependent; state-dependent
         !! matrices are recomputed as needed.  Step sizes are selected by the
         !! Rosenbrock-specific controller rather than the inherited PI
-        !! controller.
+        !! controller. The iteration matrix is solved with pivoted LU and a
+        !! rank-revealing QR fallback for singular or unreliable LU systems.
         real(real64), private, allocatable, dimension(:,:) :: jac
             ! The Jacobian matrix.
         real(real64), private, allocatable, dimension(:,:) :: mass
             ! The mass matrix.
-        integer, private, allocatable, dimension(:) :: pivot
-            ! QR factorization pivot tracking array
-        real(real64), private, allocatable, dimension(:) :: tau
-            ! QR factorization scalar factors array
+        type(dense_solver_workspace), private :: m_linear, m_massLinear
+            !! Independent workspaces for the stage and mass-derivative systems.
         logical, private :: m_massComputed = .false.
             ! True if the mass matrix has been computed; else, false.
         real(real64), private, allocatable, dimension(:) :: dfdx
             ! N-element array of df/dx
         real(real64), private, allocatable, dimension(:,:) :: a
             ! System matrix.
-        real(real64), private, allocatable, dimension(:,:) :: qr
-            ! QR factored matrix
+        real(real64), private, allocatable :: m_rhs(:), m_derivative(:), m_state(:), m_massPerturbed(:,:)
+            !! Reusable stage RHS and finite-difference mass-derivative scratch.
         real(real64), private, allocatable, dimension(:) :: rc1
             ! Interpolation coefficient array.
         real(real64), private, allocatable, dimension(:) :: rc2
@@ -86,6 +86,7 @@ module diffeq_rosenbrock
             !! Allocates internal storage for the system matrices.
         procedure, private :: initialize_interp => rbrk_init_interp
             !! Initializes private storage for the interpolation process.
+        procedure, private :: solve_stage => rbrk_solve_stage
         procedure, public :: pre_step_action => rbrk_form_matrix
             !! Constructs the system matrix.
         procedure, public :: attempt_step => rbrk_attempt_step
@@ -139,8 +140,8 @@ end subroutine
 subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
     use diffeq_rosenbrock_constants
     !! Constructs the system matrix of the form
-    !! \( A = \frac{1}{\gamma h} M - J \), and then computes its QR
-    !! factorization.  The QR-factored form of A is stored internally.
+    !! \( A = \frac{1}{\gamma h} M - J \), and factors it using pivoted LU,
+    !! with a rank-revealing QR fallback.
     class(rosenbrock), intent(inout) :: this
         !! The rosenbrock object.
     logical, intent(in) :: prevs
@@ -165,8 +166,6 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
     integer :: i, n, flag
     logical :: usemass, massDependent
     real(real64) :: fac
-    real(real64), allocatable, dimension(:,:) :: lu, mass_perturbed
-    real(real64), allocatable, dimension(:) :: derivative, state
     
     ! Initialization
     n = size(y)
@@ -194,16 +193,20 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
 
     if (usemass .and. massDependent) then
         fac = sys%get_finite_difference_step()
-        allocate(mass_perturbed(n,n))
-        derivative = solve_least_squares_full(this%mass, f)
+        if (.not.allocated(this%m_massPerturbed)) then
+            allocate(this%m_massPerturbed(n,n), this%m_derivative(n), this%m_state(n))
+        end if
+        call this%m_massLinear%factor(this%mass, flag, qr_only = .true.)
+        if (flag /= 0) error stop DIFFEQ_INVALID_OPERATION_ERROR
+        call this%m_massLinear%solve(f, this%m_derivative, flag)
+        if (flag /= 0) error stop DIFFEQ_INVALID_OPERATION_ERROR
         if (prevs) then
-            allocate(state(n))
             do i = 1, n
-                state = y
-                state(i) = state(i) + fac
-                call sys%compute_mass_matrix(x, state, mass_perturbed, args)
+                this%m_state = y
+                this%m_state(i) = this%m_state(i) + fac
+                call sys%compute_mass_matrix(x, this%m_state, this%m_massPerturbed, args)
                 this%jac(:,i) = this%jac(:,i) - &
-                    matmul((mass_perturbed - this%mass) / fac, derivative)
+                    matmul((this%m_massPerturbed - this%mass) / fac, this%m_derivative)
             end do
         end if
     end if
@@ -220,8 +223,8 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
     end if
 
     ! Factor the equations
-    this%pivot = 0
-    call qr_factor(this%a, this%pivot, tau = this%tau, qr = this%qr)
+    call this%m_linear%factor(this%a, flag)
+    if (flag /= 0) error stop DIFFEQ_INVALID_OPERATION_ERROR
     call this%log_matrix_factorization()
 
     ! Compute df/dx
@@ -229,9 +232,9 @@ subroutine rbrk_form_matrix(this, prevs, sys, h, x, y, f, args)
     call sys%compute_time_derivative(x, y, f, this%dfdx, args)
     call this%log_function_evaluation()
     if (usemass .and. massDependent) then
-        call sys%compute_mass_matrix(x + fac, y, mass_perturbed, args)
+        call sys%compute_mass_matrix(x + fac, y, this%m_massPerturbed, args)
         this%dfdx = this%dfdx - &
-            matmul((mass_perturbed - this%mass) / fac, derivative)
+            matmul((this%m_massPerturbed - this%mass) / fac, this%m_derivative)
     end if
 end subroutine
 
@@ -260,31 +263,26 @@ subroutine rbrk_init_matrices(this, n, usemass)
         else
             deallocate(this%jac)
             if (allocated(this%mass)) deallocate(this%mass)
-            deallocate(this%pivot)
-            deallocate(this%tau)
             deallocate(this%dfdx)
             deallocate(this%a)
-            deallocate(this%qr)
+            deallocate(this%m_rhs)
+            if (allocated(this%m_massPerturbed)) deallocate(this%m_massPerturbed, this%m_derivative, this%m_state)
         end if
     end if
     if (usemass) then
         allocate( &
             this%jac(n, n), &
             this%mass(n, n), &
-            this%pivot(n), &
-            this%tau(n), &
             this%dfdx(n), &
             this%a(n, n), &
-            this%qr(n, n) &
+            this%m_rhs(n) &
         )
     else
         allocate( &
             this%jac(n, n), &
-            this%pivot(n), &
-            this%tau(n), &
             this%dfdx(n), &
             this%a(n, n), &
-            this%qr(n, n) &
+            this%m_rhs(n) &
         )
     end if
 
@@ -323,49 +321,42 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    integer :: n
-    real(real64), allocatable, dimension(:) :: rhs
-
-    ! Initialization
-    n = size(y)
-    allocate(rhs(n))
-
     ! Process
-    rhs = f + h * d1 * this%dfdx
-    k(:,1) = solve_qr(this%qr, this%tau, this%pivot, rhs)
+    this%m_rhs = f + h * d1 * this%dfdx
+    call this%solve_stage(k(:,1))
 
     yn = y + a21 * k(:,1)
     call sys%compute_rhs(x + c2 * h, yn, fn, args)
 
-    rhs = c21 * k(:,1) / h
-    if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
-    rhs = fn + h * d2 * this%dfdx + rhs
-    k(:,2) = solve_qr(this%qr, this%tau, this%pivot, rhs)
+    this%m_rhs = c21 * k(:,1) / h
+    if (allocated(this%mass)) this%m_rhs = matmul(this%mass, this%m_rhs)
+    this%m_rhs = fn + h * d2 * this%dfdx + this%m_rhs
+    call this%solve_stage(k(:,2))
 
     yn = y + a31 * k(:,1) + a32 * k(:,2)
     call sys%compute_rhs(x + c3 * h, yn, fn, args)
 
-    rhs = (c31 * k(:,1) + c32 * k(:,2)) / h
-    if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
-    rhs = fn + h * d3 * this%dfdx + rhs
-    k(:,3) = solve_qr(this%qr, this%tau, this%pivot, rhs)
+    this%m_rhs = (c31 * k(:,1) + c32 * k(:,2)) / h
+    if (allocated(this%mass)) this%m_rhs = matmul(this%mass, this%m_rhs)
+    this%m_rhs = fn + h * d3 * this%dfdx + this%m_rhs
+    call this%solve_stage(k(:,3))
 
     yn = y + a41 * k(:,1) + a42 * k(:,2) + a43 * k(:,3)
     call sys%compute_rhs(x + c4 * h, yn, fn, args)
 
-    rhs = (c41 * k(:,1) + c42 * k(:,2) + c43 * k(:,3)) / h
-    if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
-    rhs = fn + h * d4 * this%dfdx + rhs
-    k(:,4) = solve_qr(this%qr, this%tau, this%pivot, rhs)
+    this%m_rhs = (c41 * k(:,1) + c42 * k(:,2) + c43 * k(:,3)) / h
+    if (allocated(this%mass)) this%m_rhs = matmul(this%mass, this%m_rhs)
+    this%m_rhs = fn + h * d4 * this%dfdx + this%m_rhs
+    call this%solve_stage(k(:,4))
 
     yn = y + a51 * k(:,1) + a52 * k(:,2) + a53 * k(:,3) + a54 * k(:,4)
     call sys%compute_rhs(x + h, yn, fn, args)
 
-    rhs = (c51 * k(:,1) + c52 * k(:,2) + c53 * k(:,3) + &
+    this%m_rhs = (c51 * k(:,1) + c52 * k(:,2) + c53 * k(:,3) + &
         c54 * k(:,4)) / h
-    if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
-    rhs = fn + rhs
-    k(:,5) = solve_qr(this%qr, this%tau, this%pivot, rhs)
+    if (allocated(this%mass)) this%m_rhs = matmul(this%mass, this%m_rhs)
+    this%m_rhs = fn + this%m_rhs
+    call this%solve_stage(k(:,5))
 
 
     yn = yn + k(:,5)
@@ -373,15 +364,28 @@ subroutine rbrk_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
 
     call this%log_function_evaluation(5)
 
-    rhs = (c61 * k(:,1) + c62 * k(:,2) + c63 * k(:,3) + &
+    this%m_rhs = (c61 * k(:,1) + c62 * k(:,2) + c63 * k(:,3) + &
         c64 * k(:,4) + c65 * k(:,5)) / h
-    if (allocated(this%mass)) rhs = matmul(this%mass, rhs)
-    yerr = fn + rhs
-    yerr = solve_qr(this%qr, this%tau, this%pivot, yerr)
+    if (allocated(this%mass)) this%m_rhs = matmul(this%mass, this%m_rhs)
+    this%m_rhs = fn + this%m_rhs
+    call this%solve_stage(yerr)
 
     yn = yn + yerr
     call sys%compute_rhs(x + h, yn, fn, args)
     call this%log_function_evaluation()
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine rbrk_solve_stage(this, result)
+    !! Solves the current stage RHS with the prepared iteration matrix.
+    class(rosenbrock), intent(inout) :: this
+        !! Integrator owning the matrix factors and RHS buffer.
+    real(real64), intent(out) :: result(:)
+        !! Computed stage increment.
+    integer :: flag
+
+    call this%m_linear%solve(this%m_rhs, result, flag)
+    if (flag /= 0) error stop DIFFEQ_INVALID_OPERATION_ERROR
 end subroutine
 
 ! ------------------------------------------------------------------------------

@@ -155,7 +155,6 @@ subroutine tsit_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
 
     ! Local Variables
     integer :: i, j
-    real(real64) :: stage(size(y))
 
     ! Process
     ! k1 = f as the derivatives were computed from the previous step
@@ -163,11 +162,11 @@ subroutine tsit_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
 
     ! Compute the remaining stages
     do i = 2, nstages
-        stage = y
+        yn = y
         do j = 1, i - 1
-            stage = stage + h * tsit_a(i,j) * k(:,j)
+            yn = yn + h * tsit_a(i,j) * k(:,j)
         end do
-        call sys%compute_rhs(x + tsit_c(i) * h, stage, k(:,i), args)
+        call sys%compute_rhs(x + tsit_c(i) * h, yn, k(:,i), args)
         call this%log_function_evaluation()
     end do
 

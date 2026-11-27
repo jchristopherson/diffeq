@@ -208,6 +208,9 @@ subroutine rk853_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
 
     ! Initialization
     n = size(y)
+    if (allocated(this%yerr2)) then
+        if (size(this%yerr2) /= n) deallocate(this%yerr2)
+    end if
     if (.not.allocated(this%yerr2)) allocate(this%yerr2(n))
 
     ! Process

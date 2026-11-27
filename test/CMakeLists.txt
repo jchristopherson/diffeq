@@ -83,7 +83,8 @@ foreach(error_case missing_ode short_grid step_limit tolerance_size
     bdf_step_exhaustion adams_step_exhaustion
     kc_newton_step_limit kc_newton_tolerance
     ggl_dimensions ggl_gains ggl_state_size ggl_rhs_size ggl_matrix_size
-    ggl_missing_callback ggl_tolerance ggl_singular_mass ggl_singular_constraints)
+    ggl_missing_callback ggl_tolerance ggl_singular_mass ggl_singular_constraints
+    ggl_sparse_singular ggl_sparse_bad_rhs_size ggl_sparse_bad_mass_size)
     add_test(
         NAME diffeq_error_${error_case}
         WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}

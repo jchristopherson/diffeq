@@ -44,12 +44,15 @@ module diffeq_multistep
     use iso_fortran_env
     use diffeq_base
     use diffeq_errors
-    use linalg, only : solve_least_squares_full
+    use linalg, only : csr_matrix
+    use diffeq_dense_workspace, only : dense_solver_workspace
+    use diffeq_sparse_workspace, only : sparse_solver_workspace
     implicit none
     private
     public :: multistep_integrator
     public :: newton_multistep_integrator
     public :: build_linearized_system
+    public :: build_sparse_linearized_system
     public :: predictor_step
     public :: multistep_corrector
     public :: multistep_integer_inquiry
@@ -63,6 +66,8 @@ module diffeq_multistep
 
     type, extends(ode_integrator), abstract :: multistep_integrator
         !! Defines the structure of a multi-step integrator.
+        !! Scratch buffers are retained and resized between solves. A single
+        !! integrator instance must not be used by concurrent or nested solves.
         integer, private :: m_maxOrder = 0
             ! The user-requested upper limit on the order of the method.  A
             ! value below one deprives the request of meaning and is taken to
@@ -80,7 +85,16 @@ module diffeq_multistep
         real(real64), private, allocatable, dimension(:,:) :: m_fHist
             ! Derivative history, most recent value in column one.
         real(real64), private, allocatable, dimension(:) :: m_denseNodes
+            !! Nodes retained for the most recent dense-output polynomial.
         real(real64), private, allocatable, dimension(:,:) :: m_denseDifferences
+            !! Reusable divided-difference table for dense output.
+        integer, private :: m_denseCount = 0
+            !! Number of active entries in the reusable dense-output table.
+        real(real64), private, allocatable :: m_orderDifferences(:,:), m_orderError(:)
+            !! Reusable divided differences and error estimate for order selection.
+        real(real64), private, allocatable :: m_solveF(:), m_solveY(:), m_solveYn(:), m_solveFn(:)
+        real(real64), private, allocatable :: m_solveFnew(:), m_solveYpred(:), m_solveYerr(:), m_solveYi(:), m_solveYe(:)
+            !! Reusable integration, prediction, and event buffers.
     contains
         procedure, public :: compute_dense_output => mi_dense_output
         procedure, private :: cache_dense_output => mi_cache_dense
@@ -115,6 +129,10 @@ module diffeq_multistep
             !! Gets a stored solution vector.
         procedure, public :: get_stored_derivative => mi_get_stored_f
             !! Gets a stored derivative vector.
+        procedure, public :: copy_stored_solution => mi_copy_stored_y
+            !! Copies a stored solution into caller-owned storage.
+        procedure, public :: copy_stored_derivative => mi_copy_stored_f
+            !! Copies a stored derivative into caller-owned storage.
         procedure, public :: reset_history => mi_reset_history
             !! Clears the stored solution history.
         procedure, public :: interpolate => mi_interpolate
@@ -140,14 +158,28 @@ module diffeq_multistep
         !! and permits a singular mass matrix, as the mass matrix then appears
         !! only as a factor within the iteration matrix.
         integer, private :: m_newtonIterLimit = 12
-            ! The limit on the number of Newton iterations allowed.
+            !! The limit on the number of Newton iterations allowed.
         real(real64), private :: m_newtonTolerance = 1.0d-8
-            ! The convergence tolerance on the Euclidean norm of the residual
-            ! for the Newton iteration process.
+            !! The convergence tolerance on the Euclidean norm of the residual
+            !! for the Newton iteration process.
+        type(csr_matrix), private :: m_jac
+            !! The sparse Jacobian matrix workspace.
+        type(sparse_solver_workspace), private :: m_sparseSolver
+            !! Reusable sparse Newton factorization and iteration scratch.
+        type(dense_solver_workspace), private :: m_denseSolver
+            !! Reusable dense rank-revealing Newton solver.
+        real(real64), private, allocatable :: m_denseA(:,:), m_denseRhs(:), m_denseDelta(:)
+            !! Dense Newton matrix, residual, and update storage.
+        real(real64), allocatable, dimension(:) :: m_rhs
+            !! The right-hand-side vector for the Newton iteration.
+        real(real64), allocatable, dimension(:) :: m_dir
+            !! The solution direction vector.
     contains
         procedure(build_linearized_system), public, pass, deferred :: &
             build_linear_system
             !! Builds the linearized system for the implicit corrector.
+        procedure(build_sparse_linearized_system), public, pass, deferred :: &
+            build_sparse_linear_system
         procedure, public :: correct => mi_newton_iteration
             !! Performs the Newton iteration process.
         procedure, public :: newton_iteration => mi_newton_iteration
@@ -160,6 +192,12 @@ module diffeq_multistep
             !! Gets the Newton iteration convergence tolerance.
         procedure, public :: set_newton_tolerance => mi_set_newton_tolerance
             !! Sets the Newton iteration convergence tolerance.
+        procedure, private :: allocate_sparse_workspace => mi_alloc_sparse_workspace
+            !! Allocates workspace for the sparse Newton solution.
+        procedure, public :: sparse_correct => mi_sparse_newton_iteration
+            !! Performs the Newton iteration process for sparse systems.
+        procedure, public :: sparse_newton_iteration => mi_sparse_newton_iteration
+            !! Performs the Newton iteration process for sparse systems.
     end type
 
     interface
@@ -181,6 +219,36 @@ module diffeq_multistep
             real(real64), intent(in), dimension(:) :: y
                 !! The current value(s) of the dependent variable(s).
             real(real64), intent(out), dimension(:,:) :: A
+                !! The N-by-N matrix \(A\), where, for BDF methods at least,
+                !! \(A = \frac{\alpha_o}{h_n} M - J\).
+            real(real64), intent(out), dimension(:) :: b
+                !! The N-element right-hand-side vector for the linear system.
+                !! This vector is the negative of the corrector residual so
+                !! that the Newton update is \(y \leftarrow y + \delta\).
+            class(*), intent(in), optional, target :: args
+                !! An optional argument that can be used to pass information
+                !! in and out of the differential equation subroutine.
+        end subroutine
+
+        subroutine build_sparse_linearized_system(this, sys, h, x, y, A, b, args)
+            !! Builds the linearized system used to compute the solution for the
+            !! implicit step via Newton iteration.  This routine forms matrices
+            !! \(A\) and \(b\) of the system \(A \delta = b\).
+            use iso_fortran_env, only : real64
+            use linalg, only : csr_matrix
+            import newton_multistep_integrator
+            import ode_container
+            class(newton_multistep_integrator), intent(inout) :: this
+                !! The newton_multistep_integrator object.
+            class(ode_container), intent(inout) :: sys
+                !! The ode_container object containing the ODE's to integrate.
+            real(real64), intent(in) :: h
+                !! The current step size.
+            real(real64), intent(in) :: x
+                !! The current value of the independent variable.
+            real(real64), intent(in), dimension(:) :: y
+                !! The current value(s) of the dependent variable(s).
+            type(csr_matrix), intent(out) :: A
                 !! The N-by-N matrix \(A\), where, for BDF methods at least,
                 !! \(A = \frac{\alpha_o}{h_n} M - J\).
             real(real64), intent(out), dimension(:) :: b
@@ -345,19 +413,27 @@ subroutine mi_newton_iteration(this, sys, h, x, ypred, ynew, converged, args)
     logical, intent(out) :: converged
         !! True if the Newton iteration process converged; else, false.
     class(*), intent(in), optional, target :: args
-        !! An optional argument that can be used to pass information in and 
+        !! An optional argument that can be used to pass information in and
         !! out of the differential equation subroutine.
 
     ! Local Variables
-    integer :: i, n, nmax
+    integer :: i, n, nmax, flag
     real(real64) :: tol
-    real(real64), allocatable, dimension(:,:) :: A
-    real(real64), allocatable, dimension(:) :: b, delta
+
+    ! Dispatch to the sparse iteration when the user has supplied a sparse
+    ! Jacobian.  The dense path is otherwise unchanged.
+    if (sys%has_sparse_jacobian()) then
+        call this%sparse_correct(sys, h, x, ypred, ynew, converged, args)
+        return
+    end if
 
     ! Initialization
     converged = .false.
     n = size(ypred)
-    allocate(A(n,n), b(n))
+    if (allocated(this%m_denseRhs)) then
+        if (size(this%m_denseRhs) /= n) deallocate(this%m_denseA, this%m_denseRhs, this%m_denseDelta)
+    end if
+    if (.not.allocated(this%m_denseRhs)) allocate(this%m_denseA(n,n), this%m_denseRhs(n), this%m_denseDelta(n))
     nmax = this%get_newton_step_limit()
     tol = this%get_newton_tolerance()
     ynew = ypred
@@ -368,21 +444,113 @@ subroutine mi_newton_iteration(this, sys, h, x, ypred, ynew, converged, args)
     ! Process
     do i = 1, nmax
         ! Create the system matrices
-        call this%build_linear_system(sys, h, x + h, ynew, A, b, args)
+        call this%build_linear_system(sys, h, x + h, ynew, this%m_denseA, this%m_denseRhs, args)
 
         ! Solve the system
-        delta = solve_least_squares_full(A, b)
+        call this%m_denseSolver%factor(this%m_denseA, flag, qr_only = .true.)
+        if (flag /= 0) error stop DIFFEQ_INVALID_OPERATION_ERROR
+        call this%m_denseSolver%solve(this%m_denseRhs, this%m_denseDelta, flag)
+        if (flag /= 0) error stop DIFFEQ_INVALID_OPERATION_ERROR
         call this%log_matrix_factorization()
 
         ! Update the solution and test for convergence.  The tolerance is
         ! applied relative to the size of the solution so that the test
         ! behaves consistently across problems of differing scale.
-        ynew = ynew + delta
-        if (norm2(delta) <= tol * max(1.0d0, norm2(ynew))) then
+        ynew = ynew + this%m_denseDelta
+        if (norm2(this%m_denseDelta) <= tol * max(1.0d0, norm2(ynew))) then
             converged = .true.
             exit
         end if
     end do
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine mi_sparse_newton_iteration(this, sys, h, x, ypred, ynew, converged, &
+    args)
+    !! Performs the Newton iteration process for sparse systems.
+    !!
+    !! The iteration solves the implicit corrector equation supplied by
+    !! build_linear_system.
+    class(newton_multistep_integrator), intent(inout) :: this
+        !! The newton_multistep_integrator object.
+    class(ode_container), intent(inout) :: sys
+        !! The ode_container object containing the ODE's to integrate.
+    real(real64), intent(in) :: h
+        !! The current step size.
+    real(real64), intent(in) :: x
+        !! The current value of the independent variable.
+    real(real64), intent(in), dimension(:) :: ypred
+        !! The N-element array containing the predicted values at x + h.
+    real(real64), intent(out), dimension(:) :: ynew
+        !! The new estimate of the dependent variables.
+    logical, intent(out) :: converged
+        !! True if the Newton iteration process converged; else, false.
+    class(*), intent(in), optional, target :: args
+        !! An optional argument that can be used to pass information in and
+        !! out of the differential equation subroutine.
+
+    ! Local Variables
+    integer :: i, n, nmax, flag
+    real(real64) :: tol
+
+    ! Initialization
+    converged = .false.
+    n = size(ypred)
+    nmax = this%get_newton_step_limit()
+    tol = this%get_newton_tolerance()
+    ynew = ypred
+    call this%allocate_sparse_workspace(n)
+
+    ! Input Check
+    if (size(ynew) /= n) error stop DIFFEQ_ARRAY_SIZE_ERROR
+
+    ! Process
+    do i = 1, nmax
+        ! Create the system matrices
+        call this%build_sparse_linear_system(sys, h, x + h, ynew, this%m_jac, &
+            this%m_rhs, args = args)
+
+        ! Solve the linear system
+        call this%m_sparseSolver%factor(this%m_jac, flag)
+        if (flag /= 0) exit
+        call this%m_sparseSolver%solve(this%m_jac, this%m_rhs, this%m_dir, flag)
+        if (flag /= 0) exit
+        call this%log_matrix_factorization()
+
+        ! Update the solution
+        ynew = ynew + this%m_dir
+        if (norm2(this%m_dir) <= tol * max(1.0d0, norm2(ynew))) then
+            converged = .true.
+            exit
+        end if
+    end do
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine mi_alloc_sparse_workspace(this, n)
+    !! Allocates workspace arrays for sparse Newton iteration.
+    class(newton_multistep_integrator), intent(inout) :: this
+        !! The newton_multistep_integrator object.
+    integer, intent(in) :: n
+        !! The equation count.
+
+    if (allocated(this%m_rhs)) then
+        if (size(this%m_rhs) /= n) then
+            deallocate(this%m_rhs)
+            allocate(this%m_rhs(n))
+        end if
+    else
+        allocate(this%m_rhs(n))
+    end if
+
+    if (allocated(this%m_dir)) then
+        if (size(this%m_dir) /= n) then
+            deallocate(this%m_dir)
+            allocate(this%m_dir(n))
+        end if
+    else
+        allocate(this%m_dir(n))
+    end if
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -530,6 +698,33 @@ pure function mi_get_stored_f(this, i) result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
+pure subroutine mi_copy_stored_y(this, i, y)
+    !! Copies the indexed solution without allocating a function result.
+    class(multistep_integrator), intent(in) :: this
+        !! Integrator containing the solution history.
+    integer, intent(in) :: i
+        !! One-based history index, with the most recent point first.
+    real(real64), intent(out) :: y(:)
+        !! Destination with one entry per state.
+    if (i < 1 .or. i > this%m_nHist) error stop DIFFEQ_INVALID_INPUT_ERROR
+    if (size(y) /= size(this%m_yHist,1)) error stop DIFFEQ_ARRAY_SIZE_ERROR
+    y = this%m_yHist(:,i)
+end subroutine
+
+pure subroutine mi_copy_stored_f(this, i, f)
+    !! Copies the indexed derivative without allocating a function result.
+    class(multistep_integrator), intent(in) :: this
+        !! Integrator containing the derivative history.
+    integer, intent(in) :: i
+        !! One-based history index, with the most recent point first.
+    real(real64), intent(out) :: f(:)
+        !! Destination with one entry per state.
+    if (i < 1 .or. i > this%m_nHist) error stop DIFFEQ_INVALID_INPUT_ERROR
+    if (size(f) /= size(this%m_fHist,1)) error stop DIFFEQ_ARRAY_SIZE_ERROR
+    f = this%m_fHist(:,i)
+end subroutine
+
+! ------------------------------------------------------------------------------
 subroutine mi_reset_history(this)
     !! Clears the stored solution history.
     !!
@@ -640,14 +835,16 @@ subroutine mi_cache_dense(this, x_start, x_end)
     integer :: np, n
     np = min(this%m_order + 1, this%m_nHist)
     n = size(this%m_yHist, 1)
-    this%m_denseNodes = this%m_xHist(1:np)
     if (allocated(this%m_denseDifferences)) then
         if (size(this%m_denseDifferences, 1) /= n .or. &
-            size(this%m_denseDifferences, 2) /= np) deallocate(this%m_denseDifferences)
+            size(this%m_denseDifferences, 2) < np) deallocate(this%m_denseDifferences, this%m_denseNodes)
     end if
-    if (.not.allocated(this%m_denseDifferences)) allocate(this%m_denseDifferences(n, np))
-    call newton_divided_differences(this%m_denseNodes, &
-        this%m_yHist(:,1:np), this%m_denseDifferences)
+    if (.not.allocated(this%m_denseDifferences)) allocate( &
+        this%m_denseDifferences(n,size(this%m_xHist)), this%m_denseNodes(size(this%m_xHist)))
+    this%m_denseCount = np
+    this%m_denseNodes(1:np) = this%m_xHist(1:np)
+    call newton_divided_differences(this%m_denseNodes(1:np), &
+        this%m_yHist(:,1:np), this%m_denseDifferences(:,1:np))
     call this%set_dense_interval(x_start, x_end, n)
 end subroutine
 
@@ -655,7 +852,8 @@ subroutine mi_dense_output(this, x, y)
     class(multistep_integrator), intent(in) :: this
     real(real64), intent(in) :: x
     real(real64), intent(out) :: y(:)
-    call evaluate_newton_polynomial(this%m_denseNodes, this%m_denseDifferences, x, y)
+    call evaluate_newton_polynomial(this%m_denseNodes(1:this%m_denseCount), &
+        this%m_denseDifferences(:,1:this%m_denseCount), x, y)
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -735,8 +933,6 @@ subroutine mi_adjust_order_step(this, yprev, ynew, ek, h)
     ! Local Variables
     integer :: k, kmax, kbest, mmax, n
     real(real64) :: ekc, ekm1, ekp1, r, rbest, safe
-    real(real64), allocatable, dimension(:) :: errv
-    real(real64), allocatable, dimension(:,:) :: dd
 
     ! Initialization
     n = size(ynew)
@@ -754,26 +950,31 @@ subroutine mi_adjust_order_step(this, yprev, ynew, ek, h)
     ! them is not distorted by the differing constants of each order.
     mmax = min(this%m_nHist, k + 3)
     if (mmax >= 2) then
-        allocate(dd(n, mmax))
+        if (allocated(this%m_orderError)) then
+            if (size(this%m_orderError) /= n .or. size(this%m_orderDifferences,2) < mmax) &
+                deallocate(this%m_orderError, this%m_orderDifferences)
+        end if
+        if (.not.allocated(this%m_orderError)) allocate(this%m_orderError(n), &
+            this%m_orderDifferences(n,size(this%m_xHist)))
         call newton_divided_differences(this%m_xHist(1:mmax), &
-            this%m_yHist(:,1:mmax), dd)
+            this%m_yHist(:,1:mmax), this%m_orderDifferences(:,1:mmax))
 
         if (mmax >= k + 2) then
-            errv = this%get_truncation_constant(k) * &
-                history_difference(this%m_xHist, dd, k + 1)
-            ekc = this%compute_error_norm(yprev, ynew, errv)
+            call history_difference(this%m_xHist, this%m_orderDifferences, k + 1, this%m_orderError)
+            this%m_orderError = this%get_truncation_constant(k) * this%m_orderError
+            ekc = this%compute_error_norm(yprev, ynew, this%m_orderError)
         end if
 
         if (k > 1 .and. mmax >= k + 1) then
-            errv = this%get_truncation_constant(k - 1) * &
-                history_difference(this%m_xHist, dd, k)
-            ekm1 = this%compute_error_norm(yprev, ynew, errv)
+            call history_difference(this%m_xHist, this%m_orderDifferences, k, this%m_orderError)
+            this%m_orderError = this%get_truncation_constant(k - 1) * this%m_orderError
+            ekm1 = this%compute_error_norm(yprev, ynew, this%m_orderError)
         end if
 
         if (k < kmax .and. mmax >= k + 3) then
-            errv = this%get_truncation_constant(k + 1) * &
-                history_difference(this%m_xHist, dd, k + 2)
-            ekp1 = this%compute_error_norm(yprev, ynew, errv)
+            call history_difference(this%m_xHist, this%m_orderDifferences, k + 2, this%m_orderError)
+            this%m_orderError = this%get_truncation_constant(k + 1) * this%m_orderError
+            ekp1 = this%compute_error_norm(yprev, ynew, this%m_orderError)
         end if
     end if
 
@@ -832,13 +1033,13 @@ contains
         rst = (1.0d0 / max(e, min_error))**(1.0d0 / (korder + 1.0d0))
     end function
 
-    pure function history_difference(xh, dtab, m) result(rst)
+    pure subroutine history_difference(xh, dtab, m, rst)
         !! Forms the difference between the accepted solution and the value a
         !! degree m-1 extrapolation of the preceding points would have given.
         real(real64), intent(in), dimension(:) :: xh
         real(real64), intent(in), dimension(:,:) :: dtab
         integer, intent(in) :: m
-        real(real64), allocatable, dimension(:) :: rst
+        real(real64), intent(out), dimension(:) :: rst
         integer :: i
         real(real64) :: p
         p = 1.0d0
@@ -846,7 +1047,7 @@ contains
             p = p * (xh(1) - xh(i))
         end do
         rst = dtab(:,m+1) * p
-    end function
+    end subroutine
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -885,8 +1086,6 @@ subroutine mi_ode_solver(this, sys, x, iv, store_iv, args)
         event_found
     integer :: i, j, n, neqn, nsteps, k, nfail, nevents
     real(real64) :: h, xo, xn, xmax, e, minstep, xe
-    real(real64), allocatable, dimension(:) :: f, y, yn, fn, fnew, ypred, &
-        yerr, yi, ye
 
     ! Initialization
     n = size(x)
@@ -912,18 +1111,17 @@ subroutine mi_ode_solver(this, sys, x, iv, store_iv, args)
     minstep = this%get_minimum_step_size()
     nfail = 0
 
-    ! Memory Allocations
-    allocate( &
-        f(neqn), &
-        y(neqn), &
-        yn(neqn), &
-        fn(neqn), &
-        fnew(neqn), &
-        ypred(neqn), &
-        yerr(neqn), &
-        yi(neqn) &
-    )
-    if (find_events) allocate(ye(neqn))
+    ! Reuse integration buffers across solves of the same size.
+    if (allocated(this%m_solveF)) then
+        if (size(this%m_solveF) /= neqn) deallocate(this%m_solveF, this%m_solveY, this%m_solveYn, &
+            this%m_solveFn, this%m_solveFnew, this%m_solveYpred, this%m_solveYerr, this%m_solveYi, this%m_solveYe)
+    end if
+    if (.not.allocated(this%m_solveF)) allocate(this%m_solveF(neqn), this%m_solveY(neqn), &
+        this%m_solveYn(neqn), this%m_solveFn(neqn), this%m_solveFnew(neqn), this%m_solveYpred(neqn), &
+        this%m_solveYerr(neqn), this%m_solveYi(neqn), this%m_solveYe(neqn))
+    associate(f => this%m_solveF, y => this%m_solveY, yn => this%m_solveYn, fn => this%m_solveFn, &
+        fnew => this%m_solveFnew, ypred => this%m_solveYpred, yerr => this%m_solveYerr, &
+        yi => this%m_solveYi, ye => this%m_solveYe)
 
     ! The method restarts at first order.  A first-order formula needs no
     ! history beyond the initial condition, so no starting procedure and no
@@ -1080,6 +1278,7 @@ subroutine mi_ode_solver(this, sys, x, iv, store_iv, args)
 
     ! If we're here, the solver has run out of allowable steps
     error stop DIFFEQ_ITERATION_COUNT_EXCEEDED_ERROR
+    end associate
 end subroutine
 
 ! ------------------------------------------------------------------------------

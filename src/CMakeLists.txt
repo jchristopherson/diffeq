@@ -6,6 +6,8 @@ set(DIFFEQ_SOURCES
     ${dir}/diffeq.f90
     ${dir}/diffeq_base.f90
     ${dir}/diffeq_errors.f90
+    ${dir}/diffeq_dense_workspace.f90
+    ${dir}/diffeq_sparse_workspace.f90
     ${dir}/containers/diffeq_containers.f90
     ${dir}/containers/diffeq_container_io.f90
     ${dir}/singlestep/diffeq_singlestep.f90
@@ -59,8 +61,8 @@ else()
     set(AUTODIFF_LIBRARIES autodiff::autodiff)
     set(BUILD_AUTODIFF FALSE)
 endif()
-find_package(linalg 3.0 QUIET)
 
+find_package(linalg 3.0 QUIET)
 if (NOT linalg_FOUND)
     message(STATUS "LINALG could not be found.  A reference version will be employed.")
     FetchContent_Declare(
@@ -82,6 +84,7 @@ target_link_libraries(
     PUBLIC
     ${LINALG_LIBRARIES}
     ${AUTODIFF_LIBRARIES}
+    ${NONLIN_LIBRARIES}
 )
 if (OpenMP_Fortran_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_Fortran)

@@ -15,6 +15,7 @@
 
 program diffeq_error_tests
     use diffeq
+    use linalg, only : csr_matrix, diag_to_csr
     implicit none
 
     character(len=32) :: test_name
@@ -26,6 +27,7 @@ program diffeq_error_tests
     type(ggl_container) :: ggl_mdl
     real(real64), dimension(8) :: ggl_state, ggl_rhs
     real(real64), dimension(8,8) :: ggl_mass
+    type(csr_matrix) :: ggl_sparse_mass
     logical :: consistent
 
     call get_command_argument(1, test_name)
@@ -62,7 +64,8 @@ program diffeq_error_tests
     case ("ggl_gains")
         call ggl_mdl%initialize(2, 1, alpha = -1.0d0)
     case ("ggl_state_size", "ggl_rhs_size", "ggl_matrix_size", "ggl_missing_callback", &
-        "ggl_tolerance", "ggl_singular_mass", "ggl_singular_constraints")
+        "ggl_tolerance", "ggl_singular_mass", "ggl_singular_constraints", &
+        "ggl_sparse_singular", "ggl_sparse_bad_rhs_size", "ggl_sparse_bad_mass_size")
         call ggl_mdl%initialize(2, 1)
         ggl_mdl%fcn => constant_ode
         ggl_mdl%constraints => linear_constraints
@@ -84,6 +87,15 @@ program diffeq_error_tests
         case ("ggl_singular_mass")
             ggl_mdl%mass_matrix => singular_mass
             call ggl_mdl%compute_rhs(0.0d0, ggl_state(1:6), ggl_rhs(1:6))
+        case ("ggl_sparse_singular")
+            ggl_mdl%sparse_mass_matrix => singular_sparse_mass
+            call ggl_mdl%compute_rhs(0.0d0, ggl_state(1:6), ggl_rhs(1:6))
+        case ("ggl_sparse_bad_rhs_size")
+            ggl_mdl%sparse_mass_matrix => wrong_sparse_mass
+            call ggl_mdl%compute_rhs(0.0d0, ggl_state(1:6), ggl_rhs(1:6))
+        case ("ggl_sparse_bad_mass_size")
+            ggl_mdl%sparse_mass_matrix => wrong_sparse_mass
+            call ggl_mdl%compute_sparse_mass_matrix(0.0d0, ggl_state(1:6), ggl_sparse_mass)
         case ("ggl_singular_constraints")
             call ggl_mdl%initialize(2, 2)
             call ggl_mdl%initialize_multipliers(0.0d0, ggl_state)
@@ -124,6 +136,20 @@ contains
         real(real64), intent(out), dimension(:,:) :: mass
         class(*), intent(in), optional :: args
         mass = 0.0d0
+    end subroutine
+
+    subroutine singular_sparse_mass(x, q, mass, args)
+        real(real64), intent(in) :: x, q(:)
+        type(csr_matrix), intent(out) :: mass
+        class(*), intent(in), optional :: args
+        mass = diag_to_csr([1.0d0, 0.0d0])
+    end subroutine
+
+    subroutine wrong_sparse_mass(x, q, mass, args)
+        real(real64), intent(in) :: x, q(:)
+        type(csr_matrix), intent(out) :: mass
+        class(*), intent(in), optional :: args
+        mass = diag_to_csr([1.0d0, 1.0d0, 1.0d0])
     end subroutine
 
     subroutine constant_ode(x, y, dydx, args)

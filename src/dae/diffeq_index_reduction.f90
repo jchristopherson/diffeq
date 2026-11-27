@@ -51,7 +51,13 @@ module diffeq_index_reduction
     use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
     use diffeq_base
     use diffeq_errors
-    use linalg, only : identity, lu_factor, solve_lu
+    use linalg, only : identity, csr_matrix, &
+        create_empty_csr_matrix, csr_to_dense, dense_to_csr, size, &
+        validate_csr_storage
+    use linalg_errors, only : LA_SINGULAR_MATRIX_ERROR, LA_CONVERGENCE_ERROR
+    use diffeq_sparse_workspace, only : sparse_solver_workspace
+    use lapack, only : dgetrf, dgetrs
+    use omp_lib, only : omp_get_thread_num, omp_get_num_threads
     implicit none
     private
     public :: ggl_container
@@ -129,6 +135,26 @@ module diffeq_index_reduction
         end subroutine
     end interface
 
+    type :: ggl_linear_workspace
+        real(real64), allocatable :: factors(:,:)
+        integer, allocatable :: pivots(:)
+        type(csr_matrix) :: sparse_mass
+        type(sparse_solver_workspace) :: sparse_solver
+        real(real64), allocatable :: sparse_solution(:)
+    end type
+
+    type :: ggl_rhs_workspace
+        real(real64), allocatable :: position(:), curvature(:), qdot(:)
+        real(real64), allocatable :: gradient(:,:), mass(:,:), acceleration(:,:)
+        type(ggl_linear_workspace) :: linear
+    end type
+
+    type :: ggl_initial_workspace
+        real(real64), allocatable :: position(:), rhs(:)
+        real(real64), allocatable :: gradient(:,:), mass(:,:), inverse_gradient(:,:), multiplier(:,:), constraint_matrix(:,:)
+        type(ggl_linear_workspace) :: physical_linear, constraint_linear
+    end type
+
     type, extends(ode_container) :: ggl_container
         !! Mechanical model adapter implementing stabilized index-1 GGL.
         !!
@@ -165,10 +191,22 @@ module diffeq_index_reduction
         !! The inherited fcn_ad is not supported: differentiating only the
         !! applied force would omit the real-valued constraint assembly.
         !! Assigning fcn_ad causes DIFFEQ_INVALID_OPERATION_ERROR.
+        !!
+        !! An optional inherited `sparse_mass_matrix` receives q of length N
+        !! and writes the physical N-by-N sparse mass. A dense mass callback,
+        !! if assigned, takes precedence; otherwise the mass defaults to
+        !! identity. Sparse physical mass solves use ILUT-preconditioned GMRES.
+        !! The augmented sparse matrix diag(I,M,0,0) is assembled internally.
+        !! A sparse `sparse_jacobian` must, like
+        !! `jacobian`, differentiate the complete augmented RHS.
+        !! RHS scratch storage is retained per OpenMP thread. A container
+        !! must not be used concurrently by independent or nested integrations.
         integer, private :: m_coordinates = 0
         integer, private :: m_constraints = 0
         real(real64), private :: m_alpha = 1.0d0
         real(real64), private :: m_beta = 1.0d0
+        type(ggl_rhs_workspace), private, allocatable :: m_rhs_work(:)
+        type(ggl_initial_workspace), private :: m_initial_work
         procedure(dae_algebraic_constraints), pointer, public, nopass :: constraints => null()
             !! Required callback receiving N coordinates q and writing M
             !! autonomous position residuals g(q), including off-manifold values.
@@ -182,9 +220,11 @@ module diffeq_index_reduction
         procedure :: set_stabilization_parameters => ggl_set_stabilization
         procedure :: get_state_count => ggl_state_count
         procedure :: has_mass_matrix => ggl_has_mass
+        procedure :: has_sparse_mass_matrix => ggl_has_sparse_mass
         procedure :: get_is_ode_defined => ggl_is_defined
         procedure :: compute_rhs => ggl_rhs
         procedure :: compute_mass_matrix => ggl_mass
+        procedure :: compute_sparse_mass_matrix => ggl_sparse_mass
         procedure :: validate_initial_conditions => ggl_validate
         procedure :: initialize_multipliers => ggl_initialize_multipliers
         procedure, private :: check_state => ggl_check_state
@@ -233,9 +273,14 @@ subroutine ggl_initialize(this, coordinate_count, constraint_count, alpha, beta)
         !! in inverse independent-variable units. Zero disables the respective
         !! damping term without disabling the differentiated constraint.
     real(real64) :: position_rate, velocity_rate
+    type(ggl_initial_workspace) :: empty_work
 
     if (coordinate_count < 1 .or. constraint_count < 1 .or. &
         constraint_count > coordinate_count) error stop DIFFEQ_INVALID_INPUT_ERROR
+    if (coordinate_count /= this%m_coordinates .or. constraint_count /= this%m_constraints) then
+        if (allocated(this%m_rhs_work)) deallocate(this%m_rhs_work)
+        this%m_initial_work = empty_work
+    end if
     this%m_coordinates = coordinate_count
     this%m_constraints = constraint_count
     position_rate = 1.0d0
@@ -287,6 +332,18 @@ function ggl_has_mass(this) result(rst)
 end function
 
 ! ------------------------------------------------------------------------------
+function ggl_has_sparse_mass(this) result(rst)
+    !! Always returns true: the augmented sparse matrix diag(I,M,0,0) is
+    !! assembled internally, even when the physical matrix is identity.
+    class(ggl_container), intent(in) :: this
+        !! Container being queried; initialization is not required.
+    logical :: rst
+        !! True, indicating that the sparse mass-matrix path applies.
+
+    rst = .true.
+end function
+
+! ------------------------------------------------------------------------------
 function ggl_is_defined(this) result(rst)
     !! Checks configuration and all required callback associations. This does
     !! not evaluate callbacks or certify constraint rank or mass regularity.
@@ -320,9 +377,10 @@ end subroutine
 
 ! ------------------------------------------------------------------------------
 subroutine ggl_physical_mass(this, x, q, mass, args)
-    !! Evaluates the physical mass callback, or supplies identity. This private
-    !! helper assumes the caller has checked array dimensions. Singular masses
-    !! are diagnosed by the linear solve, not by this evaluation.
+    !! Evaluates the physical mass callback, or supplies identity. A sparse
+    !! physical callback is expanded to dense form. This private helper assumes
+    !! the caller has checked array dimensions. Singular masses are diagnosed
+    !! by the linear solve, not by this evaluation.
     class(ggl_container), intent(inout) :: this
         !! Container holding the optional mechanical mass callback.
     real(real64), intent(in) :: x
@@ -333,12 +391,42 @@ subroutine ggl_physical_mass(this, x, q, mass, args)
         !! Physical N-by-N matrix, not the augmented singular matrix.
     class(*), intent(in), optional :: args
         !! Optional user-owned parameters forwarded to the callback.
+    type(csr_matrix) :: sparse
 
     if (associated(this%mass_matrix)) then
         call this%mass_matrix(x, q, mass, args)
+    else if (associated(this%sparse_mass_matrix)) then
+        call this%sparse_mass_matrix(x, q, sparse, args)
+        if (size(sparse, 1) /= size(q) .or. size(sparse, 2) /= size(q)) &
+            error stop DIFFEQ_MATRIX_SIZE_ERROR
+        if (validate_csr_storage(sparse) /= 0) error stop DIFFEQ_INVALID_INPUT_ERROR
+        mass = csr_to_dense(sparse)
     else
         mass = identity(size(q))
     end if
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine ggl_prepare_rhs_workspace(this, tid)
+    class(ggl_container), intent(inout) :: this
+    integer, intent(out) :: tid
+    integer :: threads, n, m
+
+    tid = omp_get_thread_num() + 1
+    threads = omp_get_num_threads()
+    n = this%m_coordinates
+    m = this%m_constraints
+    !$omp critical (ggl_workspace_setup)
+    if (allocated(this%m_rhs_work)) then
+        if (size(this%m_rhs_work) < threads) deallocate(this%m_rhs_work)
+    end if
+    if (.not.allocated(this%m_rhs_work)) allocate(this%m_rhs_work(threads))
+    if (.not.allocated(this%m_rhs_work(tid)%position)) then
+        allocate(this%m_rhs_work(tid)%position(m), this%m_rhs_work(tid)%curvature(m), &
+            this%m_rhs_work(tid)%qdot(n), this%m_rhs_work(tid)%gradient(m,n), &
+            this%m_rhs_work(tid)%acceleration(n,1))
+    end if
+    !$omp end critical (ggl_workspace_setup)
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -359,9 +447,7 @@ subroutine ggl_rhs(this, x, y, dydx, args)
         !! position residual, and stabilized velocity residual.
     class(*), intent(in), optional :: args
         !! Optional user parameters forwarded unchanged to every callback.
-    integer :: coordinates, constraints, physical
-    real(real64), allocatable, dimension(:) :: position, curvature, qdot
-    real(real64), allocatable, dimension(:,:) :: gradient, mass, acceleration
+    integer :: coordinates, constraints, physical, tid
 
     call this%check_state(y)
     if (.not.this%get_is_ode_defined()) error stop DIFFEQ_NULL_POINTER_ERROR
@@ -369,25 +455,31 @@ subroutine ggl_rhs(this, x, y, dydx, args)
     coordinates = this%m_coordinates
     constraints = this%m_constraints
     physical = 2 * coordinates
-    allocate(position(constraints), curvature(constraints), qdot(coordinates), &
-        gradient(constraints,coordinates), mass(coordinates,coordinates), &
-        acceleration(coordinates,1))
-    call this%constraints(x, y(1:coordinates), position, args)
-    call this%constraint_jacobian(x, y(1:coordinates), gradient, args)
-    qdot = y(coordinates+1:physical) + &
-        matmul(transpose(gradient), y(physical+constraints+1:))
-    dydx(1:coordinates) = qdot
+    call ggl_prepare_rhs_workspace(this, tid)
+    associate(work => this%m_rhs_work(tid))
+    call this%constraints(x, y(1:coordinates), work%position, args)
+    call this%constraint_jacobian(x, y(1:coordinates), work%gradient, args)
+    work%qdot = y(coordinates+1:physical) + &
+        matmul(transpose(work%gradient), y(physical+constraints+1:))
+    dydx(1:coordinates) = work%qdot
     call this%fcn(x, y(1:physical), dydx(coordinates+1:physical), args)
     dydx(coordinates+1:physical) = dydx(coordinates+1:physical) - &
-        matmul(transpose(gradient), y(physical+1:physical+constraints))
-    call this%physical_mass(x, y(1:coordinates), mass, args)
-    acceleration(:,1) = dydx(coordinates+1:physical)
-    call ggl_linear_solve(mass, acceleration)
-    call this%constraint_curvature(x, y(1:coordinates), qdot, &
-        y(coordinates+1:physical), curvature, args)
-    dydx(physical+1:physical+constraints) = matmul(gradient, qdot) + this%m_alpha * position
-    dydx(physical+constraints+1:) = curvature + matmul(gradient, acceleration(:,1)) + &
-        this%m_beta * matmul(gradient, y(coordinates+1:physical))
+        matmul(transpose(work%gradient), y(physical+1:physical+constraints))
+    work%acceleration(:,1) = dydx(coordinates+1:physical)
+    if (associated(this%sparse_mass_matrix) .and. .not.associated(this%mass_matrix)) then
+        call ggl_sparse_physical_solve(this%sparse_mass_matrix, x, y(1:coordinates), &
+            work%acceleration, work%linear, args)
+    else
+        if (.not.allocated(work%mass)) allocate(work%mass(coordinates,coordinates))
+        call this%physical_mass(x, y(1:coordinates), work%mass, args)
+        call ggl_linear_solve(work%mass, work%acceleration, work%linear)
+    end if
+    call this%constraint_curvature(x, y(1:coordinates), work%qdot, &
+        y(coordinates+1:physical), work%curvature, args)
+    dydx(physical+1:physical+constraints) = matmul(work%gradient, work%qdot) + this%m_alpha * work%position
+    dydx(physical+constraints+1:) = work%curvature + matmul(work%gradient, work%acceleration(:,1)) + &
+        this%m_beta * matmul(work%gradient, y(coordinates+1:physical))
+    end associate
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -416,6 +508,54 @@ subroutine ggl_mass(this, x, y, m, args)
     m(1:coordinates,1:coordinates) = identity(coordinates)
     call this%physical_mass(x, y(1:coordinates), &
         m(coordinates+1:2*coordinates,coordinates+1:2*coordinates), args)
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine ggl_sparse_mass(this, x, y, m, args)
+    !! Assembles the sparse augmented matrix diag(I,M,0,0) from the physical
+    !! mass. Dense and sparse physical callbacks follow the same precedence as
+    !! [[ggl_mass]]; without either callback the physical matrix is identity.
+    class(ggl_container), intent(inout) :: this
+        !! Container defining dimensions and the optional physical sparse mass.
+    real(real64), intent(in) :: x
+        !! Current independent-variable value.
+    real(real64), intent(in), dimension(:) :: y
+        !! Augmented state [q,v,lambda,mu] of length 2N+2M.
+    type(csr_matrix), intent(out) :: m
+        !! Sparse augmented matrix with side length 2N+2M.
+    class(*), intent(in), optional :: args
+        !! Optional user parameters forwarded to the physical mass callback.
+    type(csr_matrix) :: physical
+    integer :: coordinates, total, i, nnz
+    real(real64), allocatable, dimension(:,:) :: dense
+
+    call this%check_state(y)
+    coordinates = this%m_coordinates
+    total = size(y)
+    if (associated(this%mass_matrix)) then
+        allocate(dense(coordinates, coordinates))
+        call this%mass_matrix(x, y(1:coordinates), dense, args)
+        physical = dense_to_csr(dense)
+    else if (associated(this%sparse_mass_matrix)) then
+        call this%sparse_mass_matrix(x, y(1:coordinates), physical, args)
+    else
+        physical = dense_to_csr(identity(coordinates))
+    end if
+    if (size(physical, 1) /= coordinates .or. size(physical, 2) /= coordinates) &
+        error stop DIFFEQ_MATRIX_SIZE_ERROR
+    if (validate_csr_storage(physical) /= 0) error stop DIFFEQ_INVALID_INPUT_ERROR
+    nnz = size(physical%values)
+
+    m = create_empty_csr_matrix(total, total, coordinates + nnz)
+    do i = 1, coordinates
+        m%row_indices(i) = i
+        m%column_indices(i) = i
+        m%values(i) = 1.0d0
+        m%row_indices(coordinates+i) = coordinates + physical%row_indices(i)
+    end do
+    m%row_indices(2*coordinates+1:) = coordinates + nnz + 1
+    m%column_indices(coordinates+1:) = coordinates + physical%column_indices
+    m%values(coordinates+1:) = physical%values
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -470,34 +610,70 @@ subroutine ggl_initialize_multipliers(this, x, y, args)
     class(*), intent(in), optional :: args
         !! Optional user-owned parameters forwarded to model callbacks.
     integer :: coordinates, constraints, physical
-    real(real64), allocatable, dimension(:) :: position, rhs
-    real(real64), allocatable, dimension(:,:) :: gradient, mass, inverse_gradient, multiplier
 
     call this%check_state(y)
     if (.not.this%get_is_ode_defined()) error stop DIFFEQ_NULL_POINTER_ERROR
     coordinates = this%m_coordinates
     constraints = this%m_constraints
     physical = 2 * coordinates
-    allocate(position(constraints), rhs(size(y)), gradient(constraints,coordinates), &
-        mass(coordinates,coordinates), inverse_gradient(coordinates,constraints), &
-        multiplier(constraints,1))
-    call this%constraints(x, y(1:coordinates), position, args)
-    call this%constraint_jacobian(x, y(1:coordinates), gradient, args)
-    multiplier(:,1) = -matmul(gradient, y(coordinates+1:physical)) - this%m_alpha * position
-    call ggl_linear_solve(matmul(gradient, transpose(gradient)), multiplier)
-    y(physical+constraints+1:) = multiplier(:,1)
+    associate(work => this%m_initial_work)
+    if (.not.allocated(work%position)) then
+        allocate(work%position(constraints), work%rhs(size(y)), &
+            work%gradient(constraints,coordinates), work%inverse_gradient(coordinates,constraints), &
+            work%multiplier(constraints,1), work%constraint_matrix(constraints,constraints))
+    end if
+    call this%constraints(x, y(1:coordinates), work%position, args)
+    call this%constraint_jacobian(x, y(1:coordinates), work%gradient, args)
+    work%multiplier(:,1) = -matmul(work%gradient, y(coordinates+1:physical)) - this%m_alpha * work%position
+    work%constraint_matrix = matmul(work%gradient, transpose(work%gradient))
+    call ggl_linear_solve(work%constraint_matrix, work%multiplier, work%constraint_linear)
+    y(physical+constraints+1:) = work%multiplier(:,1)
     y(physical+1:physical+constraints) = 0.0d0
-    call this%compute_rhs(x, y, rhs, args)
-    call this%physical_mass(x, y(1:coordinates), mass, args)
-    inverse_gradient = transpose(gradient)
-    call ggl_linear_solve(mass, inverse_gradient)
-    multiplier(:,1) = rhs(physical+constraints+1:)
-    call ggl_linear_solve(matmul(gradient, inverse_gradient), multiplier)
-    y(physical+1:physical+constraints) = multiplier(:,1)
+    call this%compute_rhs(x, y, work%rhs, args)
+    work%inverse_gradient = transpose(work%gradient)
+    if (associated(this%sparse_mass_matrix) .and. .not.associated(this%mass_matrix)) then
+        call ggl_sparse_physical_solve(this%sparse_mass_matrix, x, y(1:coordinates), &
+            work%inverse_gradient, work%physical_linear, args)
+    else
+        if (.not.allocated(work%mass)) allocate(work%mass(coordinates,coordinates))
+        call this%physical_mass(x, y(1:coordinates), work%mass, args)
+        call ggl_linear_solve(work%mass, work%inverse_gradient, work%physical_linear)
+    end if
+    work%multiplier(:,1) = work%rhs(physical+constraints+1:)
+    work%constraint_matrix = matmul(work%gradient, work%inverse_gradient)
+    call ggl_linear_solve(work%constraint_matrix, work%multiplier, work%constraint_linear)
+    y(physical+1:physical+constraints) = work%multiplier(:,1)
+    end associate
 end subroutine
 
 ! ------------------------------------------------------------------------------
-subroutine ggl_linear_solve(matrix, rhs)
+subroutine ggl_sparse_physical_solve(mass_callback, x, q, rhs, work, args)
+    procedure(ode_sparse_mass_matrix) :: mass_callback
+    real(real64), intent(in) :: x, q(:)
+    real(real64), intent(inout) :: rhs(:,:)
+    type(ggl_linear_workspace), intent(inout) :: work
+    class(*), intent(in), optional :: args
+    integer :: flag, column, n
+
+    n = size(q)
+    call mass_callback(x, q, work%sparse_mass, args)
+    if (size(work%sparse_mass, 1) /= n .or. size(work%sparse_mass, 2) /= n) &
+        error stop DIFFEQ_MATRIX_SIZE_ERROR
+    if (.not.allocated(work%sparse_solution)) allocate(work%sparse_solution(n))
+    call work%sparse_solver%factor(work%sparse_mass, flag)
+    if (flag == LA_SINGULAR_MATRIX_ERROR) error stop DIFFEQ_SINGULAR_MATRIX_ERROR
+    if (flag /= 0) error stop flag
+    do column = 1, size(rhs, 2)
+        call work%sparse_solver%solve(work%sparse_mass, rhs(:,column), work%sparse_solution, flag)
+        if (flag == LA_SINGULAR_MATRIX_ERROR) error stop DIFFEQ_SINGULAR_MATRIX_ERROR
+        if (flag == LA_CONVERGENCE_ERROR) error stop DIFFEQ_CONVERGENCE_ERROR
+        if (flag /= 0) error stop flag
+        rhs(:,column) = work%sparse_solution
+    end do
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine ggl_linear_solve(matrix, rhs, work)
     !! Resolves a square physical or constraint system by pivoted LU, without
     !! forming an inverse. Nonfinite data/invalid shapes cause INVALID_INPUT;
     !! a vanishing or relatively tiny LU pivot causes SINGULAR_MATRIX.
@@ -505,9 +681,8 @@ subroutine ggl_linear_solve(matrix, rhs)
         !! Nonempty square coefficient matrix, left unchanged.
     real(real64), intent(inout), dimension(:,:) :: rhs
         !! Matching-row matrix of one or more RHS columns, replaced by solutions.
-    real(real64), allocatable, dimension(:,:) :: factors
-    integer(int32), allocatable, dimension(:) :: pivots
-    integer :: equations, equation
+    type(ggl_linear_workspace), intent(inout) :: work
+    integer :: equations, equation, info
     real(real64) :: largest, smallest
 
     equations = size(matrix,1)
@@ -515,17 +690,25 @@ subroutine ggl_linear_solve(matrix, rhs)
         size(rhs,1) /= equations .or. size(rhs,2) < 1) error stop DIFFEQ_INVALID_INPUT_ERROR
     if (.not.all(ieee_is_finite(matrix)) .or. .not.all(ieee_is_finite(rhs))) &
         error stop DIFFEQ_INVALID_INPUT_ERROR
-    call lu_factor(matrix, ipvt = pivots, lu = factors)
-    if (.not.all(ieee_is_finite(factors))) error stop DIFFEQ_SINGULAR_MATRIX_ERROR
+    if (allocated(work%pivots)) then
+        if (size(work%pivots) /= equations) deallocate(work%pivots, work%factors)
+    end if
+    if (.not.allocated(work%pivots)) allocate(work%pivots(equations), work%factors(equations,equations))
+    work%factors = matrix
+    call dgetrf(equations, equations, work%factors, equations, work%pivots, info)
+    if (info > 0) error stop DIFFEQ_SINGULAR_MATRIX_ERROR
+    if (info < 0) error stop DIFFEQ_INVALID_INPUT_ERROR
+    if (.not.all(ieee_is_finite(work%factors))) error stop DIFFEQ_SINGULAR_MATRIX_ERROR
     largest = 0.0d0
     smallest = huge(1.0d0)
     do equation = 1, equations
-        largest = max(largest, abs(factors(equation,equation)))
-        smallest = min(smallest, abs(factors(equation,equation)))
+        largest = max(largest, abs(work%factors(equation,equation)))
+        smallest = min(smallest, abs(work%factors(equation,equation)))
     end do
     if (smallest <= equations * epsilon(1.0d0) * largest) &
         error stop DIFFEQ_SINGULAR_MATRIX_ERROR
-    rhs = solve_lu(factors, pivots, rhs)
+    call dgetrs('N', equations, size(rhs,2), work%factors, equations, work%pivots, rhs, equations, info)
+    if (info /= 0) error stop DIFFEQ_INVALID_INPUT_ERROR
     if (.not.all(ieee_is_finite(rhs))) error stop DIFFEQ_SINGULAR_MATRIX_ERROR
 end subroutine
 
