@@ -14,7 +14,7 @@ For $N$ coordinates $q$, physical velocities $v$, and $M$ independent constraint
 
 $$
 z=[q_N,v_N,\lambda_M,\mu_M]^T, \qquad
-\mathcal M=\operatorname{diag}(I_N,M_N,0_M,0_M),
+\mathcal M=\mathrm{diag}(I_N,M_N,0_M,0_M),
 $$
 
 and the container supplies the equations
@@ -64,7 +64,7 @@ Configure the container with `initialize(N, M, alpha, beta)` or the `ggl_contain
 The container always resolves the physical mass internally when it forms the acceleration $M^{-1}(F-G^T\lambda)$. The integrator, meanwhile, works with the augmented mass matrix and the Jacobian of the augmented RHS.
 
 - **Dense systems:** the physical mass comes from `mass_matrix` or defaults to the identity. Physical-mass solves use LU factorization. If no augmented Jacobian is supplied, the inherited finite-difference implementation differentiates the complete augmented RHS.
-- **Sparse systems:** a `sparse_mass_matrix` callback supplies the physical mass in CSR format. The container solves with it using ILUT-preconditioned GMRES and assembles the sparse augmented matrix $\operatorname{diag}(I,M,0,0)$ itself. If both mass callbacks are assigned, the dense callback takes precedence. Dense-only integrators still accept a sparse mass callback; it is converted to a dense matrix when they request one.
+- **Sparse systems:** a `sparse_mass_matrix` callback supplies the physical mass in CSR format. The container solves with it using ILUT-preconditioned GMRES and assembles the sparse augmented matrix $\mathrm{diag}(I,M,0,0)$ itself. If both mass callbacks are assigned, the dense callback takes precedence. Dense-only integrators still accept a sparse mass callback; it is converted to a dense matrix when they request one.
 
 `bdf` selects its sparse Newton iteration when `has_sparse_jacobian()` returns true, either because `sparse_jacobian` is assigned or because a derived type overrides the method. The sparse Jacobian must differentiate the complete augmented RHS, not just the applied force; automatic sparse Jacobian construction is not yet available. Extending `ggl_container` and overriding `has_sparse_jacobian` and `compute_sparse_jacobian` gives the Jacobian access to the container's `compute_rhs`, as the sparse example below demonstrates.
 
