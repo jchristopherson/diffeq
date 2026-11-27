@@ -75,6 +75,10 @@ module diffeq_pece
             ! The pivot array of the mass matrix factorization.
         logical, private :: m_massFactored = .false.
             ! True if the mass matrix factorization is current.
+        real(real64), private :: m_nodes(adams_order_limit)
+            !! Interpolation nodes for the predictor and corrector.
+        real(real64), private, allocatable :: m_values(:,:), m_differences(:,:), m_quadrature(:)
+            !! Reusable derivative history, divided differences, and quadrature scratch.
     contains
         procedure, public :: predictor => adams_predictor
             !! Evaluates the Adams-Bashforth predictor.
@@ -188,11 +192,14 @@ subroutine adams_init_workspace(this, n)
         deallocate(this%m_fpred)
         deallocate(this%m_lu)
         deallocate(this%m_pivot)
+        deallocate(this%m_values, this%m_differences, this%m_quadrature)
         this%m_massFactored = .false.
     end if
     allocate(this%m_fpred(n), source = 0.0d0)
     allocate(this%m_lu(n, n), source = 0.0d0)
     allocate(this%m_pivot(n), source = 0)
+    allocate(this%m_values(n,adams_order_limit), this%m_differences(n,adams_order_limit), &
+        this%m_quadrature(n))
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -299,8 +306,6 @@ subroutine adams_predictor(this, sys, h, x, y, f, yn, fn, args)
 
     ! Local Variables
     integer :: i, k, n
-    real(real64), allocatable, dimension(:) :: xv
-    real(real64), allocatable, dimension(:,:) :: fv, dd
 
     ! Initialization
     n = size(y)
@@ -308,15 +313,14 @@ subroutine adams_predictor(this, sys, h, x, y, f, yn, fn, args)
     call this%initialize_workspace(n)
 
     ! Gather the derivative history, most recent point first
-    allocate(xv(k), fv(n, k), dd(n, k))
     do i = 1, k
-        xv(i) = this%get_stored_variable(i)
-        fv(:,i) = this%get_stored_derivative(i)
+        this%m_nodes(i) = this%get_stored_variable(i)
+        call this%copy_stored_derivative(i, this%m_values(:,i))
     end do
 
     ! Integrate the fitted polynomial across the step
-    call newton_divided_differences(xv, fv, dd)
-    call integrate_newton_polynomial(xv, dd, x, x + h, yn)
+    call newton_divided_differences(this%m_nodes(1:k), this%m_values(:,1:k), this%m_differences(:,1:k))
+    call integrate_newton_polynomial(this%m_nodes(1:k), this%m_differences(:,1:k), x, x + h, yn, this%m_quadrature)
     yn = y + yn
 
     ! Evaluate the derivative at the prediction and retain it
@@ -355,29 +359,28 @@ subroutine adams_correct(this, sys, h, x, ypred, ynew, converged, args)
 
     ! Local Variables
     integer :: i, k, n
-    real(real64), allocatable, dimension(:) :: xv
-    real(real64), allocatable, dimension(:,:) :: fv, dd
 
     if (sys%has_sparse_jacobian()) error stop DIFFEQ_INVALID_OPERATION_ERROR
 
     ! Initialization
     n = size(ypred)
     k = max(1, min(this%get_order(), this%get_stored_step_count()))
+    call this%initialize_workspace(n)
 
     ! The corrector interpolates the new point together with the k - 1 most
     ! recent stored points
-    allocate(xv(k), fv(n, k), dd(n, k))
-    xv(1) = x + h
-    fv(:,1) = this%m_fpred
+    this%m_nodes(1) = x + h
+    this%m_values(:,1) = this%m_fpred
     do i = 2, k
-        xv(i) = this%get_stored_variable(i - 1)
-        fv(:,i) = this%get_stored_derivative(i - 1)
+        this%m_nodes(i) = this%get_stored_variable(i - 1)
+        call this%copy_stored_derivative(i - 1, this%m_values(:,i))
     end do
 
     ! Integrate the fitted polynomial across the step
-    call newton_divided_differences(xv, fv, dd)
-    call integrate_newton_polynomial(xv, dd, x, x + h, ynew)
-    ynew = this%get_stored_solution(1) + ynew
+    call newton_divided_differences(this%m_nodes(1:k), this%m_values(:,1:k), this%m_differences(:,1:k))
+    call integrate_newton_polynomial(this%m_nodes(1:k), this%m_differences(:,1:k), x, x + h, ynew, this%m_quadrature)
+    call this%copy_stored_solution(1, this%m_quadrature)
+    ynew = this%m_quadrature + ynew
 
     ! A correction that has ceased to be finite indicates that the step size
     ! has outrun the stability of the fixed-point iteration
@@ -385,7 +388,7 @@ subroutine adams_correct(this, sys, h, x, ypred, ynew, converged, args)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-pure subroutine integrate_newton_polynomial(x, d, a, b, y)
+pure subroutine integrate_newton_polynomial(x, d, a, b, y, p)
     !! Integrates a polynomial stored in Newton divided-difference form.
     real(real64), intent(in), dimension(:) :: x
         !! An M-element array containing the interpolation nodes.
@@ -397,6 +400,8 @@ pure subroutine integrate_newton_polynomial(x, d, a, b, y)
         !! The upper limit of integration.
     real(real64), intent(out), dimension(:) :: y
         !! An N-element array where the result will be written.
+    real(real64), intent(out), dimension(:) :: p
+        !! N-element scratch space used for quadrature evaluations.
 
     ! Gauss-Legendre quadrature is exact through degree fifteen, whereas the
     ! highest supported order produces a polynomial of degree eleven, so the
@@ -415,7 +420,6 @@ pure subroutine integrate_newton_polynomial(x, d, a, b, y)
     ! Local Variables
     integer :: i
     real(real64) :: c, hw
-    real(real64), dimension(size(y)) :: p
 
     ! Process
     c = 0.5d0 * (a + b)

@@ -30,11 +30,29 @@ module diffeq_test_runge_kutta
 contains
 function test_integrator_buffers() result(rst)
     logical :: rst, passed
+    type(runge_kutta_23) :: rk23_integrator
     type(runge_kutta_45) :: rk_integrator
+    type(runge_kutta_853) :: rk853_integrator
+    type(tsitouras_54) :: tsit_integrator
+    type(rosenbrock) :: rosenbrock_integrator
+    type(kennedy_carpenter_4) :: kc4_integrator
+    type(kennedy_carpenter_5) :: kc5_integrator
     type(bdf) :: bdf_integrator
     type(adams) :: adams_integrator
 
-    rst = check_integrator_buffer(rk_integrator)
+    rst = check_integrator_buffer(rk23_integrator)
+    passed = check_integrator_buffer(rk_integrator)
+    rst = rst .and. passed
+    passed = check_integrator_buffer(rk853_integrator)
+    rst = rst .and. passed
+    passed = check_integrator_buffer(tsit_integrator)
+    rst = rst .and. passed
+    passed = check_integrator_buffer(rosenbrock_integrator)
+    rst = rst .and. passed
+    passed = check_integrator_buffer(kc4_integrator)
+    rst = rst .and. passed
+    passed = check_integrator_buffer(kc5_integrator)
+    rst = rst .and. passed
     passed = check_integrator_buffer(bdf_integrator)
     rst = rst .and. passed
     passed = check_integrator_buffer(adams_integrator)
@@ -87,7 +105,9 @@ function check_integrator_buffer(integrator) result(rst)
 
     model%fcn => buffer_test_ode
     grid = [0.0d0, 0.5d0, 1.0d0]
-    do equation_count = 1, 3
+    ! Grow and shrink each solver's retained workspace across separate solves.
+    do index = 1, 5
+        equation_count = min(index, 6 - index)
         call integrator%clear_buffer()
         allocate(initial(equation_count))
         do equation = 1, equation_count

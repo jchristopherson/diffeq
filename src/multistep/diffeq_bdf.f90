@@ -86,6 +86,12 @@ module diffeq_bdf
             ! True if the mass matrix has been computed for this step.
         type(csr_matrix), private :: m_smass
             ! The sparse mass matrix.
+        real(real64), private :: m_nodes(bdf_order_limit+1), m_coefficients(bdf_order_limit+1)
+            !! Step nodes and BDF coefficients, bounded by the maximum order.
+        real(real64), private :: m_historyNodes(bdf_order_limit+1)
+            !! Independent-variable nodes for the predictor polynomial.
+        real(real64), private, allocatable :: m_historyValues(:,:), m_historyDifferences(:,:)
+            !! Predictor history and divided-difference scratch, resized with the system.
     contains
         procedure, public :: predictor => bdf_predictor
             !! Evaluates the predictor and forms the coefficients of the step.
@@ -148,20 +154,14 @@ subroutine bdf_init_workspace(this, n)
         !! The number of equations being integrated.
 
     ! Process
+    call this%initialize_sparse_workspace(n)
     if (allocated(this%m_denseJac)) then
         if (size(this%m_denseJac, 1) == n) return
-        deallocate(this%m_denseJac)
-        deallocate(this%m_mass)
-        deallocate(this%m_rhs)
-        deallocate(this%m_ydot)
-        deallocate(this%m_histTerm)
+        deallocate(this%m_denseJac, this%m_mass)
     end if
     allocate( &
         this%m_denseJac(n, n), &
-        this%m_mass(n, n), &
-        this%m_rhs(n), &
-        this%m_ydot(n), &
-        this%m_histTerm(n) &
+        this%m_mass(n, n) &
     )
     this%m_massComputed = .false.
 end subroutine
@@ -175,18 +175,17 @@ subroutine bdf_init_sparse_workspace(this, n)
         !! The number of equations being integrated.
 
     ! Process
-    if (allocated(this%m_rhs)) then
-        if (size(this%m_rhs) == n) return
-        deallocate(this%m_rhs)
-        deallocate(this%m_ydot)
-        deallocate(this%m_histTerm)
+    if (allocated(this%m_ydot)) then
+        if (size(this%m_ydot) /= n) deallocate(this%m_ydot, this%m_histTerm)
     end if
-    allocate( &
-        this%m_rhs(n), &
-        this%m_ydot(n), &
-        this%m_histTerm(n) &
-    )
-    this%m_massComputed = .false.
+    if (.not.allocated(this%m_ydot)) then
+        allocate(this%m_ydot(n), this%m_histTerm(n))
+        this%m_massComputed = .false.
+    end if
+    if (allocated(this%m_rhs)) then
+        if (size(this%m_rhs) /= n) deallocate(this%m_rhs)
+    end if
+    if (.not.allocated(this%m_rhs)) allocate(this%m_rhs(n))
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -230,46 +229,52 @@ subroutine bdf_predictor(this, sys, h, x, y, f, yn, fn, args)
 
     ! Local Variables
     integer :: i, k, n, nc, np
-    real(real64), allocatable, dimension(:) :: xv, c, nodes
-    real(real64), allocatable, dimension(:,:) :: yv, dd
 
     ! Initialization
     n = size(y)
     nc = this%get_stored_step_count()
     k = max(1, min(this%get_order(), nc))
-    call this%initialize_workspace(n)
+    if (sys%has_sparse_jacobian()) then
+        call this%initialize_sparse_workspace(n)
+    else
+        call this%initialize_workspace(n)
+    end if
+    if (allocated(this%m_historyValues)) then
+        if (size(this%m_historyValues,1) /= n) deallocate(this%m_historyValues, this%m_historyDifferences)
+    end if
+    if (.not.allocated(this%m_historyValues)) allocate( &
+        this%m_historyValues(n,bdf_order_limit+1), this%m_historyDifferences(n,bdf_order_limit+1))
 
     ! Gather the solution history, most recent point first
     np = min(k + 1, nc)
-    allocate(xv(np), yv(n, np), dd(n, np))
     do i = 1, np
-        xv(i) = this%get_stored_variable(i)
-        yv(:,i) = this%get_stored_solution(i)
+        this%m_historyNodes(i) = this%get_stored_variable(i)
+        call this%copy_stored_solution(i, this%m_historyValues(:,i))
     end do
 
     ! Extrapolate the history to the end of the step.  On the very first step
     ! only the initial condition is available, so the prediction reduces to
     ! the current solution.
     if (np == 1) then
-        yn = yv(:,1)
+        yn = this%m_historyValues(:,1)
     else
-        call newton_divided_differences(xv, yv, dd)
-        call evaluate_newton_polynomial(xv, dd, x + h, yn)
+        call newton_divided_differences(this%m_historyNodes(1:np), this%m_historyValues(:,1:np), &
+            this%m_historyDifferences(:,1:np))
+        call evaluate_newton_polynomial(this%m_historyNodes(1:np), this%m_historyDifferences(:,1:np), x + h, yn)
     end if
     call sys%compute_rhs(x + h, yn, fn, args)
     call this%log_function_evaluation()
 
     ! Form the coefficients of the formula from the actual node locations
-    allocate(nodes(k + 1), c(k + 1))
-    nodes(1) = x + h
-    nodes(2:k+1) = xv(1:k)
-    call bdf_coefficients(nodes, c)
+    this%m_nodes(1) = x + h
+    this%m_nodes(2:k+1) = this%m_historyNodes(1:k)
+    call bdf_coefficients(this%m_nodes(1:k+1), this%m_coefficients(1:k+1))
 
     ! Collapse the history into the term the corrector residual requires
-    this%m_c0 = c(1)
+    this%m_c0 = this%m_coefficients(1)
     this%m_histTerm = 0.0d0
     do i = 1, k
-        this%m_histTerm = this%m_histTerm + c(i+1) * yv(:,i)
+        this%m_histTerm = this%m_histTerm + this%m_coefficients(i+1) * this%m_historyValues(:,i)
     end do
 end subroutine
 

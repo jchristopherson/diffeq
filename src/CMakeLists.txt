@@ -6,6 +6,7 @@ set(DIFFEQ_SOURCES
     ${dir}/diffeq.f90
     ${dir}/diffeq_base.f90
     ${dir}/diffeq_errors.f90
+    ${dir}/diffeq_dense_workspace.f90
     ${dir}/diffeq_sparse_workspace.f90
     ${dir}/containers/diffeq_containers.f90
     ${dir}/containers/diffeq_container_io.f90

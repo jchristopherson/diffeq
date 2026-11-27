@@ -171,6 +171,12 @@ program test
     rst = test_sparse_solver_workspace()
         if (.not.rst) flag = max(flag, 64)
 
+    rst = test_dense_solver_workspace()
+        if (.not.rst) flag = max(flag, 65)
+
+    rst = test_kc_mass_workspace_reuse()
+        if (.not.rst) flag = max(flag, 66)
+
     rst = test_runge_kutta_dense_with_args()
         if (.not.rst) flag = max(flag, 23)
 

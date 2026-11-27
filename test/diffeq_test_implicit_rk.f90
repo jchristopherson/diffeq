@@ -18,6 +18,7 @@ module diffeq_test_implicit_rk
     use diffeq
     use fortran_test_helper
     use diffeq_models
+    use diffeq_dense_workspace, only : dense_solver_workspace
     use linalg, only : csr_matrix, create_csr_matrix, csr_to_dense, dense_to_csr
     implicit none
 
@@ -40,6 +41,63 @@ module diffeq_test_implicit_rk
     end type
 
 contains
+! ------------------------------------------------------------------------------
+function test_dense_solver_workspace() result(rst)
+    !! Check LU, rank-revealing fallback, resizing, and failed factorization.
+    logical :: rst
+    type(dense_solver_workspace) :: workspace
+    real(real64) :: matrix(2,2), invalid(2,3), rhs(2), result(2)
+    real(real64) :: matrix3(3,3), rhs3(3), result3(3)
+    integer :: info
+
+    rst = .true.
+    matrix = reshape([2.0d0, 0.0d0, 0.0d0, 3.0d0], [2,2])
+    rhs = [2.0d0, 6.0d0]
+    call workspace%factor(matrix, info)
+    rst = rst .and. info == 0
+    call workspace%solve(rhs, result, info)
+    rst = rst .and. info == 0 .and. all(abs(result - [1.0d0, 2.0d0]) < 1.0d-12)
+    rhs = [4.0d0, 3.0d0]
+    call workspace%solve(rhs, result, info)
+    rst = rst .and. info == 0 .and. all(abs(result - [2.0d0, 1.0d0]) < 1.0d-12)
+
+    matrix = reshape([1.0d0, 2.0d0, 2.0d0, 4.0d0], [2,2])
+    rhs = [3.0d0, 6.0d0]
+    call workspace%factor(matrix, info)
+    rst = rst .and. info == 0
+    call workspace%solve(rhs, result, info)
+    rst = rst .and. info == 0 .and. all(abs(result - [0.6d0, 1.2d0]) < 1.0d-12)
+
+    matrix = reshape([1.0d0, 0.0d0, 0.0d0, 1.0d-20], [2,2])
+    rhs = [1.0d0, 1.0d-20]
+    call workspace%factor(matrix, info)
+    rst = rst .and. info == 0
+    call workspace%solve(rhs, result, info)
+    rst = rst .and. info == 0 .and. abs(result(1) - 1.0d0) < 1.0d-12
+    rst = rst .and. abs(result(2)) < 1.0d-12
+
+    matrix3 = 0.0d0
+    matrix3(1,1) = 1.0d0
+    matrix3(2,2) = 2.0d0
+    matrix3(3,3) = 4.0d0
+    rhs3 = [1.0d0, 4.0d0, 12.0d0]
+    call workspace%factor(matrix3, info)
+    rst = rst .and. info == 0
+    call workspace%solve(rhs3, result3, info)
+    rst = rst .and. info == 0 .and. all(abs(result3 - [1.0d0, 2.0d0, 3.0d0]) < 1.0d-12)
+    call workspace%factor(matrix, info, qr_only = .true.)
+    rst = rst .and. info == 0
+    call workspace%solve(rhs, result, info)
+    rst = rst .and. info == 0 .and. abs(result(2)) < 1.0d-12
+
+    invalid = 0.0d0
+    call workspace%factor(invalid, info)
+    rst = rst .and. info /= 0
+    call workspace%solve(rhs, result, info)
+    rst = rst .and. info /= 0
+    if (.not.rst) print "(A)", "TEST FAILED: test_dense_solver_workspace"
+end function
+
 ! ------------------------------------------------------------------------------
 subroutine configure_ggl_test_model(mdl)
     class(ggl_container), intent(inout) :: mdl
@@ -844,6 +902,84 @@ function test_kennedy_carpenter_singular_mass_matrix() result(rst)
         abs(sol5(size(sol5,1),2)**2 + sol5(size(sol5,1),4)**2 - &
         length**2) < 1.0d-7
 end function
+
+! ------------------------------------------------------------------------------
+function test_kc_mass_workspace_reuse() result(rst)
+    !! Reuse both KC methods across constant and state-dependent singular masses.
+    logical :: rst, passed
+    type(kennedy_carpenter_4) :: kc4
+    type(kennedy_carpenter_5) :: kc5
+
+    rst = check_kc_mass_workspace_reuse(kc4)
+    passed = check_kc_mass_workspace_reuse(kc5)
+    rst = rst .and. passed
+    if (.not.rst) print "(A)", "TEST FAILED: test_kc_mass_workspace_reuse"
+end function
+
+function check_kc_mass_workspace_reuse(integrator) result(rst)
+    class(kennedy_carpenter), intent(inout) :: integrator
+    logical :: rst
+    type(ode_container) :: model
+    real(real64), allocatable :: solution(:,:)
+    real(real64) :: initial, expected
+    integer :: mode, n
+
+    rst = .true.
+    call integrator%set_absolute_tolerance(1.0d-7)
+    call integrator%set_relative_tolerance(1.0d-7)
+    do mode = 1, 3
+        initial = real(mode, real64)
+        if (mode == 2) then
+            model%fcn => kc_dependent_mass_rhs
+            model%mass_matrix => kc_dependent_mass_matrix
+            call model%set_is_mass_matrix_dependent(.true.)
+        else
+            model%fcn => kc_constant_mass_rhs
+            model%mass_matrix => kc_constant_mass_matrix
+            call model%set_is_mass_matrix_dependent(.false.)
+        end if
+        call integrator%clear_buffer()
+        call integrator%solve(model, [0.0d0, 0.1d0, 0.2d0], [initial, initial])
+        solution = integrator%get_solution()
+        n = size(solution,1)
+        expected = initial * exp(-0.2d0)
+        rst = rst .and. n == 3
+        rst = rst .and. all(abs(solution(n,2:3) - expected) < 1.0d-5)
+    end do
+end function
+
+subroutine kc_constant_mass_rhs(x, y, dydx, args)
+    !! DAE with constraint y(2) = y(1) and y(1)' = -y(1).
+    real(real64), intent(in) :: x, y(:)
+    real(real64), intent(out) :: dydx(:)
+    class(*), intent(in), optional :: args
+    dydx = [-y(1), y(2) - y(1)]
+end subroutine
+
+subroutine kc_constant_mass_matrix(x, y, mass, args)
+    real(real64), intent(in) :: x, y(:)
+    real(real64), intent(out) :: mass(:,:)
+    class(*), intent(in), optional :: args
+    mass = 0.0d0
+    mass(1,1) = 1.0d0
+end subroutine
+
+subroutine kc_dependent_mass_rhs(x, y, dydx, args)
+    !! Equivalent DAE with a rotating left nullspace.
+    real(real64), intent(in) :: x, y(:)
+    real(real64), intent(out) :: dydx(:)
+    class(*), intent(in), optional :: args
+    dydx = [-y(1), -y(1)**2 + y(2) - y(1)]
+end subroutine
+
+subroutine kc_dependent_mass_matrix(x, y, mass, args)
+    real(real64), intent(in) :: x, y(:)
+    real(real64), intent(out) :: mass(:,:)
+    class(*), intent(in), optional :: args
+    mass = 0.0d0
+    mass(1,1) = 1.0d0
+    mass(2,1) = y(1)
+end subroutine
 
 ! ------------------------------------------------------------------------------
 function test_rosenbrock_1() result(rst)

@@ -616,6 +616,19 @@ function test_bdf_sparse_matches_dense() result(rst)
         rst = .false.
         print "(A)", "TEST FAILED: test_bdf_sparse_matches_dense -1"
     end if
+    ! Reuse one solver while switching the Newton representation in both directions.
+    call dense_integrator%solve(sparse_mdl, [0.0d0, 1.0d0], [1.0d0, 1.0d0, 1.0d0])
+    sparse_sol = dense_integrator%get_solution()
+    if (any(abs(sparse_sol(size(sparse_sol,1),2:4) - dense_sol(size(dense_sol,1),2:4)) > tol)) then
+        rst = .false.
+        print "(A)", "TEST FAILED: test_bdf_sparse_matches_dense - dense to sparse reuse"
+    end if
+    call dense_integrator%solve(dense_mdl, [0.0d0, 1.0d0], [1.0d0, 1.0d0, 1.0d0])
+    sparse_sol = dense_integrator%get_solution()
+    if (any(abs(sparse_sol(size(sparse_sol,1),2:4) - dense_sol(size(dense_sol,1),2:4)) > tol)) then
+        rst = .false.
+        print "(A)", "TEST FAILED: test_bdf_sparse_matches_dense - sparse to dense reuse"
+    end if
 end function
 
 ! ------------------------------------------------------------------------------

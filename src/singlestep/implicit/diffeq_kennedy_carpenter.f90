@@ -22,10 +22,13 @@
 
 module diffeq_kennedy_carpenter
     use iso_fortran_env
+    use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
     use diffeq_base
     use diffeq_singlestep
     use diffeq_errors
     use linalg
+    use lapack, only : dgesvd
+    use diffeq_dense_workspace, only : dense_solver_workspace
     implicit none
     private
     public :: kennedy_carpenter
@@ -57,8 +60,13 @@ module diffeq_kennedy_carpenter
         !! The Newton iteration is governed by a user-defined iteration limit
         !! and convergence tolerance.  The applied tolerance never exceeds one
         !! percent of the smallest positive integration tolerance.
+        !! Stage matrices use pivoted LU with a rank-revealing QR fallback.
+        !! The physical mass matrix still uses an SVD to identify algebraic
+        !! directions when constructing a consistent initial derivative.
         real(real64), private, allocatable, dimension(:,:) :: m_mass
         real(real64), private, allocatable, dimension(:) :: m_startDerivative
+        logical, private :: m_haveStartDerivative = .false.
+            !! Whether the retained start-derivative buffer holds current-step data.
         logical, private :: m_massComputed = .false.
         integer, private :: m_newtonIterLimit = 12
             ! The limit on the number of Newton iterations per stage.
@@ -67,12 +75,18 @@ module diffeq_kennedy_carpenter
         real(real64), private, allocatable, dimension(:,:) :: m_jac
             ! The Jacobian, less any mass-matrix state derivative, used in
             ! the iteration matrix.
-        real(real64), private, allocatable, dimension(:,:) :: m_qr
-            ! The QR factored iteration matrix.
-        real(real64), private, allocatable, dimension(:) :: m_tau
-            ! The QR factorization scalar factors.
-        integer, private, allocatable, dimension(:) :: m_pivot
-            ! The QR factorization column pivots.
+        type(dense_solver_workspace), private :: m_linear, m_initialLinear
+            !! Separate stage and initial-derivative systems, since their matrices differ.
+        real(real64), private, allocatable :: m_system(:,:), m_stageMass(:,:)
+            !! Iteration matrix and perturbed or stage-dependent mass matrix.
+        real(real64), private, allocatable :: m_base(:), m_embedded(:), m_state(:), m_stageFcn(:), m_residual(:), m_delta(:)
+            !! Reused predictor, stage, residual, and Newton-update vectors.
+        real(real64), private, allocatable :: m_svdMatrix(:,:), m_svdLeft(:,:), m_svdValues(:), m_svdWork(:)
+            !! Retained LAPACK SVD workspace and left singular vectors of the mass.
+        real(real64), private, allocatable :: m_initialJac(:,:), m_initialAugmented(:,:), m_initialTime(:), m_initialRhs(:)
+            !! Scratch for the augmented consistent-initial-derivative system.
+        logical, private :: m_massSvdCurrent = .false.
+            !! True while the cached SVD corresponds to the current mass matrix.
         real(real64), private :: m_factorStep = 0.0d0
             ! The value of h * gamma used to form the factored matrix.
         logical, private :: m_haveFactor = .false.
@@ -152,8 +166,8 @@ subroutine kc_solve(this, sys, x, iv, store_iv, args)
     this%m_jacCurrent = .false.
     this%m_refreshJac = .true.
     this%m_factorStep = 0.0d0
-    if (allocated(this%m_mass)) deallocate(this%m_mass)
-    if (allocated(this%m_startDerivative)) deallocate(this%m_startDerivative)
+    this%m_massSvdCurrent = .false.
+    this%m_haveStartDerivative = .false.
     call ssi_ode_solver(this, sys, x, iv, store_iv = store_iv, args = args)
 end subroutine
 
@@ -273,6 +287,7 @@ subroutine kc_post_step(this, sys, dense, x, xn, y, yn, f, fn, k, args)
         !! in and out of the differential equation subroutine.
 
     this%m_startDerivative = k(:,1)
+    this%m_haveStartDerivative = .true.
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -366,7 +381,6 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     integer :: i, j, n, stages
     logical :: usemass, massDependent, converged
     real(real64) :: a(8,8), b(8), d(8), c(8), hg, theta, thetaMax
-    real(real64), allocatable, dimension(:) :: base, embedded
 
     ! Initialization
     n = size(y)
@@ -375,7 +389,6 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
     call kc_table(this, a, b, d, c, stages)
     hg = h * a(2,2)
     call kc_init_workspace(this, n)
-    allocate(base(n), embedded(n))
 
     ! Process
     ! The first stage of an ESDIRK method is explicit
@@ -391,6 +404,7 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         if (.not.this%m_massComputed .or. massDependent) then
             call sys%compute_mass_matrix(x, y, this%m_mass, args)
             this%m_massComputed = .true.
+            this%m_massSvdCurrent = .false.
             if (massDependent) this%m_haveFactor = .false.
         end if
         call kc_consistent_derivative(this, sys, x, y, f, massDependent, &
@@ -416,12 +430,12 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
         converged = .true.
         do i = 2, stages
             ! Accumulate the contributions from the previously computed stages
-            base = y
+            this%m_base = y
             do j = 1, i - 1
-                base = base + h * a(i,j) * k(:,j)
+                this%m_base = this%m_base + h * a(i,j) * k(:,j)
             end do
 
-            call kc_newton_stage(this, sys, x + c(i) * h, base, hg, &
+            call kc_newton_stage(this, sys, x + c(i) * h, this%m_base, hg, &
                 k(:,i-1), usemass, massDependent, k(:,i), converged, &
                 theta, args)
             thetaMax = max(thetaMax, theta)
@@ -443,12 +457,12 @@ subroutine kc_attempt_step(this, sys, h, x, y, f, yn, fn, yerr, k, args)
 
     ! Form the solution estimate and the embedded solution estimate
     yn = y
-    embedded = y
+    this%m_embedded = y
     do i = 1, stages
         yn = yn + h * b(i) * k(:,i)
-        embedded = embedded + h * d(i) * k(:,i)
+        this%m_embedded = this%m_embedded + h * d(i) * k(:,i)
     end do
-    yerr = yn - embedded
+    yerr = yn - this%m_embedded
 
     ! Both tableaus are stiffly accurate.  The final stage derivative is
     ! therefore the derivative at the accepted state, even when M is singular.
@@ -457,7 +471,8 @@ end subroutine
 
 ! ------------------------------------------------------------------------------
 subroutine kc_init_workspace(this, n)
-    !! Allocates the Jacobian and factorization workspace.
+    !! Allocates stage scratch on first use and resizes it when N changes.
+    !! Mass-SVD buffers are allocated separately when a mass matrix is used.
     class(kennedy_carpenter), intent(inout) :: this
         !! The kennedy_carpenter object.
     integer, intent(in) :: n
@@ -465,12 +480,18 @@ subroutine kc_init_workspace(this, n)
 
     if (allocated(this%m_jac)) then
         if (size(this%m_jac, 1) == n) return
-        deallocate(this%m_jac, this%m_qr, this%m_tau, this%m_pivot)
+        deallocate(this%m_jac, this%m_system, this%m_stageMass, this%m_base, this%m_embedded, &
+            this%m_state, this%m_stageFcn, this%m_residual, this%m_delta)
+        if (allocated(this%m_svdValues)) deallocate(this%m_svdMatrix, this%m_svdLeft, &
+            this%m_svdValues, this%m_svdWork, this%m_initialJac, this%m_initialAugmented, &
+            this%m_initialTime, this%m_initialRhs)
     end if
-    allocate(this%m_jac(n,n), this%m_qr(n,n), this%m_tau(n), this%m_pivot(n))
+    allocate(this%m_jac(n,n), this%m_system(n,n), this%m_stageMass(n,n), this%m_base(n), &
+        this%m_embedded(n), this%m_state(n), this%m_stageFcn(n), this%m_residual(n), this%m_delta(n))
     this%m_haveFactor = .false.
     this%m_jacCurrent = .false.
     this%m_refreshJac = .true.
+    this%m_massSvdCurrent = .false.
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -501,7 +522,6 @@ subroutine kc_update_jacobian(this, sys, x, y, derivative, usemass, &
     ! Local Variables
     integer :: i, n
     real(real64) :: fdstep
-    real(real64), allocatable :: mass_perturbed(:,:), state(:)
 
     n = size(y)
     call sys%compute_jacobian(x, y, this%m_jac, args)
@@ -510,13 +530,12 @@ subroutine kc_update_jacobian(this, sys, x, y, derivative, usemass, &
 
     if (usemass .and. massDependent) then
         fdstep = sys%get_finite_difference_step()
-        allocate(mass_perturbed(n,n), state(n))
         do i = 1, n
-            state = y
-            state(i) = state(i) + fdstep
-            call sys%compute_mass_matrix(x, state, mass_perturbed, args)
+            this%m_state = y
+            this%m_state(i) = this%m_state(i) + fdstep
+            call sys%compute_mass_matrix(x, this%m_state, this%m_stageMass, args)
             this%m_jac(:,i) = this%m_jac(:,i) - &
-                matmul((mass_perturbed - this%m_mass) / fdstep, derivative)
+                matmul((this%m_stageMass - this%m_mass) / fdstep, derivative)
         end do
     end if
 
@@ -527,7 +546,9 @@ end subroutine
 
 ! ------------------------------------------------------------------------------
 subroutine kc_factor(this, hg, usemass)
-    !! Forms and factors the iteration matrix \(M - h \gamma J\).
+    !! Forms and factors \(M-h\gamma J\) with LU and a rank-revealing
+    !! fallback. A factorization is reused while the step coefficient and
+    !! Jacobian remain current.
     class(kennedy_carpenter), intent(inout) :: this
         !! The kennedy_carpenter object.
     real(real64), intent(in) :: hg
@@ -536,20 +557,19 @@ subroutine kc_factor(this, hg, usemass)
         !! True if a mass matrix is used; else, false.
 
     ! Local Variables
-    integer :: i, n
-    real(real64), allocatable :: system(:,:)
+    integer :: i, n, flag
 
     n = size(this%m_jac, 1)
     if (usemass) then
-        system = this%m_mass - hg * this%m_jac
+        this%m_system = this%m_mass - hg * this%m_jac
     else
-        system = -hg * this%m_jac
+        this%m_system = -hg * this%m_jac
         do i = 1, n
-            system(i,i) = system(i,i) + 1.0d0
+            this%m_system(i,i) = this%m_system(i,i) + 1.0d0
         end do
     end if
-    this%m_pivot = 0
-    call qr_factor(system, this%m_pivot, tau = this%m_tau, qr = this%m_qr)
+    call this%m_linear%factor(this%m_system, flag)
+    if (flag /= 0) error stop DIFFEQ_INVALID_OPERATION_ERROR
     call this%log_matrix_factorization()
     this%m_factorStep = hg
     this%m_haveFactor = .true.
@@ -595,45 +615,44 @@ subroutine kc_newton_stage(this, sys, x, base, hg, guess, usemass, &
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    integer :: iteration
+    integer :: iteration, flag
     real(real64) :: tol, dnorm, dold, theta, eta
-    real(real64), dimension(size(base)) :: state, f, residual, delta
-    real(real64), allocatable :: mass(:,:)
 
     tol = kc_effective_newton_tolerance(this, size(base))
-    if (massDependent) allocate(mass(size(base), size(base)))
-    state = base + hg * guess
+    this%m_state = base + hg * guess
     converged = .false.
     thetaMax = 0.0d0
     dold = 0.0d0
     eta = 1.0d0
     do iteration = 1, this%get_newton_step_limit()
-        call sys%compute_rhs(x, state, f, args)
+        call sys%compute_rhs(x, this%m_state, this%m_stageFcn, args)
         call this%log_function_evaluation()
         if (.not.usemass) then
-            residual = state - base - hg * f
+            this%m_residual = this%m_state - base - hg * this%m_stageFcn
         else if (massDependent) then
-            call sys%compute_mass_matrix(x, state, mass, args)
-            residual = matmul(mass, state - base) - hg * f
+            call sys%compute_mass_matrix(x, this%m_state, this%m_stageMass, args)
+            this%m_residual = matmul(this%m_stageMass, this%m_state - base) - hg * this%m_stageFcn
         else
-            residual = matmul(this%m_mass, state - base) - hg * f
+            this%m_residual = matmul(this%m_mass, this%m_state - base) - hg * this%m_stageFcn
         end if
-        delta = solve_qr(this%m_qr, this%m_tau, this%m_pivot, -residual)
-        state = state + delta
-        dnorm = norm2(delta)
+        this%m_residual = -this%m_residual
+        call this%m_linear%solve(this%m_residual, this%m_delta, flag)
+        if (flag /= 0) error stop DIFFEQ_INVALID_OPERATION_ERROR
+        this%m_state = this%m_state + this%m_delta
+        dnorm = norm2(this%m_delta)
         if (iteration > 1) then
             theta = dnorm / dold
             thetaMax = max(thetaMax, theta)
             if (theta >= 1.0d0) exit
             eta = theta / (1.0d0 - theta)
         end if
-        if (eta * dnorm <= tol * max(1.0d0, norm2(state))) then
+        if (eta * dnorm <= tol * max(1.0d0, norm2(this%m_state))) then
             converged = .true.
             exit
         end if
         dold = dnorm
     end do
-    derivative = (state - base) / hg
+    derivative = (this%m_state - base) / hg
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -701,6 +720,8 @@ end subroutine
 subroutine kc_consistent_derivative(this, sys, x, y, f, massDependent, &
     derivative, args)
     !! Computes a consistent initial derivative for an index-1 DAE.
+    !! The SVD identifies the mass matrix's left nullspace; it is retained
+    !! across steps only while the physical mass matrix remains unchanged.
     class(kennedy_carpenter), intent(inout) :: this
         !! The kennedy_carpenter object.
     class(ode_container), intent(inout) :: sys
@@ -716,20 +737,37 @@ subroutine kc_consistent_derivative(this, sys, x, y, f, massDependent, &
         !! in and out of the differential equation subroutine.
 
     ! Local Variables
-    real(real64), allocatable :: singular_values(:), left_vectors(:,:), &
-        jac(:,:), fplus(:), augmented(:,:), rhs(:)
-    real(real64) :: rank_tolerance, scale
-    integer :: n, rank, nullity, i
+    real(real64) :: rank_tolerance, scale, query(1), unused(1,1)
+    integer :: n, rank, nullity, i, flag
 
     n = size(y)
-    call svd(this%m_mass, singular_values, left_vectors)
-    scale = max(1.0d0, singular_values(1))
+    if (.not.allocated(this%m_svdValues)) then
+        allocate(this%m_svdMatrix(n,n), this%m_svdLeft(n,n), this%m_svdValues(n), &
+            this%m_initialJac(n,n), this%m_initialAugmented(n,n), &
+            this%m_initialTime(n), this%m_initialRhs(n))
+        this%m_svdMatrix = this%m_mass
+        call dgesvd('A', 'N', n, n, this%m_svdMatrix, n, this%m_svdValues, this%m_svdLeft, &
+            n, unused, 1, query, -1, flag)
+        if (flag /= 0 .or. .not.ieee_is_finite(query(1))) error stop DIFFEQ_INVALID_OPERATION_ERROR
+        allocate(this%m_svdWork(max(1,ceiling(query(1)))))
+    end if
+    if (.not.this%m_massSvdCurrent) then
+        this%m_svdMatrix = this%m_mass
+        call dgesvd('A', 'N', n, n, this%m_svdMatrix, n, this%m_svdValues, this%m_svdLeft, &
+            n, unused, 1, this%m_svdWork, size(this%m_svdWork), flag)
+        if (flag /= 0) error stop DIFFEQ_CONVERGENCE_ERROR
+        this%m_massSvdCurrent = .true.
+        call this%log_matrix_factorization()
+    end if
+    scale = max(1.0d0, this%m_svdValues(1))
     rank_tolerance = 100.0d0 * epsilon(1.0d0) * scale
-    rank = count(singular_values > rank_tolerance)
-    call this%log_matrix_factorization()
+    rank = count(this%m_svdValues > rank_tolerance)
 
     if (rank == n) then
-        derivative = solve_kc_system(this%m_mass, f)
+        call this%m_initialLinear%factor(this%m_mass, flag, qr_only = .true.)
+        if (flag /= 0) error stop DIFFEQ_INVALID_OPERATION_ERROR
+        call this%m_initialLinear%solve(f, derivative, flag)
+        if (flag /= 0) error stop DIFFEQ_INVALID_OPERATION_ERROR
         return
     end if
 
@@ -737,30 +775,32 @@ subroutine kc_consistent_derivative(this, sys, x, y, f, massDependent, &
     ! constant mass matrix, the stored Jacobian is that matrix, so it is
     ! evaluated here once and shared with the stage iteration.
     nullity = n - rank
-    allocate(jac(n,n), fplus(n), augmented(n,n), rhs(n))
     if (massDependent) then
-        call sys%compute_jacobian(x, y, jac, args)
+        call sys%compute_jacobian(x, y, this%m_initialJac, args)
         call this%log_jacobian_evaluation()
         call this%log_function_evaluation(sys%get_jacobian_function_evaluations())
     else
         if (.not.this%m_jacCurrent) then
             call kc_update_jacobian(this, sys, x, y, f, .true., .false., args)
         end if
-        jac = this%m_jac
+        this%m_initialJac = this%m_jac
     end if
-    call sys%compute_time_derivative(x, y, f, fplus, args)
+    call sys%compute_time_derivative(x, y, f, this%m_initialTime, args)
     call this%log_function_evaluation()
 
-    augmented = 0.0d0
-    rhs = 0.0d0
-    augmented(1:rank,:) = matmul(transpose(left_vectors(:,1:rank)), this%m_mass)
-    rhs(1:rank) = matmul(transpose(left_vectors(:,1:rank)), f)
+    this%m_initialAugmented = 0.0d0
+    this%m_initialRhs = 0.0d0
+    this%m_initialAugmented(1:rank,:) = matmul(transpose(this%m_svdLeft(:,1:rank)), this%m_mass)
+    this%m_initialRhs(1:rank) = matmul(transpose(this%m_svdLeft(:,1:rank)), f)
     do i = 1, nullity
-        augmented(rank+i,:) = matmul(left_vectors(:,rank+i), jac)
-        rhs(rank+i) = -dot_product(left_vectors(:,rank+i), fplus)
+        this%m_initialAugmented(rank+i,:) = matmul(this%m_svdLeft(:,rank+i), this%m_initialJac)
+        this%m_initialRhs(rank+i) = -dot_product(this%m_svdLeft(:,rank+i), this%m_initialTime)
     end do
 
-    derivative = solve_kc_system(augmented, rhs)
+    call this%m_initialLinear%factor(this%m_initialAugmented, flag, qr_only = .true.)
+    if (flag /= 0) error stop DIFFEQ_INVALID_OPERATION_ERROR
+    call this%m_initialLinear%solve(this%m_initialRhs, derivative, flag)
+    if (flag /= 0) error stop DIFFEQ_INVALID_OPERATION_ERROR
 end subroutine
 
 subroutine kc_table(this, a, b, d, c, stages)
@@ -899,21 +939,6 @@ subroutine kc_table(this, a, b, d, c, stages)
 end subroutine
 
 ! ------------------------------------------------------------------------------
-function solve_kc_system(a, b) result(x)
-    !! Solves the linear system \( A x = b \) by means of a QR factorization
-    !! with column pivoting.
-    real(real64), intent(in), dimension(:,:) :: a
-        !! The N-by-N system matrix.
-    real(real64), intent(in), dimension(:) :: b
-        !! An N-element array containing the right-hand side.
-    real(real64), allocatable, dimension(:) :: x
-        !! An N-element array containing the solution.
-
-    ! Process
-    x = solve_least_squares_full(a, b)
-end function
-
-! ------------------------------------------------------------------------------
 subroutine kc_interpolate(this, x, xn, yn, fn, xn1, yn1, fn1, y)
     !! Performs the interpolation.
     !!
@@ -952,7 +977,7 @@ subroutine kc_interpolate(this, x, xn, yn, fn, xn1, yn1, fn1, y)
     y = (2.0d0 * s**3 - 3.0d0 * s**2 + 1.0d0) * yn + &
         (-2.0d0 * s**3 + 3.0d0 * s**2) * yn1 + &
         (s**3 - s**2) * h * fn1
-    if (allocated(this%m_startDerivative)) then
+    if (this%m_haveStartDerivative) then
         y = y + (s**3 - 2.0d0 * s**2 + s) * h * this%m_startDerivative
     else
         y = y + (s**3 - 2.0d0 * s**2 + s) * h * fn
