@@ -41,6 +41,7 @@ module diffeq_bdf
     use diffeq_base
     use diffeq_errors
     use diffeq_multistep
+    use linalg
     implicit none
     private
     public :: bdf
@@ -74,21 +75,30 @@ module diffeq_bdf
             ! The leading BDF coefficient, alpha_0 / h, for the current step.
         real(real64), private, allocatable, dimension(:) :: m_histTerm
             ! The contribution of the stored solution history to the formula.
-        real(real64), private, allocatable, dimension(:,:) :: m_jac
-            ! The Jacobian matrix.
+        real(real64), private, allocatable, dimension(:,:) :: m_denseJac
+            ! The dense Jacobian matrix.  The sparse Jacobian is held by the
+            ! parent type.
         real(real64), private, allocatable, dimension(:,:) :: m_mass
             ! The mass matrix.
-        real(real64), private, allocatable, dimension(:) :: m_rhs
-            ! The value of f(x,y).
         real(real64), private, allocatable, dimension(:) :: m_ydot
             ! The BDF approximation of the derivative at x + h.
         logical, private :: m_massComputed = .false.
             ! True if the mass matrix has been computed for this step.
+        type(csr_matrix), private :: m_smass
+            ! The sparse mass matrix.
+        real(real64), private :: m_nodes(bdf_order_limit+1), m_coefficients(bdf_order_limit+1)
+            !! Step nodes and BDF coefficients, bounded by the maximum order.
+        real(real64), private :: m_historyNodes(bdf_order_limit+1)
+            !! Independent-variable nodes for the predictor polynomial.
+        real(real64), private, allocatable :: m_historyValues(:,:), m_historyDifferences(:,:)
+            !! Predictor history and divided-difference scratch, resized with the system.
     contains
         procedure, public :: predictor => bdf_predictor
             !! Evaluates the predictor and forms the coefficients of the step.
         procedure, public :: build_linear_system => bdf_build_linear_system
             !! Builds the linearized system for the implicit corrector.
+        procedure, public :: build_sparse_linear_system => bdf_build_sparse_linear_system
+            !! Builds the sparse linearized system for the implicit corrector.
         procedure, public :: prepare_for_solve => bdf_prepare_for_solve
         procedure, public :: get_maximum_supported_order => bdf_max_order
             !! Gets the highest order the method is permitted to use.
@@ -98,6 +108,8 @@ module diffeq_bdf
             !! Gets the truncation error constant for the requested order.
         procedure, private :: initialize_workspace => bdf_init_workspace
             !! Allocates the internal workspace arrays.
+        procedure, private :: initialize_sparse_workspace => bdf_init_sparse_workspace
+            !! Allocates the internal workspace arrays for a sparse solve.
     end type
 
 contains
@@ -142,22 +154,38 @@ subroutine bdf_init_workspace(this, n)
         !! The number of equations being integrated.
 
     ! Process
-    if (allocated(this%m_jac)) then
-        if (size(this%m_jac, 1) == n) return
-        deallocate(this%m_jac)
-        deallocate(this%m_mass)
-        deallocate(this%m_rhs)
-        deallocate(this%m_ydot)
-        deallocate(this%m_histTerm)
+    call this%initialize_sparse_workspace(n)
+    if (allocated(this%m_denseJac)) then
+        if (size(this%m_denseJac, 1) == n) return
+        deallocate(this%m_denseJac, this%m_mass)
     end if
     allocate( &
-        this%m_jac(n, n), &
-        this%m_mass(n, n), &
-        this%m_rhs(n), &
-        this%m_ydot(n), &
-        this%m_histTerm(n) &
+        this%m_denseJac(n, n), &
+        this%m_mass(n, n) &
     )
     this%m_massComputed = .false.
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine bdf_init_sparse_workspace(this, n)
+    !! Allocates the internal workspace arrays for a sparse solve.
+    class(bdf), intent(inout) :: this
+        !! The bdf object.
+    integer, intent(in) :: n
+        !! The number of equations being integrated.
+
+    ! Process
+    if (allocated(this%m_ydot)) then
+        if (size(this%m_ydot) /= n) deallocate(this%m_ydot, this%m_histTerm)
+    end if
+    if (.not.allocated(this%m_ydot)) then
+        allocate(this%m_ydot(n), this%m_histTerm(n))
+        this%m_massComputed = .false.
+    end if
+    if (allocated(this%m_rhs)) then
+        if (size(this%m_rhs) /= n) deallocate(this%m_rhs)
+    end if
+    if (.not.allocated(this%m_rhs)) allocate(this%m_rhs(n))
 end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -201,46 +229,52 @@ subroutine bdf_predictor(this, sys, h, x, y, f, yn, fn, args)
 
     ! Local Variables
     integer :: i, k, n, nc, np
-    real(real64), allocatable, dimension(:) :: xv, c, nodes
-    real(real64), allocatable, dimension(:,:) :: yv, dd
 
     ! Initialization
     n = size(y)
     nc = this%get_stored_step_count()
     k = max(1, min(this%get_order(), nc))
-    call this%initialize_workspace(n)
+    if (sys%has_sparse_jacobian()) then
+        call this%initialize_sparse_workspace(n)
+    else
+        call this%initialize_workspace(n)
+    end if
+    if (allocated(this%m_historyValues)) then
+        if (size(this%m_historyValues,1) /= n) deallocate(this%m_historyValues, this%m_historyDifferences)
+    end if
+    if (.not.allocated(this%m_historyValues)) allocate( &
+        this%m_historyValues(n,bdf_order_limit+1), this%m_historyDifferences(n,bdf_order_limit+1))
 
     ! Gather the solution history, most recent point first
     np = min(k + 1, nc)
-    allocate(xv(np), yv(n, np), dd(n, np))
     do i = 1, np
-        xv(i) = this%get_stored_variable(i)
-        yv(:,i) = this%get_stored_solution(i)
+        this%m_historyNodes(i) = this%get_stored_variable(i)
+        call this%copy_stored_solution(i, this%m_historyValues(:,i))
     end do
 
     ! Extrapolate the history to the end of the step.  On the very first step
     ! only the initial condition is available, so the prediction reduces to
     ! the current solution.
     if (np == 1) then
-        yn = yv(:,1)
+        yn = this%m_historyValues(:,1)
     else
-        call newton_divided_differences(xv, yv, dd)
-        call evaluate_newton_polynomial(xv, dd, x + h, yn)
+        call newton_divided_differences(this%m_historyNodes(1:np), this%m_historyValues(:,1:np), &
+            this%m_historyDifferences(:,1:np))
+        call evaluate_newton_polynomial(this%m_historyNodes(1:np), this%m_historyDifferences(:,1:np), x + h, yn)
     end if
     call sys%compute_rhs(x + h, yn, fn, args)
     call this%log_function_evaluation()
 
     ! Form the coefficients of the formula from the actual node locations
-    allocate(nodes(k + 1), c(k + 1))
-    nodes(1) = x + h
-    nodes(2:k+1) = xv(1:k)
-    call bdf_coefficients(nodes, c)
+    this%m_nodes(1) = x + h
+    this%m_nodes(2:k+1) = this%m_historyNodes(1:k)
+    call bdf_coefficients(this%m_nodes(1:k+1), this%m_coefficients(1:k+1))
 
     ! Collapse the history into the term the corrector residual requires
-    this%m_c0 = c(1)
+    this%m_c0 = this%m_coefficients(1)
     this%m_histTerm = 0.0d0
     do i = 1, k
-        this%m_histTerm = this%m_histTerm + c(i+1) * yv(:,i)
+        this%m_histTerm = this%m_histTerm + this%m_coefficients(i+1) * this%m_historyValues(:,i)
     end do
 end subroutine
 
@@ -320,7 +354,7 @@ subroutine bdf_build_linear_system(this, sys, h, x, y, A, b, args)
     if (size(b) /= n) error stop DIFFEQ_ARRAY_SIZE_ERROR
 
     ! Evaluate the model
-    call sys%compute_jacobian(x, y, this%m_jac, args)
+    call sys%compute_jacobian(x, y, this%m_denseJac, args)
     call sys%compute_rhs(x, y, this%m_rhs, args)
     this%m_ydot = this%m_c0 * y + this%m_histTerm
     call this%log_jacobian_evaluation()
@@ -338,13 +372,84 @@ subroutine bdf_build_linear_system(this, sys, h, x, y, A, b, args)
             call sys%compute_mass_matrix(x, y, this%m_mass, args)
             this%m_massComputed = .true.
         end if
-        A = this%m_c0 * this%m_mass - this%m_jac
+        A = this%m_c0 * this%m_mass - this%m_denseJac
         b = this%m_rhs - matmul(this%m_mass, this%m_ydot)
     else
-        A = -this%m_jac
+        A = -this%m_denseJac
         do i = 1, n
             A(i,i) = A(i,i) + this%m_c0
         end do
+        b = this%m_rhs - this%m_ydot
+    end if
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine bdf_build_sparse_linear_system(this, sys, h, x, y, A, b, args)
+    !! Builds the linearized system used to compute the solution for the
+    !! implicit step via Newton iteration.
+    !!
+    !! The corrector residual is
+    !! \[
+    !! R = M \left( c_0 y + s \right) - f(x,y),
+    !! \]
+    !! where \(s\) collects the contribution of the stored history, and its
+    !! Jacobian is \( c_0 M - J \).  The mass matrix appears only as a factor
+    !! and is never inverted, which is what allows a singular \(M\) to be used.
+    class(bdf), intent(inout) :: this
+        !! The bdf object.
+    class(ode_container), intent(inout) :: sys
+        !! The ode_container object containing the ODE's to integrate.
+    real(real64), intent(in) :: h
+        !! The current step size.  The step size is already carried by the
+        !! coefficients formed by the predictor, so it is not used here.
+    real(real64), intent(in) :: x
+        !! The current value of the independent variable.
+    real(real64), intent(in), dimension(:) :: y
+        !! The current value(s) of the dependent variable(s).
+    type(csr_matrix), intent(out) :: A
+        !! The N-by-N matrix \(A\), where \(A = \frac{\alpha_o}{h_n} M - J\).
+    real(real64), intent(out), dimension(:) :: b
+        !! The N-element right-hand-side vector for the linear system.
+    class(*), intent(in), optional, target :: args
+        !! An optional argument that can be used to pass information in and out
+        !! of the differential equation subroutine.
+
+    ! Local Variables
+    integer :: i, n
+    type(csr_matrix) :: jac
+
+    ! Initialization
+    n = size(y)
+    call this%initialize_sparse_workspace(n)
+
+    ! Input Checking
+    if (size(b) /= n) error stop DIFFEQ_ARRAY_SIZE_ERROR
+
+    ! Evaluate the model
+    call sys%compute_sparse_jacobian(x, y, jac, args = args)
+    if (size(jac, 1) /= n .or. size(jac, 2) /= n) error stop DIFFEQ_MATRIX_SIZE_ERROR
+    call sys%compute_rhs(x, y, this%m_rhs, args)
+    this%m_ydot = this%m_c0 * y + this%m_histTerm
+    call this%log_jacobian_evaluation()
+    call this%log_function_evaluation()
+    call this%log_function_evaluation(sys%get_jacobian_function_evaluations())
+
+    ! Form the system.  Only the derivative of f contributes to the iteration
+    ! matrix; the dependence of a state-dependent mass matrix upon y is
+    ! neglected, which affects the rate of convergence but not the solution
+    ! the iteration converges upon.  A dense mass matrix has no sparse path.
+    if (sys%has_sparse_mass_matrix()) then
+        if (.not.this%m_massComputed .or. &
+            sys%get_is_mass_matrix_dependent()) &
+        then
+            call sys%compute_sparse_mass_matrix(x, y, this%m_smass, args = args)
+            this%m_massComputed = .true.
+        end if
+        A = this%m_c0 * this%m_smass - jac
+        b = this%m_rhs - matmul(this%m_smass, this%m_ydot)
+    else
+        if (sys%has_mass_matrix()) error stop DIFFEQ_INVALID_OPERATION_ERROR
+        A = diag_to_csr([(this%m_c0, i = 1, n)]) - jac
         b = this%m_rhs - this%m_ydot
     end if
 end subroutine
