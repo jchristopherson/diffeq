@@ -333,7 +333,8 @@ subroutine adams_correct(this, sys, h, x, ypred, ynew, converged, args)
     !! fitted polynomial by one over the predictor at no additional cost, as
     !! that derivative was already evaluated.  It is applied exactly once; a
     !! step for which one correction does not suffice is rejected by the error
-    !! test and retried on a shorter step.
+    !! test and retried on a shorter step.  The Adams methods are explicit and
+    !! do not use a Jacobian, so a sparse Jacobian is not supported.
     class(adams), intent(inout) :: this
         !! The adams object.
     class(ode_container), intent(inout) :: sys
@@ -356,6 +357,8 @@ subroutine adams_correct(this, sys, h, x, ypred, ynew, converged, args)
     integer :: i, k, n
     real(real64), allocatable, dimension(:) :: xv
     real(real64), allocatable, dimension(:,:) :: fv, dd
+
+    if (sys%has_sparse_jacobian()) error stop DIFFEQ_INVALID_OPERATION_ERROR
 
     ! Initialization
     n = size(ypred)

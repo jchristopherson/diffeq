@@ -6,6 +6,7 @@ set(DIFFEQ_SOURCES
     ${dir}/diffeq.f90
     ${dir}/diffeq_base.f90
     ${dir}/diffeq_errors.f90
+    ${dir}/diffeq_sparse_workspace.f90
     ${dir}/containers/diffeq_containers.f90
     ${dir}/containers/diffeq_container_io.f90
     ${dir}/singlestep/diffeq_singlestep.f90
@@ -59,8 +60,8 @@ else()
     set(AUTODIFF_LIBRARIES autodiff::autodiff)
     set(BUILD_AUTODIFF FALSE)
 endif()
-find_package(linalg 3.0 QUIET)
 
+find_package(linalg 3.0 QUIET)
 if (NOT linalg_FOUND)
     message(STATUS "LINALG could not be found.  A reference version will be employed.")
     FetchContent_Declare(
@@ -75,6 +76,21 @@ else()
     set(BUILD_LINALG FALSE)
 endif()
 
+find_package(nonlin 3.1 QUIET)
+if (NOT nonlin_FOUND)
+    message(STATUS "NONLIN could not be found.  A reference version will be employed.")
+    FetchContent_Declare(
+        nonlin
+        GIT_REPOSITORY "https://github.com/jchristopherson/nonlin"
+    )
+    FetchContent_MakeAvailable(nonlin)
+    set(NONLIN_LIBRARIES nonlin)
+    set(BUILD_NONLIN TRUE)
+else()
+    set(NONLIN_LIBRARIES nonlin::nonlin)
+    set(BUILD_NONLIN FALSE)
+endif()
+
 # Build
 add_library(${PROJECT_NAME} ${DIFFEQ_SOURCES})
 target_link_libraries(
@@ -82,6 +98,7 @@ target_link_libraries(
     PUBLIC
     ${LINALG_LIBRARIES}
     ${AUTODIFF_LIBRARIES}
+    ${NONLIN_LIBRARIES}
 )
 if (OpenMP_Fortran_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_Fortran)
@@ -147,6 +164,12 @@ if (${BUILD_SHARED_LIBS})
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     endif()
+    if (${BUILD_NONLIN})
+        install(TARGETS ${NONLIN_LIBRARIES}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
+    endif()
 else()
     if (${BUILD_LINALG})
         install(TARGETS ${LINALG_LIBRARIES}
@@ -156,6 +179,12 @@ else()
     endif()
     if (${BUILD_AUTODIFF})
         install(TARGETS ${AUTODIFF_LIBRARIES}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
+    endif()
+    if (${BUILD_NONLIN})
+        install(TARGETS ${NONLIN_LIBRARIES}
             RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )

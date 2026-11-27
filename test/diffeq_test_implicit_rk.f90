@@ -18,6 +18,7 @@ module diffeq_test_implicit_rk
     use diffeq
     use fortran_test_helper
     use diffeq_models
+    use linalg, only : csr_matrix, create_csr_matrix, csr_to_dense, dense_to_csr
     implicit none
 
     integer :: observed_jacobian_calls = 0
@@ -31,10 +32,17 @@ module diffeq_test_implicit_rk
         procedure :: compute_mass_matrix => dispatch_mass_matrix
     end type
 
+    type, extends(ggl_container) :: sparse_ggl_test_model
+        integer :: sparse_jacobian_calls = 0
+    contains
+        procedure :: has_sparse_jacobian => test_has_sparse_jacobian
+        procedure :: compute_sparse_jacobian => test_compute_sparse_jacobian
+    end type
+
 contains
 ! ------------------------------------------------------------------------------
 subroutine configure_ggl_test_model(mdl)
-    type(ggl_container), intent(out) :: mdl
+    class(ggl_container), intent(inout) :: mdl
 
     call mdl%initialize(2, 1, alpha = 2.0d0, beta = 3.0d0)
     mdl%fcn => ggl_pendulum_force
@@ -229,6 +237,253 @@ function test_ggl_integration() result(rst)
     results(4) = check_ggl_solver(kc5_integrator)
     rst = all(results)
     if (.not.rst) print *, "TEST FAILED: test_ggl_integration", results
+end function
+
+! ------------------------------------------------------------------------------
+function test_has_sparse_jacobian(this) result(rst)
+    class(sparse_ggl_test_model), intent(in) :: this
+    logical :: rst
+    rst = .true.
+end function
+
+subroutine test_compute_sparse_jacobian(this, x, y, jac, args)
+    class(sparse_ggl_test_model), intent(inout) :: this
+    real(real64), intent(in) :: x, y(:)
+    type(csr_matrix), intent(out) :: jac
+    class(*), intent(in), optional :: args
+    real(real64) :: perturbed(size(y)), plus(size(y)), minus(size(y)), dense(size(y),size(y)), h
+    integer :: column
+
+    this%sparse_jacobian_calls = this%sparse_jacobian_calls + 1
+    do column = 1, size(y)
+        h = 1.0d-5 * max(1.0d0, abs(y(column)))
+        perturbed = y
+        perturbed(column) = y(column) + h
+        call this%compute_rhs(x, perturbed, plus, args)
+        perturbed(column) = y(column) - h
+        call this%compute_rhs(x, perturbed, minus, args)
+        dense(:,column) = (plus - minus) / (2.0d0 * h)
+    end do
+    jac = dense_to_csr(dense)
+end subroutine
+
+subroutine ggl_test_dense_mass(x, q, mass, args)
+    real(real64), intent(in) :: x, q(:)
+    real(real64), intent(out) :: mass(:,:)
+    class(*), intent(in), optional :: args
+
+    if (size(q) /= 2) error stop "Wrong physical state size"
+    mass(1,:) = [2.0d0, 0.25d0] * (1.0d0 + x)
+    mass(2,:) = [0.25d0, 3.0d0] * (1.0d0 + x)
+end subroutine
+
+subroutine ggl_test_sparse_mass(x, q, mass, args)
+    real(real64), intent(in) :: x, q(:)
+    type(csr_matrix), intent(out) :: mass
+    class(*), intent(in), optional :: args
+
+    if (size(q) /= 2) error stop "Wrong physical state size"
+    mass = create_csr_matrix(2, 2, [1, 1, 2, 2], [1, 2, 1, 2], &
+        [2.0d0, 0.25d0, 0.25d0, 3.0d0] * (1.0d0 + x))
+end subroutine
+
+subroutine ggl_test_unused_sparse_mass(x, q, mass, args)
+    real(real64), intent(in) :: x, q(:)
+    type(csr_matrix), intent(out) :: mass
+    class(*), intent(in), optional :: args
+
+    error stop "Dense mass must take precedence"
+end subroutine
+
+subroutine ggl_three_force(x, y, force, args)
+    real(real64), intent(in) :: x, y(:)
+    real(real64), intent(out) :: force(:)
+    class(*), intent(in), optional :: args
+    force = [1.0d0, 2.0d0, 3.0d0]
+end subroutine
+
+subroutine ggl_three_constraint(x, q, g, args)
+    real(real64), intent(in) :: x, q(:)
+    real(real64), intent(out) :: g(:)
+    class(*), intent(in), optional :: args
+    g = q(1:2)
+end subroutine
+
+subroutine ggl_three_gradient(x, q, gradient, args)
+    real(real64), intent(in) :: x, q(:)
+    real(real64), intent(out) :: gradient(:,:)
+    class(*), intent(in), optional :: args
+    gradient = 0.0d0
+    gradient(1,1) = 1.0d0
+    gradient(2,2) = 1.0d0
+end subroutine
+
+subroutine ggl_three_curvature(x, q, direction, v, curvature, args)
+    real(real64), intent(in) :: x, q(:), direction(:), v(:)
+    real(real64), intent(out) :: curvature(:)
+    class(*), intent(in), optional :: args
+    curvature = 0.0d0
+end subroutine
+
+subroutine ggl_three_dense_mass(x, q, mass, args)
+    real(real64), intent(in) :: x, q(:)
+    real(real64), intent(out) :: mass(:,:)
+    class(*), intent(in), optional :: args
+    mass(1,:) = [2.0d0, 0.25d0, 0.0d0]
+    mass(2,:) = [0.25d0, 3.0d0, 0.5d0]
+    mass(3,:) = [0.0d0, 0.5d0, 4.0d0]
+end subroutine
+
+subroutine ggl_three_sparse_mass(x, q, mass, args)
+    real(real64), intent(in) :: x, q(:)
+    type(csr_matrix), intent(out) :: mass
+    class(*), intent(in), optional :: args
+    mass = create_csr_matrix(3, 3, [1,1,2,2,2,3,3], [1,2,1,2,3,2,3], &
+        [2.0d0, 0.25d0, 0.25d0, 3.0d0, 0.5d0, 0.5d0, 4.0d0])
+end subroutine
+
+function test_ggl_sparse_multiple_constraints() result(rst)
+    logical :: rst
+    type(ggl_container) :: dense_model, sparse_model
+    real(real64) :: dense_state(10), sparse_state(10), dense_rhs(10), sparse_rhs(10)
+
+    call dense_model%initialize(3, 2, alpha = 2.0d0, beta = 3.0d0)
+    dense_model%fcn => ggl_three_force
+    dense_model%constraints => ggl_three_constraint
+    dense_model%constraint_jacobian => ggl_three_gradient
+    dense_model%constraint_curvature => ggl_three_curvature
+    dense_model%mass_matrix => ggl_three_dense_mass
+    sparse_model = dense_model
+    nullify(sparse_model%mass_matrix)
+    sparse_model%sparse_mass_matrix => ggl_three_sparse_mass
+    dense_state = [0.1d0, -0.2d0, 1.0d0, 0.3d0, -0.1d0, 0.2d0, &
+        0.0d0, 0.0d0, 0.0d0, 0.0d0]
+    sparse_state = dense_state
+    call dense_model%initialize_multipliers(0.0d0, dense_state)
+    call sparse_model%initialize_multipliers(0.0d0, sparse_state)
+    call dense_model%compute_rhs(0.0d0, dense_state, dense_rhs)
+    call sparse_model%compute_rhs(0.0d0, sparse_state, sparse_rhs)
+    rst = maxval(abs(sparse_state - dense_state)) < 1.0d-10
+    rst = rst .and. maxval(abs(sparse_rhs - dense_rhs)) < 1.0d-10
+    rst = rst .and. maxval(abs(sparse_rhs(7:10))) < 1.0d-10
+    if (.not.rst) print *, "TEST FAILED: test_ggl_sparse_multiple_constraints"
+end function
+
+function test_ggl_workspace_reuse() result(rst)
+    logical :: rst
+    type(ggl_container) :: model
+    type(cartesian_pendulum_properties) :: args
+    real(real64) :: state(6), jac_serial(6,6), jac_parallel(6,6), rhs(6)
+    real(real64) :: state3(10), rhs3(10)
+    integer :: scenario, iteration
+
+    rst = .true.
+    args%length = 1.5d0
+    args%mass = 2.0d0
+    do scenario = 1, 2
+        call configure_ggl_test_model(model)
+        if (scenario == 2) then
+            nullify(model%mass_matrix)
+            model%sparse_mass_matrix => ggl_test_sparse_mass
+        end if
+        state = [1.51d0, 0.1d0, 0.01d0, 0.2d0, 0.0d0, 0.0d0]
+        call model%initialize_multipliers(0.0d0, state, args)
+        call model%set_thread_count(1)
+        call model%compute_jacobian(0.0d0, state, jac_serial, args)
+        call model%set_thread_count(4)
+        do iteration = 1, 10
+            call model%compute_jacobian(0.0d0, state, jac_parallel, args)
+            rst = rst .and. maxval(abs(jac_serial - jac_parallel)) < 1.0d-9
+        end do
+        call model%compute_rhs(0.0d0, state, rhs, args)
+        rst = rst .and. maxval(abs(rhs(5:6))) < 1.0d-10
+        nullify(model%sparse_mass_matrix)
+    end do
+    call model%initialize(3, 2)
+    model%fcn => ggl_three_force
+    model%constraints => ggl_three_constraint
+    model%constraint_jacobian => ggl_three_gradient
+    model%constraint_curvature => ggl_three_curvature
+    nullify(model%mass_matrix)
+    model%sparse_mass_matrix => ggl_three_sparse_mass
+    state3 = [0.1d0, -0.2d0, 1.0d0, 0.3d0, -0.1d0, 0.2d0, &
+        0.0d0, 0.0d0, 0.0d0, 0.0d0]
+    call model%initialize_multipliers(0.0d0, state3)
+    call model%compute_rhs(0.0d0, state3, rhs3)
+    rst = rst .and. maxval(abs(rhs3(7:10))) < 1.0d-10
+    call configure_ggl_test_model(model)
+    nullify(model%sparse_mass_matrix)
+    state = [1.5d0, 0.0d0, 0.0d0, 0.2d0, 0.0d0, 0.0d0]
+    call model%initialize_multipliers(0.0d0, state, args)
+    call model%compute_rhs(0.0d0, state, rhs, args)
+    rst = rst .and. maxval(abs(rhs(5:6))) < 1.0d-10
+    if (.not.rst) print *, "TEST FAILED: test_ggl_workspace_reuse"
+end function
+
+function test_ggl_sparse_bdf() result(rst)
+    logical :: rst
+    type(ggl_container) :: dense_model
+    type(sparse_ggl_test_model) :: sparse_model
+    type(bdf) :: dense_solver, sparse_solver
+    type(cartesian_pendulum_properties) :: args
+    type(csr_matrix) :: sparse_mass
+    real(real64) :: dense_state(6), sparse_state(6), dense_rhs(6), sparse_rhs(6), mass(6,6)
+    real(real64), parameter :: times(5) = [0.0d0, 0.025d0, 0.05d0, 0.075d0, 0.1d0]
+    real(real64), allocatable :: dense_sol(:,:), sparse_sol(:,:), sparse_mass_dense(:,:)
+    integer :: scenario
+
+    rst = .true.
+    args%length = 1.5d0
+    args%mass = 2.0d0
+    call dense_solver%set_absolute_tolerance(1.0d-9)
+    call dense_solver%set_relative_tolerance(1.0d-9)
+    call dense_solver%set_maximum_step_size(0.01d0)
+    call sparse_solver%set_absolute_tolerance(1.0d-9)
+    call sparse_solver%set_relative_tolerance(1.0d-9)
+    call sparse_solver%set_maximum_step_size(0.01d0)
+    do scenario = 1, 4
+        call configure_ggl_test_model(dense_model)
+        call configure_ggl_test_model(sparse_model)
+        nullify(dense_model%mass_matrix, sparse_model%mass_matrix, sparse_model%sparse_mass_matrix)
+        if (scenario /= 1) dense_model%mass_matrix => ggl_test_dense_mass
+        if (scenario == 2 .or. scenario == 4) sparse_model%sparse_mass_matrix => ggl_test_sparse_mass
+        if (scenario == 3 .or. scenario == 4) sparse_model%mass_matrix => ggl_test_dense_mass
+        if (scenario == 4) sparse_model%sparse_mass_matrix => ggl_test_unused_sparse_mass
+        call dense_model%set_is_mass_matrix_dependent(.true.)
+        call sparse_model%set_is_mass_matrix_dependent(.true.)
+        dense_state = [1.51d0, 0.0d0, 0.01d0, 0.2d0, 0.0d0, 0.0d0]
+        sparse_state = dense_state
+        call dense_model%compute_mass_matrix(0.3d0, dense_state, mass, args)
+        call sparse_model%compute_sparse_mass_matrix(0.3d0, sparse_state, sparse_mass, args)
+        sparse_mass_dense = csr_to_dense(sparse_mass)
+        rst = rst .and. all(shape(sparse_mass_dense) == [6, 6])
+        rst = rst .and. maxval(abs(sparse_mass_dense - mass)) < 1.0d-12
+        call dense_model%initialize_multipliers(times(1), dense_state, args)
+        call sparse_model%initialize_multipliers(times(1), sparse_state, args)
+        rst = rst .and. maxval(abs(sparse_state - dense_state)) < 1.0d-10
+        call dense_model%compute_rhs(times(1), dense_state, dense_rhs, args)
+        call sparse_model%compute_rhs(times(1), sparse_state, sparse_rhs, args)
+        rst = rst .and. maxval(abs(sparse_rhs - dense_rhs)) < 1.0d-10
+        call dense_solver%clear_buffer()
+        call sparse_solver%clear_buffer()
+        sparse_model%sparse_jacobian_calls = 0
+        call dense_solver%solve(dense_model, times, dense_state, args = args)
+        call sparse_solver%solve(sparse_model, times, sparse_state, args = args)
+        dense_sol = dense_solver%get_solution()
+        sparse_sol = sparse_solver%get_solution()
+        if (size(dense_sol, 1) /= size(times) .or. size(sparse_sol, 1) /= size(times)) then
+            rst = .false.
+        else
+            rst = rst .and. all(abs(dense_sol(:,1) - times) < 1.0d-12)
+            rst = rst .and. all(abs(sparse_sol(:,1) - times) < 1.0d-12)
+            rst = rst .and. maxval(abs(sparse_sol - dense_sol)) < 2.0d-6
+        end if
+        rst = rst .and. sparse_model%sparse_jacobian_calls > 0
+        if (.not.rst) then
+            print *, "TEST FAILED: test_ggl_sparse_bdf scenario", scenario
+            return
+        end if
+    end do
 end function
 
 ! ------------------------------------------------------------------------------

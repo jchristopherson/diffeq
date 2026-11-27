@@ -19,9 +19,62 @@ module diffeq_test_bdf
     use diffeq
     use fortran_test_helper
     use diffeq_models
+    use linalg, only : csr_matrix, create_csr_matrix, diag_to_csr
+    use linalg_errors, only : LA_NO_ERROR, LA_SINGULAR_MATRIX_ERROR, LA_MATRIX_FORMAT_ERROR
+    use diffeq_sparse_workspace, only : sparse_solver_workspace
     implicit none
 
 contains
+function test_sparse_solver_workspace() result(rst)
+    logical :: rst
+    type(sparse_solver_workspace) :: work
+    type(csr_matrix) :: matrix
+    real(real64) :: rhs3(3), x3(3), rhs2(2), x2(2), rhs6(6), x6(6)
+    integer :: flag, i
+
+    rst = .true.
+    matrix = create_csr_matrix(3, 3, [1,1,2,2,2,3,3], [1,2,1,2,3,2,3], &
+        [4.0d0, 1.0d0, 1.0d0, 5.0d0, 1.0d0, 1.0d0, 6.0d0])
+    rhs3 = [6.0d0, 14.0d0, 20.0d0]
+    do i = 1, 3
+        call work%factor(matrix, flag)
+        rst = rst .and. flag == LA_NO_ERROR
+        call work%solve(matrix, rhs3, x3, flag)
+        rst = rst .and. flag == LA_NO_ERROR
+        rst = rst .and. maxval(abs(x3 - [1.0d0, 2.0d0, 3.0d0])) < 1.0d-10
+    end do
+    rhs3 = 0.0d0
+    call work%solve(matrix, rhs3, x3, flag)
+    rst = rst .and. flag == LA_NO_ERROR .and. all(x3 == 0.0d0)
+    matrix = diag_to_csr([2.0d0, 4.0d0])
+    rhs2 = [4.0d0, 12.0d0]
+    call work%factor(matrix, flag)
+    rst = rst .and. flag == LA_NO_ERROR
+    call work%solve(matrix, rhs2, x2, flag)
+    rst = rst .and. flag == LA_NO_ERROR
+    rst = rst .and. maxval(abs(x2 - [2.0d0, 3.0d0])) < 1.0d-10
+    matrix = create_csr_matrix(6, 6, &
+        [1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6,6,6], &
+        [1,2,6,1,2,3,2,3,4,3,4,5,4,5,6,1,5,6], &
+        [4.0d0,-1.0d0,-1.0d0,-1.0d0,4.0d0,-1.0d0, &
+         -1.0d0,4.0d0,-1.0d0,-1.0d0,4.0d0,-1.0d0, &
+         -1.0d0,4.0d0,-1.0d0,-1.0d0,-1.0d0,4.0d0])
+    rhs6 = [-4.0d0, 4.0d0, 6.0d0, 8.0d0, 10.0d0, 18.0d0]
+    call work%factor(matrix, flag)
+    rst = rst .and. flag == LA_NO_ERROR
+    call work%solve(matrix, rhs6, x6, flag)
+    rst = rst .and. flag == LA_NO_ERROR
+    rst = rst .and. maxval(abs(x6 - [1.0d0,2.0d0,3.0d0,4.0d0,5.0d0,6.0d0])) < 1.0d-7
+    matrix = diag_to_csr([1.0d0, 0.0d0])
+    call work%factor(matrix, flag)
+    rst = rst .and. flag == LA_SINGULAR_MATRIX_ERROR
+    matrix = create_csr_matrix(2, 2, [1,1,2], [1,2,2], [1.0d0, 1.0d0, 1.0d0])
+    matrix%column_indices(2) = matrix%column_indices(1)
+    call work%factor(matrix, flag)
+    rst = rst .and. flag == LA_MATRIX_FORMAT_ERROR
+    if (.not.rst) print *, "TEST FAILED: test_sparse_solver_workspace"
+end function
+
 function test_bdf_nonlinear_reaction() result(rst)
     logical :: rst
     type(bdf) :: integrator
@@ -517,6 +570,153 @@ subroutine bdf_mass_ode(x, y, dydx, args)
     ! M * y' = g(y), with M = diag(2,3) and g(y) = [-2*y1, -6*y2]
     dydx(1) = -2.0d0 * y(1)
     dydx(2) = -6.0d0 * y(2)
+end subroutine
+
+! ------------------------------------------------------------------------------
+function test_bdf_sparse_matches_dense() result(rst)
+    ! Tests the sparse Newton path against the dense path on a stiff linear
+    ! system.  Both integrations share the same tolerances, so their final
+    ! states must agree to within the tolerance.
+
+    ! Arguments
+    logical :: rst
+
+    ! Parameters
+    real(real64), parameter :: tol = 1.0d-6
+
+    ! Local Variables
+    type(bdf) :: dense_integrator, sparse_integrator
+    type(ode_container) :: dense_mdl, sparse_mdl
+    real(real64), allocatable :: dense_sol(:,:), sparse_sol(:,:)
+    integer :: n
+
+    ! Initialization
+    rst = .true.
+    dense_mdl%fcn => bdf_stiff_linear
+    dense_mdl%jacobian => bdf_stiff_jacobian
+    sparse_mdl%fcn => bdf_stiff_linear
+    sparse_mdl%sparse_jacobian => bdf_stiff_sparse_jacobian
+    call dense_integrator%set_absolute_tolerance(1.0d-10)
+    call dense_integrator%set_relative_tolerance(1.0d-10)
+    call sparse_integrator%set_absolute_tolerance(1.0d-10)
+    call sparse_integrator%set_relative_tolerance(1.0d-10)
+
+    ! Compute the solutions
+    call dense_integrator%solve(dense_mdl, [0.0d0, 1.0d0], &
+        [1.0d0, 1.0d0, 1.0d0])
+    call sparse_integrator%solve(sparse_mdl, [0.0d0, 1.0d0], &
+        [1.0d0, 1.0d0, 1.0d0])
+    dense_sol = dense_integrator%get_solution()
+    sparse_sol = sparse_integrator%get_solution()
+    n = size(sparse_sol, 1)
+
+    ! The sparse and dense final states must agree
+    if (any(abs(sparse_sol(n,2:4) - dense_sol(size(dense_sol,1),2:4)) > tol)) &
+    then
+        rst = .false.
+        print "(A)", "TEST FAILED: test_bdf_sparse_matches_dense -1"
+    end if
+end function
+
+! ------------------------------------------------------------------------------
+subroutine bdf_stiff_linear(x, y, dydx, args)
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:) :: dydx
+    class(*), intent(in), optional :: args
+
+    dydx(1) = -1000.0d0 * y(1) + y(2)
+    dydx(2) = y(1) - 2.0d0 * y(2) + y(3)
+    dydx(3) = y(2) - 3.0d0 * y(3)
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine bdf_stiff_jacobian(x, y, jac, args)
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    real(real64), intent(out), dimension(:,:) :: jac
+    class(*), intent(in), optional :: args
+
+    jac = 0.0d0
+    jac(1,1) = -1000.0d0
+    jac(1,2) = 1.0d0
+    jac(2,1) = 1.0d0
+    jac(2,2) = -2.0d0
+    jac(2,3) = 1.0d0
+    jac(3,2) = 1.0d0
+    jac(3,3) = -3.0d0
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine bdf_stiff_sparse_jacobian(x, y, jac, args)
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    type(csr_matrix), intent(out) :: jac
+    class(*), intent(in), optional :: args
+
+    jac = create_csr_matrix(3, 3, [1, 1, 2, 2, 2, 3, 3], &
+        [1, 2, 1, 2, 3, 2, 3], &
+        [-1000.0d0, 1.0d0, 1.0d0, -2.0d0, 1.0d0, 1.0d0, -3.0d0])
+end subroutine
+
+! ------------------------------------------------------------------------------
+function test_bdf_sparse_mass_matrix() result(rst)
+    ! Tests a sparse mass matrix, supplied together with a sparse Jacobian, on
+    ! the same problem as test_bdf_mass_matrix.
+
+    ! Arguments
+    logical :: rst
+
+    ! Parameters
+    real(real64), parameter :: tol = 1.0d-6
+
+    ! Local Variables
+    type(bdf) :: integrator
+    type(ode_container) :: mdl
+    real(real64), allocatable :: sol(:,:)
+    integer :: n
+
+    ! Initialization
+    rst = .true.
+    mdl%fcn => bdf_mass_ode
+    mdl%sparse_mass_matrix => bdf_sparse_mass_matrix
+    mdl%sparse_jacobian => bdf_sparse_mass_jacobian
+    call mdl%set_is_mass_matrix_dependent(.false.)
+    call integrator%set_absolute_tolerance(1.0d-10)
+    call integrator%set_relative_tolerance(1.0d-10)
+
+    ! Compute the solution
+    call integrator%solve(mdl, [0.0d0, 1.0d0], [1.0d0, 1.0d0])
+    sol = integrator%get_solution()
+    n = size(sol, 1)
+
+    ! M * y' = g(y) with M = diag(2,3) reduces to y' = [-y1, -2*y2]
+    if (abs(sol(n,2) - exp(-1.0d0)) > tol .or. &
+        abs(sol(n,3) - exp(-2.0d0)) > tol) &
+    then
+        rst = .false.
+        print "(A)", "TEST FAILED: test_bdf_sparse_mass_matrix -1"
+    end if
+end function
+
+! ------------------------------------------------------------------------------
+subroutine bdf_sparse_mass_matrix(x, y, m, args)
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    type(csr_matrix), intent(out) :: m
+    class(*), intent(in), optional :: args
+
+    m = diag_to_csr([2.0d0, 3.0d0])
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine bdf_sparse_mass_jacobian(x, y, jac, args)
+    real(real64), intent(in) :: x
+    real(real64), intent(in), dimension(:) :: y
+    type(csr_matrix), intent(out) :: jac
+    class(*), intent(in), optional :: args
+
+    jac = diag_to_csr([-2.0d0, -6.0d0])
 end subroutine
 
 ! ------------------------------------------------------------------------------

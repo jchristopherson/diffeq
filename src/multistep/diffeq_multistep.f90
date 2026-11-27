@@ -44,12 +44,14 @@ module diffeq_multistep
     use iso_fortran_env
     use diffeq_base
     use diffeq_errors
-    use linalg, only : solve_least_squares_full
+    use linalg, only : solve_least_squares_full, csr_matrix
+    use diffeq_sparse_workspace, only : sparse_solver_workspace
     implicit none
     private
     public :: multistep_integrator
     public :: newton_multistep_integrator
     public :: build_linearized_system
+    public :: build_sparse_linearized_system
     public :: predictor_step
     public :: multistep_corrector
     public :: multistep_integer_inquiry
@@ -140,14 +142,23 @@ module diffeq_multistep
         !! and permits a singular mass matrix, as the mass matrix then appears
         !! only as a factor within the iteration matrix.
         integer, private :: m_newtonIterLimit = 12
-            ! The limit on the number of Newton iterations allowed.
+            !! The limit on the number of Newton iterations allowed.
         real(real64), private :: m_newtonTolerance = 1.0d-8
-            ! The convergence tolerance on the Euclidean norm of the residual
-            ! for the Newton iteration process.
+            !! The convergence tolerance on the Euclidean norm of the residual
+            !! for the Newton iteration process.
+        type(csr_matrix), private :: m_jac
+            !! The sparse Jacobian matrix workspace.
+        type(sparse_solver_workspace), private :: m_sparseSolver
+        real(real64), allocatable, dimension(:) :: m_rhs
+            !! The right-hand-side vector for the Newton iteration.
+        real(real64), allocatable, dimension(:) :: m_dir
+            !! The solution direction vector.
     contains
         procedure(build_linearized_system), public, pass, deferred :: &
             build_linear_system
             !! Builds the linearized system for the implicit corrector.
+        procedure(build_sparse_linearized_system), public, pass, deferred :: &
+            build_sparse_linear_system
         procedure, public :: correct => mi_newton_iteration
             !! Performs the Newton iteration process.
         procedure, public :: newton_iteration => mi_newton_iteration
@@ -160,6 +171,12 @@ module diffeq_multistep
             !! Gets the Newton iteration convergence tolerance.
         procedure, public :: set_newton_tolerance => mi_set_newton_tolerance
             !! Sets the Newton iteration convergence tolerance.
+        procedure, private :: allocate_sparse_workspace => mi_alloc_sparse_workspace
+            !! Allocates workspace for the sparse Newton solution.
+        procedure, public :: sparse_correct => mi_sparse_newton_iteration
+            !! Performs the Newton iteration process for sparse systems.
+        procedure, public :: sparse_newton_iteration => mi_sparse_newton_iteration
+            !! Performs the Newton iteration process for sparse systems.
     end type
 
     interface
@@ -181,6 +198,36 @@ module diffeq_multistep
             real(real64), intent(in), dimension(:) :: y
                 !! The current value(s) of the dependent variable(s).
             real(real64), intent(out), dimension(:,:) :: A
+                !! The N-by-N matrix \(A\), where, for BDF methods at least,
+                !! \(A = \frac{\alpha_o}{h_n} M - J\).
+            real(real64), intent(out), dimension(:) :: b
+                !! The N-element right-hand-side vector for the linear system.
+                !! This vector is the negative of the corrector residual so
+                !! that the Newton update is \(y \leftarrow y + \delta\).
+            class(*), intent(in), optional, target :: args
+                !! An optional argument that can be used to pass information
+                !! in and out of the differential equation subroutine.
+        end subroutine
+
+        subroutine build_sparse_linearized_system(this, sys, h, x, y, A, b, args)
+            !! Builds the linearized system used to compute the solution for the
+            !! implicit step via Newton iteration.  This routine forms matrices
+            !! \(A\) and \(b\) of the system \(A \delta = b\).
+            use iso_fortran_env, only : real64
+            use linalg, only : csr_matrix
+            import newton_multistep_integrator
+            import ode_container
+            class(newton_multistep_integrator), intent(inout) :: this
+                !! The newton_multistep_integrator object.
+            class(ode_container), intent(inout) :: sys
+                !! The ode_container object containing the ODE's to integrate.
+            real(real64), intent(in) :: h
+                !! The current step size.
+            real(real64), intent(in) :: x
+                !! The current value of the independent variable.
+            real(real64), intent(in), dimension(:) :: y
+                !! The current value(s) of the dependent variable(s).
+            type(csr_matrix), intent(out) :: A
                 !! The N-by-N matrix \(A\), where, for BDF methods at least,
                 !! \(A = \frac{\alpha_o}{h_n} M - J\).
             real(real64), intent(out), dimension(:) :: b
@@ -345,7 +392,7 @@ subroutine mi_newton_iteration(this, sys, h, x, ypred, ynew, converged, args)
     logical, intent(out) :: converged
         !! True if the Newton iteration process converged; else, false.
     class(*), intent(in), optional, target :: args
-        !! An optional argument that can be used to pass information in and 
+        !! An optional argument that can be used to pass information in and
         !! out of the differential equation subroutine.
 
     ! Local Variables
@@ -353,6 +400,13 @@ subroutine mi_newton_iteration(this, sys, h, x, ypred, ynew, converged, args)
     real(real64) :: tol
     real(real64), allocatable, dimension(:,:) :: A
     real(real64), allocatable, dimension(:) :: b, delta
+
+    ! Dispatch to the sparse iteration when the user has supplied a sparse
+    ! Jacobian.  The dense path is otherwise unchanged.
+    if (sys%has_sparse_jacobian()) then
+        call this%sparse_correct(sys, h, x, ypred, ynew, converged, args)
+        return
+    end if
 
     ! Initialization
     converged = .false.
@@ -383,6 +437,95 @@ subroutine mi_newton_iteration(this, sys, h, x, ypred, ynew, converged, args)
             exit
         end if
     end do
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine mi_sparse_newton_iteration(this, sys, h, x, ypred, ynew, converged, &
+    args)
+    !! Performs the Newton iteration process for sparse systems.
+    !!
+    !! The iteration solves the implicit corrector equation supplied by
+    !! build_linear_system.
+    class(newton_multistep_integrator), intent(inout) :: this
+        !! The newton_multistep_integrator object.
+    class(ode_container), intent(inout) :: sys
+        !! The ode_container object containing the ODE's to integrate.
+    real(real64), intent(in) :: h
+        !! The current step size.
+    real(real64), intent(in) :: x
+        !! The current value of the independent variable.
+    real(real64), intent(in), dimension(:) :: ypred
+        !! The N-element array containing the predicted values at x + h.
+    real(real64), intent(out), dimension(:) :: ynew
+        !! The new estimate of the dependent variables.
+    logical, intent(out) :: converged
+        !! True if the Newton iteration process converged; else, false.
+    class(*), intent(in), optional, target :: args
+        !! An optional argument that can be used to pass information in and
+        !! out of the differential equation subroutine.
+
+    ! Local Variables
+    integer :: i, n, nmax, flag
+    real(real64) :: tol
+
+    ! Initialization
+    converged = .false.
+    n = size(ypred)
+    nmax = this%get_newton_step_limit()
+    tol = this%get_newton_tolerance()
+    ynew = ypred
+    call this%allocate_sparse_workspace(n)
+
+    ! Input Check
+    if (size(ynew) /= n) error stop DIFFEQ_ARRAY_SIZE_ERROR
+
+    ! Process
+    do i = 1, nmax
+        ! Create the system matrices
+        call this%build_sparse_linear_system(sys, h, x + h, ynew, this%m_jac, &
+            this%m_rhs, args = args)
+
+        ! Solve the linear system
+        call this%m_sparseSolver%factor(this%m_jac, flag)
+        if (flag /= 0) exit
+        call this%m_sparseSolver%solve(this%m_jac, this%m_rhs, this%m_dir, flag)
+        if (flag /= 0) exit
+        call this%log_matrix_factorization()
+
+        ! Update the solution
+        ynew = ynew + this%m_dir
+        if (norm2(this%m_dir) <= tol * max(1.0d0, norm2(ynew))) then
+            converged = .true.
+            exit
+        end if
+    end do
+end subroutine
+
+! ------------------------------------------------------------------------------
+subroutine mi_alloc_sparse_workspace(this, n)
+    !! Allocates workspace arrays for sparse Newton iteration.
+    class(newton_multistep_integrator), intent(inout) :: this
+        !! The newton_multistep_integrator object.
+    integer, intent(in) :: n
+        !! The equation count.
+
+    if (allocated(this%m_rhs)) then
+        if (size(this%m_rhs) /= n) then
+            deallocate(this%m_rhs)
+            allocate(this%m_rhs(n))
+        end if
+    else
+        allocate(this%m_rhs(n))
+    end if
+
+    if (allocated(this%m_dir)) then
+        if (size(this%m_dir) /= n) then
+            deallocate(this%m_dir)
+            allocate(this%m_dir(n))
+        end if
+    else
+        allocate(this%m_dir(n))
+    end if
 end subroutine
 
 ! ------------------------------------------------------------------------------
